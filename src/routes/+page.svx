@@ -6,9 +6,9 @@
 
 <SvelteSeo title="Physics Olympiad Archive" description="An archive of problems and solutions from various physics olympiads. Includes IPhO, EuPhO, USAPhO, the Singapore Olympiads and the Hungarian Eotvos competition." keywords="problems, solutions, olympiad, physics"/>
 
-## physics olympiad archive
+## phoXiv
 
-An archive of the canonical physics olympiads
+An archive of the canonical physics olympiads. Includes files such as marking schemes and solutions that you rarely find on other websites, packaged in a mobile-friendly UI.
 
 <section class="">
         <ContestList />
