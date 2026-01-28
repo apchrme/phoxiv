@@ -1,0 +1,33 @@
+@layer base {
+	h1 {
+		@apply xs:text-4xl py-2 text-3xl font-semibold text-ctp-text;
+	}
+
+	h2 {
+		@apply py-2 text-3xl font-semibold text-ctp-text;
+	}
+
+	h3 {
+		@apply xs:text-2xl py-1.5 text-xl leading-6 font-semibold text-ctp-text;
+	}
+
+	p {
+		@apply xs:text-lg leading-5 xs:leading-6 mb-2 text-justify text-base text-ctp-text;
+	}
+
+	span {
+		@apply xs:text-lg leading-5 xs:leading-6 text-justify text-base font-normal text-ctp-text;
+	}
+
+	a {
+		@apply xs:text-lg leading-5 xs:leading-6 text-base font-medium text-ctp-blue decoration-2 underline-offset-4 transition-all aria-current:underline hover:text-ctp-sky;
+	}
+
+	button {
+		cursor: pointer;
+	}
+	* {
+		/* might want to keep track of this! may cause lag (maybe) */
+		@apply transition duration-250 motion-reduce:transition-none 
+	}
+}

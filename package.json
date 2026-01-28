@@ -4,7 +4,7 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"dev": "vite dev",
+		"dev": "bun run pregen && vite dev",
 		"build": "vite build",
 		"preview": "bun run build && wrangler dev",
 		"prepare": "svelte-kit sync || echo ''",
@@ -16,10 +16,12 @@
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",
-		"deploy": "bun run build && wrangler deploy",
-		"cf-typegen": "wrangler types ./src/worker-configuration.d.ts"
+		"deploy": "bun run pregen && bun run build && wrangler deploy",
+		"cf-typegen": "wrangler types ./src/worker-configuration.d.ts",
+		"pregen": "bun run ./src/pregen/problems.ts && bun run ./src/pregen/problemNames.ts"
 	},
 	"devDependencies": {
+		"@catppuccin/tailwindcss": "^1.0.0",
 		"@eslint/compat": "^1.4.0",
 		"@eslint/js": "^9.39.1",
 		"@libsql/client": "^0.15.15",
@@ -41,10 +43,13 @@
 		"prettier-plugin-tailwindcss": "^0.7.2",
 		"svelte": "^5.45.6",
 		"svelte-check": "^4.3.4",
+		"svelte-seo": "^2.0.0",
 		"tailwindcss": "^4.1.17",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.48.1",
 		"vite": "^7.2.6",
-		"wrangler": "^4.61.0"
+		"wrangler": "^4.61.0",
+		"@lucide/svelte": "^0.563.1",
+		"csv-parse": "^6.1.0"
 	}
 }

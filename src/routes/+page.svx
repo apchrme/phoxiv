@@ -1,0 +1,15 @@
+<script lang="ts">
+    import ContestList from "$lib/ContestList.svelte";
+    import { contests } from "../pregen/contests";
+    import SvelteSeo from "svelte-seo";
+</script>
+
+<SvelteSeo title="Physics Olympiad Archive" description="An archive of problems and solutions from various physics olympiads. Includes IPhO, EuPhO, USAPhO, the Singapore Olympiads and the Hungarian Eotvos competition." keywords="problems, solutions, olympiad, physics"/>
+
+## physics olympiad archive
+
+An archive of the canonical physics olympiads
+
+<section class="">
+        <ContestList />
+</section>

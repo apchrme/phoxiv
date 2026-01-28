@@ -1,0 +1,6 @@
+<script lang="ts">
+	import YearList from "$lib/YearList.svelte";
+</script>
+
+I thank [Ashmit Dutta](https://github.com/aedutta) for writing the detailed solutions for 2011 and 2012.
+<YearList contestId="inpho"/>

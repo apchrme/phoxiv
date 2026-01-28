@@ -1,0 +1,7 @@
+<script lang="ts">
+	import YearList from "$lib/YearList.svelte";
+</script>
+
+This is an algebra-based olympiad that assumes no knowledge of calculus. It is quite well-set, with many thought-provoking problems. The time pressure can be quite high though; you have to do 50 questions in 2 hours. It does have quite a few errors, unfortunately. The questions here are from the general round. In 2024 there was some technical issue which caused the competition to have to be taken again, so there are two versions of the problems. SJPO 2020 is pointless as it was a compilation of past year problems, so I won't include it here. There were some technical issues in 2021 so it didn't really work out. I've tried my best to find as many papers as I can, but if you have a paper or its solutions that isn't here, do let me know. I thank the folks at <a target="_blank" href="https://www.pd-stem.com/">PD Stem Education</a> for making solutions to 2022 and 2024.
+
+<YearList contestId="sjpo"/>
