@@ -6,6 +6,7 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "phoxiv",
 	"main": ".svelte-kit/cloudflare/_worker.js",
+	"workers_dev": true,
 	"compatibility_date": "2025-09-27",
 	"compatibility_flags": [
 		"nodejs_als"
@@ -16,6 +17,10 @@
 	},
 	"observability": {
 		"enabled": true
+	},
+	"route": {
+		"pattern": "phoxiv.org",
+		"custom_domain": true
 	}
 	/**
 	 * Smart Placement

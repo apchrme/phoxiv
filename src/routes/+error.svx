@@ -1,0 +1,10 @@
+<script lang="ts">
+    import "../app.css";
+	import { page } from '$app/state';
+</script>
+
+# {page.status}: {page.error.message}
+
+{#if (page.status == "404")}
+<p>A page link doesn't exist here. Did you type the link wrongly?</p>
+{/if}

@@ -1,0 +1,12 @@
+
+## Other resources
+
+[Kevin Zhou's handouts](https://knzhou.github.io/#physics-olympiad-handouts) - **the best resource for learning Olympiad physics**. Many important resources can be found in the syllabus for the handouts. You may also want to look at his [advice](https://knzhou.github.io/#advice). 
+
+[Stefan Ivanov's resources](https://stefanivanov.site/teaching/) - plenty of useful things here, including a more comprehensive archive, errata list and handouts.
+
+[PhODs resources](https://physoly.tech/resources/) - cool resources from the [physics olympiad discord server](https://discord.gg/phods)
+
+[My notes](https://apochrome.notion.site/Physics-3e6457db399143cd82f125b8e62a00f7?source=copy_link) - I do not recommend it for learning physics, but you may find some interesting things in here.
+
+I have also modified some classic IPhO/APhO problems to showcase interesting things: [IPhO 1992 T1](original/IPhO_1992_T1.pdf) ([Solution](original/IPhO_1992_T1_S.pdf)) and [APhO 2005 T2B](original/APhO_2005_T2B.pdf) ([Solution](original/APhO_2005_T2B_S.pdf))
