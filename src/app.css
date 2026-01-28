@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import "@catppuccin/tailwindcss/mocha.css";
+@import '@catppuccin/tailwindcss/mocha.css';
 @import './styles/fonts.css';
 @import './styles/base.css';
 @import './styles/theme.css';

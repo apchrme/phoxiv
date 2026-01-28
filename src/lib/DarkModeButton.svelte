@@ -6,7 +6,7 @@
 
 <button
 	onclick={toggleDarkTheme}
-	class="rounded-2xl p-3 transition duration-150 bg-ctp-crust dark:bg-ctp-surface0 hover:bg-ctp-surface1"
+	class="rounded-2xl bg-ctp-crust p-3 transition duration-150 hover:bg-ctp-surface1 dark:bg-ctp-surface0"
 	aria-label="Dark mode toggle"
 >
 	{#if theme == 'dark'}

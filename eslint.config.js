@@ -32,7 +32,7 @@ export default defineConfig(
 		languageOptions: {
 			parserOptions: {
 				projectService: true,
-				extraFileExtensions: ['.svelte'],
+				extraFileExtensions: ['.svelte', '.svx'],
 				parser: ts.parser,
 				svelteConfig
 			}

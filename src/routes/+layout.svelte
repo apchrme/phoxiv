@@ -54,7 +54,9 @@
 	/>
 {/if}
 <div
-	class="{dark ? 'mocha' : 'latte'} bg-ctp-base flex min-h-screen w-full flex-col items-center px-8 py-8 antialiased sm:px-10 sm:py-10 {dark
+	class="{dark
+		? 'mocha'
+		: 'latte'} flex min-h-screen w-full flex-col items-center bg-ctp-base px-8 py-8 antialiased sm:px-10 sm:py-10 {dark
 		? 'dark'
 		: ''}"
 >

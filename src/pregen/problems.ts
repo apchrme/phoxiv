@@ -25,11 +25,10 @@ contests.forEach(function (contest) {
 	// iterate through years
 	contestFiles.forEach(function (year) {
 		// must be a directory and not a file
-		if (!year.includes('.') && !year.includes("_")) {
+		if (!year.includes('.') && !year.includes('_')) {
 			const yearFolderPath = path.resolve('static/', contest.id, year);
 			const yearFiles = fs.readdirSync(yearFolderPath); // all problem-specific files for that year
-			const problemList = { year: parseInt(year), files: [] }; // this collects the list of problems	
-
+			const problemList = { year: parseInt(year), files: [] }; // this collects the list of problems
 
 			// add problem names
 			let problemNamesPerYear = {};
@@ -39,10 +38,8 @@ contests.forEach(function (contest) {
 				);
 			}
 
-
 			// iterate through problems within a year
 			problemNumbers.forEach(function (problemNumber) {
-
 				// include problem title if it exists
 				const fileList = { number: problemNumber };
 				if (problemNamesPerYear && problemNamesPerYear[problemNumber]) {
