@@ -1,26 +1,26 @@
 @layer base {
 	h1 {
-		@apply py-2 text-3xl font-semibold text-ctp-text xs:text-4xl;
+		@apply py-2 text-2xl sm:text-4xl font-semibold text-ctp-text;
 	}
 
 	h2 {
-		@apply py-2 text-3xl font-semibold text-ctp-text;
+		@apply py-2 text-xl sm:text-3xl font-semibold text-ctp-text;
 	}
 
 	h3 {
-		@apply py-1.5 text-xl leading-6 font-semibold text-ctp-text xs:text-2xl;
+		@apply py-1.5 text-lg sm:text-2xl leading-6 font-semibold text-ctp-text;
 	}
 
 	p {
-		@apply mb-2 text-justify text-base leading-5 text-ctp-text xs:text-lg xs:leading-6;
+		@apply mb-2 text-justify text-base leading-5 text-ctp-text sm:text-lg sm:leading-6;
 	}
 
 	span {
-		@apply text-justify text-base leading-5 font-normal text-ctp-text xs:text-lg xs:leading-6;
+		@apply text-justify text-base leading-5 font-normal text-ctp-text sm:text-lg sm:leading-6;
 	}
 
 	a {
-		@apply text-base leading-5 font-medium text-ctp-blue decoration-2 underline-offset-4 transition-all hover:text-ctp-sky aria-current:underline xs:text-lg xs:leading-6;
+		@apply text-base leading-5 font-medium text-ctp-blue decoration-2 underline-offset-4 transition-all hover:text-ctp-sky aria-current:underline sm:text-lg sm:leading-6;
 	}
 
 	button {

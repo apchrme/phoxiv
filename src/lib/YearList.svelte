@@ -11,14 +11,14 @@
 	<!-- Iterate by year -->
 	{#each contestFiles as yearFiles}
 		<div
-			class="flex flex-col items-center gap-y-2 border-t-2 border-ctp-surface1 py-3 xs:py-4 sm:flex-row"
+			class="flex flex-col items-center gap-2 border-t-2 border-ctp-surface1 py-4 sm:flex-row"
 		>
 			<h3 class="shrink-0 px-4 py-0 text-center sm:mb-0 sm:basis-[80pt]">{yearFiles.year}</h3>
 
-			<div class="flex flex-auto flex-col gap-y-3">
+			<div class="flex flex-auto flex-col">
 				<YearFiles {contestId} {yearFiles} />
 				{#if yearFiles.files && yearFiles.files.length != 0}
-					<div class="flex flex-row flex-wrap justify-evenly gap-4 xs:gap-5">
+					<div class="flex flex-row flex-wrap justify-evenly gap-4 xs:gap-5 py-2">
 						{#each yearFiles.files as problem}
 							<div
 								class="flex flex-auto basis-xs flex-col items-center rounded-2xl bg-ctp-crust p-4 xs:p-5 dark:bg-ctp-surface0"

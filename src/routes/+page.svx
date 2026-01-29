@@ -4,9 +4,9 @@
     import SvelteSeo from "svelte-seo";
 </script>
 
-<SvelteSeo title="Physics Olympiad Archive" description="An archive of problems and solutions from various physics olympiads. Includes IPhO, EuPhO, USAPhO, the Singapore Olympiads and the Hungarian Eotvos competition." keywords="problems, solutions, olympiad, physics"/>
+<SvelteSeo title="phoXiv" description="An archive of problems and solutions from various physics olympiads. Includes IPhO, EuPhO, USAPhO, the Singapore Olympiads and the Hungarian Eotvos competition." keywords="problems, solutions, olympiad, physics, ipho, apho, eupho"/>
 
-## phoXiv
+# phoXiv
 
 An archive of the canonical physics olympiads. Includes files such as marking schemes and solutions that you rarely find on other websites, packaged in a mobile-friendly UI.
 

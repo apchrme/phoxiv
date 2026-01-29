@@ -1,5 +1,5 @@
 
-## Other resources
+## other resources
 
 [Kevin Zhou's handouts](https://knzhou.github.io/#physics-olympiad-handouts) - **the best resource for learning Olympiad physics**. Many important resources can be found in the syllabus for the handouts. You may also want to look at his [advice](https://knzhou.github.io/#advice). 
 

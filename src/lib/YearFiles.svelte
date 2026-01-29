@@ -3,7 +3,7 @@
 	const { contestId, yearFiles } = $props();
 </script>
 
-<div class="flex flex-row flex-wrap justify-evenly gap-x-10 gap-y-1 sm:m-0">
+<div class="flex flex-row flex-wrap justify-evenly py-1 gap-x-10 gap-y-1 sm:m-0">
 	<!-- Custom links -->
 	{#if contestId == 'ipho' && yearFiles.year == 2017}<p
 			class="mb-0 text-center font-bold xs:leading-7"
@@ -18,12 +18,6 @@
 	{/if}
 	{#if contestId == 'apho' && yearFiles.year == 2017}
 		<a href="https://apho2017.mipt.ru/results/" target="-_blank">Results</a>
-	{/if}
-	{#if contestId == 'ipho' && yearFiles.year == 2000}
-		<p>
-			Note: if you see unrendered text in the problem html, try right clicking the link and click
-			"Save Link As". Then open the html file on your computer.
-		</p>
 	{/if}
 	{#each fileSyntax as fileType}
 		{#if yearFiles[fileType.id] != undefined}
