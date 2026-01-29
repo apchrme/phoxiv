@@ -1,9 +1,4 @@
-<script lang="ts">
-	import YearList from "$lib/YearList.svelte";
-</script>
 
 The most famous physics olympiad in existence. Recently, the problems have gotten very long but otherwise simple, meaning the most important thing is speed. Most of the files here have been compiled by <a href="https://stefanivanov.site/teaching" target="_blank">Stefan Ivanov</a>, who got them from the [official IPhO website](https://www.ipho-new.org/documentations/) and the individual webpages. Some are from other sources such as the <a href="https://physikolympiade.at/aufgaben/downloadbereich/13-aufgaben/3-ipho" target="_blank">Austrian archive</a> and personal connections. Take note of the <a href="https://stefanivanov.site/teaching/errata.pdf" target="_blank">errata list</a>.
 
 Also note that for very old papers (before 1999), the problems and solutions may come together. In those cases, I will label the pdf as the problem file. For example, if you see a file named _Theory_ but there is no _Theory Solutions_, then either the solution is in the _Theory_ file, or no solutions exist (but this is quite rare).
-
-<YearList contestId="ipho"/>

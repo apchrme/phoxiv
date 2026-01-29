@@ -1,6 +1,3 @@
-<script lang="ts">
-	import YearList from "$lib/YearList.svelte";
-</script>
 
 The Hungarian Eötvös competition is perhaps the oldest high school physics competition in the world, with over a century of competition since its first edition in 1894. Each contest lasts for 5 hours and has 3 short problems. The competition tests creativity and problem-solving skills not found in most modern physics olympiads, and inspired the European Physics Olympiad. Many of the old problems (pre-2018) have made their way into 200 Puzzling Physics Problems and its sequel. Note that it is an open-book exam, so you are expected to have a standard constants sheet with you (e.g [this](https://sgphysicsleague.org/data_sheet.pdf)). In my translations, I will make a note when it requires information that isn't in a standard constants sheet.
 
@@ -8,5 +5,3 @@ There was a typo in the 2018 paper, where the final temperature in problem 2 is 
 
 Sources: [Problems](http://eik.bme.hu/~vanko/fizika/eotvos.htm) and [Solutions in KoMaL (pre-2021)](http://db.komal.hu/KomalHU/). If you're interested, here's some [history of the competition](https://eik.bme.hu/~vanko/fizika/konferencia/wfphc/talk8.pdf)
 
-
-<YearList contestId="eotvos"/>

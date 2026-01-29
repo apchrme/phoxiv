@@ -4,7 +4,7 @@
 
 {#each contests as contest}
 	<div class="my-3">
-		<a href="/{contest.id}">
+		<a href="/contests/{contest.id}">
 			<div
 				class="flex flex-row items-center gap-x-0.5 rounded-2xl bg-ctp-crust px-3 py-3 transition duration-300 hover:bg-ctp-surface1 sm:gap-x-4 sm:px-6 dark:bg-ctp-surface0"
 			>

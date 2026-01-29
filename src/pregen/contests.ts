@@ -42,6 +42,12 @@ export const contests = [
 		icon: '🇸🇬'
 	},
 	{
+		id: 'cpho-f',
+		name: 'Chinese Physics Olympiad (Finals)',
+		summary: 'Third phase of selection for the Chinese IPhO team',
+		icon: '🇨🇳'
+	},
+	{
 		id: 'inpho',
 		name: 'Indian National Physics Olympiad',
 		summary: 'Second round of selection for the Indian IPhO team.',

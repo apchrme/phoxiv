@@ -1,7 +1,2 @@
-<script lang="ts">
-	import YearList from "$lib/YearList.svelte";
-</script>
 
 A consistently high-quality olympiad with short but insightful problems, though some may call them contrived. In many ways, this olympiad follows the IPhO statutes even better than IPhO itself, as the problems requires physical insight and you rarely need to rush for time. Inspired by the [Eötvös Competition](/eotvos).
-
-<YearList contestId="eupho"/>

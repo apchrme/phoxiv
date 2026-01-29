@@ -12,7 +12,7 @@
 	let dark: boolean = $state(true);
 	let systemDark: boolean = $state(true);
 	let theme = $state('system');
-	let contest = $derived(contests.find((i) => i.id == page.url.pathname.substring(1)));
+	let contest = $derived(contests.find((i) => i.id == page.url.pathname.split("/")[page.url.pathname.split("/").length - 1]));
 
 	// Svelte does server-side rendering, followed by client-side rendering. localStorage is only accessible on the client render, so we have to remove it on the server render.
 	if (browser) {
@@ -72,9 +72,6 @@
 			{/if}
 		</nav>
 		<main>
-			{#if contest}
-				<h2>{contest.name}</h2>
-			{/if}
 			{@render children()}
 		</main>
 	</div>

@@ -1,42 +1,46 @@
-# sv
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+# Structure
 
-## Creating a project
+The structure of this website is as follows: competitions are known as "contests". Each contest is split into "years", and within a year, there are multiple "problems".
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Pregeneration
 
-```sh
-# create a new project
-npx sv create my-app
-```
+You may have noticed that the build script runs [problems.ts](./src/pregen/problems.ts). This is a pregeneration script that generates the file [files.json](./src/pregen/files.json) containing all the problems in a javascript object. The purpose of this is to make adding problems easier. In some ways this makes the website a glorified file explorer. 
 
-To recreate this project with the same configuration:
+File syntax can be customised in [fileSyntax.ts](./src/pregen/fileSyntax.ts).
 
-```sh
-# recreate this project
-bun x sv create --template minimal --types ts --add prettier eslint tailwindcss="plugins:none" mdsvex drizzle="database:sqlite+sqlite:libsql" --install bun phoxiv
-```
+# Adding content
 
-## Developing
+## Adding new contests
+1. Create a new entry in [contests.ts](./src/pregen/contests.ts) with the information about the contest. This will automatically add the contest to the homepage and "registers" the contest in the automated scripts.
+2. Add the necessary files to the folder in static, with the right file syntax.
+3. Setup the contest page with the following template:
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+    ```sv
+    <script lang="ts">
+        import YearList from "$lib/YearList.svelte";
+    </script>
 
-```sh
-npm run dev
+    insert description here
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+    <YearList contestId="insert contest id here"/>
+    ```
 
-## Building
+## Adding new problems
 
-To create a production version of your app:
+Most of the time, this is simply done by including the files in the contest folder within the static folder, with the necessary file syntax: `<year><file syntax>`. The file syntax indicates what kind of file it is (problem, solution etc.). The allowed file extensions are in the pregeneration file [problems.ts](./src/pregen/problems.ts). 
 
-```sh
-npm run build
-```
+However, sometimes the problems are separated. The per-problem files should be included in the year's folder, i.e. `<contest>/<year>/`, with the syntax `<problem number><file syntax>`. The allowed problem numbers are in the pregeneration file too.
 
-You can preview the production build with `npm run preview`.
+You may optionally include the problem names (titles) by editing [problemNames.csv](./src/pregen/problemNames.csv) and running the conversion script [problemNames.ts](./src/pregen/problemNames.ts) to generate [the json file](./src/pregen/problemNames.json).
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+
+# TODO
+
+- include eupho statutes
+- add a "hide solutions" button
+- add a menu to scroll to years quickly
+- add "collections" to group contests together
+- dynamically generate contest urls
+- make links in mdsvex external (use custom components)
+

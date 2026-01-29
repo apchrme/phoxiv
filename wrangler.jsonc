@@ -6,7 +6,8 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "phoxiv",
 	"main": ".svelte-kit/cloudflare/_worker.js",
-	"workers_dev": false,
+	"workers_dev": true,
+	"preview_urls": true,
 	"compatibility_date": "2025-09-27",
 	"compatibility_flags": ["nodejs_als"],
 	"assets": {

@@ -13,12 +13,12 @@ import path from 'path';
 // exports all problems grouped by the contest id
 const all_problems = {};
 const problemNumbers = ['T1', 'T2', 'T3', 'T4', 'E1', 'E2', 'T5'];
-const fileExtensions = ['pdf', 'xlsx', 'zip', 'htm', 'html'];
+const fileExtensions = ['pdf', 'xlsx', 'zip', 'htm', 'html', 'doc', 'docx'];
 
 // iterate through contests
 contests.forEach(function (contest) {
 	// finds the contest files in the static folder
-	const folderPath = path.resolve('static/', contest.id);
+	const folderPath = path.resolve('static/contests/', contest.id);
 	const contestFiles = fs.readdirSync(folderPath);
 	let yearList: any[] = [];
 
@@ -26,7 +26,7 @@ contests.forEach(function (contest) {
 	contestFiles.forEach(function (year) {
 		// must be a directory and not a file
 		if (!year.includes('.') && !year.includes('_')) {
-			const yearFolderPath = path.resolve('static/', contest.id, year);
+			const yearFolderPath = path.resolve('static/contests/', contest.id, year);
 			const yearFiles = fs.readdirSync(yearFolderPath); // all problem-specific files for that year
 			const problemList = { year: parseInt(year), files: [] }; // this collects the list of problems
 
@@ -65,7 +65,7 @@ contests.forEach(function (contest) {
 						// only add file if it exists
 						if (file != '') {
 							empty = false;
-							fileList[fileType.id] = `/${contest.id}/${year}/${file}`;
+							fileList[fileType.id] = `/contests/${contest.id}/${year}/${file}`;
 						}
 					}
 				});
@@ -109,7 +109,7 @@ contests.forEach(function (contest) {
 				});
 				if (file != '') {
 					empty = false;
-					fileList[fileType.id] = `/${contest.id}/${file}`;
+					fileList[fileType.id] = `/contests/${contest.id}/${file}`;
 				}
 			}
 		});
