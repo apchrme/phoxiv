@@ -5,14 +5,18 @@
 	import SvelteSeo from 'svelte-seo';
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
-	import { contests } from '../pregen/contests';
+	import { contests } from '../lib/pregen/contests';
 	import DarkModeButton from '$lib/DarkModeButton.svelte';
 	import HeaderLink from '$lib/HeaderLink.svelte';
 
 	let dark: boolean = $state(true);
 	let systemDark: boolean = $state(true);
 	let theme = $state('system');
-	let contest = $derived(contests.find((i) => i.id == page.url.pathname.split("/")[page.url.pathname.split("/").length - 1]));
+	let contest = $derived(
+		contests.find(
+			(i) => i.id == page.url.pathname.split('/')[page.url.pathname.split('/').length - 1]
+		)
+	);
 
 	// Svelte does server-side rendering, followed by client-side rendering. localStorage is only accessible on the client render, so we have to remove it on the server render.
 	if (browser) {

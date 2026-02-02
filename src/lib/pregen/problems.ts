@@ -20,15 +20,15 @@ contests.forEach(function (contest) {
 	// finds the contest files in the static folder
 	const folderPath = path.resolve('static/contests/', contest.id);
 	const contestFiles = fs.readdirSync(folderPath);
-	let yearList: any[] = [];
+	let yearList = [];
 
 	// iterate through years
 	contestFiles.forEach(function (year) {
-		// must be a directory and not a file
+		// must be a valid directory and not a file
 		if (!year.includes('.') && !year.includes('_')) {
 			const yearFolderPath = path.resolve('static/contests/', contest.id, year);
-			const yearFiles = fs.readdirSync(yearFolderPath); // all problem-specific files for that year
-			const problemList = { year: parseInt(year), files: [] }; // this collects the list of problems
+			const yearGeneralFiles = fs.readdirSync(yearFolderPath); // all problem-specific files for that year
+			const problemList = { year: parseInt(year), files: [] }; // this collects the list of problems for that year
 
 			// add problem names
 			let problemNamesPerYear = {};
@@ -56,8 +56,10 @@ contests.forEach(function (contest) {
 						let file = '';
 						fileExtensions.forEach((extension) => {
 							// only include the file if it exists in the directory
-							if (yearFiles.find((i) => i == problemNumber + fileType.syntax + '.' + extension)) {
-								file = yearFiles.find(
+							if (
+								yearGeneralFiles.find((i) => i == problemNumber + fileType.syntax + '.' + extension)
+							) {
+								file = yearGeneralFiles.find(
 									(i) => i == problemNumber + fileType.syntax + '.' + extension
 								);
 							}
@@ -75,6 +77,7 @@ contests.forEach(function (contest) {
 					problemList.files.push(fileList);
 				}
 			});
+			// Add the entry for that year
 			yearList.push(problemList);
 		}
 	});
@@ -126,4 +129,7 @@ contests.forEach(function (contest) {
 
 // console.log(all_problems);
 
-fs.writeFileSync(path.resolve('./src/pregen/files.json'), JSON.stringify(all_problems, null, 4));
+fs.writeFileSync(
+	path.resolve('./src/lib/pregen/files.json'),
+	JSON.stringify(all_problems, null, 4)
+);

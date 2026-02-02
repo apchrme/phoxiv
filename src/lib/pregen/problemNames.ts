@@ -4,7 +4,7 @@ import { parse } from 'csv-parse';
 const results = {};
 const parser = parse({ columns: true, trim: true });
 
-fs.createReadStream('./src/pregen/problemNames.csv')
+fs.createReadStream('./src/lib/pregen/problemNames.csv')
 	.pipe(parser)
 	.on('data', (row) => {
 		const columns = Object.keys(row);
@@ -25,5 +25,5 @@ fs.createReadStream('./src/pregen/problemNames.csv')
 	.on('end', () => {
 		// console.log(JSON.stringify(results, null, 2));
 		// Optionally write to file:
-		fs.writeFileSync('src/pregen/problemNames.json', JSON.stringify(results, null, 2));
+		fs.writeFileSync('src/lib/pregen/problemNames.json', JSON.stringify(results, null, 2));
 	});

@@ -9,7 +9,9 @@
 	"workers_dev": true,
 	"preview_urls": true,
 	"compatibility_date": "2025-09-27",
-	"compatibility_flags": ["nodejs_als"],
+	"compatibility_flags": [
+		"nodejs_als"
+	],
 	"assets": {
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"
@@ -20,7 +22,15 @@
 	"route": {
 		"pattern": "phoxiv.org",
 		"custom_domain": true
-	}
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "phoxiv",
+			"database_id": "5e7e03d7-377c-4962-abdc-92af4c49b4cb",
+			"migrations_dir": "./src/lib/server/db/migrations"
+		}
+	]
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
