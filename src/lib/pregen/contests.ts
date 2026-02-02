@@ -2,19 +2,19 @@ export const contests = [
 	{
 		id: 'eupho',
 		name: 'European Physics Olympiad',
-		summary: 'The best one',
+		summary: 'A relatively new and highly interesting olympiad',
 		icon: '🇪🇺'
 	},
 	{
 		id: 'ipho',
 		name: 'International Physics Olympiad',
-		summary: 'The most famous one',
+		summary: 'The most well-known physics olympiad, attracting participants from 90+ countries',
 		icon: '🌐'
 	},
 	{
 		id: 'apho',
 		name: 'Asian Physics Olympiad',
-		summary: 'The most tedious one',
+		summary: 'The Asian version of IPhO, often used by countries to select their IPhO teams.',
 		icon: '🌏'
 	},
 	{

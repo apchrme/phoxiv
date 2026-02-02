@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { contests } from '../pregen/contests.js';
+	import { contests } from '$lib/pregen/contests';
 </script>
 
 {#each contests as contest}

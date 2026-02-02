@@ -144,5 +144,11 @@ export const fileSyntax = [
 		id: 'comments',
 		display: 'Comments',
 		syntax: '_comments'
+	},
+	{
+		id: 'sol_hand',
+		display: 'Solution (Handwritten)',
+		syntax: '_S_H',
+		contest: ['apho']
 	}
 ];
