@@ -1,7 +1,7 @@
 # phoXiv
 
 ## Building
-All important commands are in [package.json](./package.json). Run with `bun run` or whatever runtime you like to use.
+First, install a Javascript runtime like [Bun](https://bun.com/). Then, run any of the scripts below with `bun run <script>` or the equivalent in whatever runtime you use. All important commands are in [package.json](./package.json).
 - `dev` - run local development server
 - `preview` - run deployment preview
 - `deploy` - deploy to remote
