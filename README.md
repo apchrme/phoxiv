@@ -6,6 +6,8 @@ First, install a Javascript runtime like [Bun](https://bun.com/). Then, run any 
 - `preview` - run deployment preview
 - `deploy` - deploy to remote
 
+You may want to familiarise yourself with [Svelte and SvelteKit](https://svelte.dev/).
+
 ## Structure
 
 The structure of this website is as follows: competitions are known as "contests". Each contest is split into "years", and within a year, there are multiple "problems".
@@ -42,3 +44,4 @@ All of the pregeneration scripts can be run by simply doing `bun run pregen`.
 - add "collections" to group contests together
 - dynamically generate contest urls
 - make links in mdsvex external (use custom components)
+- add problem names for ipho and apho
