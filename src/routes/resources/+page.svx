@@ -7,6 +7,8 @@
 
 [PhODs resources](https://physoly.tech/resources/) - cool resources from the [physics olympiad discord server](https://discord.gg/phods)
 
+[SPhO handouts](https://drive.google.com/drive/folders/1D4_f2ssjDc06SpDUWS00DQ6-uzAwSduK) - handouts used by many students to train for the [Singapore Physics Olympiad](/contests/spho), and is largely for beginners. Created by [Fizika](https://projectfizika.com/)
+
 [My notes](https://apochrome.notion.site/Physics-3e6457db399143cd82f125b8e62a00f7?source=copy_link) - I do not recommend it for learning physics, but you may find some interesting things in here.
 
 I have also modified some classic IPhO/APhO problems to showcase interesting things: [IPhO 1992 T1](original/IPhO_1992_T1.pdf) ([Solution](original/IPhO_1992_T1_S.pdf)) and [APhO 2005 T2B](original/APhO_2005_T2B.pdf) ([Solution](original/APhO_2005_T2B_S.pdf))

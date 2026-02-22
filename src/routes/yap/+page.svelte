@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
   import type { PageProps } from "./$types";
   import { enhance } from "$app/forms";
 
@@ -35,4 +35,4 @@
       <span class="count">{characterCount} characters</span>
     </div>
     <button type="submit" disabled={characterCount < 5}>Post</button>
-</form>
+</form> -->
