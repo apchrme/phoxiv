@@ -6,7 +6,7 @@
 	<div class="my-3">
 		<a href="/contests/{contest.id}">
 			<div
-				class="flex flex-row items-center gap-x-0.5 rounded-2xl bg-ctp-crust px-3 py-3 transition duration-300 hover:bg-ctp-surface1 sm:gap-x-4 sm:px-6 dark:bg-ctp-surface0"
+				class="flex flex-row items-center gap-x-0.5 rounded-2xl bg-ctp-crust px-3 py-3 transition hover:bg-ctp-surface1 sm:gap-x-4 sm:px-6 dark:bg-ctp-surface0"
 			>
 				<h3 class="hidden shrink-0 basis-23 translate-y-1.5 text-center text-5xl sm:block">
 					{contest.icon}
