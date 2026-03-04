@@ -5,8 +5,9 @@
 	"type": "module",
 	"scripts": {
 		"dev": "bun run pregen && vite dev",
-		"build": "vite build",
+		"build": "bun run pregen && vite build",
 		"preview": "bun run build && wrangler dev",
+		"deploy": "bun run build && wrangler deploy",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -17,7 +18,6 @@
 		"db:migrate": "wrangler d1 migrations apply DB",
 		"db:migrate-remote": "wrangler d1 migrations apply DB --remote",
 		"db:studio": "drizzle-kit studio",
-		"deploy": "bun run pregen && bun run build && wrangler deploy",
 		"cf-typegen": "wrangler types ./src/worker-configuration.d.ts",
 		"pregen": "bun run ./src/lib/pregen/problems.ts && bun run ./src/lib/pregen/problemNames.ts"
 	},

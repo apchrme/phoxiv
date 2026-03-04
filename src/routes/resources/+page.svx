@@ -5,7 +5,7 @@
 
 [Stefan Ivanov's resources](https://stefanivanov.site/teaching/) - plenty of useful things here, including a more comprehensive archive, errata list and handouts.
 
-[PhODs resources](https://physoly.tech/resources/) - cool resources from the [physics olympiad discord server](https://discord.gg/phods)
+[PhODs resources](https://physoly.tech/resources/) - cool resources from the [physics olympiad discord server](https://discord.gg/SNBDY5nsgf) (note: the original server was hacked on 2nd March 2026. This is the link to the new server.)
 
 [SPhO handouts](https://drive.google.com/drive/folders/1D4_f2ssjDc06SpDUWS00DQ6-uzAwSduK) - handouts used by many students to train for the [Singapore Physics Olympiad](/contests/spho), and is largely for beginners. Created by [Fizika](https://projectfizika.com/)
 

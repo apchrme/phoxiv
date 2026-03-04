@@ -9,9 +9,7 @@
 	"workers_dev": true,
 	"preview_urls": true,
 	"compatibility_date": "2025-09-27",
-	"compatibility_flags": [
-		"nodejs_als"
-	],
+	"compatibility_flags": ["nodejs_als"],
 	"assets": {
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"

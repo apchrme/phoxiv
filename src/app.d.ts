@@ -7,14 +7,14 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			db: DrizzleD1Database
+			db: DrizzleD1Database;
 		}
 		// interface PageData {}
 		// interface PageState {}
 		interface Platform {
-			env: Env
-            cf: CfProperties
-            ctx: ExecutionContext
+			env: Env;
+			cf: CfProperties;
+			ctx: ExecutionContext;
 		}
 	}
 }
