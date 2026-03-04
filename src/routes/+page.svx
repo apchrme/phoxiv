@@ -11,6 +11,8 @@ A comprehensive archive of many physics olympiads, from the well-known competiti
 
 This website is under development. If you would like to contribute in any way (adding new problems or maintaining the site), drop me an email: admin(at)phoxiv.org
 
+Note: The Physics Olympiads Discord server was hacked on 2nd March 2026. A new server has been setup by the admins of the original server: join [here](https://discord.gg/SNBDY5nsgf)
+
 <section class="">
         <ContestList />
 </section>
