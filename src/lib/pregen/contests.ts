@@ -36,6 +36,12 @@ export const contests = [
 		icon: '🇭🇺'
 	},
 	{
+		id: 'pcup',
+		name: 'Physics Cup',
+		summary: 'The most difficult high school physics contest',
+		icon: '🏆'
+	},
+	{
 		id: 'spot',
 		name: 'Singapore IPhO/APhO TST',
 		summary: 'Selection test for the Singapore team at IPhO and APhO.',

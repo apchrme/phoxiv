@@ -47,3 +47,4 @@ All of the pregeneration scripts can be run by simply doing `bun run pregen`.
 - dynamically generate contest urls
 - make links in mdsvex external (use custom components)
 - add problem names for ipho and apho
+- maybe make files dynamically generated? As the repo gets larger the build time is getting longer. Using a CDN may be better

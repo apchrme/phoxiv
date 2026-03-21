@@ -1,6 +1,6 @@
 <script lang="ts">
 	const { contestId, yearFiles } = $props();
-	const year = yearFiles.year;
+	const year = $derived(yearFiles.year);
 </script>
 
 <!-- Custom links -->
