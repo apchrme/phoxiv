@@ -6,19 +6,19 @@
 	<div class="my-3">
 		<a href="/contests/{contest.id}">
 			<div
-				class="flex flex-row items-center gap-x-0.5 rounded-2xl bg-ctp-crust inset-ring inset-ring-ctp-lavender-900/20 dark:inset-ring-ctp-lavender/20 hover:inset-ring-2 px-3 py-3 transition hover:bg-ctp-surface1 sm:gap-x-4 sm:px-6 dark:bg-ctp-surface0"
+				class="flex flex-row items-center gap-x-0.5 rounded-(--radius) px-3 py-4 transition sm:gap-x-4 sm:px-6 inset-ring-foreground/10 inset-ring-1 hover:inset-ring-2 bg-card text-card-foreground hover:bg-muted"
 			>
-				<h3 class="hidden shrink-0 basis-23 translate-y-1.5 text-center text-5xl sm:block">
+				<h3 class="hidden shrink-0 basis-23 translate-y-[1pt] text-center text-5xl sm:block">
 					{contest.icon}
 				</h3>
-				<div class="flex w-full flex-col">
+				<div class="flex w-full flex-col gap-y-1">
 					<div class="flex flex-row items-center">
-						<h3 class="inline shrink-0 basis-13 translate-y-[1pt] text-center text-2xl sm:hidden">
+						<h3 class="inline shrink-0 basis-13 text-center text-2xl sm:hidden">
 							{contest.icon}
 						</h3>
-						<h3 class="inline">{contest.name}</h3>
+						<h3 class="inline py-0">{contest.name}</h3>
 					</div>
-					<span class="px-3 text-ctp-subtext1 sm:p-0"> {contest.summary} </span>
+					<span class="px-3 sm:p-0"> {contest.summary} </span>
 				</div>
 			</div>
 		</a>
