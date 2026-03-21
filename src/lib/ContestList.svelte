@@ -3,7 +3,7 @@
 </script>
 
 {#each contests as contest (contest.id)}
-	<div class="my-3">
+	<div class="mb-3">
 		<a href="/contests/{contest.id}">
 			<div
 				class="flex flex-row items-center gap-x-0.5 rounded-(--radius) bg-card px-3 py-4 text-card-foreground inset-ring-1 inset-ring-foreground/10 transition hover:bg-muted hover:inset-ring-2 sm:gap-x-4 sm:px-6"

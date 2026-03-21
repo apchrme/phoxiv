@@ -4,7 +4,6 @@
 
 	import SvelteSeo from 'svelte-seo';
 	import { page } from '$app/state';
-	import { browser } from '$app/environment';
 	import { contests } from '../lib/pregen/contests';
 	import { ModeWatcher } from 'mode-watcher';
 	import DarkModeButton from '$lib/DarkModeButton.svelte';
@@ -40,9 +39,7 @@
 				<HeaderLink url="/resources" />
 				<HeaderLink url="/blog" />
 			</div>
-			{#if browser}
-				<DarkModeButton />
-			{/if}
+			<DarkModeButton />
 		</nav>
 		<main>
 			{@render children()}
