@@ -8,73 +8,105 @@
 @import '@fontsource-variable/figtree';
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* ================================================
+   Catppuccin Latte — shadcn/ui (oklch)
+   ================================================ */
 :root {
-	--radius: 0.75rem;
-	--background: oklch(1 0 0);
-	--foreground: oklch(0.145 0 0);
-	--card: oklch(1 0 0);
-	--card-foreground: oklch(0.145 0 0);
-	--popover: oklch(1 0 0);
-	--popover-foreground: oklch(0.145 0 0);
-	--primary: oklch(0.514 0.222 16.935);
-	--primary-foreground: oklch(0.969 0.015 12.422);
-	--secondary: oklch(0.967 0.001 286.375);
-	--secondary-foreground: oklch(0.21 0.006 285.885);
-	--muted: oklch(0.97 0 0);
-	--muted-foreground: oklch(0.556 0 0);
-	--accent: oklch(0.97 0 0);
-	--accent-foreground: oklch(0.205 0 0);
-	--destructive: oklch(0.577 0.245 27.325);
-	--border: oklch(0.922 0 0);
-	--input: oklch(0.922 0 0);
-	--ring: oklch(0.708 0 0);
-	--chart-1: oklch(0.81 0.117 11.638);
-	--chart-2: oklch(0.645 0.246 16.439);
-	--chart-3: oklch(0.586 0.253 17.585);
-	--chart-4: oklch(0.514 0.222 16.935);
-	--chart-5: oklch(0.455 0.188 13.697);
-	--sidebar: oklch(0.985 0 0);
-	--sidebar-foreground: oklch(0.145 0 0);
-	--sidebar-primary: oklch(0.586 0.253 17.585);
-	--sidebar-primary-foreground: oklch(0.969 0.015 12.422);
-	--sidebar-accent: oklch(0.97 0 0);
-	--sidebar-accent-foreground: oklch(0.205 0 0);
-	--sidebar-border: oklch(0.922 0 0);
-	--sidebar-ring: oklch(0.708 0 0);
+  --radius: 0.625rem;
+
+  --background:          oklch(96.13% 0.009 247.88); /* Base      #eff1f5 */
+  --foreground:          oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
+
+  --card:                oklch(93.74% 0.010 249.13); /* Mantle    #e6e9ef */
+  --card-foreground:     oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
+
+  --popover:             oklch(91.36% 0.011 250.38); /* Crust     #dce0e8 */
+  --popover-foreground:  oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
+
+  --primary:             oklch(51.05% 0.231 292.72); /* Mauve     #8839ef */
+  --primary-foreground:  oklch(96.13% 0.009 247.88); /* Base      #eff1f5 */
+
+  --secondary:           oklch(84.70% 0.013 252.63); /* Surface 0 #ccd0da */
+  --secondary-foreground: oklch(37.99% 0.018 264.19); /* Text     #4c4f69 */
+
+  --muted:               oklch(84.70% 0.013 252.63); /* Surface 0 #ccd0da */
+  --muted-foreground:    oklch(54.26% 0.019 263.95); /* Subtext 0 #6c6f85 */
+
+  --accent:              oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
+  --accent-foreground:   oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
+
+  --destructive:         oklch(44.49% 0.196 18.61);  /* Red       #d20f39 */
+  --destructive-foreground: oklch(96.13% 0.009 247.88); /* Base   #eff1f5 */
+
+  --border:              oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
+  --input:               oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
+  --ring:                oklch(51.05% 0.231 292.72); /* Mauve     #8839ef */
+
+  --chart-1:             oklch(68.64% 0.173 40.63);  /* Peach     #fe640b */
+  --chart-2:             oklch(59.66% 0.173 136.67); /* Green     #40a02b */
+  --chart-3:             oklch(50.74% 0.238 264.37); /* Blue      #1e66f5 */
+  --chart-4:             oklch(66.54% 0.148 68.50);  /* Yellow    #df8e1d */
+  --chart-5:             oklch(54.89% 0.121 195.61); /* Teal      #179299 */
+
+  --sidebar:             oklch(91.36% 0.011 250.38); /* Crust     #dce0e8 */
+  --sidebar-foreground:  oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
+  --sidebar-primary:     oklch(51.05% 0.231 292.72); /* Mauve     #8839ef */
+  --sidebar-primary-foreground: oklch(96.13% 0.009 247.88); /* Base #eff1f5 */
+  --sidebar-accent:      oklch(84.70% 0.013 252.63); /* Surface 0 #ccd0da */
+  --sidebar-accent-foreground: oklch(37.99% 0.018 264.19); /* Text #4c4f69 */
+  --sidebar-border:      oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
+  --sidebar-ring:        oklch(51.05% 0.231 292.72); /* Mauve     #8839ef */
 }
 
+/* ================================================
+   Catppuccin Mocha — shadcn/ui (oklch)
+   ================================================ */
 .dark {
-	--background: oklch(0.145 0 0);
-	--foreground: oklch(0.985 0 0);
-	--card: oklch(0.205 0 0);
-	--card-foreground: oklch(0.985 0 0);
-	--popover: oklch(0.205 0 0);
-	--popover-foreground: oklch(0.985 0 0);
-	--primary: oklch(0.455 0.188 13.697);
-	--primary-foreground: oklch(0.969 0.015 12.422);
-	--secondary: oklch(0.274 0.006 286.033);
-	--secondary-foreground: oklch(0.985 0 0);
-	--muted: oklch(0.269 0 0);
-	--muted-foreground: oklch(0.708 0 0);
-	--accent: oklch(0.269 0 0);
-	--accent-foreground: oklch(0.985 0 0);
-	--destructive: oklch(0.704 0.191 22.216);
-	--border: oklch(1 0 0 / 10%);
-	--input: oklch(1 0 0 / 15%);
-	--ring: oklch(0.556 0 0);
-	--chart-1: oklch(0.81 0.117 11.638);
-	--chart-2: oklch(0.645 0.246 16.439);
-	--chart-3: oklch(0.586 0.253 17.585);
-	--chart-4: oklch(0.514 0.222 16.935);
-	--chart-5: oklch(0.455 0.188 13.697);
-	--sidebar: oklch(0.21 0.006 285.885);
-	--sidebar-foreground: oklch(0.985 0 0);
-	--sidebar-primary: oklch(0.645 0.246 16.439);
-	--sidebar-primary-foreground: oklch(0.969 0.015 12.422);
-	--sidebar-accent: oklch(0.269 0 0);
-	--sidebar-accent-foreground: oklch(0.985 0 0);
-	--sidebar-border: oklch(1 0 0 / 10%);
-	--sidebar-ring: oklch(0.556 0 0);
+  --radius: 0.625rem;
+
+  --background:          oklch(19.85% 0.014 285.75); /* Base      #1e1e2e */
+  --foreground:          oklch(87.99% 0.030 256.80); /* Text      #cdd6f4 */
+  
+  --card:                oklch(26.57% 0.015 277.06); /* Surface 0 #313244 */
+  --card-foreground:     oklch(87.99% 0.030 256.80); /* Text      #cdd6f4 */
+
+  --popover:             oklch(12.89% 0.014 285.75); /* Crust     #11111b */
+  --popover-foreground:  oklch(87.99% 0.030 256.80); /* Text      #cdd6f4 */
+
+  --primary:             oklch(74.19% 0.146 303.90); /* Mauve     #cba6f7 */
+  --primary-foreground:  oklch(19.85% 0.014 285.75); /* Base      #1e1e2e */
+
+  --secondary:           oklch(26.57% 0.015 277.06); /* Surface 0 #313244 */
+  --secondary-foreground: oklch(87.99% 0.030 256.80); /* Text     #cdd6f4 */
+
+  --muted:               oklch(26.57% 0.015 277.06); /* Surface 0 #313244 */
+  --muted-foreground:    oklch(72.08% 0.022 258.72); /* Subtext 0 #a6adc8 */
+
+  --accent:              oklch(31.61% 0.016 274.03); /* Surface 1 #45475a */
+  --accent-foreground:   oklch(87.99% 0.030 256.80); /* Text      #cdd6f4 */
+
+  --destructive:         oklch(75.16% 0.122 11.90);  /* Red       #f38ba8 */
+  --destructive-foreground: oklch(19.85% 0.014 285.75); /* Base   #1e1e2e */
+
+  --border:              oklch(31.61% 0.016 274.03); /* Surface 1 #45475a */
+  --input:               oklch(31.61% 0.016 274.03); /* Surface 1 #45475a */
+  --ring:                oklch(74.19% 0.146 303.90); /* Mauve     #cba6f7 */
+
+  --chart-1:             oklch(79.38% 0.102 42.47);  /* Peach     #fab387 */
+  --chart-2:             oklch(86.73% 0.098 163.23); /* Green     #a6e3a1 */
+  --chart-3:             oklch(76.72% 0.097 233.59); /* Blue      #89b4fa */
+  --chart-4:             oklch(92.36% 0.090 93.39);  /* Yellow    #f9e2af */
+  --chart-5:             oklch(86.63% 0.078 186.60); /* Teal      #94e2d5 */
+
+  --sidebar:             oklch(12.89% 0.014 285.75); /* Crust     #11111b */
+  --sidebar-foreground:  oklch(87.99% 0.030 256.80); /* Text      #cdd6f4 */
+  --sidebar-primary:     oklch(74.19% 0.146 303.90); /* Mauve     #cba6f7 */
+  --sidebar-primary-foreground: oklch(19.85% 0.014 285.75); /* Base #1e1e2e */
+  --sidebar-accent:      oklch(26.57% 0.015 277.06); /* Surface 0 #313244 */
+  --sidebar-accent-foreground: oklch(87.99% 0.030 256.80); /* Text #cdd6f4 */
+  --sidebar-border:      oklch(31.61% 0.016 274.03); /* Surface 1 #45475a */
+  --sidebar-ring:        oklch(74.19% 0.146 303.90); /* Mauve     #cba6f7 */
 }
 
 @theme inline {
