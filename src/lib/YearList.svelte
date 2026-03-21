@@ -3,13 +3,15 @@
 	import files from '$lib/pregen/files.json';
 	import AdditionalYearFiles from '$lib/AdditionalYearFiles.svelte';
 	import { fileSyntax } from '$lib/pregen/fileSyntax';
+	import Separator from './components/ui/separator/separator.svelte';
 	const contestFiles = $derived(files[contestId]);
 </script>
 
 <section class="py-4">
 	<!-- Iterate by year -->
 	{#each contestFiles as yearFiles (yearFiles.year)}
-		<div class="flex flex-col items-center border-t-2 border-border py-4 sm:flex-row">
+		<Separator />
+		<div class="flex flex-col items-center py-4 sm:flex-row">
 			<h3 class="shrink-0 px-4 py-0 text-center sm:mb-0 sm:basis-[80pt]">{yearFiles.year}</h3>
 
 			<div class="flex flex-auto flex-col">
@@ -30,7 +32,7 @@
 					<div class="flex flex-row flex-wrap justify-evenly gap-3 py-2 xs:gap-5 xs:py-3">
 						{#each yearFiles.files as problem (problem.number)}
 							<div
-								class="flex flex-auto basis-xs flex-col items-center rounded-(--radius) bg-muted p-3 xs:p-5 dark:bg-card"
+								class="flex flex-auto basis-xs flex-col items-center rounded-(--radius) p-3 xs:p-5 bg-card"
 							>
 								<p class="text-center font-medium">{problem.number}: {problem.title}</p>
 								<div class="flex flex-row flex-wrap justify-around gap-x-6 gap-y-1">

@@ -13,12 +13,12 @@ This website is under development. If you would like to contribute in any way (a
 
 Note: The Physics Olympiads Discord server was hacked on 2nd March 2026. A new server has been setup by the admins of the original server: join [here](https://discord.gg/SNBDY5nsgf)
 
-## Contests
+## contests
 
 <section class="">
         <ContestList />
 </section>
 
-## Collections
+## collections
 
 Coming soon!

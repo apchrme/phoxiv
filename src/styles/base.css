@@ -1,18 +1,18 @@
 @layer base {
 	h1 {
-		@apply py-2 text-center text-2xl font-semibold text-foreground sm:text-4xl;
+		@apply py-2 sm:mb-2 text-center text-2xl font-semibold sm:text-4xl;
 	}
 
 	h2 {
-		@apply py-2 text-xl font-semibold text-foreground sm:text-3xl;
+		@apply py-2 text-xl font-semibold sm:text-3xl;
 	}
 
 	h3 {
-		@apply py-1.5 text-lg leading-6 font-semibold text-foreground sm:text-2xl;
+		@apply py-1.5 text-lg leading-6 font-semibold sm:text-2xl;
 	}
 
 	p {
-		@apply mb-2 text-justify text-base leading-5 text-foreground sm:text-lg sm:leading-6;
+		@apply mb-2 text-justify text-base leading-5 sm:text-lg sm:leading-6;
 	}
 
 	span {

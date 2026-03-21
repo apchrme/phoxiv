@@ -8,6 +8,7 @@
 	import { ModeWatcher } from 'mode-watcher';
 	import DarkModeButton from '$lib/DarkModeButton.svelte';
 	import HeaderLink from '$lib/HeaderLink.svelte';
+	import Separator from '$lib/components/ui/separator/separator.svelte';
 
 	let contest = $derived(
 		contests.find(
@@ -41,6 +42,7 @@
 			</div>
 			<DarkModeButton />
 		</nav>
+		<Separator class="my-1" />
 		<main>
 			{@render children()}
 		</main>

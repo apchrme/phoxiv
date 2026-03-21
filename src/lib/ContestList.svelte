@@ -16,7 +16,7 @@
 						<h3 class="inline shrink-0 basis-13 text-center text-2xl sm:hidden">
 							{contest.icon}
 						</h3>
-						<h3 class="inline py-0">{contest.name}</h3>
+						<h3 class="inline py-0 text-card-foreground">{contest.name}</h3>
 					</div>
 					<span class="px-3 sm:p-0"> {contest.summary} </span>
 				</div>

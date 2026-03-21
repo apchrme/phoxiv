@@ -8,7 +8,12 @@ First, install a Javascript runtime like [Bun](https://bun.com/). Then, run any 
 - `preview` - run deployment preview
 - `deploy` - deploy to remote
 
-You may want to familiarise yourself with [Svelte and SvelteKit](https://svelte.dev/).
+This project is built with:
+
+- Frontend: Svelte
+- Backend: SvelteKit
+- Database (not functional yet): Drizzle ORM
+- UI Library: shadcn-svelte
 
 ## Structure
 
