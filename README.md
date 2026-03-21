@@ -38,6 +38,10 @@ You may optionally include the problem names (titles) by editing [problemNames.c
 
 All of the pregeneration scripts can be run by simply doing `bun run pregen`.
 
+## Frontend Framework
+
+The UI is created using [shadcn-svelte](https://shadcn-svelte.com/)
+
 ## TODO
 
 - include eupho statutes

@@ -1,2816 +1,2816 @@
 {
-    "eupho": [
-        {
-            "year": 2025,
-            "results": "/contests/eupho/2025_R.pdf",
-            "theory": "/contests/eupho/2025_T.pdf",
-            "theory sol": "/contests/eupho/2025_T_S.pdf",
-            "experiment": "/contests/eupho/2025_E.pdf",
-            "experiment sol": "/contests/eupho/2025_E_S.pdf"
-        },
-        {
-            "year": 2024,
-            "results": "/contests/eupho/2024_R.pdf",
-            "theory": "/contests/eupho/2024_T.pdf",
-            "theory sol": "/contests/eupho/2024_T_S.pdf",
-            "experiment": "/contests/eupho/2024_E.pdf",
-            "experiment sol": "/contests/eupho/2024_E_S.pdf"
-        },
-        {
-            "year": 2023,
-            "results": "/contests/eupho/2023_R.pdf",
-            "theory": "/contests/eupho/2023_T.pdf",
-            "theory sol": "/contests/eupho/2023_T_S.pdf",
-            "experiment": "/contests/eupho/2023_E.pdf",
-            "experiment sol": "/contests/eupho/2023_E_S.pdf"
-        },
-        {
-            "year": 2022,
-            "results": "/contests/eupho/2022_R.pdf",
-            "theory": "/contests/eupho/2022_T.pdf",
-            "theory sol": "/contests/eupho/2022_T_S.pdf",
-            "experiment": "/contests/eupho/2022_E.pdf",
-            "experiment sol": "/contests/eupho/2022_E_S.pdf"
-        },
-        {
-            "year": 2021,
-            "results": "/contests/eupho/2021_R.pdf",
-            "theory": "/contests/eupho/2021_T.pdf",
-            "theory sol": "/contests/eupho/2021_T_S.pdf",
-            "experiment": "/contests/eupho/2021_E.pdf",
-            "experiment sol": "/contests/eupho/2021_E_S.pdf",
-            "simulation files": "/contests/eupho/2021_E_F.zip"
-        },
-        {
-            "year": 2020,
-            "results": "/contests/eupho/2020_R.pdf",
-            "theory": "/contests/eupho/2020_T.pdf",
-            "theory sol": "/contests/eupho/2020_T_S.pdf",
-            "experiment": "/contests/eupho/2020_E.pdf",
-            "experiment sol": "/contests/eupho/2020_E_S.pdf",
-            "simulation files": "/contests/eupho/2020_E_F.zip"
-        },
-        {
-            "year": 2019,
-            "results": "/contests/eupho/2019_R.pdf",
-            "theory": "/contests/eupho/2019_T.pdf",
-            "theory sol": "/contests/eupho/2019_T_S.pdf",
-            "theory ms": "/contests/eupho/2019_T_M.pdf",
-            "experiment": "/contests/eupho/2019_E.pdf"
-        },
-        {
-            "year": 2018,
-            "results": "/contests/eupho/2018_R.pdf",
-            "theory": "/contests/eupho/2018_T.pdf",
-            "theory sol": "/contests/eupho/2018_T_S.pdf",
-            "theory ms": "/contests/eupho/2018_T_M.pdf",
-            "experiment": "/contests/eupho/2018_E.pdf",
-            "experiment sol": "/contests/eupho/2018_E_S.pdf",
-            "experiment ms": "/contests/eupho/2018_E_M.pdf"
-        },
-        {
-            "year": 2017,
-            "results": "/contests/eupho/2017_R.pdf",
-            "theory": "/contests/eupho/2017_T.pdf",
-            "theory sol": "/contests/eupho/2017_T_S.pdf",
-            "experiment": "/contests/eupho/2017_E.pdf",
-            "experiment sol": "/contests/eupho/2017_E_S.pdf"
-        }
-    ],
-    "ipho": [
-        {
-            "year": 2025,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "Hydrogen and galaxies",
-                    "problems": "/contests/ipho/2025/T1.pdf",
-                    "solutions": "/contests/ipho/2025/T1_S.pdf",
-                    "ans": "/contests/ipho/2025/T1_A.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "Cox's Timepiece",
-                    "problems": "/contests/ipho/2025/T2.pdf",
-                    "solutions": "/contests/ipho/2025/T2_S.pdf",
-                    "ans": "/contests/ipho/2025/T2_A.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "Champagne!",
-                    "problems": "/contests/ipho/2025/T3.pdf",
-                    "solutions": "/contests/ipho/2025/T3_S.pdf",
-                    "ans": "/contests/ipho/2025/T3_A.pdf"
-                },
-                {
-                    "number": "T4",
-                    "title": "Strongly correlated Fermi gases (Theory Backup)",
-                    "problems": "/contests/ipho/2025/T4.pdf",
-                    "ans": "/contests/ipho/2025/T4_A.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "Earth's magnetic field measurement",
-                    "problems": "/contests/ipho/2025/E1.pdf",
-                    "solutions": "/contests/ipho/2025/E1_S.pdf",
-                    "ans": "/contests/ipho/2025/E1_A.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "Sand craters and dunes",
-                    "problems": "/contests/ipho/2025/E2.pdf",
-                    "solutions": "/contests/ipho/2025/E2_S.pdf",
-                    "ans": "/contests/ipho/2025/E2_A.pdf"
-                }
-            ],
-            "results": "/contests/ipho/2025_R.pdf",
-            "theory instructions": "/contests/ipho/2025_TG0.pdf",
-            "experimental instructions": "/contests/ipho/2025_EG0.pdf"
-        },
-        {
-            "year": 2024,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "Greenhouse Effect",
-                    "problems": "/contests/ipho/2024/T1.pdf",
-                    "solutions": "/contests/ipho/2024/T1_S.pdf",
-                    "ans": "/contests/ipho/2024/T1_A.pdf",
-                    "ms": "/contests/ipho/2024/T1_M.pdf",
-                    "pres": "/contests/ipho/2024/T1_P.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "Trapping Ions and Cooling Atoms",
-                    "problems": "/contests/ipho/2024/T2.pdf",
-                    "solutions": "/contests/ipho/2024/T2_S.pdf",
-                    "ans": "/contests/ipho/2024/T2_A.pdf",
-                    "ms": "/contests/ipho/2024/T2_M.pdf",
-                    "pres": "/contests/ipho/2024/T2_P.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "Black Widow Pulsar",
-                    "problems": "/contests/ipho/2024/T3.pdf",
-                    "solutions": "/contests/ipho/2024/T3_S.pdf",
-                    "ans": "/contests/ipho/2024/T3_A.pdf",
-                    "ms": "/contests/ipho/2024/T3_M.pdf",
-                    "pres": "/contests/ipho/2024/T3_P.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "Heat Conduction in a Copper Rod",
-                    "problems": "/contests/ipho/2024/E1.pdf",
-                    "solutions": "/contests/ipho/2024/E1_S.pdf",
-                    "ans": "/contests/ipho/2024/E1_A.pdf",
-                    "ms": "/contests/ipho/2024/E1_M.pdf",
-                    "pres": "/contests/ipho/2024/E1_P.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "Diffraction from Phase Steps",
-                    "problems": "/contests/ipho/2024/E2.pdf",
-                    "solutions": "/contests/ipho/2024/E2_S.pdf",
-                    "ans": "/contests/ipho/2024/E2_A.pdf",
-                    "ms": "/contests/ipho/2024/E2_M.pdf",
-                    "pres": "/contests/ipho/2024/E2_P.pdf"
-                }
-            ],
-            "minutes": "/contests/ipho/2024_min.pdf"
-        },
-        {
-            "year": 2023,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "Soil Colloids",
-                    "problems": "/contests/ipho/2023/T1.pdf",
-                    "solutions": "/contests/ipho/2023/T1_S.pdf",
-                    "ans": "/contests/ipho/2023/T1_A.pdf",
-                    "ms": "/contests/ipho/2023/T1_M.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "Neutron Stars",
-                    "problems": "/contests/ipho/2023/T2.pdf",
-                    "solutions": "/contests/ipho/2023/T2_S.pdf",
-                    "ans": "/contests/ipho/2023/T2_A.pdf",
-                    "ms": "/contests/ipho/2023/T2_M.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "Water and Objects",
-                    "problems": "/contests/ipho/2023/T3.pdf",
-                    "solutions": "/contests/ipho/2023/T3_S.pdf",
-                    "ans": "/contests/ipho/2023/T3_A.pdf",
-                    "ms": "/contests/ipho/2023/T3_M.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "Mass Measurement",
-                    "problems": "/contests/ipho/2023/E1.pdf",
-                    "solutions": "/contests/ipho/2023/E1_S.pdf",
-                    "ans": "/contests/ipho/2023/E1_A.pdf",
-                    "ms": "/contests/ipho/2023/E1_M.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "Birefringence",
-                    "problems": "/contests/ipho/2023/E2.pdf",
-                    "solutions": "/contests/ipho/2023/E2_S.pdf",
-                    "ans": "/contests/ipho/2023/E2_A.pdf",
-                    "ms": "/contests/ipho/2023/E2_M.pdf"
-                }
-            ],
-            "theory instructions": "/contests/ipho/2023_TG0.pdf",
-            "experimental instructions": "/contests/ipho/2023_EG0.pdf",
-            "minutes": "/contests/ipho/2023_min.pdf"
-        },
-        {
-            "year": 2022,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "Permanent magnets",
-                    "problems": "/contests/ipho/2022/T1.pdf",
-                    "ans": "/contests/ipho/2022/T1_A.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "James Webb Space Telescope",
-                    "problems": "/contests/ipho/2022/T2.pdf",
-                    "ans": "/contests/ipho/2022/T2_A.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "Scaling laws",
-                    "problems": "/contests/ipho/2022/T3.pdf",
-                    "ans": "/contests/ipho/2022/T3_A.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "Planet",
-                    "problems": "/contests/ipho/2022/E1.pdf",
-                    "ans": "/contests/ipho/2022/E1_A.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "Cylindrical Diode",
-                    "problems": "/contests/ipho/2022/E2.pdf",
-                    "ans": "/contests/ipho/2022/E2_A.pdf"
-                }
-            ],
-            "results": "/contests/ipho/2022_R.xlsx",
-            "theory instructions": "/contests/ipho/2022_TG0.pdf",
-            "experimental instructions": "/contests/ipho/2022_EG0.pdf",
-            "theory sol": "/contests/ipho/2022_T_S.pdf",
-            "experiment sol": "/contests/ipho/2022_E_S.pdf",
-            "simulation files": "/contests/ipho/2022_E_F.zip",
-            "minutes": "/contests/ipho/2022_min.pdf",
-            "extra minutes": "/contests/ipho/2022_min2.pdf"
-        },
-        {
-            "year": 2021,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "Planetary Physics",
-                    "problems": "/contests/ipho/2021/T1.pdf",
-                    "solutions": "/contests/ipho/2021/T1_S.pdf",
-                    "ans": "/contests/ipho/2021/T1_A.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "Electrostatic Lens",
-                    "problems": "/contests/ipho/2021/T2.pdf",
-                    "solutions": "/contests/ipho/2021/T2_S.pdf",
-                    "ans": "/contests/ipho/2021/T2_A.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "Particles and Waves",
-                    "problems": "/contests/ipho/2021/T3.pdf",
-                    "solutions": "/contests/ipho/2021/T3_S.pdf",
-                    "ans": "/contests/ipho/2021/T3_A.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "Non-ideal Capacitors",
-                    "problems": "/contests/ipho/2021/E1.pdf",
-                    "solutions": "/contests/ipho/2021/E1_S.pdf",
-                    "ans": "/contests/ipho/2021/E1_A.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "LEDs",
-                    "problems": "/contests/ipho/2021/E2.pdf",
-                    "solutions": "/contests/ipho/2021/E2_S.pdf",
-                    "ans": "/contests/ipho/2021/E2_A.pdf"
-                }
-            ],
-            "results": "/contests/ipho/2021_R.pdf",
-            "experiment": "/contests/ipho/2021_E.pdf",
-            "simulation files": "/contests/ipho/2021_E_F.zip",
-            "minutes": "/contests/ipho/2021_min.pdf"
-        },
-        {
-            "year": 2020,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "Problem Mix",
-                    "problems": "/contests/ipho/2020/T1.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "Anisotropic Friction",
-                    "problems": "/contests/ipho/2020/T2.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "Laser Technologies",
-                    "problems": "/contests/ipho/2020/T3.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "Crystallography",
-                    "problems": "/contests/ipho/2020/E1.pdf",
-                    "ans": "/contests/ipho/2020/E1_A.pdf"
-                }
-            ]
-        },
-        {
-            "year": 2019,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "Zero-length springs and slinky coils",
-                    "problems": "/contests/ipho/2019/T1.pdf",
-                    "solutions": "/contests/ipho/2019/T1_S.pdf",
-                    "ms": "/contests/ipho/2019/T1_M.pdf",
-                    "pres": "/contests/ipho/2019/T1_P.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "Microwave Oven",
-                    "problems": "/contests/ipho/2019/T2.pdf",
-                    "solutions": "/contests/ipho/2019/T2_S.pdf",
-                    "ms": "/contests/ipho/2019/T2_M.pdf",
-                    "pres": "/contests/ipho/2019/T2_P.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "Thermoacoustic Engine",
-                    "problems": "/contests/ipho/2019/T3.pdf",
-                    "solutions": "/contests/ipho/2019/T3_S.pdf",
-                    "ms": "/contests/ipho/2019/T3_M.pdf",
-                    "pres": "/contests/ipho/2019/T3_P.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "Optical Measurements",
-                    "problems": "/contests/ipho/2019/E1.pdf",
-                    "solutions": "/contests/ipho/2019/E1_S.pdf",
-                    "ms": "/contests/ipho/2019/E1_M.pdf",
-                    "pres": "/contests/ipho/2019/E1_P.pdf",
-                    "calibration": "/contests/ipho/2019/E1_C.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "Wiedemann-Franz Law",
-                    "problems": "/contests/ipho/2019/E2.pdf",
-                    "solutions": "/contests/ipho/2019/E2_S.pdf",
-                    "ms": "/contests/ipho/2019/E2_M.pdf",
-                    "pres": "/contests/ipho/2019/E2_P.pdf"
-                }
-            ],
-            "minutes": "/contests/ipho/2019_min.pdf"
-        },
-        {
-            "year": 2018,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "LIGO-GW150914",
-                    "problems": "/contests/ipho/2018/T1.pdf",
-                    "solutions": "/contests/ipho/2018/T1_S.pdf",
-                    "ans": "/contests/ipho/2018/T1_A.pdf",
-                    "ms": "/contests/ipho/2018/T1_M.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "Where is the neutrino?",
-                    "problems": "/contests/ipho/2018/T2.pdf",
-                    "solutions": "/contests/ipho/2018/T2_S.pdf",
-                    "ans": "/contests/ipho/2018/T2_A.pdf",
-                    "ms": "/contests/ipho/2018/T2_M.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "Physics of Live Systems",
-                    "problems": "/contests/ipho/2018/T3.pdf",
-                    "solutions": "/contests/ipho/2018/T3_S.pdf",
-                    "ans": "/contests/ipho/2018/T3_A.pdf",
-                    "ms": "/contests/ipho/2018/T3_M.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "Paper transistor",
-                    "problems": "/contests/ipho/2018/E1.pdf",
-                    "solutions": "/contests/ipho/2018/E1_S.pdf",
-                    "ans": "/contests/ipho/2018/E1_A.pdf",
-                    "ms": "/contests/ipho/2018/E1_M.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "Viscoelasticity of a polymer thread",
-                    "problems": "/contests/ipho/2018/E2.pdf",
-                    "solutions": "/contests/ipho/2018/E2_S.pdf",
-                    "ans": "/contests/ipho/2018/E2_A.pdf",
-                    "ms": "/contests/ipho/2018/E2_M.pdf"
-                }
-            ],
-            "minutes": "/contests/ipho/2018_min.pdf"
-        },
-        {
-            "year": 2017,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/2017/T1.pdf",
-                    "solutions": "/contests/ipho/2017/T1_S.pdf",
-                    "ans": "/contests/ipho/2017/T1_A.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/2017/T2.pdf",
-                    "solutions": "/contests/ipho/2017/T2_S.pdf",
-                    "ans": "/contests/ipho/2017/T2_A.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/2017/T3.pdf",
-                    "solutions": "/contests/ipho/2017/T3_S.pdf",
-                    "ans": "/contests/ipho/2017/T3_A.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/2017/E1.pdf",
-                    "solutions": "/contests/ipho/2017/E1_S.pdf",
-                    "ans": "/contests/ipho/2017/E1_A.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/ipho/2017/E2.pdf",
-                    "solutions": "/contests/ipho/2017/E2_S.pdf",
-                    "ans": "/contests/ipho/2017/E2_A.pdf"
-                }
-            ],
-            "theory instructions": "/contests/ipho/2017_TG0.pdf",
-            "experimental instructions": "/contests/ipho/2017_EG0.pdf",
-            "minutes": "/contests/ipho/2017_min.pdf"
-        },
-        {
-            "year": 2016,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "Two Problems in Mechanics",
-                    "problems": "/contests/ipho/2016/T1.pdf",
-                    "solutions": "/contests/ipho/2016/T1_S.pdf",
-                    "ans": "/contests/ipho/2016/T1_A.pdf",
-                    "pres": "/contests/ipho/2016/T1_P.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "Nonlinear Dynamics in Electric Circuits",
-                    "problems": "/contests/ipho/2016/T2.pdf",
-                    "solutions": "/contests/ipho/2016/T2_S.pdf",
-                    "ans": "/contests/ipho/2016/T2_A.pdf",
-                    "pres": "/contests/ipho/2016/T2_P.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "Large Hadron Collider",
-                    "problems": "/contests/ipho/2016/T3.pdf",
-                    "solutions": "/contests/ipho/2016/T3_S.pdf",
-                    "ans": "/contests/ipho/2016/T3_A.pdf",
-                    "pres": "/contests/ipho/2016/T3_P.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "Electrical conductivity",
-                    "problems": "/contests/ipho/2016/E1.pdf",
-                    "solutions": "/contests/ipho/2016/E1_S.pdf",
-                    "ans": "/contests/ipho/2016/E1_A.pdf",
-                    "ms": "/contests/ipho/2016/E1_M.pdf",
-                    "pres": "/contests/ipho/2016/E1_P.pdf",
-                    "calibration": "/contests/ipho/2016/E1_C.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "Jumping beads",
-                    "problems": "/contests/ipho/2016/E2.pdf",
-                    "solutions": "/contests/ipho/2016/E2_S.pdf",
-                    "ans": "/contests/ipho/2016/E2_A.pdf",
-                    "ms": "/contests/ipho/2016/E2_M.pdf",
-                    "pres": "/contests/ipho/2016/E2_P.pdf"
-                }
-            ],
-            "results": "/contests/ipho/2016_R.pdf",
-            "theory instructions": "/contests/ipho/2016_TG0.pdf",
-            "experimental instructions": "/contests/ipho/2016_EG0.pdf",
-            "minutes": "/contests/ipho/2016_min.pdf"
-        },
-        {
-            "year": 2015,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/2015/T1.pdf",
-                    "solutions": "/contests/ipho/2015/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/2015/T2.pdf",
-                    "solutions": "/contests/ipho/2015/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/2015/T3.pdf",
-                    "solutions": "/contests/ipho/2015/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/2015/E1.pdf",
-                    "solutions": "/contests/ipho/2015/E1_S.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/ipho/2015/E2.pdf",
-                    "solutions": "/contests/ipho/2015/E2_S.pdf"
-                }
-            ],
-            "results": "/contests/ipho/2015_R.pdf",
-            "minutes": "/contests/ipho/2015_min.pdf"
-        },
-        {
-            "year": 2014,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/2014/T1.pdf",
-                    "solutions": "/contests/ipho/2014/T1_S.pdf",
-                    "pres": "/contests/ipho/2014/T1_P.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/2014/T2.pdf",
-                    "solutions": "/contests/ipho/2014/T2_S.pdf",
-                    "pres": "/contests/ipho/2014/T2_P.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/2014/T3.pdf",
-                    "solutions": "/contests/ipho/2014/T3_S.pdf",
-                    "pres": "/contests/ipho/2014/T3_P.pdf"
-                }
-            ],
-            "experiment": "/contests/ipho/2014_E.pdf",
-            "experiment sol": "/contests/ipho/2014_E_S.pdf",
-            "minutes": "/contests/ipho/2014_min.pdf"
-        },
-        {
-            "year": 2013,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/2013/T1.pdf",
-                    "solutions": "/contests/ipho/2013/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/2013/T2.pdf",
-                    "solutions": "/contests/ipho/2013/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/2013/T3.pdf",
-                    "solutions": "/contests/ipho/2013/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/2013/E1.pdf",
-                    "solutions": "/contests/ipho/2013/E1_S.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/ipho/2013/E2.pdf",
-                    "solutions": "/contests/ipho/2013/E2_S.pdf"
-                }
-            ],
-            "results": "/contests/ipho/2013_R.pdf",
-            "theory instructions": "/contests/ipho/2013_TG0.pdf",
-            "minutes": "/contests/ipho/2013_min.pdf"
-        },
-        {
-            "year": 2012,
-            "results": "/contests/ipho/2012_R.xlsx",
-            "theory": "/contests/ipho/2012_T.pdf",
-            "theory sol": "/contests/ipho/2012_T_S.pdf",
-            "experiment": "/contests/ipho/2012_E.pdf",
-            "experiment sol": "/contests/ipho/2012_E_S.pdf",
-            "minutes": "/contests/ipho/2012_min.pdf"
-        },
-        {
-            "year": 2011,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/2011/T1.pdf",
-                    "solutions": "/contests/ipho/2011/T1_S.pdf",
-                    "ans": "/contests/ipho/2011/T1_A.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/2011/T2.pdf",
-                    "solutions": "/contests/ipho/2011/T2_S.pdf",
-                    "ans": "/contests/ipho/2011/T2_A.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/2011/T3.pdf",
-                    "solutions": "/contests/ipho/2011/T3_S.pdf",
-                    "ans": "/contests/ipho/2011/T3_A.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/2011/E1.pdf",
-                    "solutions": "/contests/ipho/2011/E1_S.pdf",
-                    "ans": "/contests/ipho/2011/E1_A.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/ipho/2011/E2.pdf",
-                    "solutions": "/contests/ipho/2011/E2_S.pdf",
-                    "ans": "/contests/ipho/2011/E2_A.pdf"
-                }
-            ],
-            "minutes": "/contests/ipho/2011_min.pdf"
-        },
-        {
-            "year": 2010,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/2010/T1.pdf",
-                    "solutions": "/contests/ipho/2010/T1_S.pdf",
-                    "ans": "/contests/ipho/2010/T1_A.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/2010/T2.pdf",
-                    "solutions": "/contests/ipho/2010/T2_S.pdf",
-                    "ans": "/contests/ipho/2010/T2_A.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/2010/T3.pdf",
-                    "solutions": "/contests/ipho/2010/T3_S.pdf",
-                    "ans": "/contests/ipho/2010/T3_A.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/2010/E1.pdf",
-                    "solutions": "/contests/ipho/2010/E1_S.pdf",
-                    "ans": "/contests/ipho/2010/E1_A.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/ipho/2010/E2.pdf",
-                    "solutions": "/contests/ipho/2010/E2_S.pdf",
-                    "ans": "/contests/ipho/2010/E2_A.pdf"
-                }
-            ],
-            "theory instructions": "/contests/ipho/2010_TG0.pdf",
-            "experimental instructions": "/contests/ipho/2010_EG0.pdf",
-            "minutes": "/contests/ipho/2010_min.pdf"
-        },
-        {
-            "year": 2009,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/2009/T1.pdf",
-                    "solutions": "/contests/ipho/2009/T1_S.pdf",
-                    "ans": "/contests/ipho/2009/T1_A.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/2009/T2.pdf",
-                    "solutions": "/contests/ipho/2009/T2_S.pdf",
-                    "ans": "/contests/ipho/2009/T2_A.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/2009/T3.pdf",
-                    "solutions": "/contests/ipho/2009/T3_S.pdf",
-                    "ans": "/contests/ipho/2009/T3_A.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/2009/E1.pdf",
-                    "solutions": "/contests/ipho/2009/E1_S.pdf",
-                    "ans": "/contests/ipho/2009/E1_A.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/ipho/2009/E2.pdf",
-                    "solutions": "/contests/ipho/2009/E2_S.pdf",
-                    "ans": "/contests/ipho/2009/E2_A.pdf"
-                }
-            ],
-            "minutes": "/contests/ipho/2009_min.pdf"
-        },
-        {
-            "year": 2008,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/2008/T1.pdf",
-                    "solutions": "/contests/ipho/2008/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/2008/T2.pdf",
-                    "solutions": "/contests/ipho/2008/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/2008/T3.pdf",
-                    "solutions": "/contests/ipho/2008/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/2008/E1.pdf",
-                    "solutions": "/contests/ipho/2008/E1_S.pdf"
-                }
-            ],
-            "minutes": "/contests/ipho/2008_min.pdf"
-        },
-        {
-            "year": 2007,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/2007/T1.pdf",
-                    "solutions": "/contests/ipho/2007/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/2007/T2.pdf",
-                    "solutions": "/contests/ipho/2007/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/2007/T3.pdf",
-                    "solutions": "/contests/ipho/2007/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/2007/E1.pdf",
-                    "solutions": "/contests/ipho/2007/E1_S.pdf"
-                }
-            ],
-            "experimental instructions": "/contests/ipho/2007_EG0.pdf",
-            "minutes": "/contests/ipho/2007_min.pdf"
-        },
-        {
-            "year": 2006,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/2006/T1.pdf",
-                    "solutions": "/contests/ipho/2006/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/2006/T2.pdf",
-                    "solutions": "/contests/ipho/2006/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/2006/T3.pdf",
-                    "solutions": "/contests/ipho/2006/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/2006/E1.pdf",
-                    "solutions": "/contests/ipho/2006/E1_S.pdf"
-                }
-            ],
-            "minutes": "/contests/ipho/2006_min.pdf"
-        },
-        {
-            "year": 2005,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/2005/T1.pdf",
-                    "solutions": "/contests/ipho/2005/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/2005/T2.pdf",
-                    "solutions": "/contests/ipho/2005/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/2005/T3.pdf",
-                    "solutions": "/contests/ipho/2005/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/2005/E1.pdf",
-                    "solutions": "/contests/ipho/2005/E1_S.pdf"
-                }
-            ],
-            "minutes": "/contests/ipho/2005_min.pdf"
-        },
-        {
-            "year": 2004,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/2004/T1.pdf",
-                    "solutions": "/contests/ipho/2004/T1_S.pdf",
-                    "ans": "/contests/ipho/2004/T1_A.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/2004/T2.pdf",
-                    "solutions": "/contests/ipho/2004/T2_S.pdf",
-                    "ans": "/contests/ipho/2004/T2_A.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/2004/T3.pdf",
-                    "solutions": "/contests/ipho/2004/T3_S.pdf",
-                    "ans": "/contests/ipho/2004/T3_A.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/2004/E1.pdf",
-                    "solutions": "/contests/ipho/2004/E1_S.pdf",
-                    "ans": "/contests/ipho/2004/E1_A.pdf"
-                }
-            ],
-            "minutes": "/contests/ipho/2004_min.pdf"
-        },
-        {
-            "year": 2003,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/2003/T1.pdf",
-                    "solutions": "/contests/ipho/2003/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/2003/T2.pdf",
-                    "solutions": "/contests/ipho/2003/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/2003/T3.pdf",
-                    "solutions": "/contests/ipho/2003/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/2003/E1.pdf",
-                    "solutions": "/contests/ipho/2003/E1_S.pdf"
-                }
-            ],
-            "minutes": "/contests/ipho/2003_min.pdf"
-        },
-        {
-            "year": 2002,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/2002/T1.pdf",
-                    "solutions": "/contests/ipho/2002/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/2002/T2.pdf",
-                    "solutions": "/contests/ipho/2002/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/2002/T3.pdf",
-                    "solutions": "/contests/ipho/2002/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/2002/E1.pdf",
-                    "solutions": "/contests/ipho/2002/E1_S.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/ipho/2002/E2.pdf",
-                    "solutions": "/contests/ipho/2002/E2_S.pdf"
-                }
-            ],
-            "theory instructions": "/contests/ipho/2002_TG0.pdf",
-            "experimental instructions": "/contests/ipho/2002_EG0.pdf",
-            "minutes": "/contests/ipho/2002_min.pdf"
-        },
-        {
-            "year": 2001,
-            "theory": "/contests/ipho/2001_T.pdf",
-            "theory sol": "/contests/ipho/2001_T_S.pdf",
-            "experiment": "/contests/ipho/2001_E.pdf",
-            "experiment sol": "/contests/ipho/2001_E_S.pdf",
-            "minutes": "/contests/ipho/2001_min.pdf"
-        },
-        {
-            "year": 2000,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/2000/T1.htm",
-                    "solutions": "/contests/ipho/2000/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/2000/T2.pdf",
-                    "solutions": "/contests/ipho/2000/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/2000/T3.htm",
-                    "solutions": "/contests/ipho/2000/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/2000/E1.htm"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/ipho/2000/E2.htm"
-                }
-            ],
-            "minutes": "/contests/ipho/2000_min.pdf"
-        },
-        {
-            "year": 1999,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/1999/T1.pdf",
-                    "solutions": "/contests/ipho/1999/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/1999/T2.pdf",
-                    "solutions": "/contests/ipho/1999/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/1999/T3.pdf",
-                    "solutions": "/contests/ipho/1999/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/1999/E1.pdf",
-                    "solutions": "/contests/ipho/1999/E1_S.pdf"
-                }
-            ],
-            "minutes": "/contests/ipho/1999_min.pdf"
-        },
-        {
-            "year": 1998,
-            "theory": "/contests/ipho/1998_T.pdf",
-            "experiment": "/contests/ipho/1998_E.pdf",
-            "minutes": "/contests/ipho/1998_min.pdf"
-        },
-        {
-            "year": 1997,
-            "theory": "/contests/ipho/1997_T.pdf",
-            "theory sol": "/contests/ipho/1997_T_S.pdf",
-            "experiment": "/contests/ipho/1997_E.htm",
-            "experiment sol": "/contests/ipho/1997_E_S.htm"
-        },
-        {
-            "year": 1996,
-            "theory": "/contests/ipho/1996_T.pdf",
-            "experiment": "/contests/ipho/1996_E.pdf"
-        },
-        {
-            "year": 1995,
-            "files": [
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/1995/E1.pdf",
-                    "solutions": "/contests/ipho/1995/E1_S.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/ipho/1995/E2.pdf",
-                    "solutions": "/contests/ipho/1995/E2_S.pdf"
-                }
-            ],
-            "theory": "/contests/ipho/1995_T.pdf",
-            "theory sol": "/contests/ipho/1995_T_S.pdf",
-            "comments": "/contests/ipho/1995_comments.pdf"
-        },
-        {
-            "year": 1994,
-            "problems": "/contests/ipho/1994.pdf"
-        },
-        {
-            "year": 1993,
-            "problems": "/contests/ipho/1993.pdf"
-        },
-        {
-            "year": 1992,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/ipho/1992/T1.pdf",
-                    "solutions": "/contests/ipho/1992/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/ipho/1992/T2.pdf",
-                    "solutions": "/contests/ipho/1992/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/ipho/1992/T3.pdf",
-                    "solutions": "/contests/ipho/1992/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/ipho/1992/E1.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/ipho/1992/E2.pdf"
-                }
-            ]
-        },
-        {
-            "year": 1991,
-            "problems": "/contests/ipho/1991.pdf"
-        },
-        {
-            "year": 1990,
-            "problems": "/contests/ipho/1990.pdf"
-        },
-        {
-            "year": 1989,
-            "problems": "/contests/ipho/1989.pdf"
-        },
-        {
-            "year": 1988,
-            "problems": "/contests/ipho/1988.pdf"
-        },
-        {
-            "year": 1987,
-            "problems": "/contests/ipho/1987.pdf"
-        },
-        {
-            "year": 1986,
-            "theory": "/contests/ipho/1986_T.pdf",
-            "theory sol": "/contests/ipho/1986_T_S.pdf",
-            "experiment": "/contests/ipho/1986_E.pdf",
-            "experiment sol": "/contests/ipho/1986_E_S.pdf"
-        },
-        {
-            "year": 1985,
-            "problems": "/contests/ipho/1985.pdf"
-        },
-        {
-            "year": 1984,
-            "problems": "/contests/ipho/1984.pdf"
-        },
-        {
-            "year": 1983,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "solutions": "/contests/ipho/1983/T1_S.pdf",
-                    "ms": "/contests/ipho/1983/T1_M.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "solutions": "/contests/ipho/1983/T2_S.pdf",
-                    "ms": "/contests/ipho/1983/T2_M.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "solutions": "/contests/ipho/1983/T3_S.pdf",
-                    "ms": "/contests/ipho/1983/T3_M.pdf"
-                },
-                {
-                    "number": "T4",
-                    "title": "",
-                    "solutions": "/contests/ipho/1983/T4_S.pdf",
-                    "ms": "/contests/ipho/1983/T4_M.pdf"
-                },
-                {
-                    "number": "T5",
-                    "title": "",
-                    "solutions": "/contests/ipho/1983/T5_S.pdf"
-                }
-            ],
-            "problems": "/contests/ipho/1983.pdf"
-        },
-        {
-            "year": 1982,
-            "problems": "/contests/ipho/1982.pdf"
-        },
-        {
-            "year": 1981,
-            "theory": "/contests/ipho/1981_T.pdf",
-            "experiment": "/contests/ipho/1981_E.pdf"
-        },
-        {
-            "year": 1979,
-            "problems": "/contests/ipho/1979.pdf"
-        },
-        {
-            "year": 1977,
-            "problems": "/contests/ipho/1977.pdf"
-        },
-        {
-            "year": 1976,
-            "problems": "/contests/ipho/1976.pdf"
-        },
-        {
-            "year": 1975,
-            "problems": "/contests/ipho/1975.pdf"
-        },
-        {
-            "year": 1974,
-            "problems": "/contests/ipho/1974.pdf"
-        },
-        {
-            "year": 1972,
-            "problems": "/contests/ipho/1972.pdf"
-        },
-        {
-            "year": 1971,
-            "problems": "/contests/ipho/1971.pdf",
-            "solutions": "/contests/ipho/1971_S.pdf"
-        },
-        {
-            "year": 1970,
-            "problems": "/contests/ipho/1970.pdf"
-        },
-        {
-            "year": 1969,
-            "problems": "/contests/ipho/1969.pdf"
-        },
-        {
-            "year": 1968,
-            "problems": "/contests/ipho/1968.pdf"
-        },
-        {
-            "year": 1967,
-            "problems": "/contests/ipho/1967.pdf"
-        }
-    ],
-    "apho": [
-        {
-            "year": 2025,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "solutions": "/contests/apho/2025/T1_S.pdf",
-                    "ans": "/contests/apho/2025/T1_A.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "solutions": "/contests/apho/2025/T2_S.pdf",
-                    "ans": "/contests/apho/2025/T2_A.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "solutions": "/contests/apho/2025/T3_S.pdf",
-                    "ans": "/contests/apho/2025/T3_A.pdf",
-                    "sol_hand": "/contests/apho/2025/T3_S_H.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2025/E1.pdf",
-                    "solutions": "/contests/apho/2025/E1_S.pdf",
-                    "ans": "/contests/apho/2025/E1_A.pdf"
-                }
-            ],
-            "results": "/contests/apho/2025_R.pdf",
-            "theory": "/contests/apho/2025_T.pdf"
-        },
-        {
-            "year": 2024,
-            "theory": "/contests/apho/2024_T.pdf",
-            "theory sol": "/contests/apho/2024_T_S.pdf",
-            "experiment": "/contests/apho/2024_E.pdf",
-            "experiment sol": "/contests/apho/2024_E_S.pdf"
-        },
-        {
-            "year": 2023,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2023/T1.pdf",
-                    "solutions": "/contests/apho/2023/T1_S.pdf",
-                    "ms": "/contests/apho/2023/T1_M.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2023/T2.pdf",
-                    "solutions": "/contests/apho/2023/T2_S.pdf",
-                    "ms": "/contests/apho/2023/T2_M.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2023/T3.pdf",
-                    "solutions": "/contests/apho/2023/T3_S.pdf",
-                    "ms": "/contests/apho/2023/T3_M.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2023/E1.pdf",
-                    "solutions": "/contests/apho/2023/E1_S.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/apho/2023/E2.pdf",
-                    "solutions": "/contests/apho/2023/E2_S.pdf"
-                }
-            ],
-            "experimental instructions": "/contests/apho/2023_EG0.pdf"
-        },
-        {
-            "year": 2022,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2022/T1.pdf",
-                    "solutions": "/contests/apho/2022/T1_S.pdf",
-                    "ans": "/contests/apho/2022/T1_A.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2022/T2.pdf",
-                    "solutions": "/contests/apho/2022/T2_S.pdf",
-                    "ans": "/contests/apho/2022/T2_A.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2022/T3.pdf",
-                    "solutions": "/contests/apho/2022/T3_S.pdf",
-                    "ans": "/contests/apho/2022/T3_A.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2022/E1.pdf",
-                    "solutions": "/contests/apho/2022/E1_S.pdf",
-                    "ans": "/contests/apho/2022/E1_A.pdf",
-                    "ms": "/contests/apho/2022/E1_M.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/apho/2022/E2.pdf",
-                    "solutions": "/contests/apho/2022/E2_S.pdf",
-                    "ans": "/contests/apho/2022/E2_A.pdf",
-                    "ms": "/contests/apho/2022/E2_M.pdf"
-                }
-            ],
-            "results": "/contests/apho/2022_R.pdf",
-            "theory instructions": "/contests/apho/2022_TG0.pdf",
-            "experimental instructions": "/contests/apho/2022_EG0.pdf",
-            "experimental presentation": "/contests/apho/2022_E_P.pdf"
-        },
-        {
-            "year": 2021,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2021/T1.pdf",
-                    "solutions": "/contests/apho/2021/T1_S.pdf",
-                    "ans": "/contests/apho/2021/T1_A.pdf",
-                    "ms": "/contests/apho/2021/T1_M.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2021/T2.pdf",
-                    "solutions": "/contests/apho/2021/T2_S.pdf",
-                    "ans": "/contests/apho/2021/T2_A.pdf",
-                    "ms": "/contests/apho/2021/T2_M.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2021/T3.pdf",
-                    "solutions": "/contests/apho/2021/T3_S.pdf",
-                    "ans": "/contests/apho/2021/T3_A.pdf",
-                    "ms": "/contests/apho/2021/T3_M.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2021/E1.pdf",
-                    "solutions": "/contests/apho/2021/E1_S.pdf",
-                    "ans": "/contests/apho/2021/E1_A.pdf",
-                    "ms": "/contests/apho/2021/E1_M.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/apho/2021/E2.pdf",
-                    "solutions": "/contests/apho/2021/E2_S.pdf",
-                    "ans": "/contests/apho/2021/E2_A.pdf",
-                    "ms": "/contests/apho/2021/E2_M.pdf"
-                }
-            ],
-            "experimental instructions": "/contests/apho/2021_EG0.pdf",
-            "simulation files": "/contests/apho/2021_E_F.zip"
-        },
-        {
-            "year": 2019,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2019/T1.pdf",
-                    "solutions": "/contests/apho/2019/T1_S.pdf",
-                    "ans": "/contests/apho/2019/T1_A.pdf",
-                    "ms": "/contests/apho/2019/T1_M.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2019/T2.pdf",
-                    "solutions": "/contests/apho/2019/T2_S.pdf",
-                    "ans": "/contests/apho/2019/T2_A.pdf",
-                    "ms": "/contests/apho/2019/T2_M.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2019/T3.pdf",
-                    "solutions": "/contests/apho/2019/T3_S.pdf",
-                    "ans": "/contests/apho/2019/T3_A.pdf",
-                    "ms": "/contests/apho/2019/T3_M.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2019/E1.pdf",
-                    "solutions": "/contests/apho/2019/E1_S.pdf",
-                    "ans": "/contests/apho/2019/E1_A.pdf",
-                    "ms": "/contests/apho/2019/E1_M.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/apho/2019/E2.pdf",
-                    "solutions": "/contests/apho/2019/E2_S.pdf",
-                    "ans": "/contests/apho/2019/E2_A.pdf",
-                    "ms": "/contests/apho/2019/E2_M.pdf"
-                }
-            ],
-            "results": "/contests/apho/2019_R.pdf",
-            "theory instructions": "/contests/apho/2019_TG0.pdf",
-            "experimental instructions": "/contests/apho/2019_EG0.pdf",
-            "proceedings": "/contests/apho/2019_proc.pdf"
-        },
-        {
-            "year": 2018,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2018/T1.pdf",
-                    "solutions": "/contests/apho/2018/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2018/T2.pdf",
-                    "solutions": "/contests/apho/2018/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2018/T3.pdf",
-                    "solutions": "/contests/apho/2018/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2018/E1.pdf",
-                    "solutions": "/contests/apho/2018/E1_S.pdf",
-                    "ans": "/contests/apho/2018/E1_A.pdf"
-                }
-            ]
-        },
-        {
-            "year": 2017,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2017/T1.pdf",
-                    "solutions": "/contests/apho/2017/T1_S.pdf",
-                    "ans": "/contests/apho/2017/T1_A.pdf",
-                    "ms": "/contests/apho/2017/T1_M.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2017/T2.pdf",
-                    "solutions": "/contests/apho/2017/T2_S.pdf",
-                    "ans": "/contests/apho/2017/T2_A.pdf",
-                    "ms": "/contests/apho/2017/T2_M.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2017/T3.pdf",
-                    "solutions": "/contests/apho/2017/T3_S.pdf",
-                    "ans": "/contests/apho/2017/T3_A.pdf",
-                    "ms": "/contests/apho/2017/T3_M.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2017/E1.pdf",
-                    "solutions": "/contests/apho/2017/E1_S.pdf",
-                    "ans": "/contests/apho/2017/E1_A.pdf",
-                    "ms": "/contests/apho/2017/E1_M.pdf"
-                }
-            ],
-            "minutes": "/contests/apho/2017_min.pdf"
-        },
-        {
-            "year": 2016,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2016/T1.pdf",
-                    "solutions": "/contests/apho/2016/T1_S.pdf",
-                    "ans": "/contests/apho/2016/T1_A.pdf",
-                    "pres": "/contests/apho/2016/T1_P.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2016/T2.pdf",
-                    "solutions": "/contests/apho/2016/T2_S.pdf",
-                    "ans": "/contests/apho/2016/T2_A.pdf",
-                    "pres": "/contests/apho/2016/T2_P.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2016/T3.pdf",
-                    "solutions": "/contests/apho/2016/T3_S.pdf",
-                    "ans": "/contests/apho/2016/T3_A.pdf",
-                    "pres": "/contests/apho/2016/T3_P.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2016/E1.pdf",
-                    "solutions": "/contests/apho/2016/E1_S.pdf",
-                    "ans": "/contests/apho/2016/E1_A.pdf",
-                    "pres": "/contests/apho/2016/E1_P.pdf",
-                    "alignment chart": "/contests/apho/2016/E1_chart.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/apho/2016/E2.pdf",
-                    "solutions": "/contests/apho/2016/E2_S.pdf",
-                    "ans": "/contests/apho/2016/E2_A.pdf",
-                    "pres": "/contests/apho/2016/E2_P.pdf"
-                }
-            ],
-            "theory instructions": "/contests/apho/2016_TG0.pdf",
-            "minutes": "/contests/apho/2016_min.pdf"
-        },
-        {
-            "year": 2015,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2015/T1.pdf",
-                    "solutions": "/contests/apho/2015/T1_S.pdf",
-                    "ans": "/contests/apho/2015/T1_A.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2015/T2.pdf",
-                    "solutions": "/contests/apho/2015/T2_S.pdf",
-                    "ans": "/contests/apho/2015/T2_A.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2015/T3.pdf",
-                    "solutions": "/contests/apho/2015/T3_S.pdf",
-                    "ans": "/contests/apho/2015/T3_A.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2015/E1.pdf",
-                    "solutions": "/contests/apho/2015/E1_S.pdf",
-                    "ans": "/contests/apho/2015/E1_A.pdf"
-                }
-            ],
-            "minutes": "/contests/apho/2015_min.pdf"
-        },
-        {
-            "year": 2014,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2014/T1.pdf",
-                    "solutions": "/contests/apho/2014/T1_S.pdf",
-                    "ans": "/contests/apho/2014/T1_A.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2014/T2.pdf",
-                    "solutions": "/contests/apho/2014/T2_S.pdf",
-                    "ans": "/contests/apho/2014/T2_A.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2014/T3.pdf",
-                    "solutions": "/contests/apho/2014/T3_S.pdf",
-                    "ans": "/contests/apho/2014/T3_A.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2014/E1.pdf",
-                    "solutions": "/contests/apho/2014/E1_S.pdf",
-                    "ans": "/contests/apho/2014/E1_A.pdf"
-                }
-            ],
-            "minutes": "/contests/apho/2014_min.pdf"
-        },
-        {
-            "year": 2013,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2013/T1.pdf",
-                    "solutions": "/contests/apho/2013/T1_S.pdf",
-                    "ans": "/contests/apho/2013/T1_A.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2013/T2.pdf",
-                    "solutions": "/contests/apho/2013/T2_S.pdf",
-                    "ans": "/contests/apho/2013/T2_A.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2013/T3.pdf",
-                    "solutions": "/contests/apho/2013/T3_S.pdf",
-                    "ans": "/contests/apho/2013/T3_A.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2013/E1.pdf",
-                    "solutions": "/contests/apho/2013/E1_S.pdf"
-                }
-            ],
-            "minutes": "/contests/apho/2013_min.pdf"
-        },
-        {
-            "year": 2012,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2012/T1.pdf",
-                    "solutions": "/contests/apho/2012/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2012/T2.pdf",
-                    "solutions": "/contests/apho/2012/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2012/T3.pdf",
-                    "solutions": "/contests/apho/2012/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2012/E1.pdf",
-                    "solutions": "/contests/apho/2012/E1_S.pdf",
-                    "ms": "/contests/apho/2012/E1_M.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/apho/2012/E2.pdf",
-                    "solutions": "/contests/apho/2012/E2_S.pdf",
-                    "ans": "/contests/apho/2012/E2_A.pdf",
-                    "ms": "/contests/apho/2012/E2_M.pdf"
-                }
-            ],
-            "minutes": "/contests/apho/2012_min.pdf"
-        },
-        {
-            "year": 2011,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2011/T1.pdf",
-                    "solutions": "/contests/apho/2011/T1_S.pdf",
-                    "ans": "/contests/apho/2011/T1_A.pdf",
-                    "ms": "/contests/apho/2011/T1_M.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2011/T2.pdf",
-                    "solutions": "/contests/apho/2011/T2_S.pdf",
-                    "ans": "/contests/apho/2011/T2_A.pdf",
-                    "ms": "/contests/apho/2011/T2_M.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2011/T3.pdf",
-                    "solutions": "/contests/apho/2011/T3_S.pdf",
-                    "ans": "/contests/apho/2011/T3_A.pdf",
-                    "ms": "/contests/apho/2011/T3_M.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2011/E1.pdf",
-                    "solutions": "/contests/apho/2011/E1_S.pdf",
-                    "ans": "/contests/apho/2011/E1_A.pdf",
-                    "ms": "/contests/apho/2011/E1_M.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/apho/2011/E2.pdf",
-                    "solutions": "/contests/apho/2011/E2_S.pdf",
-                    "ans": "/contests/apho/2011/E2_A.pdf",
-                    "ms": "/contests/apho/2011/E2_M.pdf"
-                }
-            ],
-            "minutes": "/contests/apho/2011_min.pdf"
-        },
-        {
-            "year": 2010,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2010/T1.pdf",
-                    "solutions": "/contests/apho/2010/T1_S.pdf",
-                    "ans": "/contests/apho/2010/T1_A.pdf",
-                    "ms": "/contests/apho/2010/T1_M.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2010/T2.pdf",
-                    "solutions": "/contests/apho/2010/T2_S.pdf",
-                    "ans": "/contests/apho/2010/T2_A.pdf",
-                    "ms": "/contests/apho/2010/T2_M.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2010/T3.pdf",
-                    "solutions": "/contests/apho/2010/T3_S.pdf",
-                    "ans": "/contests/apho/2010/T3_A.pdf",
-                    "ms": "/contests/apho/2010/T3_M.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2010/E1.pdf",
-                    "solutions": "/contests/apho/2010/E1_S.pdf",
-                    "ans": "/contests/apho/2010/E1_A.pdf",
-                    "ms": "/contests/apho/2010/E1_M.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/apho/2010/E2.pdf",
-                    "solutions": "/contests/apho/2010/E2_S.pdf",
-                    "ans": "/contests/apho/2010/E2_A.pdf",
-                    "ms": "/contests/apho/2010/E2_M.pdf"
-                }
-            ],
-            "minutes": "/contests/apho/2010_min.pdf"
-        },
-        {
-            "year": 2009,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "solutions": "/contests/apho/2009/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "solutions": "/contests/apho/2009/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "solutions": "/contests/apho/2009/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "solutions": "/contests/apho/2009/E1_S.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "solutions": "/contests/apho/2009/E2_S.pdf"
-                }
-            ],
-            "theory": "/contests/apho/2009_T.pdf",
-            "experiment": "/contests/apho/2009_E.pdf",
-            "experiment ms": "/contests/apho/2009_E_M.pdf"
-        },
-        {
-            "year": 2008,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2008/T1.pdf",
-                    "solutions": "/contests/apho/2008/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2008/T2.pdf",
-                    "solutions": "/contests/apho/2008/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2008/T3.pdf",
-                    "solutions": "/contests/apho/2008/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2008/E1.pdf"
-                }
-            ],
-            "minutes": "/contests/apho/2008_min.pdf"
-        },
-        {
-            "year": 2007,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2007/T1.pdf",
-                    "solutions": "/contests/apho/2007/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2007/T2.pdf",
-                    "solutions": "/contests/apho/2007/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2007/T3.pdf",
-                    "solutions": "/contests/apho/2007/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2007/E1.pdf",
-                    "solutions": "/contests/apho/2007/E1_S.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/apho/2007/E2.pdf",
-                    "solutions": "/contests/apho/2007/E2_S.pdf"
-                }
-            ],
-            "minutes": "/contests/apho/2007_min.pdf"
-        },
-        {
-            "year": 2006,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2006/T1.pdf",
-                    "solutions": "/contests/apho/2006/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2006/T2.pdf",
-                    "solutions": "/contests/apho/2006/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2006/T3.pdf",
-                    "solutions": "/contests/apho/2006/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2006/E1.pdf",
-                    "solutions": "/contests/apho/2006/E1_S.pdf"
-                }
-            ],
-            "minutes": "/contests/apho/2006_min.pdf"
-        },
-        {
-            "year": 2005,
-            "theory": "/contests/apho/2005_T.pdf",
-            "theory sol": "/contests/apho/2005_T_S.pdf",
-            "experiment": "/contests/apho/2005_E.pdf",
-            "experiment sol": "/contests/apho/2005_E_S.pdf",
-            "minutes": "/contests/apho/2005_min.pdf"
-        },
-        {
-            "year": 2004,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2004/T1.pdf",
-                    "solutions": "/contests/apho/2004/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2004/T2.pdf",
-                    "solutions": "/contests/apho/2004/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2004/T3.pdf",
-                    "solutions": "/contests/apho/2004/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2004/E1.pdf",
-                    "solutions": "/contests/apho/2004/E1_S.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/apho/2004/E2.pdf",
-                    "solutions": "/contests/apho/2004/E2_S.pdf"
-                }
-            ],
-            "minutes": "/contests/apho/2004_min.pdf"
-        },
-        {
-            "year": 2003,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2003/T1.pdf",
-                    "solutions": "/contests/apho/2003/T1_S.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2003/T2.pdf",
-                    "solutions": "/contests/apho/2003/T2_S.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2003/T3.pdf",
-                    "solutions": "/contests/apho/2003/T3_S.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2003/E1.pdf",
-                    "solutions": "/contests/apho/2003/E1_S.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/apho/2003/E2.pdf",
-                    "solutions": "/contests/apho/2003/E2_S.pdf"
-                }
-            ],
-            "minutes": "/contests/apho/2003_min.pdf"
-        },
-        {
-            "year": 2002,
-            "files": [
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2002/E1.pdf",
-                    "ans": "/contests/apho/2002/E1_A.pdf"
-                },
-                {
-                    "number": "E2",
-                    "title": "",
-                    "problems": "/contests/apho/2002/E2.pdf",
-                    "solutions": "/contests/apho/2002/E2_S.pdf"
-                }
-            ],
-            "theory": "/contests/apho/2002_T.pdf",
-            "theory sol": "/contests/apho/2002_T_S.pdf",
-            "minutes": "/contests/apho/2002_min.pdf"
-        },
-        {
-            "year": 2001,
-            "files": [
-                {
-                    "number": "T1",
-                    "title": "",
-                    "problems": "/contests/apho/2001/T1.pdf",
-                    "solutions": "/contests/apho/2001/T1_S.pdf",
-                    "ans": "/contests/apho/2001/T1_A.pdf",
-                    "ms": "/contests/apho/2001/T1_M.pdf"
-                },
-                {
-                    "number": "T2",
-                    "title": "",
-                    "problems": "/contests/apho/2001/T2.pdf",
-                    "solutions": "/contests/apho/2001/T2_S.pdf",
-                    "ans": "/contests/apho/2001/T2_A.pdf",
-                    "ms": "/contests/apho/2001/T2_M.pdf"
-                },
-                {
-                    "number": "T3",
-                    "title": "",
-                    "problems": "/contests/apho/2001/T3.pdf",
-                    "solutions": "/contests/apho/2001/T3_S.pdf",
-                    "ans": "/contests/apho/2001/T3_A.pdf",
-                    "ms": "/contests/apho/2001/T3_M.pdf"
-                },
-                {
-                    "number": "E1",
-                    "title": "",
-                    "problems": "/contests/apho/2001/E1.pdf",
-                    "solutions": "/contests/apho/2001/E1_S.pdf",
-                    "ms": "/contests/apho/2001/E1_M.pdf"
-                }
-            ],
-            "minutes": "/contests/apho/2001_min.pdf"
-        },
-        {
-            "year": 2000,
-            "theory": "/contests/apho/2000_T.pdf",
-            "theory sol": "/contests/apho/2000_T_S.pdf",
-            "experiment": "/contests/apho/2000_E.pdf",
-            "experiment sol": "/contests/apho/2000_E_S.pdf",
-            "minutes": "/contests/apho/2000_min.pdf"
-        }
-    ],
-    "usapho": [
-        {
-            "year": 2025,
-            "problems": "/contests/usapho/2025.pdf",
-            "solutions": "/contests/usapho/2025_S.pdf"
-        },
-        {
-            "year": 2024,
-            "problems": "/contests/usapho/2024.pdf",
-            "solutions": "/contests/usapho/2024_S.pdf"
-        },
-        {
-            "year": 2023,
-            "problems": "/contests/usapho/2023.pdf",
-            "solutions": "/contests/usapho/2023_S.pdf"
-        },
-        {
-            "year": 2022,
-            "problems": "/contests/usapho/2022.pdf",
-            "solutions": "/contests/usapho/2022_S.pdf"
-        },
-        {
-            "year": 2021,
-            "problems": "/contests/usapho/2021.pdf",
-            "solutions": "/contests/usapho/2021_S.pdf"
-        },
-        {
-            "year": 2020,
-            "problems": "/contests/usapho/2020.pdf",
-            "solutions": "/contests/usapho/2020_S.pdf"
-        },
-        {
-            "year": 2019,
-            "problems": "/contests/usapho/2019.pdf",
-            "solutions": "/contests/usapho/2019_S.pdf"
-        },
-        {
-            "year": 2018,
-            "problems": "/contests/usapho/2018.pdf",
-            "solutions": "/contests/usapho/2018_S.pdf"
-        },
-        {
-            "year": 2017,
-            "problems": "/contests/usapho/2017.pdf",
-            "solutions": "/contests/usapho/2017_S.pdf"
-        },
-        {
-            "year": 2016,
-            "problems": "/contests/usapho/2016.pdf",
-            "solutions": "/contests/usapho/2016_S.pdf"
-        },
-        {
-            "year": 2015,
-            "problems": "/contests/usapho/2015.pdf",
-            "solutions": "/contests/usapho/2015_S.pdf"
-        },
-        {
-            "year": 2014,
-            "problems": "/contests/usapho/2014.pdf",
-            "solutions": "/contests/usapho/2014_S.pdf"
-        },
-        {
-            "year": 2013,
-            "problems": "/contests/usapho/2013.pdf",
-            "solutions": "/contests/usapho/2013_S.pdf"
-        },
-        {
-            "year": 2012,
-            "problems": "/contests/usapho/2012.pdf",
-            "solutions": "/contests/usapho/2012_S.pdf"
-        },
-        {
-            "year": 2011,
-            "problems": "/contests/usapho/2011.pdf",
-            "solutions": "/contests/usapho/2011_S.pdf"
-        },
-        {
-            "year": 2010,
-            "problems": "/contests/usapho/2010.pdf",
-            "solutions": "/contests/usapho/2010_S.pdf"
-        },
-        {
-            "year": 2009,
-            "problems": "/contests/usapho/2009.pdf",
-            "solutions": "/contests/usapho/2009_S.pdf"
-        },
-        {
-            "year": 2008,
-            "problems": "/contests/usapho/2008.pdf",
-            "solutions": "/contests/usapho/2008_S.pdf"
-        },
-        {
-            "year": 2007,
-            "problems": "/contests/usapho/2007.pdf",
-            "solutions": "/contests/usapho/2007_S.pdf"
-        },
-        {
-            "year": 2006,
-            "problems": "/contests/usapho/2006.pdf",
-            "solutions": "/contests/usapho/2006_S.pdf"
-        },
-        {
-            "year": 2005,
-            "problems": "/contests/usapho/2005.pdf",
-            "solutions": "/contests/usapho/2005_S.pdf"
-        },
-        {
-            "year": 2004,
-            "problems": "/contests/usapho/2004.pdf",
-            "solutions": "/contests/usapho/2004_S.pdf"
-        },
-        {
-            "year": 2003,
-            "problems": "/contests/usapho/2003.pdf",
-            "solutions": "/contests/usapho/2003_S.pdf"
-        },
-        {
-            "year": 2002,
-            "problems": "/contests/usapho/2002.pdf",
-            "solutions": "/contests/usapho/2002_S.pdf"
-        },
-        {
-            "year": 2001,
-            "problems": "/contests/usapho/2001.pdf",
-            "solutions": "/contests/usapho/2001_S.pdf"
-        },
-        {
-            "year": 2000,
-            "problems": "/contests/usapho/2000.pdf",
-            "solutions": "/contests/usapho/2000_S.pdf"
-        },
-        {
-            "year": 1999,
-            "problems": "/contests/usapho/1999.pdf",
-            "solutions": "/contests/usapho/1999_S.pdf"
-        },
-        {
-            "year": 1998,
-            "problems": "/contests/usapho/1998.pdf",
-            "solutions": "/contests/usapho/1998_S.pdf"
-        },
-        {
-            "year": 1997,
-            "problems": "/contests/usapho/1997.pdf",
-            "solutions": "/contests/usapho/1997_S.pdf"
-        }
-    ],
-    "usatst": [
-        {
-            "year": 2022,
-            "theory": "/contests/usatst/2022_T.pdf",
-            "theory sol": "/contests/usatst/2022_T_S.pdf",
-            "experiment": "/contests/usatst/2022_E.pdf",
-            "experiment sol": "/contests/usatst/2022_E_S.pdf"
-        },
-        {
-            "year": 2021,
-            "theory": "/contests/usatst/2021_T.pdf",
-            "theory sol": "/contests/usatst/2021_T_S.pdf"
-        }
-    ],
-    "eotvos": [
-        {
-            "year": 2025,
-            "problems": "/contests/eotvos/2025.pdf"
-        },
-        {
-            "year": 2024,
-            "problems": "/contests/eotvos/2024.pdf",
-            "solutions": "/contests/eotvos/2024_S.pdf"
-        },
-        {
-            "year": 2023,
-            "problems": "/contests/eotvos/2023.pdf",
-            "solutions": "/contests/eotvos/2023_S.pdf"
-        },
-        {
-            "year": 2022,
-            "problems": "/contests/eotvos/2022.pdf",
-            "solutions": "/contests/eotvos/2022_S.pdf"
-        },
-        {
-            "year": 2021,
-            "problems": "/contests/eotvos/2021.pdf",
-            "solutions": "/contests/eotvos/2021_S.pdf"
-        },
-        {
-            "year": 2020,
-            "problems": "/contests/eotvos/2020.pdf",
-            "solutions": "/contests/eotvos/2020_S.pdf"
-        },
-        {
-            "year": 2019,
-            "problems": "/contests/eotvos/2019.pdf",
-            "en": "/contests/eotvos/2019_EN.pdf",
-            "solutions": "/contests/eotvos/2019_S.pdf"
-        },
-        {
-            "year": 2018,
-            "problems": "/contests/eotvos/2018.pdf",
-            "en": "/contests/eotvos/2018_EN.pdf",
-            "solutions": "/contests/eotvos/2018_S.pdf"
-        },
-        {
-            "year": 2017,
-            "problems": "/contests/eotvos/2017.pdf",
-            "solutions": "/contests/eotvos/2017_S.pdf"
-        },
-        {
-            "year": 2016,
-            "problems": "/contests/eotvos/2016.pdf",
-            "solutions": "/contests/eotvos/2016_S.pdf"
-        },
-        {
-            "year": 2015,
-            "problems": "/contests/eotvos/2015.pdf",
-            "solutions": "/contests/eotvos/2015_S.pdf"
-        },
-        {
-            "year": 2014,
-            "problems": "/contests/eotvos/2014.pdf",
-            "solutions": "/contests/eotvos/2014_S.pdf"
-        },
-        {
-            "year": 2013,
-            "problems": "/contests/eotvos/2013.pdf",
-            "solutions": "/contests/eotvos/2013_S.pdf"
-        },
-        {
-            "year": 2012,
-            "solutions": "/contests/eotvos/2012_S.pdf"
-        },
-        {
-            "year": 2011,
-            "solutions": "/contests/eotvos/2011_S.pdf"
-        },
-        {
-            "year": 2010,
-            "solutions": "/contests/eotvos/2010_S.pdf"
-        },
-        {
-            "year": 2009,
-            "solutions": "/contests/eotvos/2009_S.pdf"
-        },
-        {
-            "year": 2008,
-            "solutions": "/contests/eotvos/2008_S.pdf"
-        },
-        {
-            "year": 2007,
-            "solutions": "/contests/eotvos/2007_S.pdf"
-        },
-        {
-            "year": 2006,
-            "solutions": "/contests/eotvos/2006_S.pdf"
-        },
-        {
-            "year": 2005,
-            "solutions": "/contests/eotvos/2005_S.pdf"
-        },
-        {
-            "year": 2004,
-            "en": "/contests/eotvos/2004_EN.pdf",
-            "solutions": "/contests/eotvos/2004_S.pdf"
-        },
-        {
-            "year": 2003,
-            "solutions": "/contests/eotvos/2003_S.pdf"
-        },
-        {
-            "year": 2002,
-            "solutions": "/contests/eotvos/2002_S.pdf"
-        },
-        {
-            "year": 2001,
-            "solutions": "/contests/eotvos/2001_S.pdf"
-        },
-        {
-            "year": 2000,
-            "en": "/contests/eotvos/2000_EN.pdf",
-            "solutions": "/contests/eotvos/2000_S.pdf"
-        },
-        {
-            "year": 1999,
-            "en": "/contests/eotvos/1999_EN.pdf",
-            "solutions": "/contests/eotvos/1999_S.pdf"
-        },
-        {
-            "year": 1998,
-            "en": "/contests/eotvos/1998_EN.pdf",
-            "solutions": "/contests/eotvos/1998_S.pdf"
-        },
-        {
-            "year": 1997,
-            "solutions": "/contests/eotvos/1997_S.pdf"
-        },
-        {
-            "year": 1996,
-            "en": "/contests/eotvos/1996_EN.pdf",
-            "solutions": "/contests/eotvos/1996_S.pdf"
-        },
-        {
-            "year": 1995,
-            "solutions": "/contests/eotvos/1995_S.pdf"
-        },
-        {
-            "year": 1994,
-            "solutions": "/contests/eotvos/1994_S.pdf"
-        }
-    ],
-    "pcup": [],
-    "spot": [
-        {
-            "year": 2025,
-            "problems": "/contests/spot/2025.pdf",
-            "solutions": "/contests/spot/2025_S.pdf"
-        },
-        {
-            "year": 2024,
-            "problems": "/contests/spot/2024.pdf",
-            "solutions": "/contests/spot/2024_S.pdf"
-        },
-        {
-            "year": 2023,
-            "problems": "/contests/spot/2023.pdf",
-            "solutions": "/contests/spot/2023_S.pdf",
-            "report": "/contests/spot/2023_REP.pdf"
-        },
-        {
-            "year": 2022,
-            "problems": "/contests/spot/2022.pdf",
-            "solutions": "/contests/spot/2022_S.pdf"
-        },
-        {
-            "year": 2020,
-            "problems": "/contests/spot/2020.pdf"
-        },
-        {
-            "year": 2019,
-            "problems": "/contests/spot/2019.pdf",
-            "solutions": "/contests/spot/2019_S.pdf"
-        },
-        {
-            "year": 2018,
-            "problems": "/contests/spot/2018.pdf",
-            "solutions": "/contests/spot/2018_S.pdf"
-        },
-        {
-            "year": 2017,
-            "problems": "/contests/spot/2017.pdf",
-            "solutions": "/contests/spot/2017_S.pdf"
-        }
-    ],
-    "cpho-f": [
-        {
-            "year": 2023,
-            "problems": "/contests/cpho-f/2023.pdf"
-        },
-        {
-            "year": 2022,
-            "problems": "/contests/cpho-f/2022.pdf",
-            "en": "/contests/cpho-f/2022_EN.pdf"
-        },
-        {
-            "year": 2021,
-            "problems": "/contests/cpho-f/2021.pdf"
-        },
-        {
-            "year": 2020,
-            "problems": "/contests/cpho-f/2020.pdf",
-            "solutions": "/contests/cpho-f/2020_S.pdf"
-        },
-        {
-            "year": 2019,
-            "problems": "/contests/cpho-f/2019.doc",
-            "en": "/contests/cpho-f/2019_EN.pdf"
-        },
-        {
-            "year": 2018,
-            "problems": "/contests/cpho-f/2018.pdf",
-            "en": "/contests/cpho-f/2018_EN.pdf"
-        },
-        {
-            "year": 2017,
-            "problems": "/contests/cpho-f/2017.doc",
-            "en": "/contests/cpho-f/2017_EN.pdf",
-            "solutions": "/contests/cpho-f/2017_S.doc"
-        },
-        {
-            "year": 2016,
-            "problems": "/contests/cpho-f/2016.doc"
-        },
-        {
-            "year": 2015,
-            "problems": "/contests/cpho-f/2015.doc"
-        },
-        {
-            "year": 2014,
-            "problems": "/contests/cpho-f/2014.doc"
-        },
-        {
-            "year": 2013,
-            "problems": "/contests/cpho-f/2013.docx"
-        },
-        {
-            "year": 2012,
-            "problems": "/contests/cpho-f/2012.docx"
-        },
-        {
-            "year": 2011,
-            "problems": "/contests/cpho-f/2011.docx",
-            "solutions": "/contests/cpho-f/2011_S.doc"
-        },
-        {
-            "year": 2010,
-            "problems": "/contests/cpho-f/2010.pdf"
-        },
-        {
-            "year": 2009,
-            "problems": "/contests/cpho-f/2009.doc"
-        },
-        {
-            "year": 2008,
-            "problems": "/contests/cpho-f/2008.pdf"
-        },
-        {
-            "year": 2007,
-            "problems": "/contests/cpho-f/2007.pdf"
-        },
-        {
-            "year": 2006,
-            "problems": "/contests/cpho-f/2006.pdf"
-        },
-        {
-            "year": 2005,
-            "problems": "/contests/cpho-f/2005.docx",
-            "en": "/contests/cpho-f/2005_EN.pdf"
-        },
-        {
-            "year": 2004,
-            "problems": "/contests/cpho-f/2004.docx"
-        },
-        {
-            "year": 2003,
-            "problems": "/contests/cpho-f/2003.docx"
-        }
-    ],
-    "inpho": [
-        {
-            "year": 2025,
-            "problems": "/contests/inpho/2025.pdf",
-            "solutions": "/contests/inpho/2025_S.pdf"
-        },
-        {
-            "year": 2024,
-            "problems": "/contests/inpho/2024.pdf",
-            "solutions": "/contests/inpho/2024_S.pdf"
-        },
-        {
-            "year": 2023,
-            "problems": "/contests/inpho/2023.pdf",
-            "solutions": "/contests/inpho/2023_S.pdf"
-        },
-        {
-            "year": 2022,
-            "problems": "/contests/inpho/2022.pdf",
-            "solutions": "/contests/inpho/2022_S.pdf"
-        },
-        {
-            "year": 2021,
-            "problems": "/contests/inpho/2021.pdf",
-            "solutions": "/contests/inpho/2021_S.pdf"
-        },
-        {
-            "year": 2020,
-            "problems": "/contests/inpho/2020.pdf",
-            "solutions": "/contests/inpho/2020_S.pdf"
-        },
-        {
-            "year": 2019,
-            "problems": "/contests/inpho/2019.pdf",
-            "solutions": "/contests/inpho/2019_S.pdf"
-        },
-        {
-            "year": 2018,
-            "problems": "/contests/inpho/2018.pdf",
-            "solutions": "/contests/inpho/2018_S.pdf"
-        },
-        {
-            "year": 2017,
-            "solutions": "/contests/inpho/2017_S.pdf"
-        },
-        {
-            "year": 2016,
-            "problems": "/contests/inpho/2016.pdf",
-            "solutions": "/contests/inpho/2016_S.pdf"
-        },
-        {
-            "year": 2015,
-            "solutions": "/contests/inpho/2015_S.pdf"
-        },
-        {
-            "year": 2014,
-            "problems": "/contests/inpho/2014.pdf",
-            "solutions": "/contests/inpho/2014_S.pdf"
-        },
-        {
-            "year": 2013,
-            "problems": "/contests/inpho/2013.pdf",
-            "solutions": "/contests/inpho/2013_S.pdf"
-        },
-        {
-            "year": 2012,
-            "problems": "/contests/inpho/2012.pdf",
-            "solutions": "/contests/inpho/2012_S.pdf",
-            "detailed solutions": "/contests/inpho/2012_S2.pdf"
-        },
-        {
-            "year": 2011,
-            "problems": "/contests/inpho/2011.pdf",
-            "solutions": "/contests/inpho/2011_S.pdf",
-            "detailed solutions": "/contests/inpho/2011_S2.pdf"
-        },
-        {
-            "year": 2010,
-            "problems": "/contests/inpho/2010.pdf",
-            "solutions": "/contests/inpho/2010_S.pdf"
-        },
-        {
-            "year": 2009,
-            "problems": "/contests/inpho/2009.pdf",
-            "solutions": "/contests/inpho/2009_S.pdf"
-        },
-        {
-            "year": 2008,
-            "problems": "/contests/inpho/2008.pdf"
-        }
-    ],
-    "sjpo": [
-        {
-            "year": 2025,
-            "problems": "/contests/sjpo/2025.pdf"
-        },
-        {
-            "year": 2024,
-            "problems": "/contests/sjpo/2024.pdf",
-            "solutions": "/contests/sjpo/2024_S.pdf",
-            "version 2": "/contests/sjpo/2024_U.pdf"
-        },
-        {
-            "year": 2023,
-            "problems": "/contests/sjpo/2023.pdf"
-        },
-        {
-            "year": 2022,
-            "problems": "/contests/sjpo/2022.pdf",
-            "solutions": "/contests/sjpo/2022_S.pdf"
-        },
-        {
-            "year": 2019,
-            "problems": "/contests/sjpo/2019.pdf"
-        },
-        {
-            "year": 2018,
-            "problems": "/contests/sjpo/2018.pdf",
-            "solutions": "/contests/sjpo/2018_S.pdf"
-        },
-        {
-            "year": 2017,
-            "problems": "/contests/sjpo/2017.pdf",
-            "solutions": "/contests/sjpo/2017_S.pdf"
-        },
-        {
-            "year": 2016,
-            "problems": "/contests/sjpo/2016.pdf",
-            "solutions": "/contests/sjpo/2016_S.pdf"
-        },
-        {
-            "year": 2015,
-            "problems": "/contests/sjpo/2015.pdf",
-            "solutions": "/contests/sjpo/2015_S.pdf"
-        },
-        {
-            "year": 2014,
-            "problems": "/contests/sjpo/2014.pdf",
-            "solutions": "/contests/sjpo/2014_S.pdf"
-        },
-        {
-            "year": 2013,
-            "problems": "/contests/sjpo/2013.pdf",
-            "solutions": "/contests/sjpo/2013_S.pdf"
-        },
-        {
-            "year": 2012,
-            "problems": "/contests/sjpo/2012.pdf",
-            "solutions": "/contests/sjpo/2012_S.pdf"
-        },
-        {
-            "year": 2011,
-            "problems": "/contests/sjpo/2011.pdf",
-            "solutions": "/contests/sjpo/2011_S.pdf"
-        },
-        {
-            "year": 2010,
-            "problems": "/contests/sjpo/2010.pdf",
-            "solutions": "/contests/sjpo/2010_S.pdf"
-        },
-        {
-            "year": 2009,
-            "problems": "/contests/sjpo/2009.pdf",
-            "solutions": "/contests/sjpo/2009_S.pdf"
-        },
-        {
-            "year": 2008,
-            "problems": "/contests/sjpo/2008.pdf",
-            "solutions": "/contests/sjpo/2008_S.pdf"
-        }
-    ],
-    "spho": [
-        {
-            "year": 2024,
-            "problems": "/contests/spho/2024.pdf"
-        },
-        {
-            "year": 2023,
-            "paper 1": "/contests/spho/2023_1.pdf",
-            "paper 2": "/contests/spho/2023_2.pdf"
-        },
-        {
-            "year": 2022,
-            "paper 1": "/contests/spho/2022_1.pdf",
-            "paper 2": "/contests/spho/2022_2.pdf"
-        },
-        {
-            "year": 2021,
-            "problems": "/contests/spho/2021.pdf"
-        },
-        {
-            "year": 2020,
-            "problems": "/contests/spho/2020.pdf"
-        },
-        {
-            "year": 2019,
-            "paper 1": "/contests/spho/2019_1.pdf",
-            "paper 2": "/contests/spho/2019_2.pdf"
-        },
-        {
-            "year": 2018,
-            "paper 1": "/contests/spho/2018_1.pdf",
-            "paper 2": "/contests/spho/2018_2.pdf"
-        },
-        {
-            "year": 2017,
-            "paper 1": "/contests/spho/2017_1.pdf",
-            "paper 2": "/contests/spho/2017_2.pdf"
-        },
-        {
-            "year": 2016,
-            "problems": "/contests/spho/2016.pdf"
-        },
-        {
-            "year": 2014,
-            "problems": "/contests/spho/2014.pdf"
-        },
-        {
-            "year": 2013,
-            "problems": "/contests/spho/2013.pdf"
-        },
-        {
-            "year": 2012,
-            "problems": "/contests/spho/2012.pdf"
-        },
-        {
-            "year": 2011,
-            "problems": "/contests/spho/2011.pdf"
-        },
-        {
-            "year": 2009,
-            "problems": "/contests/spho/2009.pdf"
-        },
-        {
-            "year": 2007,
-            "problems": "/contests/spho/2007.pdf"
-        },
-        {
-            "year": 2006,
-            "problems": "/contests/spho/2006.pdf"
-        },
-        {
-            "year": 2005,
-            "problems": "/contests/spho/2005.pdf"
-        },
-        {
-            "year": 2004,
-            "problems": "/contests/spho/2004.pdf"
-        },
-        {
-            "year": 2003,
-            "problems": "/contests/spho/2003.pdf"
-        },
-        {
-            "year": 2002,
-            "problems": "/contests/spho/2002.pdf"
-        }
-    ]
+	"eupho": [
+		{
+			"year": 2025,
+			"results": "/contests/eupho/2025_R.pdf",
+			"theory": "/contests/eupho/2025_T.pdf",
+			"theory sol": "/contests/eupho/2025_T_S.pdf",
+			"experiment": "/contests/eupho/2025_E.pdf",
+			"experiment sol": "/contests/eupho/2025_E_S.pdf"
+		},
+		{
+			"year": 2024,
+			"results": "/contests/eupho/2024_R.pdf",
+			"theory": "/contests/eupho/2024_T.pdf",
+			"theory sol": "/contests/eupho/2024_T_S.pdf",
+			"experiment": "/contests/eupho/2024_E.pdf",
+			"experiment sol": "/contests/eupho/2024_E_S.pdf"
+		},
+		{
+			"year": 2023,
+			"results": "/contests/eupho/2023_R.pdf",
+			"theory": "/contests/eupho/2023_T.pdf",
+			"theory sol": "/contests/eupho/2023_T_S.pdf",
+			"experiment": "/contests/eupho/2023_E.pdf",
+			"experiment sol": "/contests/eupho/2023_E_S.pdf"
+		},
+		{
+			"year": 2022,
+			"results": "/contests/eupho/2022_R.pdf",
+			"theory": "/contests/eupho/2022_T.pdf",
+			"theory sol": "/contests/eupho/2022_T_S.pdf",
+			"experiment": "/contests/eupho/2022_E.pdf",
+			"experiment sol": "/contests/eupho/2022_E_S.pdf"
+		},
+		{
+			"year": 2021,
+			"results": "/contests/eupho/2021_R.pdf",
+			"theory": "/contests/eupho/2021_T.pdf",
+			"theory sol": "/contests/eupho/2021_T_S.pdf",
+			"experiment": "/contests/eupho/2021_E.pdf",
+			"experiment sol": "/contests/eupho/2021_E_S.pdf",
+			"simulation files": "/contests/eupho/2021_E_F.zip"
+		},
+		{
+			"year": 2020,
+			"results": "/contests/eupho/2020_R.pdf",
+			"theory": "/contests/eupho/2020_T.pdf",
+			"theory sol": "/contests/eupho/2020_T_S.pdf",
+			"experiment": "/contests/eupho/2020_E.pdf",
+			"experiment sol": "/contests/eupho/2020_E_S.pdf",
+			"simulation files": "/contests/eupho/2020_E_F.zip"
+		},
+		{
+			"year": 2019,
+			"results": "/contests/eupho/2019_R.pdf",
+			"theory": "/contests/eupho/2019_T.pdf",
+			"theory sol": "/contests/eupho/2019_T_S.pdf",
+			"theory ms": "/contests/eupho/2019_T_M.pdf",
+			"experiment": "/contests/eupho/2019_E.pdf"
+		},
+		{
+			"year": 2018,
+			"results": "/contests/eupho/2018_R.pdf",
+			"theory": "/contests/eupho/2018_T.pdf",
+			"theory sol": "/contests/eupho/2018_T_S.pdf",
+			"theory ms": "/contests/eupho/2018_T_M.pdf",
+			"experiment": "/contests/eupho/2018_E.pdf",
+			"experiment sol": "/contests/eupho/2018_E_S.pdf",
+			"experiment ms": "/contests/eupho/2018_E_M.pdf"
+		},
+		{
+			"year": 2017,
+			"results": "/contests/eupho/2017_R.pdf",
+			"theory": "/contests/eupho/2017_T.pdf",
+			"theory sol": "/contests/eupho/2017_T_S.pdf",
+			"experiment": "/contests/eupho/2017_E.pdf",
+			"experiment sol": "/contests/eupho/2017_E_S.pdf"
+		}
+	],
+	"ipho": [
+		{
+			"year": 2025,
+			"files": [
+				{
+					"number": "T1",
+					"title": "Hydrogen and galaxies",
+					"problems": "/contests/ipho/2025/T1.pdf",
+					"solutions": "/contests/ipho/2025/T1_S.pdf",
+					"ans": "/contests/ipho/2025/T1_A.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "Cox's Timepiece",
+					"problems": "/contests/ipho/2025/T2.pdf",
+					"solutions": "/contests/ipho/2025/T2_S.pdf",
+					"ans": "/contests/ipho/2025/T2_A.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "Champagne!",
+					"problems": "/contests/ipho/2025/T3.pdf",
+					"solutions": "/contests/ipho/2025/T3_S.pdf",
+					"ans": "/contests/ipho/2025/T3_A.pdf"
+				},
+				{
+					"number": "T4",
+					"title": "Strongly correlated Fermi gases (Theory Backup)",
+					"problems": "/contests/ipho/2025/T4.pdf",
+					"ans": "/contests/ipho/2025/T4_A.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "Earth's magnetic field measurement",
+					"problems": "/contests/ipho/2025/E1.pdf",
+					"solutions": "/contests/ipho/2025/E1_S.pdf",
+					"ans": "/contests/ipho/2025/E1_A.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "Sand craters and dunes",
+					"problems": "/contests/ipho/2025/E2.pdf",
+					"solutions": "/contests/ipho/2025/E2_S.pdf",
+					"ans": "/contests/ipho/2025/E2_A.pdf"
+				}
+			],
+			"results": "/contests/ipho/2025_R.pdf",
+			"theory instructions": "/contests/ipho/2025_TG0.pdf",
+			"experimental instructions": "/contests/ipho/2025_EG0.pdf"
+		},
+		{
+			"year": 2024,
+			"files": [
+				{
+					"number": "T1",
+					"title": "Greenhouse Effect",
+					"problems": "/contests/ipho/2024/T1.pdf",
+					"solutions": "/contests/ipho/2024/T1_S.pdf",
+					"ans": "/contests/ipho/2024/T1_A.pdf",
+					"ms": "/contests/ipho/2024/T1_M.pdf",
+					"pres": "/contests/ipho/2024/T1_P.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "Trapping Ions and Cooling Atoms",
+					"problems": "/contests/ipho/2024/T2.pdf",
+					"solutions": "/contests/ipho/2024/T2_S.pdf",
+					"ans": "/contests/ipho/2024/T2_A.pdf",
+					"ms": "/contests/ipho/2024/T2_M.pdf",
+					"pres": "/contests/ipho/2024/T2_P.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "Black Widow Pulsar",
+					"problems": "/contests/ipho/2024/T3.pdf",
+					"solutions": "/contests/ipho/2024/T3_S.pdf",
+					"ans": "/contests/ipho/2024/T3_A.pdf",
+					"ms": "/contests/ipho/2024/T3_M.pdf",
+					"pres": "/contests/ipho/2024/T3_P.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "Heat Conduction in a Copper Rod",
+					"problems": "/contests/ipho/2024/E1.pdf",
+					"solutions": "/contests/ipho/2024/E1_S.pdf",
+					"ans": "/contests/ipho/2024/E1_A.pdf",
+					"ms": "/contests/ipho/2024/E1_M.pdf",
+					"pres": "/contests/ipho/2024/E1_P.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "Diffraction from Phase Steps",
+					"problems": "/contests/ipho/2024/E2.pdf",
+					"solutions": "/contests/ipho/2024/E2_S.pdf",
+					"ans": "/contests/ipho/2024/E2_A.pdf",
+					"ms": "/contests/ipho/2024/E2_M.pdf",
+					"pres": "/contests/ipho/2024/E2_P.pdf"
+				}
+			],
+			"minutes": "/contests/ipho/2024_min.pdf"
+		},
+		{
+			"year": 2023,
+			"files": [
+				{
+					"number": "T1",
+					"title": "Soil Colloids",
+					"problems": "/contests/ipho/2023/T1.pdf",
+					"solutions": "/contests/ipho/2023/T1_S.pdf",
+					"ans": "/contests/ipho/2023/T1_A.pdf",
+					"ms": "/contests/ipho/2023/T1_M.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "Neutron Stars",
+					"problems": "/contests/ipho/2023/T2.pdf",
+					"solutions": "/contests/ipho/2023/T2_S.pdf",
+					"ans": "/contests/ipho/2023/T2_A.pdf",
+					"ms": "/contests/ipho/2023/T2_M.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "Water and Objects",
+					"problems": "/contests/ipho/2023/T3.pdf",
+					"solutions": "/contests/ipho/2023/T3_S.pdf",
+					"ans": "/contests/ipho/2023/T3_A.pdf",
+					"ms": "/contests/ipho/2023/T3_M.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "Mass Measurement",
+					"problems": "/contests/ipho/2023/E1.pdf",
+					"solutions": "/contests/ipho/2023/E1_S.pdf",
+					"ans": "/contests/ipho/2023/E1_A.pdf",
+					"ms": "/contests/ipho/2023/E1_M.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "Birefringence",
+					"problems": "/contests/ipho/2023/E2.pdf",
+					"solutions": "/contests/ipho/2023/E2_S.pdf",
+					"ans": "/contests/ipho/2023/E2_A.pdf",
+					"ms": "/contests/ipho/2023/E2_M.pdf"
+				}
+			],
+			"theory instructions": "/contests/ipho/2023_TG0.pdf",
+			"experimental instructions": "/contests/ipho/2023_EG0.pdf",
+			"minutes": "/contests/ipho/2023_min.pdf"
+		},
+		{
+			"year": 2022,
+			"files": [
+				{
+					"number": "T1",
+					"title": "Permanent magnets",
+					"problems": "/contests/ipho/2022/T1.pdf",
+					"ans": "/contests/ipho/2022/T1_A.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "James Webb Space Telescope",
+					"problems": "/contests/ipho/2022/T2.pdf",
+					"ans": "/contests/ipho/2022/T2_A.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "Scaling laws",
+					"problems": "/contests/ipho/2022/T3.pdf",
+					"ans": "/contests/ipho/2022/T3_A.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "Planet",
+					"problems": "/contests/ipho/2022/E1.pdf",
+					"ans": "/contests/ipho/2022/E1_A.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "Cylindrical Diode",
+					"problems": "/contests/ipho/2022/E2.pdf",
+					"ans": "/contests/ipho/2022/E2_A.pdf"
+				}
+			],
+			"results": "/contests/ipho/2022_R.xlsx",
+			"theory instructions": "/contests/ipho/2022_TG0.pdf",
+			"experimental instructions": "/contests/ipho/2022_EG0.pdf",
+			"theory sol": "/contests/ipho/2022_T_S.pdf",
+			"experiment sol": "/contests/ipho/2022_E_S.pdf",
+			"simulation files": "/contests/ipho/2022_E_F.zip",
+			"minutes": "/contests/ipho/2022_min.pdf",
+			"extra minutes": "/contests/ipho/2022_min2.pdf"
+		},
+		{
+			"year": 2021,
+			"files": [
+				{
+					"number": "T1",
+					"title": "Planetary Physics",
+					"problems": "/contests/ipho/2021/T1.pdf",
+					"solutions": "/contests/ipho/2021/T1_S.pdf",
+					"ans": "/contests/ipho/2021/T1_A.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "Electrostatic Lens",
+					"problems": "/contests/ipho/2021/T2.pdf",
+					"solutions": "/contests/ipho/2021/T2_S.pdf",
+					"ans": "/contests/ipho/2021/T2_A.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "Particles and Waves",
+					"problems": "/contests/ipho/2021/T3.pdf",
+					"solutions": "/contests/ipho/2021/T3_S.pdf",
+					"ans": "/contests/ipho/2021/T3_A.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "Non-ideal Capacitors",
+					"problems": "/contests/ipho/2021/E1.pdf",
+					"solutions": "/contests/ipho/2021/E1_S.pdf",
+					"ans": "/contests/ipho/2021/E1_A.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "LEDs",
+					"problems": "/contests/ipho/2021/E2.pdf",
+					"solutions": "/contests/ipho/2021/E2_S.pdf",
+					"ans": "/contests/ipho/2021/E2_A.pdf"
+				}
+			],
+			"results": "/contests/ipho/2021_R.pdf",
+			"experiment": "/contests/ipho/2021_E.pdf",
+			"simulation files": "/contests/ipho/2021_E_F.zip",
+			"minutes": "/contests/ipho/2021_min.pdf"
+		},
+		{
+			"year": 2020,
+			"files": [
+				{
+					"number": "T1",
+					"title": "Problem Mix",
+					"problems": "/contests/ipho/2020/T1.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "Anisotropic Friction",
+					"problems": "/contests/ipho/2020/T2.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "Laser Technologies",
+					"problems": "/contests/ipho/2020/T3.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "Crystallography",
+					"problems": "/contests/ipho/2020/E1.pdf",
+					"ans": "/contests/ipho/2020/E1_A.pdf"
+				}
+			]
+		},
+		{
+			"year": 2019,
+			"files": [
+				{
+					"number": "T1",
+					"title": "Zero-length springs and slinky coils",
+					"problems": "/contests/ipho/2019/T1.pdf",
+					"solutions": "/contests/ipho/2019/T1_S.pdf",
+					"ms": "/contests/ipho/2019/T1_M.pdf",
+					"pres": "/contests/ipho/2019/T1_P.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "Microwave Oven",
+					"problems": "/contests/ipho/2019/T2.pdf",
+					"solutions": "/contests/ipho/2019/T2_S.pdf",
+					"ms": "/contests/ipho/2019/T2_M.pdf",
+					"pres": "/contests/ipho/2019/T2_P.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "Thermoacoustic Engine",
+					"problems": "/contests/ipho/2019/T3.pdf",
+					"solutions": "/contests/ipho/2019/T3_S.pdf",
+					"ms": "/contests/ipho/2019/T3_M.pdf",
+					"pres": "/contests/ipho/2019/T3_P.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "Optical Measurements",
+					"problems": "/contests/ipho/2019/E1.pdf",
+					"solutions": "/contests/ipho/2019/E1_S.pdf",
+					"ms": "/contests/ipho/2019/E1_M.pdf",
+					"pres": "/contests/ipho/2019/E1_P.pdf",
+					"calibration": "/contests/ipho/2019/E1_C.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "Wiedemann-Franz Law",
+					"problems": "/contests/ipho/2019/E2.pdf",
+					"solutions": "/contests/ipho/2019/E2_S.pdf",
+					"ms": "/contests/ipho/2019/E2_M.pdf",
+					"pres": "/contests/ipho/2019/E2_P.pdf"
+				}
+			],
+			"minutes": "/contests/ipho/2019_min.pdf"
+		},
+		{
+			"year": 2018,
+			"files": [
+				{
+					"number": "T1",
+					"title": "LIGO-GW150914",
+					"problems": "/contests/ipho/2018/T1.pdf",
+					"solutions": "/contests/ipho/2018/T1_S.pdf",
+					"ans": "/contests/ipho/2018/T1_A.pdf",
+					"ms": "/contests/ipho/2018/T1_M.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "Where is the neutrino?",
+					"problems": "/contests/ipho/2018/T2.pdf",
+					"solutions": "/contests/ipho/2018/T2_S.pdf",
+					"ans": "/contests/ipho/2018/T2_A.pdf",
+					"ms": "/contests/ipho/2018/T2_M.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "Physics of Live Systems",
+					"problems": "/contests/ipho/2018/T3.pdf",
+					"solutions": "/contests/ipho/2018/T3_S.pdf",
+					"ans": "/contests/ipho/2018/T3_A.pdf",
+					"ms": "/contests/ipho/2018/T3_M.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "Paper transistor",
+					"problems": "/contests/ipho/2018/E1.pdf",
+					"solutions": "/contests/ipho/2018/E1_S.pdf",
+					"ans": "/contests/ipho/2018/E1_A.pdf",
+					"ms": "/contests/ipho/2018/E1_M.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "Viscoelasticity of a polymer thread",
+					"problems": "/contests/ipho/2018/E2.pdf",
+					"solutions": "/contests/ipho/2018/E2_S.pdf",
+					"ans": "/contests/ipho/2018/E2_A.pdf",
+					"ms": "/contests/ipho/2018/E2_M.pdf"
+				}
+			],
+			"minutes": "/contests/ipho/2018_min.pdf"
+		},
+		{
+			"year": 2017,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/2017/T1.pdf",
+					"solutions": "/contests/ipho/2017/T1_S.pdf",
+					"ans": "/contests/ipho/2017/T1_A.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/2017/T2.pdf",
+					"solutions": "/contests/ipho/2017/T2_S.pdf",
+					"ans": "/contests/ipho/2017/T2_A.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/2017/T3.pdf",
+					"solutions": "/contests/ipho/2017/T3_S.pdf",
+					"ans": "/contests/ipho/2017/T3_A.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/2017/E1.pdf",
+					"solutions": "/contests/ipho/2017/E1_S.pdf",
+					"ans": "/contests/ipho/2017/E1_A.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/ipho/2017/E2.pdf",
+					"solutions": "/contests/ipho/2017/E2_S.pdf",
+					"ans": "/contests/ipho/2017/E2_A.pdf"
+				}
+			],
+			"theory instructions": "/contests/ipho/2017_TG0.pdf",
+			"experimental instructions": "/contests/ipho/2017_EG0.pdf",
+			"minutes": "/contests/ipho/2017_min.pdf"
+		},
+		{
+			"year": 2016,
+			"files": [
+				{
+					"number": "T1",
+					"title": "Two Problems in Mechanics",
+					"problems": "/contests/ipho/2016/T1.pdf",
+					"solutions": "/contests/ipho/2016/T1_S.pdf",
+					"ans": "/contests/ipho/2016/T1_A.pdf",
+					"pres": "/contests/ipho/2016/T1_P.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "Nonlinear Dynamics in Electric Circuits",
+					"problems": "/contests/ipho/2016/T2.pdf",
+					"solutions": "/contests/ipho/2016/T2_S.pdf",
+					"ans": "/contests/ipho/2016/T2_A.pdf",
+					"pres": "/contests/ipho/2016/T2_P.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "Large Hadron Collider",
+					"problems": "/contests/ipho/2016/T3.pdf",
+					"solutions": "/contests/ipho/2016/T3_S.pdf",
+					"ans": "/contests/ipho/2016/T3_A.pdf",
+					"pres": "/contests/ipho/2016/T3_P.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "Electrical conductivity",
+					"problems": "/contests/ipho/2016/E1.pdf",
+					"solutions": "/contests/ipho/2016/E1_S.pdf",
+					"ans": "/contests/ipho/2016/E1_A.pdf",
+					"ms": "/contests/ipho/2016/E1_M.pdf",
+					"pres": "/contests/ipho/2016/E1_P.pdf",
+					"calibration": "/contests/ipho/2016/E1_C.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "Jumping beads",
+					"problems": "/contests/ipho/2016/E2.pdf",
+					"solutions": "/contests/ipho/2016/E2_S.pdf",
+					"ans": "/contests/ipho/2016/E2_A.pdf",
+					"ms": "/contests/ipho/2016/E2_M.pdf",
+					"pres": "/contests/ipho/2016/E2_P.pdf"
+				}
+			],
+			"results": "/contests/ipho/2016_R.pdf",
+			"theory instructions": "/contests/ipho/2016_TG0.pdf",
+			"experimental instructions": "/contests/ipho/2016_EG0.pdf",
+			"minutes": "/contests/ipho/2016_min.pdf"
+		},
+		{
+			"year": 2015,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/2015/T1.pdf",
+					"solutions": "/contests/ipho/2015/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/2015/T2.pdf",
+					"solutions": "/contests/ipho/2015/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/2015/T3.pdf",
+					"solutions": "/contests/ipho/2015/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/2015/E1.pdf",
+					"solutions": "/contests/ipho/2015/E1_S.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/ipho/2015/E2.pdf",
+					"solutions": "/contests/ipho/2015/E2_S.pdf"
+				}
+			],
+			"results": "/contests/ipho/2015_R.pdf",
+			"minutes": "/contests/ipho/2015_min.pdf"
+		},
+		{
+			"year": 2014,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/2014/T1.pdf",
+					"solutions": "/contests/ipho/2014/T1_S.pdf",
+					"pres": "/contests/ipho/2014/T1_P.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/2014/T2.pdf",
+					"solutions": "/contests/ipho/2014/T2_S.pdf",
+					"pres": "/contests/ipho/2014/T2_P.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/2014/T3.pdf",
+					"solutions": "/contests/ipho/2014/T3_S.pdf",
+					"pres": "/contests/ipho/2014/T3_P.pdf"
+				}
+			],
+			"experiment": "/contests/ipho/2014_E.pdf",
+			"experiment sol": "/contests/ipho/2014_E_S.pdf",
+			"minutes": "/contests/ipho/2014_min.pdf"
+		},
+		{
+			"year": 2013,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/2013/T1.pdf",
+					"solutions": "/contests/ipho/2013/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/2013/T2.pdf",
+					"solutions": "/contests/ipho/2013/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/2013/T3.pdf",
+					"solutions": "/contests/ipho/2013/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/2013/E1.pdf",
+					"solutions": "/contests/ipho/2013/E1_S.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/ipho/2013/E2.pdf",
+					"solutions": "/contests/ipho/2013/E2_S.pdf"
+				}
+			],
+			"results": "/contests/ipho/2013_R.pdf",
+			"theory instructions": "/contests/ipho/2013_TG0.pdf",
+			"minutes": "/contests/ipho/2013_min.pdf"
+		},
+		{
+			"year": 2012,
+			"results": "/contests/ipho/2012_R.xlsx",
+			"theory": "/contests/ipho/2012_T.pdf",
+			"theory sol": "/contests/ipho/2012_T_S.pdf",
+			"experiment": "/contests/ipho/2012_E.pdf",
+			"experiment sol": "/contests/ipho/2012_E_S.pdf",
+			"minutes": "/contests/ipho/2012_min.pdf"
+		},
+		{
+			"year": 2011,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/2011/T1.pdf",
+					"solutions": "/contests/ipho/2011/T1_S.pdf",
+					"ans": "/contests/ipho/2011/T1_A.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/2011/T2.pdf",
+					"solutions": "/contests/ipho/2011/T2_S.pdf",
+					"ans": "/contests/ipho/2011/T2_A.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/2011/T3.pdf",
+					"solutions": "/contests/ipho/2011/T3_S.pdf",
+					"ans": "/contests/ipho/2011/T3_A.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/2011/E1.pdf",
+					"solutions": "/contests/ipho/2011/E1_S.pdf",
+					"ans": "/contests/ipho/2011/E1_A.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/ipho/2011/E2.pdf",
+					"solutions": "/contests/ipho/2011/E2_S.pdf",
+					"ans": "/contests/ipho/2011/E2_A.pdf"
+				}
+			],
+			"minutes": "/contests/ipho/2011_min.pdf"
+		},
+		{
+			"year": 2010,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/2010/T1.pdf",
+					"solutions": "/contests/ipho/2010/T1_S.pdf",
+					"ans": "/contests/ipho/2010/T1_A.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/2010/T2.pdf",
+					"solutions": "/contests/ipho/2010/T2_S.pdf",
+					"ans": "/contests/ipho/2010/T2_A.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/2010/T3.pdf",
+					"solutions": "/contests/ipho/2010/T3_S.pdf",
+					"ans": "/contests/ipho/2010/T3_A.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/2010/E1.pdf",
+					"solutions": "/contests/ipho/2010/E1_S.pdf",
+					"ans": "/contests/ipho/2010/E1_A.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/ipho/2010/E2.pdf",
+					"solutions": "/contests/ipho/2010/E2_S.pdf",
+					"ans": "/contests/ipho/2010/E2_A.pdf"
+				}
+			],
+			"theory instructions": "/contests/ipho/2010_TG0.pdf",
+			"experimental instructions": "/contests/ipho/2010_EG0.pdf",
+			"minutes": "/contests/ipho/2010_min.pdf"
+		},
+		{
+			"year": 2009,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/2009/T1.pdf",
+					"solutions": "/contests/ipho/2009/T1_S.pdf",
+					"ans": "/contests/ipho/2009/T1_A.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/2009/T2.pdf",
+					"solutions": "/contests/ipho/2009/T2_S.pdf",
+					"ans": "/contests/ipho/2009/T2_A.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/2009/T3.pdf",
+					"solutions": "/contests/ipho/2009/T3_S.pdf",
+					"ans": "/contests/ipho/2009/T3_A.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/2009/E1.pdf",
+					"solutions": "/contests/ipho/2009/E1_S.pdf",
+					"ans": "/contests/ipho/2009/E1_A.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/ipho/2009/E2.pdf",
+					"solutions": "/contests/ipho/2009/E2_S.pdf",
+					"ans": "/contests/ipho/2009/E2_A.pdf"
+				}
+			],
+			"minutes": "/contests/ipho/2009_min.pdf"
+		},
+		{
+			"year": 2008,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/2008/T1.pdf",
+					"solutions": "/contests/ipho/2008/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/2008/T2.pdf",
+					"solutions": "/contests/ipho/2008/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/2008/T3.pdf",
+					"solutions": "/contests/ipho/2008/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/2008/E1.pdf",
+					"solutions": "/contests/ipho/2008/E1_S.pdf"
+				}
+			],
+			"minutes": "/contests/ipho/2008_min.pdf"
+		},
+		{
+			"year": 2007,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/2007/T1.pdf",
+					"solutions": "/contests/ipho/2007/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/2007/T2.pdf",
+					"solutions": "/contests/ipho/2007/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/2007/T3.pdf",
+					"solutions": "/contests/ipho/2007/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/2007/E1.pdf",
+					"solutions": "/contests/ipho/2007/E1_S.pdf"
+				}
+			],
+			"experimental instructions": "/contests/ipho/2007_EG0.pdf",
+			"minutes": "/contests/ipho/2007_min.pdf"
+		},
+		{
+			"year": 2006,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/2006/T1.pdf",
+					"solutions": "/contests/ipho/2006/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/2006/T2.pdf",
+					"solutions": "/contests/ipho/2006/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/2006/T3.pdf",
+					"solutions": "/contests/ipho/2006/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/2006/E1.pdf",
+					"solutions": "/contests/ipho/2006/E1_S.pdf"
+				}
+			],
+			"minutes": "/contests/ipho/2006_min.pdf"
+		},
+		{
+			"year": 2005,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/2005/T1.pdf",
+					"solutions": "/contests/ipho/2005/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/2005/T2.pdf",
+					"solutions": "/contests/ipho/2005/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/2005/T3.pdf",
+					"solutions": "/contests/ipho/2005/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/2005/E1.pdf",
+					"solutions": "/contests/ipho/2005/E1_S.pdf"
+				}
+			],
+			"minutes": "/contests/ipho/2005_min.pdf"
+		},
+		{
+			"year": 2004,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/2004/T1.pdf",
+					"solutions": "/contests/ipho/2004/T1_S.pdf",
+					"ans": "/contests/ipho/2004/T1_A.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/2004/T2.pdf",
+					"solutions": "/contests/ipho/2004/T2_S.pdf",
+					"ans": "/contests/ipho/2004/T2_A.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/2004/T3.pdf",
+					"solutions": "/contests/ipho/2004/T3_S.pdf",
+					"ans": "/contests/ipho/2004/T3_A.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/2004/E1.pdf",
+					"solutions": "/contests/ipho/2004/E1_S.pdf",
+					"ans": "/contests/ipho/2004/E1_A.pdf"
+				}
+			],
+			"minutes": "/contests/ipho/2004_min.pdf"
+		},
+		{
+			"year": 2003,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/2003/T1.pdf",
+					"solutions": "/contests/ipho/2003/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/2003/T2.pdf",
+					"solutions": "/contests/ipho/2003/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/2003/T3.pdf",
+					"solutions": "/contests/ipho/2003/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/2003/E1.pdf",
+					"solutions": "/contests/ipho/2003/E1_S.pdf"
+				}
+			],
+			"minutes": "/contests/ipho/2003_min.pdf"
+		},
+		{
+			"year": 2002,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/2002/T1.pdf",
+					"solutions": "/contests/ipho/2002/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/2002/T2.pdf",
+					"solutions": "/contests/ipho/2002/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/2002/T3.pdf",
+					"solutions": "/contests/ipho/2002/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/2002/E1.pdf",
+					"solutions": "/contests/ipho/2002/E1_S.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/ipho/2002/E2.pdf",
+					"solutions": "/contests/ipho/2002/E2_S.pdf"
+				}
+			],
+			"theory instructions": "/contests/ipho/2002_TG0.pdf",
+			"experimental instructions": "/contests/ipho/2002_EG0.pdf",
+			"minutes": "/contests/ipho/2002_min.pdf"
+		},
+		{
+			"year": 2001,
+			"theory": "/contests/ipho/2001_T.pdf",
+			"theory sol": "/contests/ipho/2001_T_S.pdf",
+			"experiment": "/contests/ipho/2001_E.pdf",
+			"experiment sol": "/contests/ipho/2001_E_S.pdf",
+			"minutes": "/contests/ipho/2001_min.pdf"
+		},
+		{
+			"year": 2000,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/2000/T1.htm",
+					"solutions": "/contests/ipho/2000/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/2000/T2.pdf",
+					"solutions": "/contests/ipho/2000/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/2000/T3.htm",
+					"solutions": "/contests/ipho/2000/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/2000/E1.htm"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/ipho/2000/E2.htm"
+				}
+			],
+			"minutes": "/contests/ipho/2000_min.pdf"
+		},
+		{
+			"year": 1999,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/1999/T1.pdf",
+					"solutions": "/contests/ipho/1999/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/1999/T2.pdf",
+					"solutions": "/contests/ipho/1999/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/1999/T3.pdf",
+					"solutions": "/contests/ipho/1999/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/1999/E1.pdf",
+					"solutions": "/contests/ipho/1999/E1_S.pdf"
+				}
+			],
+			"minutes": "/contests/ipho/1999_min.pdf"
+		},
+		{
+			"year": 1998,
+			"theory": "/contests/ipho/1998_T.pdf",
+			"experiment": "/contests/ipho/1998_E.pdf",
+			"minutes": "/contests/ipho/1998_min.pdf"
+		},
+		{
+			"year": 1997,
+			"theory": "/contests/ipho/1997_T.pdf",
+			"theory sol": "/contests/ipho/1997_T_S.pdf",
+			"experiment": "/contests/ipho/1997_E.htm",
+			"experiment sol": "/contests/ipho/1997_E_S.htm"
+		},
+		{
+			"year": 1996,
+			"theory": "/contests/ipho/1996_T.pdf",
+			"experiment": "/contests/ipho/1996_E.pdf"
+		},
+		{
+			"year": 1995,
+			"files": [
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/1995/E1.pdf",
+					"solutions": "/contests/ipho/1995/E1_S.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/ipho/1995/E2.pdf",
+					"solutions": "/contests/ipho/1995/E2_S.pdf"
+				}
+			],
+			"theory": "/contests/ipho/1995_T.pdf",
+			"theory sol": "/contests/ipho/1995_T_S.pdf",
+			"comments": "/contests/ipho/1995_comments.pdf"
+		},
+		{
+			"year": 1994,
+			"problems": "/contests/ipho/1994.pdf"
+		},
+		{
+			"year": 1993,
+			"problems": "/contests/ipho/1993.pdf"
+		},
+		{
+			"year": 1992,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/ipho/1992/T1.pdf",
+					"solutions": "/contests/ipho/1992/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/ipho/1992/T2.pdf",
+					"solutions": "/contests/ipho/1992/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/ipho/1992/T3.pdf",
+					"solutions": "/contests/ipho/1992/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/ipho/1992/E1.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/ipho/1992/E2.pdf"
+				}
+			]
+		},
+		{
+			"year": 1991,
+			"problems": "/contests/ipho/1991.pdf"
+		},
+		{
+			"year": 1990,
+			"problems": "/contests/ipho/1990.pdf"
+		},
+		{
+			"year": 1989,
+			"problems": "/contests/ipho/1989.pdf"
+		},
+		{
+			"year": 1988,
+			"problems": "/contests/ipho/1988.pdf"
+		},
+		{
+			"year": 1987,
+			"problems": "/contests/ipho/1987.pdf"
+		},
+		{
+			"year": 1986,
+			"theory": "/contests/ipho/1986_T.pdf",
+			"theory sol": "/contests/ipho/1986_T_S.pdf",
+			"experiment": "/contests/ipho/1986_E.pdf",
+			"experiment sol": "/contests/ipho/1986_E_S.pdf"
+		},
+		{
+			"year": 1985,
+			"problems": "/contests/ipho/1985.pdf"
+		},
+		{
+			"year": 1984,
+			"problems": "/contests/ipho/1984.pdf"
+		},
+		{
+			"year": 1983,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"solutions": "/contests/ipho/1983/T1_S.pdf",
+					"ms": "/contests/ipho/1983/T1_M.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"solutions": "/contests/ipho/1983/T2_S.pdf",
+					"ms": "/contests/ipho/1983/T2_M.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"solutions": "/contests/ipho/1983/T3_S.pdf",
+					"ms": "/contests/ipho/1983/T3_M.pdf"
+				},
+				{
+					"number": "T4",
+					"title": "",
+					"solutions": "/contests/ipho/1983/T4_S.pdf",
+					"ms": "/contests/ipho/1983/T4_M.pdf"
+				},
+				{
+					"number": "T5",
+					"title": "",
+					"solutions": "/contests/ipho/1983/T5_S.pdf"
+				}
+			],
+			"problems": "/contests/ipho/1983.pdf"
+		},
+		{
+			"year": 1982,
+			"problems": "/contests/ipho/1982.pdf"
+		},
+		{
+			"year": 1981,
+			"theory": "/contests/ipho/1981_T.pdf",
+			"experiment": "/contests/ipho/1981_E.pdf"
+		},
+		{
+			"year": 1979,
+			"problems": "/contests/ipho/1979.pdf"
+		},
+		{
+			"year": 1977,
+			"problems": "/contests/ipho/1977.pdf"
+		},
+		{
+			"year": 1976,
+			"problems": "/contests/ipho/1976.pdf"
+		},
+		{
+			"year": 1975,
+			"problems": "/contests/ipho/1975.pdf"
+		},
+		{
+			"year": 1974,
+			"problems": "/contests/ipho/1974.pdf"
+		},
+		{
+			"year": 1972,
+			"problems": "/contests/ipho/1972.pdf"
+		},
+		{
+			"year": 1971,
+			"problems": "/contests/ipho/1971.pdf",
+			"solutions": "/contests/ipho/1971_S.pdf"
+		},
+		{
+			"year": 1970,
+			"problems": "/contests/ipho/1970.pdf"
+		},
+		{
+			"year": 1969,
+			"problems": "/contests/ipho/1969.pdf"
+		},
+		{
+			"year": 1968,
+			"problems": "/contests/ipho/1968.pdf"
+		},
+		{
+			"year": 1967,
+			"problems": "/contests/ipho/1967.pdf"
+		}
+	],
+	"apho": [
+		{
+			"year": 2025,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"solutions": "/contests/apho/2025/T1_S.pdf",
+					"ans": "/contests/apho/2025/T1_A.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"solutions": "/contests/apho/2025/T2_S.pdf",
+					"ans": "/contests/apho/2025/T2_A.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"solutions": "/contests/apho/2025/T3_S.pdf",
+					"ans": "/contests/apho/2025/T3_A.pdf",
+					"sol_hand": "/contests/apho/2025/T3_S_H.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2025/E1.pdf",
+					"solutions": "/contests/apho/2025/E1_S.pdf",
+					"ans": "/contests/apho/2025/E1_A.pdf"
+				}
+			],
+			"results": "/contests/apho/2025_R.pdf",
+			"theory": "/contests/apho/2025_T.pdf"
+		},
+		{
+			"year": 2024,
+			"theory": "/contests/apho/2024_T.pdf",
+			"theory sol": "/contests/apho/2024_T_S.pdf",
+			"experiment": "/contests/apho/2024_E.pdf",
+			"experiment sol": "/contests/apho/2024_E_S.pdf"
+		},
+		{
+			"year": 2023,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2023/T1.pdf",
+					"solutions": "/contests/apho/2023/T1_S.pdf",
+					"ms": "/contests/apho/2023/T1_M.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2023/T2.pdf",
+					"solutions": "/contests/apho/2023/T2_S.pdf",
+					"ms": "/contests/apho/2023/T2_M.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2023/T3.pdf",
+					"solutions": "/contests/apho/2023/T3_S.pdf",
+					"ms": "/contests/apho/2023/T3_M.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2023/E1.pdf",
+					"solutions": "/contests/apho/2023/E1_S.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/apho/2023/E2.pdf",
+					"solutions": "/contests/apho/2023/E2_S.pdf"
+				}
+			],
+			"experimental instructions": "/contests/apho/2023_EG0.pdf"
+		},
+		{
+			"year": 2022,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2022/T1.pdf",
+					"solutions": "/contests/apho/2022/T1_S.pdf",
+					"ans": "/contests/apho/2022/T1_A.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2022/T2.pdf",
+					"solutions": "/contests/apho/2022/T2_S.pdf",
+					"ans": "/contests/apho/2022/T2_A.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2022/T3.pdf",
+					"solutions": "/contests/apho/2022/T3_S.pdf",
+					"ans": "/contests/apho/2022/T3_A.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2022/E1.pdf",
+					"solutions": "/contests/apho/2022/E1_S.pdf",
+					"ans": "/contests/apho/2022/E1_A.pdf",
+					"ms": "/contests/apho/2022/E1_M.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/apho/2022/E2.pdf",
+					"solutions": "/contests/apho/2022/E2_S.pdf",
+					"ans": "/contests/apho/2022/E2_A.pdf",
+					"ms": "/contests/apho/2022/E2_M.pdf"
+				}
+			],
+			"results": "/contests/apho/2022_R.pdf",
+			"theory instructions": "/contests/apho/2022_TG0.pdf",
+			"experimental instructions": "/contests/apho/2022_EG0.pdf",
+			"experimental presentation": "/contests/apho/2022_E_P.pdf"
+		},
+		{
+			"year": 2021,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2021/T1.pdf",
+					"solutions": "/contests/apho/2021/T1_S.pdf",
+					"ans": "/contests/apho/2021/T1_A.pdf",
+					"ms": "/contests/apho/2021/T1_M.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2021/T2.pdf",
+					"solutions": "/contests/apho/2021/T2_S.pdf",
+					"ans": "/contests/apho/2021/T2_A.pdf",
+					"ms": "/contests/apho/2021/T2_M.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2021/T3.pdf",
+					"solutions": "/contests/apho/2021/T3_S.pdf",
+					"ans": "/contests/apho/2021/T3_A.pdf",
+					"ms": "/contests/apho/2021/T3_M.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2021/E1.pdf",
+					"solutions": "/contests/apho/2021/E1_S.pdf",
+					"ans": "/contests/apho/2021/E1_A.pdf",
+					"ms": "/contests/apho/2021/E1_M.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/apho/2021/E2.pdf",
+					"solutions": "/contests/apho/2021/E2_S.pdf",
+					"ans": "/contests/apho/2021/E2_A.pdf",
+					"ms": "/contests/apho/2021/E2_M.pdf"
+				}
+			],
+			"experimental instructions": "/contests/apho/2021_EG0.pdf",
+			"simulation files": "/contests/apho/2021_E_F.zip"
+		},
+		{
+			"year": 2019,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2019/T1.pdf",
+					"solutions": "/contests/apho/2019/T1_S.pdf",
+					"ans": "/contests/apho/2019/T1_A.pdf",
+					"ms": "/contests/apho/2019/T1_M.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2019/T2.pdf",
+					"solutions": "/contests/apho/2019/T2_S.pdf",
+					"ans": "/contests/apho/2019/T2_A.pdf",
+					"ms": "/contests/apho/2019/T2_M.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2019/T3.pdf",
+					"solutions": "/contests/apho/2019/T3_S.pdf",
+					"ans": "/contests/apho/2019/T3_A.pdf",
+					"ms": "/contests/apho/2019/T3_M.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2019/E1.pdf",
+					"solutions": "/contests/apho/2019/E1_S.pdf",
+					"ans": "/contests/apho/2019/E1_A.pdf",
+					"ms": "/contests/apho/2019/E1_M.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/apho/2019/E2.pdf",
+					"solutions": "/contests/apho/2019/E2_S.pdf",
+					"ans": "/contests/apho/2019/E2_A.pdf",
+					"ms": "/contests/apho/2019/E2_M.pdf"
+				}
+			],
+			"results": "/contests/apho/2019_R.pdf",
+			"theory instructions": "/contests/apho/2019_TG0.pdf",
+			"experimental instructions": "/contests/apho/2019_EG0.pdf",
+			"proceedings": "/contests/apho/2019_proc.pdf"
+		},
+		{
+			"year": 2018,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2018/T1.pdf",
+					"solutions": "/contests/apho/2018/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2018/T2.pdf",
+					"solutions": "/contests/apho/2018/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2018/T3.pdf",
+					"solutions": "/contests/apho/2018/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2018/E1.pdf",
+					"solutions": "/contests/apho/2018/E1_S.pdf",
+					"ans": "/contests/apho/2018/E1_A.pdf"
+				}
+			]
+		},
+		{
+			"year": 2017,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2017/T1.pdf",
+					"solutions": "/contests/apho/2017/T1_S.pdf",
+					"ans": "/contests/apho/2017/T1_A.pdf",
+					"ms": "/contests/apho/2017/T1_M.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2017/T2.pdf",
+					"solutions": "/contests/apho/2017/T2_S.pdf",
+					"ans": "/contests/apho/2017/T2_A.pdf",
+					"ms": "/contests/apho/2017/T2_M.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2017/T3.pdf",
+					"solutions": "/contests/apho/2017/T3_S.pdf",
+					"ans": "/contests/apho/2017/T3_A.pdf",
+					"ms": "/contests/apho/2017/T3_M.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2017/E1.pdf",
+					"solutions": "/contests/apho/2017/E1_S.pdf",
+					"ans": "/contests/apho/2017/E1_A.pdf",
+					"ms": "/contests/apho/2017/E1_M.pdf"
+				}
+			],
+			"minutes": "/contests/apho/2017_min.pdf"
+		},
+		{
+			"year": 2016,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2016/T1.pdf",
+					"solutions": "/contests/apho/2016/T1_S.pdf",
+					"ans": "/contests/apho/2016/T1_A.pdf",
+					"pres": "/contests/apho/2016/T1_P.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2016/T2.pdf",
+					"solutions": "/contests/apho/2016/T2_S.pdf",
+					"ans": "/contests/apho/2016/T2_A.pdf",
+					"pres": "/contests/apho/2016/T2_P.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2016/T3.pdf",
+					"solutions": "/contests/apho/2016/T3_S.pdf",
+					"ans": "/contests/apho/2016/T3_A.pdf",
+					"pres": "/contests/apho/2016/T3_P.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2016/E1.pdf",
+					"solutions": "/contests/apho/2016/E1_S.pdf",
+					"ans": "/contests/apho/2016/E1_A.pdf",
+					"pres": "/contests/apho/2016/E1_P.pdf",
+					"alignment chart": "/contests/apho/2016/E1_chart.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/apho/2016/E2.pdf",
+					"solutions": "/contests/apho/2016/E2_S.pdf",
+					"ans": "/contests/apho/2016/E2_A.pdf",
+					"pres": "/contests/apho/2016/E2_P.pdf"
+				}
+			],
+			"theory instructions": "/contests/apho/2016_TG0.pdf",
+			"minutes": "/contests/apho/2016_min.pdf"
+		},
+		{
+			"year": 2015,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2015/T1.pdf",
+					"solutions": "/contests/apho/2015/T1_S.pdf",
+					"ans": "/contests/apho/2015/T1_A.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2015/T2.pdf",
+					"solutions": "/contests/apho/2015/T2_S.pdf",
+					"ans": "/contests/apho/2015/T2_A.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2015/T3.pdf",
+					"solutions": "/contests/apho/2015/T3_S.pdf",
+					"ans": "/contests/apho/2015/T3_A.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2015/E1.pdf",
+					"solutions": "/contests/apho/2015/E1_S.pdf",
+					"ans": "/contests/apho/2015/E1_A.pdf"
+				}
+			],
+			"minutes": "/contests/apho/2015_min.pdf"
+		},
+		{
+			"year": 2014,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2014/T1.pdf",
+					"solutions": "/contests/apho/2014/T1_S.pdf",
+					"ans": "/contests/apho/2014/T1_A.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2014/T2.pdf",
+					"solutions": "/contests/apho/2014/T2_S.pdf",
+					"ans": "/contests/apho/2014/T2_A.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2014/T3.pdf",
+					"solutions": "/contests/apho/2014/T3_S.pdf",
+					"ans": "/contests/apho/2014/T3_A.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2014/E1.pdf",
+					"solutions": "/contests/apho/2014/E1_S.pdf",
+					"ans": "/contests/apho/2014/E1_A.pdf"
+				}
+			],
+			"minutes": "/contests/apho/2014_min.pdf"
+		},
+		{
+			"year": 2013,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2013/T1.pdf",
+					"solutions": "/contests/apho/2013/T1_S.pdf",
+					"ans": "/contests/apho/2013/T1_A.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2013/T2.pdf",
+					"solutions": "/contests/apho/2013/T2_S.pdf",
+					"ans": "/contests/apho/2013/T2_A.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2013/T3.pdf",
+					"solutions": "/contests/apho/2013/T3_S.pdf",
+					"ans": "/contests/apho/2013/T3_A.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2013/E1.pdf",
+					"solutions": "/contests/apho/2013/E1_S.pdf"
+				}
+			],
+			"minutes": "/contests/apho/2013_min.pdf"
+		},
+		{
+			"year": 2012,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2012/T1.pdf",
+					"solutions": "/contests/apho/2012/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2012/T2.pdf",
+					"solutions": "/contests/apho/2012/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2012/T3.pdf",
+					"solutions": "/contests/apho/2012/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2012/E1.pdf",
+					"solutions": "/contests/apho/2012/E1_S.pdf",
+					"ms": "/contests/apho/2012/E1_M.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/apho/2012/E2.pdf",
+					"solutions": "/contests/apho/2012/E2_S.pdf",
+					"ans": "/contests/apho/2012/E2_A.pdf",
+					"ms": "/contests/apho/2012/E2_M.pdf"
+				}
+			],
+			"minutes": "/contests/apho/2012_min.pdf"
+		},
+		{
+			"year": 2011,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2011/T1.pdf",
+					"solutions": "/contests/apho/2011/T1_S.pdf",
+					"ans": "/contests/apho/2011/T1_A.pdf",
+					"ms": "/contests/apho/2011/T1_M.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2011/T2.pdf",
+					"solutions": "/contests/apho/2011/T2_S.pdf",
+					"ans": "/contests/apho/2011/T2_A.pdf",
+					"ms": "/contests/apho/2011/T2_M.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2011/T3.pdf",
+					"solutions": "/contests/apho/2011/T3_S.pdf",
+					"ans": "/contests/apho/2011/T3_A.pdf",
+					"ms": "/contests/apho/2011/T3_M.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2011/E1.pdf",
+					"solutions": "/contests/apho/2011/E1_S.pdf",
+					"ans": "/contests/apho/2011/E1_A.pdf",
+					"ms": "/contests/apho/2011/E1_M.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/apho/2011/E2.pdf",
+					"solutions": "/contests/apho/2011/E2_S.pdf",
+					"ans": "/contests/apho/2011/E2_A.pdf",
+					"ms": "/contests/apho/2011/E2_M.pdf"
+				}
+			],
+			"minutes": "/contests/apho/2011_min.pdf"
+		},
+		{
+			"year": 2010,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2010/T1.pdf",
+					"solutions": "/contests/apho/2010/T1_S.pdf",
+					"ans": "/contests/apho/2010/T1_A.pdf",
+					"ms": "/contests/apho/2010/T1_M.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2010/T2.pdf",
+					"solutions": "/contests/apho/2010/T2_S.pdf",
+					"ans": "/contests/apho/2010/T2_A.pdf",
+					"ms": "/contests/apho/2010/T2_M.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2010/T3.pdf",
+					"solutions": "/contests/apho/2010/T3_S.pdf",
+					"ans": "/contests/apho/2010/T3_A.pdf",
+					"ms": "/contests/apho/2010/T3_M.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2010/E1.pdf",
+					"solutions": "/contests/apho/2010/E1_S.pdf",
+					"ans": "/contests/apho/2010/E1_A.pdf",
+					"ms": "/contests/apho/2010/E1_M.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/apho/2010/E2.pdf",
+					"solutions": "/contests/apho/2010/E2_S.pdf",
+					"ans": "/contests/apho/2010/E2_A.pdf",
+					"ms": "/contests/apho/2010/E2_M.pdf"
+				}
+			],
+			"minutes": "/contests/apho/2010_min.pdf"
+		},
+		{
+			"year": 2009,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"solutions": "/contests/apho/2009/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"solutions": "/contests/apho/2009/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"solutions": "/contests/apho/2009/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"solutions": "/contests/apho/2009/E1_S.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"solutions": "/contests/apho/2009/E2_S.pdf"
+				}
+			],
+			"theory": "/contests/apho/2009_T.pdf",
+			"experiment": "/contests/apho/2009_E.pdf",
+			"experiment ms": "/contests/apho/2009_E_M.pdf"
+		},
+		{
+			"year": 2008,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2008/T1.pdf",
+					"solutions": "/contests/apho/2008/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2008/T2.pdf",
+					"solutions": "/contests/apho/2008/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2008/T3.pdf",
+					"solutions": "/contests/apho/2008/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2008/E1.pdf"
+				}
+			],
+			"minutes": "/contests/apho/2008_min.pdf"
+		},
+		{
+			"year": 2007,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2007/T1.pdf",
+					"solutions": "/contests/apho/2007/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2007/T2.pdf",
+					"solutions": "/contests/apho/2007/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2007/T3.pdf",
+					"solutions": "/contests/apho/2007/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2007/E1.pdf",
+					"solutions": "/contests/apho/2007/E1_S.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/apho/2007/E2.pdf",
+					"solutions": "/contests/apho/2007/E2_S.pdf"
+				}
+			],
+			"minutes": "/contests/apho/2007_min.pdf"
+		},
+		{
+			"year": 2006,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2006/T1.pdf",
+					"solutions": "/contests/apho/2006/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2006/T2.pdf",
+					"solutions": "/contests/apho/2006/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2006/T3.pdf",
+					"solutions": "/contests/apho/2006/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2006/E1.pdf",
+					"solutions": "/contests/apho/2006/E1_S.pdf"
+				}
+			],
+			"minutes": "/contests/apho/2006_min.pdf"
+		},
+		{
+			"year": 2005,
+			"theory": "/contests/apho/2005_T.pdf",
+			"theory sol": "/contests/apho/2005_T_S.pdf",
+			"experiment": "/contests/apho/2005_E.pdf",
+			"experiment sol": "/contests/apho/2005_E_S.pdf",
+			"minutes": "/contests/apho/2005_min.pdf"
+		},
+		{
+			"year": 2004,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2004/T1.pdf",
+					"solutions": "/contests/apho/2004/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2004/T2.pdf",
+					"solutions": "/contests/apho/2004/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2004/T3.pdf",
+					"solutions": "/contests/apho/2004/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2004/E1.pdf",
+					"solutions": "/contests/apho/2004/E1_S.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/apho/2004/E2.pdf",
+					"solutions": "/contests/apho/2004/E2_S.pdf"
+				}
+			],
+			"minutes": "/contests/apho/2004_min.pdf"
+		},
+		{
+			"year": 2003,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2003/T1.pdf",
+					"solutions": "/contests/apho/2003/T1_S.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2003/T2.pdf",
+					"solutions": "/contests/apho/2003/T2_S.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2003/T3.pdf",
+					"solutions": "/contests/apho/2003/T3_S.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2003/E1.pdf",
+					"solutions": "/contests/apho/2003/E1_S.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/apho/2003/E2.pdf",
+					"solutions": "/contests/apho/2003/E2_S.pdf"
+				}
+			],
+			"minutes": "/contests/apho/2003_min.pdf"
+		},
+		{
+			"year": 2002,
+			"files": [
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2002/E1.pdf",
+					"ans": "/contests/apho/2002/E1_A.pdf"
+				},
+				{
+					"number": "E2",
+					"title": "",
+					"problems": "/contests/apho/2002/E2.pdf",
+					"solutions": "/contests/apho/2002/E2_S.pdf"
+				}
+			],
+			"theory": "/contests/apho/2002_T.pdf",
+			"theory sol": "/contests/apho/2002_T_S.pdf",
+			"minutes": "/contests/apho/2002_min.pdf"
+		},
+		{
+			"year": 2001,
+			"files": [
+				{
+					"number": "T1",
+					"title": "",
+					"problems": "/contests/apho/2001/T1.pdf",
+					"solutions": "/contests/apho/2001/T1_S.pdf",
+					"ans": "/contests/apho/2001/T1_A.pdf",
+					"ms": "/contests/apho/2001/T1_M.pdf"
+				},
+				{
+					"number": "T2",
+					"title": "",
+					"problems": "/contests/apho/2001/T2.pdf",
+					"solutions": "/contests/apho/2001/T2_S.pdf",
+					"ans": "/contests/apho/2001/T2_A.pdf",
+					"ms": "/contests/apho/2001/T2_M.pdf"
+				},
+				{
+					"number": "T3",
+					"title": "",
+					"problems": "/contests/apho/2001/T3.pdf",
+					"solutions": "/contests/apho/2001/T3_S.pdf",
+					"ans": "/contests/apho/2001/T3_A.pdf",
+					"ms": "/contests/apho/2001/T3_M.pdf"
+				},
+				{
+					"number": "E1",
+					"title": "",
+					"problems": "/contests/apho/2001/E1.pdf",
+					"solutions": "/contests/apho/2001/E1_S.pdf",
+					"ms": "/contests/apho/2001/E1_M.pdf"
+				}
+			],
+			"minutes": "/contests/apho/2001_min.pdf"
+		},
+		{
+			"year": 2000,
+			"theory": "/contests/apho/2000_T.pdf",
+			"theory sol": "/contests/apho/2000_T_S.pdf",
+			"experiment": "/contests/apho/2000_E.pdf",
+			"experiment sol": "/contests/apho/2000_E_S.pdf",
+			"minutes": "/contests/apho/2000_min.pdf"
+		}
+	],
+	"usapho": [
+		{
+			"year": 2025,
+			"problems": "/contests/usapho/2025.pdf",
+			"solutions": "/contests/usapho/2025_S.pdf"
+		},
+		{
+			"year": 2024,
+			"problems": "/contests/usapho/2024.pdf",
+			"solutions": "/contests/usapho/2024_S.pdf"
+		},
+		{
+			"year": 2023,
+			"problems": "/contests/usapho/2023.pdf",
+			"solutions": "/contests/usapho/2023_S.pdf"
+		},
+		{
+			"year": 2022,
+			"problems": "/contests/usapho/2022.pdf",
+			"solutions": "/contests/usapho/2022_S.pdf"
+		},
+		{
+			"year": 2021,
+			"problems": "/contests/usapho/2021.pdf",
+			"solutions": "/contests/usapho/2021_S.pdf"
+		},
+		{
+			"year": 2020,
+			"problems": "/contests/usapho/2020.pdf",
+			"solutions": "/contests/usapho/2020_S.pdf"
+		},
+		{
+			"year": 2019,
+			"problems": "/contests/usapho/2019.pdf",
+			"solutions": "/contests/usapho/2019_S.pdf"
+		},
+		{
+			"year": 2018,
+			"problems": "/contests/usapho/2018.pdf",
+			"solutions": "/contests/usapho/2018_S.pdf"
+		},
+		{
+			"year": 2017,
+			"problems": "/contests/usapho/2017.pdf",
+			"solutions": "/contests/usapho/2017_S.pdf"
+		},
+		{
+			"year": 2016,
+			"problems": "/contests/usapho/2016.pdf",
+			"solutions": "/contests/usapho/2016_S.pdf"
+		},
+		{
+			"year": 2015,
+			"problems": "/contests/usapho/2015.pdf",
+			"solutions": "/contests/usapho/2015_S.pdf"
+		},
+		{
+			"year": 2014,
+			"problems": "/contests/usapho/2014.pdf",
+			"solutions": "/contests/usapho/2014_S.pdf"
+		},
+		{
+			"year": 2013,
+			"problems": "/contests/usapho/2013.pdf",
+			"solutions": "/contests/usapho/2013_S.pdf"
+		},
+		{
+			"year": 2012,
+			"problems": "/contests/usapho/2012.pdf",
+			"solutions": "/contests/usapho/2012_S.pdf"
+		},
+		{
+			"year": 2011,
+			"problems": "/contests/usapho/2011.pdf",
+			"solutions": "/contests/usapho/2011_S.pdf"
+		},
+		{
+			"year": 2010,
+			"problems": "/contests/usapho/2010.pdf",
+			"solutions": "/contests/usapho/2010_S.pdf"
+		},
+		{
+			"year": 2009,
+			"problems": "/contests/usapho/2009.pdf",
+			"solutions": "/contests/usapho/2009_S.pdf"
+		},
+		{
+			"year": 2008,
+			"problems": "/contests/usapho/2008.pdf",
+			"solutions": "/contests/usapho/2008_S.pdf"
+		},
+		{
+			"year": 2007,
+			"problems": "/contests/usapho/2007.pdf",
+			"solutions": "/contests/usapho/2007_S.pdf"
+		},
+		{
+			"year": 2006,
+			"problems": "/contests/usapho/2006.pdf",
+			"solutions": "/contests/usapho/2006_S.pdf"
+		},
+		{
+			"year": 2005,
+			"problems": "/contests/usapho/2005.pdf",
+			"solutions": "/contests/usapho/2005_S.pdf"
+		},
+		{
+			"year": 2004,
+			"problems": "/contests/usapho/2004.pdf",
+			"solutions": "/contests/usapho/2004_S.pdf"
+		},
+		{
+			"year": 2003,
+			"problems": "/contests/usapho/2003.pdf",
+			"solutions": "/contests/usapho/2003_S.pdf"
+		},
+		{
+			"year": 2002,
+			"problems": "/contests/usapho/2002.pdf",
+			"solutions": "/contests/usapho/2002_S.pdf"
+		},
+		{
+			"year": 2001,
+			"problems": "/contests/usapho/2001.pdf",
+			"solutions": "/contests/usapho/2001_S.pdf"
+		},
+		{
+			"year": 2000,
+			"problems": "/contests/usapho/2000.pdf",
+			"solutions": "/contests/usapho/2000_S.pdf"
+		},
+		{
+			"year": 1999,
+			"problems": "/contests/usapho/1999.pdf",
+			"solutions": "/contests/usapho/1999_S.pdf"
+		},
+		{
+			"year": 1998,
+			"problems": "/contests/usapho/1998.pdf",
+			"solutions": "/contests/usapho/1998_S.pdf"
+		},
+		{
+			"year": 1997,
+			"problems": "/contests/usapho/1997.pdf",
+			"solutions": "/contests/usapho/1997_S.pdf"
+		}
+	],
+	"usatst": [
+		{
+			"year": 2022,
+			"theory": "/contests/usatst/2022_T.pdf",
+			"theory sol": "/contests/usatst/2022_T_S.pdf",
+			"experiment": "/contests/usatst/2022_E.pdf",
+			"experiment sol": "/contests/usatst/2022_E_S.pdf"
+		},
+		{
+			"year": 2021,
+			"theory": "/contests/usatst/2021_T.pdf",
+			"theory sol": "/contests/usatst/2021_T_S.pdf"
+		}
+	],
+	"eotvos": [
+		{
+			"year": 2025,
+			"problems": "/contests/eotvos/2025.pdf"
+		},
+		{
+			"year": 2024,
+			"problems": "/contests/eotvos/2024.pdf",
+			"solutions": "/contests/eotvos/2024_S.pdf"
+		},
+		{
+			"year": 2023,
+			"problems": "/contests/eotvos/2023.pdf",
+			"solutions": "/contests/eotvos/2023_S.pdf"
+		},
+		{
+			"year": 2022,
+			"problems": "/contests/eotvos/2022.pdf",
+			"solutions": "/contests/eotvos/2022_S.pdf"
+		},
+		{
+			"year": 2021,
+			"problems": "/contests/eotvos/2021.pdf",
+			"solutions": "/contests/eotvos/2021_S.pdf"
+		},
+		{
+			"year": 2020,
+			"problems": "/contests/eotvos/2020.pdf",
+			"solutions": "/contests/eotvos/2020_S.pdf"
+		},
+		{
+			"year": 2019,
+			"problems": "/contests/eotvos/2019.pdf",
+			"en": "/contests/eotvos/2019_EN.pdf",
+			"solutions": "/contests/eotvos/2019_S.pdf"
+		},
+		{
+			"year": 2018,
+			"problems": "/contests/eotvos/2018.pdf",
+			"en": "/contests/eotvos/2018_EN.pdf",
+			"solutions": "/contests/eotvos/2018_S.pdf"
+		},
+		{
+			"year": 2017,
+			"problems": "/contests/eotvos/2017.pdf",
+			"solutions": "/contests/eotvos/2017_S.pdf"
+		},
+		{
+			"year": 2016,
+			"problems": "/contests/eotvos/2016.pdf",
+			"solutions": "/contests/eotvos/2016_S.pdf"
+		},
+		{
+			"year": 2015,
+			"problems": "/contests/eotvos/2015.pdf",
+			"solutions": "/contests/eotvos/2015_S.pdf"
+		},
+		{
+			"year": 2014,
+			"problems": "/contests/eotvos/2014.pdf",
+			"solutions": "/contests/eotvos/2014_S.pdf"
+		},
+		{
+			"year": 2013,
+			"problems": "/contests/eotvos/2013.pdf",
+			"solutions": "/contests/eotvos/2013_S.pdf"
+		},
+		{
+			"year": 2012,
+			"solutions": "/contests/eotvos/2012_S.pdf"
+		},
+		{
+			"year": 2011,
+			"solutions": "/contests/eotvos/2011_S.pdf"
+		},
+		{
+			"year": 2010,
+			"solutions": "/contests/eotvos/2010_S.pdf"
+		},
+		{
+			"year": 2009,
+			"solutions": "/contests/eotvos/2009_S.pdf"
+		},
+		{
+			"year": 2008,
+			"solutions": "/contests/eotvos/2008_S.pdf"
+		},
+		{
+			"year": 2007,
+			"solutions": "/contests/eotvos/2007_S.pdf"
+		},
+		{
+			"year": 2006,
+			"solutions": "/contests/eotvos/2006_S.pdf"
+		},
+		{
+			"year": 2005,
+			"solutions": "/contests/eotvos/2005_S.pdf"
+		},
+		{
+			"year": 2004,
+			"en": "/contests/eotvos/2004_EN.pdf",
+			"solutions": "/contests/eotvos/2004_S.pdf"
+		},
+		{
+			"year": 2003,
+			"solutions": "/contests/eotvos/2003_S.pdf"
+		},
+		{
+			"year": 2002,
+			"solutions": "/contests/eotvos/2002_S.pdf"
+		},
+		{
+			"year": 2001,
+			"solutions": "/contests/eotvos/2001_S.pdf"
+		},
+		{
+			"year": 2000,
+			"en": "/contests/eotvos/2000_EN.pdf",
+			"solutions": "/contests/eotvos/2000_S.pdf"
+		},
+		{
+			"year": 1999,
+			"en": "/contests/eotvos/1999_EN.pdf",
+			"solutions": "/contests/eotvos/1999_S.pdf"
+		},
+		{
+			"year": 1998,
+			"en": "/contests/eotvos/1998_EN.pdf",
+			"solutions": "/contests/eotvos/1998_S.pdf"
+		},
+		{
+			"year": 1997,
+			"solutions": "/contests/eotvos/1997_S.pdf"
+		},
+		{
+			"year": 1996,
+			"en": "/contests/eotvos/1996_EN.pdf",
+			"solutions": "/contests/eotvos/1996_S.pdf"
+		},
+		{
+			"year": 1995,
+			"solutions": "/contests/eotvos/1995_S.pdf"
+		},
+		{
+			"year": 1994,
+			"solutions": "/contests/eotvos/1994_S.pdf"
+		}
+	],
+	"pcup": [],
+	"spot": [
+		{
+			"year": 2025,
+			"problems": "/contests/spot/2025.pdf",
+			"solutions": "/contests/spot/2025_S.pdf"
+		},
+		{
+			"year": 2024,
+			"problems": "/contests/spot/2024.pdf",
+			"solutions": "/contests/spot/2024_S.pdf"
+		},
+		{
+			"year": 2023,
+			"problems": "/contests/spot/2023.pdf",
+			"solutions": "/contests/spot/2023_S.pdf",
+			"report": "/contests/spot/2023_REP.pdf"
+		},
+		{
+			"year": 2022,
+			"problems": "/contests/spot/2022.pdf",
+			"solutions": "/contests/spot/2022_S.pdf"
+		},
+		{
+			"year": 2020,
+			"problems": "/contests/spot/2020.pdf"
+		},
+		{
+			"year": 2019,
+			"problems": "/contests/spot/2019.pdf",
+			"solutions": "/contests/spot/2019_S.pdf"
+		},
+		{
+			"year": 2018,
+			"problems": "/contests/spot/2018.pdf",
+			"solutions": "/contests/spot/2018_S.pdf"
+		},
+		{
+			"year": 2017,
+			"problems": "/contests/spot/2017.pdf",
+			"solutions": "/contests/spot/2017_S.pdf"
+		}
+	],
+	"cpho-f": [
+		{
+			"year": 2023,
+			"problems": "/contests/cpho-f/2023.pdf"
+		},
+		{
+			"year": 2022,
+			"problems": "/contests/cpho-f/2022.pdf",
+			"en": "/contests/cpho-f/2022_EN.pdf"
+		},
+		{
+			"year": 2021,
+			"problems": "/contests/cpho-f/2021.pdf"
+		},
+		{
+			"year": 2020,
+			"problems": "/contests/cpho-f/2020.pdf",
+			"solutions": "/contests/cpho-f/2020_S.pdf"
+		},
+		{
+			"year": 2019,
+			"problems": "/contests/cpho-f/2019.doc",
+			"en": "/contests/cpho-f/2019_EN.pdf"
+		},
+		{
+			"year": 2018,
+			"problems": "/contests/cpho-f/2018.pdf",
+			"en": "/contests/cpho-f/2018_EN.pdf"
+		},
+		{
+			"year": 2017,
+			"problems": "/contests/cpho-f/2017.doc",
+			"en": "/contests/cpho-f/2017_EN.pdf",
+			"solutions": "/contests/cpho-f/2017_S.doc"
+		},
+		{
+			"year": 2016,
+			"problems": "/contests/cpho-f/2016.doc"
+		},
+		{
+			"year": 2015,
+			"problems": "/contests/cpho-f/2015.doc"
+		},
+		{
+			"year": 2014,
+			"problems": "/contests/cpho-f/2014.doc"
+		},
+		{
+			"year": 2013,
+			"problems": "/contests/cpho-f/2013.docx"
+		},
+		{
+			"year": 2012,
+			"problems": "/contests/cpho-f/2012.docx"
+		},
+		{
+			"year": 2011,
+			"problems": "/contests/cpho-f/2011.docx",
+			"solutions": "/contests/cpho-f/2011_S.doc"
+		},
+		{
+			"year": 2010,
+			"problems": "/contests/cpho-f/2010.pdf"
+		},
+		{
+			"year": 2009,
+			"problems": "/contests/cpho-f/2009.doc"
+		},
+		{
+			"year": 2008,
+			"problems": "/contests/cpho-f/2008.pdf"
+		},
+		{
+			"year": 2007,
+			"problems": "/contests/cpho-f/2007.pdf"
+		},
+		{
+			"year": 2006,
+			"problems": "/contests/cpho-f/2006.pdf"
+		},
+		{
+			"year": 2005,
+			"problems": "/contests/cpho-f/2005.docx",
+			"en": "/contests/cpho-f/2005_EN.pdf"
+		},
+		{
+			"year": 2004,
+			"problems": "/contests/cpho-f/2004.docx"
+		},
+		{
+			"year": 2003,
+			"problems": "/contests/cpho-f/2003.docx"
+		}
+	],
+	"inpho": [
+		{
+			"year": 2025,
+			"problems": "/contests/inpho/2025.pdf",
+			"solutions": "/contests/inpho/2025_S.pdf"
+		},
+		{
+			"year": 2024,
+			"problems": "/contests/inpho/2024.pdf",
+			"solutions": "/contests/inpho/2024_S.pdf"
+		},
+		{
+			"year": 2023,
+			"problems": "/contests/inpho/2023.pdf",
+			"solutions": "/contests/inpho/2023_S.pdf"
+		},
+		{
+			"year": 2022,
+			"problems": "/contests/inpho/2022.pdf",
+			"solutions": "/contests/inpho/2022_S.pdf"
+		},
+		{
+			"year": 2021,
+			"problems": "/contests/inpho/2021.pdf",
+			"solutions": "/contests/inpho/2021_S.pdf"
+		},
+		{
+			"year": 2020,
+			"problems": "/contests/inpho/2020.pdf",
+			"solutions": "/contests/inpho/2020_S.pdf"
+		},
+		{
+			"year": 2019,
+			"problems": "/contests/inpho/2019.pdf",
+			"solutions": "/contests/inpho/2019_S.pdf"
+		},
+		{
+			"year": 2018,
+			"problems": "/contests/inpho/2018.pdf",
+			"solutions": "/contests/inpho/2018_S.pdf"
+		},
+		{
+			"year": 2017,
+			"solutions": "/contests/inpho/2017_S.pdf"
+		},
+		{
+			"year": 2016,
+			"problems": "/contests/inpho/2016.pdf",
+			"solutions": "/contests/inpho/2016_S.pdf"
+		},
+		{
+			"year": 2015,
+			"solutions": "/contests/inpho/2015_S.pdf"
+		},
+		{
+			"year": 2014,
+			"problems": "/contests/inpho/2014.pdf",
+			"solutions": "/contests/inpho/2014_S.pdf"
+		},
+		{
+			"year": 2013,
+			"problems": "/contests/inpho/2013.pdf",
+			"solutions": "/contests/inpho/2013_S.pdf"
+		},
+		{
+			"year": 2012,
+			"problems": "/contests/inpho/2012.pdf",
+			"solutions": "/contests/inpho/2012_S.pdf",
+			"detailed solutions": "/contests/inpho/2012_S2.pdf"
+		},
+		{
+			"year": 2011,
+			"problems": "/contests/inpho/2011.pdf",
+			"solutions": "/contests/inpho/2011_S.pdf",
+			"detailed solutions": "/contests/inpho/2011_S2.pdf"
+		},
+		{
+			"year": 2010,
+			"problems": "/contests/inpho/2010.pdf",
+			"solutions": "/contests/inpho/2010_S.pdf"
+		},
+		{
+			"year": 2009,
+			"problems": "/contests/inpho/2009.pdf",
+			"solutions": "/contests/inpho/2009_S.pdf"
+		},
+		{
+			"year": 2008,
+			"problems": "/contests/inpho/2008.pdf"
+		}
+	],
+	"sjpo": [
+		{
+			"year": 2025,
+			"problems": "/contests/sjpo/2025.pdf"
+		},
+		{
+			"year": 2024,
+			"problems": "/contests/sjpo/2024.pdf",
+			"solutions": "/contests/sjpo/2024_S.pdf",
+			"version 2": "/contests/sjpo/2024_U.pdf"
+		},
+		{
+			"year": 2023,
+			"problems": "/contests/sjpo/2023.pdf"
+		},
+		{
+			"year": 2022,
+			"problems": "/contests/sjpo/2022.pdf",
+			"solutions": "/contests/sjpo/2022_S.pdf"
+		},
+		{
+			"year": 2019,
+			"problems": "/contests/sjpo/2019.pdf"
+		},
+		{
+			"year": 2018,
+			"problems": "/contests/sjpo/2018.pdf",
+			"solutions": "/contests/sjpo/2018_S.pdf"
+		},
+		{
+			"year": 2017,
+			"problems": "/contests/sjpo/2017.pdf",
+			"solutions": "/contests/sjpo/2017_S.pdf"
+		},
+		{
+			"year": 2016,
+			"problems": "/contests/sjpo/2016.pdf",
+			"solutions": "/contests/sjpo/2016_S.pdf"
+		},
+		{
+			"year": 2015,
+			"problems": "/contests/sjpo/2015.pdf",
+			"solutions": "/contests/sjpo/2015_S.pdf"
+		},
+		{
+			"year": 2014,
+			"problems": "/contests/sjpo/2014.pdf",
+			"solutions": "/contests/sjpo/2014_S.pdf"
+		},
+		{
+			"year": 2013,
+			"problems": "/contests/sjpo/2013.pdf",
+			"solutions": "/contests/sjpo/2013_S.pdf"
+		},
+		{
+			"year": 2012,
+			"problems": "/contests/sjpo/2012.pdf",
+			"solutions": "/contests/sjpo/2012_S.pdf"
+		},
+		{
+			"year": 2011,
+			"problems": "/contests/sjpo/2011.pdf",
+			"solutions": "/contests/sjpo/2011_S.pdf"
+		},
+		{
+			"year": 2010,
+			"problems": "/contests/sjpo/2010.pdf",
+			"solutions": "/contests/sjpo/2010_S.pdf"
+		},
+		{
+			"year": 2009,
+			"problems": "/contests/sjpo/2009.pdf",
+			"solutions": "/contests/sjpo/2009_S.pdf"
+		},
+		{
+			"year": 2008,
+			"problems": "/contests/sjpo/2008.pdf",
+			"solutions": "/contests/sjpo/2008_S.pdf"
+		}
+	],
+	"spho": [
+		{
+			"year": 2024,
+			"problems": "/contests/spho/2024.pdf"
+		},
+		{
+			"year": 2023,
+			"paper 1": "/contests/spho/2023_1.pdf",
+			"paper 2": "/contests/spho/2023_2.pdf"
+		},
+		{
+			"year": 2022,
+			"paper 1": "/contests/spho/2022_1.pdf",
+			"paper 2": "/contests/spho/2022_2.pdf"
+		},
+		{
+			"year": 2021,
+			"problems": "/contests/spho/2021.pdf"
+		},
+		{
+			"year": 2020,
+			"problems": "/contests/spho/2020.pdf"
+		},
+		{
+			"year": 2019,
+			"paper 1": "/contests/spho/2019_1.pdf",
+			"paper 2": "/contests/spho/2019_2.pdf"
+		},
+		{
+			"year": 2018,
+			"paper 1": "/contests/spho/2018_1.pdf",
+			"paper 2": "/contests/spho/2018_2.pdf"
+		},
+		{
+			"year": 2017,
+			"paper 1": "/contests/spho/2017_1.pdf",
+			"paper 2": "/contests/spho/2017_2.pdf"
+		},
+		{
+			"year": 2016,
+			"problems": "/contests/spho/2016.pdf"
+		},
+		{
+			"year": 2014,
+			"problems": "/contests/spho/2014.pdf"
+		},
+		{
+			"year": 2013,
+			"problems": "/contests/spho/2013.pdf"
+		},
+		{
+			"year": 2012,
+			"problems": "/contests/spho/2012.pdf"
+		},
+		{
+			"year": 2011,
+			"problems": "/contests/spho/2011.pdf"
+		},
+		{
+			"year": 2009,
+			"problems": "/contests/spho/2009.pdf"
+		},
+		{
+			"year": 2007,
+			"problems": "/contests/spho/2007.pdf"
+		},
+		{
+			"year": 2006,
+			"problems": "/contests/spho/2006.pdf"
+		},
+		{
+			"year": 2005,
+			"problems": "/contests/spho/2005.pdf"
+		},
+		{
+			"year": 2004,
+			"problems": "/contests/spho/2004.pdf"
+		},
+		{
+			"year": 2003,
+			"problems": "/contests/spho/2003.pdf"
+		},
+		{
+			"year": 2002,
+			"problems": "/contests/spho/2002.pdf"
+		}
+	]
 }

@@ -6,10 +6,10 @@
 	import { page } from '$app/state';
 	import { browser } from '$app/environment';
 	import { contests } from '../lib/pregen/contests';
-	import { mode, userPrefersMode, ModeWatcher } from "mode-watcher";
+	import { ModeWatcher } from 'mode-watcher';
 	import DarkModeButton from '$lib/DarkModeButton.svelte';
 	import HeaderLink from '$lib/HeaderLink.svelte';
-	
+
 	let contest = $derived(
 		contests.find(
 			(i) => i.id == page.url.pathname.split('/')[page.url.pathname.split('/').length - 1]

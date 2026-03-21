@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
-	import DropdownMenuPortal from "./dropdown-menu-portal.svelte";
-	import { DropdownMenu as DropdownMenuPrimitive } from "bits-ui";
-	import type { ComponentProps } from "svelte";
+	import { cn, type WithoutChildrenOrChild } from '$lib/utils.js';
+	import DropdownMenuPortal from './dropdown-menu-portal.svelte';
+	import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
+	import type { ComponentProps } from 'svelte';
 
 	let {
 		ref = $bindable(null),
 		sideOffset = 4,
-		align = "start",
+		align = 'start',
 		portalProps,
 		class: className,
 		...restProps
@@ -23,7 +23,7 @@
 		{sideOffset}
 		{align}
 		class={cn(
-			"data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/5 bg-popover text-popover-foreground dark:ring-foreground/10 min-w-48 rounded-2xl p-1 shadow-2xl ring-1 duration-100 data-[side=inline-start]:slide-in-from-right-2 data-[side=inline-end]:slide-in-from-left-2 z-50 w-(--bits-dropdown-menu-anchor-width) overflow-x-hidden overflow-y-auto outline-none data-closed:overflow-hidden",
+			'z-50 w-(--bits-dropdown-menu-anchor-width) min-w-48 overflow-x-hidden overflow-y-auto rounded-2xl bg-popover p-1 text-popover-foreground shadow-2xl ring-1 ring-foreground/5 duration-100 outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-hidden data-closed:fade-out-0 data-closed:zoom-out-95',
 			className
 		)}
 		{...restProps}

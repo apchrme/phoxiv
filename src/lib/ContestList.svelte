@@ -6,7 +6,7 @@
 	<div class="my-3">
 		<a href="/contests/{contest.id}">
 			<div
-				class="flex flex-row items-center gap-x-0.5 rounded-(--radius) px-3 py-4 transition sm:gap-x-4 sm:px-6 inset-ring-foreground/10 inset-ring-1 hover:inset-ring-2 bg-card text-card-foreground hover:bg-muted"
+				class="flex flex-row items-center gap-x-0.5 rounded-(--radius) bg-card px-3 py-4 text-card-foreground inset-ring-1 inset-ring-foreground/10 transition hover:bg-muted hover:inset-ring-2 sm:gap-x-4 sm:px-6"
 			>
 				<h3 class="hidden shrink-0 basis-23 translate-y-[1pt] text-center text-5xl sm:block">
 					{contest.icon}
