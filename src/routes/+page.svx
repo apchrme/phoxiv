@@ -9,7 +9,7 @@
 
 A comprehensive archive of many physics olympiads, from the well-known competitions such as IPhO and EuPhO, to hidden gems such as the Eötvös competition. This archive includes files such as marking schemes and answer sheets that you rarely find on other websites, packaged in a mobile-friendly UI.
 
-This website is under development. If you would like to contribute in any way (adding new problems or maintaining the site), drop me an email: admin(at)phoxiv.org
+This website is [open-source](https://github.com/apchrme/phoxiv). If you would like to contribute in any way (adding new problems or maintaining the site), drop me an email: admin(at)phoxiv.org
 
 ## contests
 
