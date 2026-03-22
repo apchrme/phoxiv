@@ -5,10 +5,14 @@
 	import SvelteSeo from 'svelte-seo';
 	import { page } from '$app/state';
 	import { contests } from '../lib/pregen/contests';
-	import { ModeWatcher } from 'mode-watcher';
+	import { mode, ModeWatcher } from 'mode-watcher';
 	import DarkModeButton from '$lib/DarkModeButton.svelte';
 	import HeaderLink from '$lib/HeaderLink.svelte';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
+
+	import DiscordWhite from '$lib/assets/icons/Discord-Symbol-White.svg';
+	import DiscordBlack from '$lib/assets/icons/Discord-Symbol-Black.svg';
 
 	let contest = $derived(
 		contests.find(
@@ -40,7 +44,14 @@
 				<HeaderLink url="/resources" />
 				<HeaderLink url="/blog" />
 			</div>
-			<DarkModeButton />
+			<div class="flex flex-row items-center gap-x-3">
+				{#if mode.current == "dark" }
+				<Button variant="outline" size="icon" href="https://discord.gg/SNBDY5nsgf" target="_blank"><img alt="Discord" src={DiscordWhite} class="scale-50 opacity-75"/></Button>
+				{:else}
+				<Button variant="outline" size="icon" href="https://discord.gg/SNBDY5nsgf" target="_blank"><img alt="Discord" src={DiscordBlack} class="scale-50 opacity-75"/></Button>
+				{/if}
+				<DarkModeButton />
+			</div>
 		</nav>
 		<Separator class="my-1" />
 		<main>

@@ -3,7 +3,7 @@
 	import files from '$lib/pregen/files.json';
 	import AdditionalYearFiles from '$lib/AdditionalYearFiles.svelte';
 	import { fileSyntax } from '$lib/pregen/fileSyntax';
-	import Separator from './components/ui/separator/separator.svelte';
+	import Separator from '$lib/components/ui/separator/separator.svelte';
 	const contestFiles = $derived(files[contestId]);
 </script>
 
