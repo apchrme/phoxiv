@@ -1,134 +1,134 @@
 {
-  "ipho": [
-    {
-      "year": "2025",
-      "T1": "Hydrogen and galaxies",
-      "T2": "Cox's Timepiece",
-      "T3": "Champagne!",
-      "E1": "Earth's magnetic field measurement",
-      "E2": "Sand craters and dunes",
-      "T4": "Strongly correlated Fermi gases (Theory Backup)",
-      "T5": ""
-    },
-    {
-      "year": "2024",
-      "T1": "Greenhouse Effect",
-      "T2": "Trapping Ions and Cooling Atoms",
-      "T3": "Black Widow Pulsar",
-      "E1": "Heat Conduction in a Copper Rod",
-      "E2": "Diffraction from Phase Steps",
-      "T4": "",
-      "T5": ""
-    },
-    {
-      "year": "2023",
-      "T1": "Soil Colloids",
-      "T2": "Neutron Stars",
-      "T3": "Water and Objects",
-      "E1": "Mass Measurement",
-      "E2": "Birefringence",
-      "T4": "",
-      "T5": ""
-    },
-    {
-      "year": "2022",
-      "T1": "Permanent magnets",
-      "T2": "James Webb Space Telescope",
-      "T3": "Scaling laws",
-      "E1": "Planet",
-      "E2": "Cylindrical Diode",
-      "T4": "",
-      "T5": ""
-    },
-    {
-      "year": "2021",
-      "T1": "Planetary Physics",
-      "T2": "Electrostatic Lens",
-      "T3": "Particles and Waves",
-      "E1": "Non-ideal Capacitors",
-      "E2": "LEDs",
-      "T4": "",
-      "T5": ""
-    },
-    {
-      "year": "2020",
-      "T1": "Problem Mix",
-      "T2": "Anisotropic Friction",
-      "T3": "Laser Technologies",
-      "E1": "Crystallography",
-      "E2": "",
-      "T4": "",
-      "T5": ""
-    },
-    {
-      "year": "2019",
-      "T1": "Zero-length springs and slinky coils",
-      "T2": "Microwave Oven",
-      "T3": "Thermoacoustic Engine",
-      "E1": "Optical Measurements",
-      "E2": "Wiedemann-Franz Law",
-      "T4": "",
-      "T5": ""
-    },
-    {
-      "year": "2018",
-      "T1": "LIGO-GW150914",
-      "T2": "Where is the neutrino?",
-      "T3": "Physics of Live Systems",
-      "E1": "Paper transistor",
-      "E2": "Viscoelasticity of a polymer thread",
-      "T4": "",
-      "T5": ""
-    },
-    {
-      "year": "2016",
-      "T1": "Two Problems in Mechanics",
-      "T2": "Nonlinear Dynamics in Electric Circuits",
-      "T3": "Large Hadron Collider",
-      "E1": "Electrical conductivity",
-      "E2": "Jumping beads",
-      "T4": "",
-      "T5": ""
-    },
-    {
-      "year": "2011",
-      "T1": "A Three-body Problem and LISA",
-      "T2": "An Electrified Soap Bubble",
-      "T3": "Scattering of an Ion",
-      "E1": "Electrical Blackbox",
-      "E2": "Mechanical Blackbox",
-      "T4": "",
-      "T5": ""
-    },
-    {
-      "year": "2013",
-      "T1": "The Maribo Meteorite",
-      "T2": "Plasmonic Steam Generator",
-      "T3": "The Greenlandic Ice Sheet",
-      "E1": "Speed of light",
-      "E2": "Solar cells",
-      "T4": "",
-      "T5": ""
-    },
-    {
-      "year": "2014",
-      "T1": "Three Problems",
-      "T2": "Van der Waals gas",
-      "T3": "Gas discharge",
-      "E1": "",
-      "E2": "",
-      "T4": "",
-      "T5": ""
-    },
-    {
-      "year": "2015",
-      "T1": "Particles from the Sun",
-      "T2": "The Extremum Princple",
-      "T3": "The Design of a Nuclear Reactor",
-      "E1": "Diffraction due to Helical Structure",
-      "E2": "Diffraction due to surface tension waves on water",
-      "T4": "",
-      "T5": ""
-    }
-  ]
+	"ipho": [
+		{
+			"year": "2025",
+			"T1": "Hydrogen and galaxies",
+			"T2": "Cox's Timepiece",
+			"T3": "Champagne!",
+			"E1": "Earth's magnetic field measurement",
+			"E2": "Sand craters and dunes",
+			"T4": "Strongly correlated Fermi gases (Theory Backup)",
+			"T5": ""
+		},
+		{
+			"year": "2024",
+			"T1": "Greenhouse Effect",
+			"T2": "Trapping Ions and Cooling Atoms",
+			"T3": "Black Widow Pulsar",
+			"E1": "Heat Conduction in a Copper Rod",
+			"E2": "Diffraction from Phase Steps",
+			"T4": "",
+			"T5": ""
+		},
+		{
+			"year": "2023",
+			"T1": "Soil Colloids",
+			"T2": "Neutron Stars",
+			"T3": "Water and Objects",
+			"E1": "Mass Measurement",
+			"E2": "Birefringence",
+			"T4": "",
+			"T5": ""
+		},
+		{
+			"year": "2022",
+			"T1": "Permanent magnets",
+			"T2": "James Webb Space Telescope",
+			"T3": "Scaling laws",
+			"E1": "Planet",
+			"E2": "Cylindrical Diode",
+			"T4": "",
+			"T5": ""
+		},
+		{
+			"year": "2021",
+			"T1": "Planetary Physics",
+			"T2": "Electrostatic Lens",
+			"T3": "Particles and Waves",
+			"E1": "Non-ideal Capacitors",
+			"E2": "LEDs",
+			"T4": "",
+			"T5": ""
+		},
+		{
+			"year": "2020",
+			"T1": "Problem Mix",
+			"T2": "Anisotropic Friction",
+			"T3": "Laser Technologies",
+			"E1": "Crystallography",
+			"E2": "",
+			"T4": "",
+			"T5": ""
+		},
+		{
+			"year": "2019",
+			"T1": "Zero-length springs and slinky coils",
+			"T2": "Microwave Oven",
+			"T3": "Thermoacoustic Engine",
+			"E1": "Optical Measurements",
+			"E2": "Wiedemann-Franz Law",
+			"T4": "",
+			"T5": ""
+		},
+		{
+			"year": "2018",
+			"T1": "LIGO-GW150914",
+			"T2": "Where is the neutrino?",
+			"T3": "Physics of Live Systems",
+			"E1": "Paper transistor",
+			"E2": "Viscoelasticity of a polymer thread",
+			"T4": "",
+			"T5": ""
+		},
+		{
+			"year": "2016",
+			"T1": "Two Problems in Mechanics",
+			"T2": "Nonlinear Dynamics in Electric Circuits",
+			"T3": "Large Hadron Collider",
+			"E1": "Electrical conductivity",
+			"E2": "Jumping beads",
+			"T4": "",
+			"T5": ""
+		},
+		{
+			"year": "2011",
+			"T1": "A Three-body Problem and LISA",
+			"T2": "An Electrified Soap Bubble",
+			"T3": "Scattering of an Ion",
+			"E1": "Electrical Blackbox",
+			"E2": "Mechanical Blackbox",
+			"T4": "",
+			"T5": ""
+		},
+		{
+			"year": "2013",
+			"T1": "The Maribo Meteorite",
+			"T2": "Plasmonic Steam Generator",
+			"T3": "The Greenlandic Ice Sheet",
+			"E1": "Speed of light",
+			"E2": "Solar cells",
+			"T4": "",
+			"T5": ""
+		},
+		{
+			"year": "2014",
+			"T1": "Three Problems",
+			"T2": "Van der Waals gas",
+			"T3": "Gas discharge",
+			"E1": "",
+			"E2": "",
+			"T4": "",
+			"T5": ""
+		},
+		{
+			"year": "2015",
+			"T1": "Particles from the Sun",
+			"T2": "The Extremum Princple",
+			"T3": "The Design of a Nuclear Reactor",
+			"E1": "Diffraction due to Helical Structure",
+			"E2": "Diffraction due to surface tension waves on water",
+			"T4": "",
+			"T5": ""
+		}
+	]
 }
