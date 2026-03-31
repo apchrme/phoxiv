@@ -532,31 +532,31 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Particles from the Sun",
                     "problems": "/contests/ipho/2015/T1.pdf",
                     "solutions": "/contests/ipho/2015/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "The Extremum Princple",
                     "problems": "/contests/ipho/2015/T2.pdf",
                     "solutions": "/contests/ipho/2015/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "The Design of a Nuclear Reactor",
                     "problems": "/contests/ipho/2015/T3.pdf",
                     "solutions": "/contests/ipho/2015/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Diffraction due to Helical Structure",
                     "problems": "/contests/ipho/2015/E1.pdf",
                     "solutions": "/contests/ipho/2015/E1_S.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Diffraction due to surface tension waves on water",
                     "problems": "/contests/ipho/2015/E2.pdf",
                     "solutions": "/contests/ipho/2015/E2_S.pdf"
                 }
@@ -569,21 +569,21 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Three Problems",
                     "problems": "/contests/ipho/2014/T1.pdf",
                     "solutions": "/contests/ipho/2014/T1_S.pdf",
                     "pres": "/contests/ipho/2014/T1_P.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Van der Waals gas",
                     "problems": "/contests/ipho/2014/T2.pdf",
                     "solutions": "/contests/ipho/2014/T2_S.pdf",
                     "pres": "/contests/ipho/2014/T2_P.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Gas discharge",
                     "problems": "/contests/ipho/2014/T3.pdf",
                     "solutions": "/contests/ipho/2014/T3_S.pdf",
                     "pres": "/contests/ipho/2014/T3_P.pdf"
@@ -598,31 +598,31 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "The Maribo Meteorite",
                     "problems": "/contests/ipho/2013/T1.pdf",
                     "solutions": "/contests/ipho/2013/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Plasmonic Steam Generator",
                     "problems": "/contests/ipho/2013/T2.pdf",
                     "solutions": "/contests/ipho/2013/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "The Greenlandic Ice Sheet",
                     "problems": "/contests/ipho/2013/T3.pdf",
                     "solutions": "/contests/ipho/2013/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Speed of light",
                     "problems": "/contests/ipho/2013/E1.pdf",
                     "solutions": "/contests/ipho/2013/E1_S.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Solar cells",
                     "problems": "/contests/ipho/2013/E2.pdf",
                     "solutions": "/contests/ipho/2013/E2_S.pdf"
                 }
@@ -645,35 +645,35 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "A Three-body Problem and LISA",
                     "problems": "/contests/ipho/2011/T1.pdf",
                     "solutions": "/contests/ipho/2011/T1_S.pdf",
                     "ans": "/contests/ipho/2011/T1_A.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "An Electrified Soap Bubble",
                     "problems": "/contests/ipho/2011/T2.pdf",
                     "solutions": "/contests/ipho/2011/T2_S.pdf",
                     "ans": "/contests/ipho/2011/T2_A.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Scattering of an Ion",
                     "problems": "/contests/ipho/2011/T3.pdf",
                     "solutions": "/contests/ipho/2011/T3_S.pdf",
                     "ans": "/contests/ipho/2011/T3_A.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Electrical Blackbox",
                     "problems": "/contests/ipho/2011/E1.pdf",
                     "solutions": "/contests/ipho/2011/E1_S.pdf",
                     "ans": "/contests/ipho/2011/E1_A.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Mechanical Blackbox",
                     "problems": "/contests/ipho/2011/E2.pdf",
                     "solutions": "/contests/ipho/2011/E2_S.pdf",
                     "ans": "/contests/ipho/2011/E2_A.pdf"
@@ -2421,6 +2421,12 @@
     "pcup": [],
     "spot": [
         {
+            "year": 2026,
+            "problems": "/contests/spot/2026.pdf",
+            "solutions": "/contests/spot/2026_S.pdf",
+            "report": "/contests/spot/2026_REP.pdf"
+        },
+        {
             "year": 2025,
             "problems": "/contests/spot/2025.pdf",
             "solutions": "/contests/spot/2025_S.pdf"
@@ -2559,12 +2565,14 @@
         {
             "year": 2025,
             "problems": "/contests/inpho/2025.pdf",
-            "solutions": "/contests/inpho/2025_S.pdf"
+            "solutions": "/contests/inpho/2025_S.pdf",
+            "ans": "/contests/inpho/2025_A.pdf"
         },
         {
             "year": 2024,
             "problems": "/contests/inpho/2024.pdf",
-            "solutions": "/contests/inpho/2024_S.pdf"
+            "solutions": "/contests/inpho/2024_S.pdf",
+            "ans": "/contests/inpho/2024_A.pdf"
         },
         {
             "year": 2023,
