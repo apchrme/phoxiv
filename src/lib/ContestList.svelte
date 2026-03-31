@@ -120,8 +120,8 @@
 	</div>
 {:else}
 	<div class="rounded-xl border border-dashed border-border py-12 text-center">
-		<p class="mb-1 text-sm font-medium text-foreground">No contests found</p>
-		<p class="mb-0 text-xs text-muted-foreground">
+		<p class="mb-1 text-sm font-medium text-foreground text-center">No contests found</p>
+		<p class="mb-0 text-xs text-muted-foreground text-center">
 			Try a different search term or clear the filter.
 		</p>
 		<button

@@ -20,7 +20,7 @@
 	}
 
 	a {
-		@apply text-base leading-relaxed font-medium text-blue-700 decoration-2 underline-offset-4 transition-all hover:text-blue-500 dark:text-blue-300;
+		@apply text-base leading-relaxed font-medium text-primary decoration-2 underline-offset-4 transition-all hover:text-primary/50;
 	}
 
 	button {

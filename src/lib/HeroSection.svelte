@@ -26,7 +26,7 @@
 	<!-- CTAs -->
 	<div class="my-5 flex flex-wrap gap-3 sm:mb-8">
 		<a href="#contests" class={cn(buttonVariants({ variant: 'default' }))}>Browse contests</a>
-		<a href="mailto:admin@phoxiv.org" class={cn(buttonVariants({ variant: 'outline' }))}>
+		<a href="https://github.com/apchrme/phoxiv" class={cn(buttonVariants({ variant: 'outline' }))}>
 			Contribute
 		</a>
 	</div>
