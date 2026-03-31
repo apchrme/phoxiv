@@ -9,7 +9,7 @@
 	] as const;
 </script>
 
-<section class="pt-1 pb-4 sm:pb-9 sm:pt-6">
+<section class="my-5 sm:my-8">
 	<!-- Title -->
 	<div class="mb-3 flex flex-col items-start gap-1">
 		<h1 class="my-2 p-0 text-left text-5xl sm:text-6xl">phoXiv</h1>
@@ -17,14 +17,14 @@
 	</div>
 
 	<!-- Description -->
-	<p class="mt-2 sm:mt-4 mb-4 sm:mb-6 max-w-prose text-left text-base leading-relaxed text-foreground/80">
+	<p class="my-5 max-w-prose text-left text-base leading-relaxed text-foreground/80">
 		A comprehensive archive of physics olympiads — from the well-known IPhO and EuPhO to hidden gems
 		like the Eötvös competition. Includes marking schemes and answer sheets you rarely find
 		elsewhere, in a mobile-friendly UI.
 	</p>
 
 	<!-- CTAs -->
-	<div class="mb-5 flex flex-wrap gap-3 sm:mb-8">
+	<div class="my-5 flex flex-wrap gap-3 sm:mb-8">
 		<a href="#contests" class={cn(buttonVariants({ variant: 'default' }))}>Browse contests</a>
 		<a href="mailto:admin@phoxiv.org" class={cn(buttonVariants({ variant: 'outline' }))}>
 			Contribute

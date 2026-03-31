@@ -35,12 +35,7 @@
 		>
 			<circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
 		</svg>
-		<Input
-			type="search"
-			placeholder="Search contests…"
-			bind:value={query}
-			class="pl-9"
-		/>
+		<Input type="search" placeholder="Search contests…" bind:value={query} class="pl-9" />
 	</div>
 
 	<!-- Tag filter pills -->
@@ -76,11 +71,11 @@
 {#if filtered().length > 0}
 	<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
 		{#each filtered() as contest (contest.id)}
-			<a href="/contests/{contest.id}" class="group block no-underline!">
+			<a href="/contests/{contest.id}" class="group block">
 				<Card.Root
 					class={cn(
 						'h-full cursor-pointer py-4! transition-all duration-200',
-						'hover:shadow-md ring-border hover:ring-2 hover:ring-primary/40'
+						'ring-border hover:shadow-md hover:ring-2 hover:ring-primary/40'
 					)}
 				>
 					<Card.Content class="flex h-full flex-col gap-3 px-5">
@@ -130,7 +125,10 @@
 			Try a different search term or clear the filter.
 		</p>
 		<button
-			onclick={() => { query = ''; activeTag = null; }}
+			onclick={() => {
+				query = '';
+				activeTag = null;
+			}}
 			class="mt-3 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
 		>
 			Clear filters
