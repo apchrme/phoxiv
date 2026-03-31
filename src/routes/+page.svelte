@@ -6,8 +6,8 @@
 
 <SvelteSeo
 	title="phoXiv"
-	description="An archive of problems and solutions from various physics olympiads. Includes IPhO, EuPhO, USAPhO, the Singapore Olympiads and the Hungarian Eotvos competition."
-	keywords="problems, solutions, olympiad, physics, ipho, apho, eupho"
+	description="An archive of problems and solutions from various physics olympiads. Includes IPhO, EuPhO, USAPhO, the Singapore Olympiads, the Hungarian Eötvös competition and more."
+	keywords="problems, solutions, olympiad, physics, ipho, apho, eupho, singapore, eotvos"
 />
 
 <HeroSection />
