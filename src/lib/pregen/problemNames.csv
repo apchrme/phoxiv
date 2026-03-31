@@ -1,4 +1,4 @@
-contest, year, T1, T2, T3, E1, E2, T4, T5
+contest,year,T1,T2,T3,E1,E2,T4,T5
 ipho,2025,Hydrogen and galaxies,Cox's Timepiece,Champagne!,Earth's magnetic field measurement,Sand craters and dunes,Strongly correlated Fermi gases (Theory Backup),
 ipho,2024,Greenhouse Effect,Trapping Ions and Cooling Atoms,Black Widow Pulsar,Heat Conduction in a Copper Rod,Diffraction from Phase Steps,,
 ipho,2023,Soil Colloids,Neutron Stars,Water and Objects,Mass Measurement,Birefringence,,
@@ -8,3 +8,7 @@ ipho,2020,Problem Mix,Anisotropic Friction,Laser Technologies,Crystallography,,,
 ipho,2019,Zero-length springs and slinky coils,Microwave Oven,Thermoacoustic Engine,Optical Measurements,Wiedemann-Franz Law,,
 ipho,2018,LIGO-GW150914,Where is the neutrino?,Physics of Live Systems,Paper transistor,Viscoelasticity of a polymer thread,,
 ipho,2016,Two Problems in Mechanics,Nonlinear Dynamics in Electric Circuits,Large Hadron Collider,Electrical conductivity,Jumping beads,,
+ipho,2011,A Three-body Problem and LISA,An Electrified Soap Bubble,Scattering of an Ion,Electrical Blackbox,Mechanical Blackbox,,
+ipho,2013,The Maribo Meteorite,Plasmonic Steam Generator,The Greenlandic Ice Sheet,Speed of light,Solar cells,,
+ipho,2014,Three Problems,Van der Waals gas,Gas discharge,,,,
+ipho,2015,Particles from the Sun,The Extremum Princple,The Design of a Nuclear Reactor,Diffraction due to Helical Structure,Diffraction due to surface tension waves on water,,
