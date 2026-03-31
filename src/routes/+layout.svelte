@@ -34,9 +34,9 @@
 	class="flex min-h-screen w-full flex-col items-center bg-background px-8 py-8 antialiased sm:px-10 sm:py-10"
 >
 	<div class="w-full md:w-5/6 xl:w-2/3">
-		<nav class="flex flex-row flex-wrap items-center justify-between gap-2">
+		<nav class="flex flex-row flex-wrap items-center justify-center xs:justify-between gap-2">
 			<NavigationMenu.Root>
-				<NavigationMenu.List class="justify-start gap-2 sm:gap-3">
+				<NavigationMenu.List class="gap-2 sm:gap-3">
 					<NavLink url="/" label="home" />
 					<NavLink url="/resources" />
 					<NavLink url="/blog" />
