@@ -13,7 +13,7 @@
 <HeroSection />
 
 <!-- Contests -->
-<section id="contests" class="mb-5">
+<section id="contests" class="mb-3 sm:mb-5">
 	<div class="mb-3 sm:mb-5">
 		<h2 class="py-0">Contests</h2>
 		<p class="mb-0 text-sm text-muted-foreground">
