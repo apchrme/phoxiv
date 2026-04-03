@@ -36,7 +36,7 @@
 						{/each}
 					</NavigationMenu.List>
 				</NavigationMenu.Root>
-				<NavButtons />	
+				<NavButtons />
 			</nav>
 
 			<Separator class="my-3" />
