@@ -25,8 +25,15 @@
 		class="flex min-h-screen w-full flex-col items-center bg-background px-8 py-8 sm:px-10 sm:py-10"
 	>
 		<div class="w-full md:w-5/6 xl:w-2/3">
-			<nav class="md:hidden">
+			<nav class="grid grid-cols-3 items-center md:hidden">
 				<Sidebar.Trigger />
+				<a
+					href="/"
+					class="justify-self-center text-base font-medium text-foreground hover:text-primary"
+				>
+					phoXiv
+				</a>
+				<div></div>
 			</nav>
 			<nav class="hidden flex-row flex-wrap items-center justify-between gap-2 md:flex">
 				<NavigationMenu.Root>
