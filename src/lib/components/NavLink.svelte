@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	const { url, label = url.substring(1) } = $props();
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
-	import { cn } from './utils';
+	import { cn } from '$lib/utils';
 </script>
 
 <NavigationMenu.Item>
