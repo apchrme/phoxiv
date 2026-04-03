@@ -41,7 +41,7 @@
 			data-slot="sidebar"
 			data-mobile="true"
 			class={cn(
-				'w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden',
+				'w-(--sidebar-width)! max-w-none! bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden',
 				className
 			)}
 			style="--sidebar-width: {SIDEBAR_WIDTH_MOBILE};"

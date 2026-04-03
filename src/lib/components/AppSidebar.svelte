@@ -31,5 +31,6 @@
 		<Sidebar.Footer class="items-center py-5">
 			<NavButtons />
 		</Sidebar.Footer>
+
 	</Sidebar.Root>
 </div>
