@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { contests, type ContestTag } from '$lib/pregen/contests';
-	import * as Card from './components/ui/card/index.ts';
-	import Badge from './components/ui/badge/badge.svelte';
-	import { Input } from './components/ui/input/index.js';
+	import * as Card from '$lib/components/ui/card/index';
+	import Badge from '$lib/components/ui/badge/badge.svelte';
+	import { Input } from '$lib/components/ui/input/index.js';
 	import { cn } from '$lib/utils.js';
 
 	const ALL_TAGS: ContestTag[] = ['International', 'Regional', 'National', 'Open'];
@@ -120,8 +120,8 @@
 	</div>
 {:else}
 	<div class="rounded-xl border border-dashed border-border py-12 text-center">
-		<p class="mb-1 text-sm font-medium text-foreground text-center">No contests found</p>
-		<p class="mb-0 text-xs text-muted-foreground text-center">
+		<p class="mb-1 text-center text-sm font-medium text-foreground">No contests found</p>
+		<p class="mb-0 text-center text-xs text-muted-foreground">
 			Try a different search term or clear the filter.
 		</p>
 		<button

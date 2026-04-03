@@ -1,7 +1,7 @@
 <script lang="ts">
 	import SvelteSeo from 'svelte-seo';
-	import HeroSection from '$lib/HeroSection.svelte';
-	import ContestList from '$lib/ContestList.svelte';
+	import HeroSection from '$lib/components/HeroSection.svelte';
+	import ContestList from '$lib/components/ContestList.svelte';
 </script>
 
 <SvelteSeo
