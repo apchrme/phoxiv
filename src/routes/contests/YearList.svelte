@@ -6,10 +6,12 @@
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
+	import { Switch } from '$lib/components/ui/switch/index.js';
 
 	const contestFiles = $derived(files[contestId]);
 
 	let query = $state('');
+	let showFullYear = $state(false);
 
 	const filtered = $derived(() => {
 		const q = query.trim().toLowerCase();
@@ -25,29 +27,53 @@
 			if (yearMatches) {
 				results.push({ ...yearEntry, matchedFiles: yearEntry.files ?? [] });
 			} else if (matchedProblems.length > 0) {
-				results.push({ ...yearEntry, matchedFiles: matchedProblems });
+				// Show full year files if toggle is on, otherwise only matched problems
+				results.push({
+					...yearEntry,
+					matchedFiles: showFullYear ? (yearEntry.files ?? []) : matchedProblems
+				});
 			}
 		}
 		return results;
 	});
+
+	// Whether the current query has any problem-level matches (not just year matches)
+	const hasProblemMatches = $derived(() => {
+		const q = query.trim().toLowerCase();
+		if (!q) return false;
+		return contestFiles.some(
+			(y) =>
+				!String(y.year).includes(q) &&
+				(y.files ?? []).some(
+					(p) => p.title?.toLowerCase().includes(q) || p.number?.toLowerCase().includes(q)
+				)
+		);
+	});
 </script>
 
 <section class="py-4">
-	<!-- Search bar (no filter toggle) -->
 	<div class="mb-4">
-		<SearchBar placeholder="Search by year or problem…" bind:value={query} />
+		<SearchBar placeholder="Search by year or problem…" bind:value={query}>
+			{#snippet filters()}
+				{#if hasProblemMatches()}
+					<label class="flex cursor-pointer items-center gap-2">
+						<Switch bind:checked={showFullYear} />
+						<span class="text-xs font-medium text-muted-foreground">Show full year</span>
+					</label>
+				{/if}
+			{/snippet}
+		</SearchBar>
 	</div>
 
-	<!-- Results -->
 	{#if filtered().length > 0}
 		{#each filtered() as yearEntry (yearEntry.year)}
 			<Separator />
 			<div class="flex flex-col items-center py-4 sm:flex-row">
 				<h3 class="shrink-0 px-4 py-0 text-center sm:mb-0 sm:basis-[80pt]">{yearEntry.year}</h3>
 
-				<div class="flex flex-auto w-full flex-col">
-					<!-- General files for that year (only shown when full year is visible) -->
-					{#if !query.trim() || String(yearEntry.year).includes(query.trim().toLowerCase())}
+				<div class="flex w-full flex-auto flex-col">
+					<!-- General files — shown when: no query, year matched, or "show full year" is on -->
+					{#if !query.trim() || String(yearEntry.year).includes(query.trim().toLowerCase()) || showFullYear}
 						<div class="flex flex-row flex-wrap justify-evenly gap-x-10 gap-y-1 sm:m-0">
 							<AdditionalYearFiles {contestId} yearFiles={yearEntry} />
 							{#each fileSyntax as fileType (fileType.id)}
