@@ -2,8 +2,9 @@
 	import { contests, type ContestTag } from '$lib/pregen/contests';
 	import * as Card from '$lib/components/ui/card/index';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
-	import { Input } from '$lib/components/ui/input/index.js';
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
+	import SearchBar from '$lib/components/SearchBar.svelte';
+	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
 	import { cn } from '$lib/utils.js';
 
 	const ALL_TAGS: ContestTag[] = ['International', 'Regional', 'National', 'Open'];
@@ -23,33 +24,21 @@
 </script>
 
 <!-- Search + filter toolbar -->
-<div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center">
-	<!-- shadcn Input with inset search icon -->
-	<div class="relative flex-1">
-		<svg
-			class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			stroke-width="2"
-			aria-hidden="true"
-		>
-			<circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-		</svg>
-		<Input type="search" placeholder="Search contests…" bind:value={query} class="pl-9" />
-	</div>
-
-	<!-- Tag filter toggle group -->
-	<ToggleGroup.Root
-		type="single"
-		value={activeTag ?? ''}
-		onValueChange={(v) => (activeTag = (v as ContestTag) || null)}
-	>
-		<ToggleGroup.Item value="">All</ToggleGroup.Item>
-		{#each ALL_TAGS as tag (tag)}
-			<ToggleGroup.Item value={tag}>{tag}</ToggleGroup.Item>
-		{/each}
-	</ToggleGroup.Root>
+<div class="mb-5">
+	<SearchBar placeholder="Search contests…" bind:value={query}>
+		{#snippet filters()}
+			<ToggleGroup.Root
+				type="single"
+				value={activeTag ?? ''}
+				onValueChange={(v) => (activeTag = (v as ContestTag) || null)}
+			>
+				<ToggleGroup.Item value="">All</ToggleGroup.Item>
+				{#each ALL_TAGS as tag (tag)}
+					<ToggleGroup.Item value={tag}>{tag}</ToggleGroup.Item>
+				{/each}
+			</ToggleGroup.Root>
+		{/snippet}
+	</SearchBar>
 </div>
 
 <!-- Contest grid -->
@@ -104,19 +93,10 @@
 		{/each}
 	</div>
 {:else}
-	<div class="rounded-xl border border-dashed border-border py-12 text-center">
-		<p class="mb-1 text-center text-sm font-medium text-foreground">No contests found</p>
-		<p class="mb-0 text-center text-xs text-muted-foreground">
-			Try a different search term or clear the filter.
-		</p>
-		<button
-			onclick={() => {
-				query = '';
-				activeTag = null;
-			}}
-			class="mt-3 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-		>
-			Clear filters
-		</button>
-	</div>
+	<SearchEmptyState
+		message="No contests found"
+		hint="Try a different search term or clear the filter."
+		clearLabel="Clear filters"
+		onClear={() => { query = ''; activeTag = null; }}
+	/>
 {/if}

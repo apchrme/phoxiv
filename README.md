@@ -48,7 +48,7 @@ All of the pregeneration scripts can be run by simply doing `bun run pregen`.
 ### High priority
 - fix the stupid looking emojis in the contest list
 - add a "hide solutions" button
-- add a menu to scroll to years quickly, or some sort of search function
+- ~~add a menu to scroll to years quickly, or some sort of search function~~
 - add problem names for ipho and apho
 
 ### Medium priority
