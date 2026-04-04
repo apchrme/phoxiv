@@ -63,7 +63,7 @@
     {
       "year": "2019",
       "T1": "Zero-length springs and slinky coils",
-      "T2": "Microwave Oven",
+      "T2": "The Physics of a Microwave Oven",
       "T3": "Thermoacoustic Engine",
       "E1": "Optical Measurements",
       "E2": "Wiedemann-Franz Law",
@@ -75,8 +75,18 @@
       "T1": "LIGO-GW150914",
       "T2": "Where is the neutrino?",
       "T3": "Physics of Live Systems",
-      "E1": "Paper transistor",
-      "E2": "Viscoelasticity of a polymer thread",
+      "E1": "Paper Transistor",
+      "E2": "Viscoelasticity of a Polymer Thread",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2017",
+      "T1": "Dark Matter",
+      "T2": "Earthquake Volcano and Tsunami",
+      "T3": "Cosmic Inflation",
+      "E1": "Optics of a Salt Solution",
+      "E2": "Earthquake and Volcano Sensing",
       "T4": "",
       "T5": ""
     },
@@ -85,18 +95,28 @@
       "T1": "Two Problems in Mechanics",
       "T2": "Nonlinear Dynamics in Electric Circuits",
       "T3": "Large Hadron Collider",
-      "E1": "Electrical conductivity",
-      "E2": "Jumping beads",
+      "E1": "Electrical Conductivity in 2D",
+      "E2": "Jumping Beads",
       "T4": "",
       "T5": ""
     },
     {
-      "year": "2011",
-      "T1": "A Three-body Problem and LISA",
-      "T2": "An Electrified Soap Bubble",
-      "T3": "Scattering of an Ion",
-      "E1": "Electrical Blackbox",
-      "E2": "Mechanical Blackbox",
+      "year": "2015",
+      "T1": "Particles from the Sun",
+      "T2": "The Extremum Principle",
+      "T3": "The Design of a Nuclear Reactor",
+      "E1": "Diffraction due to Helical Structure",
+      "E2": "Diffraction due to Surface Tension",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2014",
+      "T1": "Three Problems",
+      "T2": "Van der Waals Gas",
+      "T3": "Gas Discharge",
+      "E1": "To see invisible!",
+      "E2": "",
       "T4": "",
       "T5": ""
     },
@@ -105,28 +125,310 @@
       "T1": "The Maribo Meteorite",
       "T2": "Plasmonic Steam Generator",
       "T3": "The Greenlandic Ice Sheet",
-      "E1": "Speed of light",
-      "E2": "Solar cells",
+      "E1": "Speed of Light",
+      "E2": "Solar Cells",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2012",
+      "T1": "Focus on sketches",
+      "T2": "Kelvin water dropper",
+      "T3": "Protostar formation",
+      "E1": "The Magnetic Permeability of Water",
+      "E2": "Nonlinear Black Box",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2011",
+      "T1": "A Three-body Problem and LISA",
+      "T2": "An Electrified Soap Bubble",
+      "T3": "Scattering of an Ion by a Neutral Atom",
+      "E1": "Electrical Black Box: Capacitive Displacement Sensor",
+      "E2": "Mechanical Black Box: a cylinder with a ball inside",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2010",
+      "T1": "Image of a charge in a metallic object",
+      "T2": "Chimney physics",
+      "T3": "Simple model of an atomic nucleus",
+      "E1": "Elasticity of Sheets",
+      "E2": "Forces between Magnets",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2009",
+      "T1": "Evolution of the Earth-Moon System",
+      "T2": "Doppler Laser Cooling and Optical Molasses",
+      "T3": "Why are Stars so Large?",
+      "E1": "Wavelength of a Diode Laser",
+      "E2": "Birefringence of Mica",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2008",
+      "T1": "Water-Powered Rice-Pounding Mortar",
+      "T2": "Cherenkov Light and Ring Imaging Counter",
+      "T3": "Change of Air Temperature in the Atmosphere",
+      "E1": "Differential Thermometric Method",
+      "E2": "",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2007",
+      "T1": "Black Holes",
+      "T2": "Air Bags",
+      "T3": "Binary Stars",
+      "E1": "Band Gap of Semiconductor Thin Films",
+      "E2": "",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2006",
+      "T1": "Gravity in a Neutron Interferometer",
+      "T2": "Watching a Rod in Motion",
+      "T3": "Five Estimations",
+      "E1": "Interference Reflection and Diffraction",
+      "E2": "",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2005",
+      "T1": "An Ill Fated Satellite",
+      "T2": "Absolute Measurements of Electrical Quantities",
+      "T3": "Neutrons in a Gravitational Field",
+      "E1": "Planck's Constant in an Incandescent Lamp",
+      "E2": "",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2004",
+      "T1": "\"Ping-Pong\" Resistor",
+      "T2": "Rising Balloon",
+      "T3": "Atomic Probe Microscope",
+      "E1": "",
+      "E2": "",
+      "T4": "",
+      "T5": ""
+    }
+  ],
+  "apho": [
+    {
+      "year": "2025",
+      "T1": "Precession of the Earth's axis",
+      "T2": "Waves and Phase Transitions",
+      "T3": "Physics of the Atmosphere",
+      "E1": "Physics of Induction Cooking",
+      "E2": "",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2023",
+      "T1": "ISS Orbital Decay Dynamics",
+      "T2": "A ball on a turntable",
+      "T3": "Cavitation",
+      "E1": "Hertzian Contact Stress",
+      "E2": "Interference from thermally deformed surface (thermos-deformation)",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2022",
+      "T1": "The Stern-Gerlach Experiment",
+      "T2": "A Mechanical Model for Phase Transitions",
+      "T3": "Maxwell Rayleigh and Mount Everest",
+      "E1": "Magnetic Black Box",
+      "E2": "Acoustic Black Box",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2021",
+      "T1": "Water-Hammer Effect",
+      "T2": "Ray Tracing",
+      "T3": "Magnetic Levitation",
+      "E1": "Elasticity of cantilever",
+      "E2": "Optical methods",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2019",
+      "T1": "RF Reflectometry of Single-Electron Circuits",
+      "T2": "Jets from AGN",
+      "T3": "Tippe top",
+      "E1": "Static response of ferrofluid",
+      "E2": "Wave pulses in ferrofluid",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2018",
+      "T1": "Optical Trap of Neutral Atoms",
+      "T2": "Space Elevator",
+      "T3": "Thermoelectric Effects",
+      "E1": "Giant magnetoresistance (GMR)",
+      "E2": "",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2017",
+      "T1": "Vortices in superfluid",
+      "T2": "Evolution of Supermassive Black Holes Binary",
+      "T3": "Space Debris",
+      "E1": "Photonic Crystal",
+      "E2": "",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2016",
+      "T1": "Mechanics of a Deformable Lattice",
+      "T2": "The Expanding Universe",
+      "T3": "Magnetic Field Effects on Superconductors",
+      "E1": "Optical diffraction",
+      "E2": "Reflection phase shift of metal",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2015",
+      "T1": "Fractional Quantum Hall effect",
+      "T2": "How are Aurora Ignited by the Solar Wind?",
+      "T3": "Fabry-Perot etalon",
+      "E1": "Piezoelectric Effect",
+      "E2": "",
       "T4": "",
       "T5": ""
     },
     {
       "year": "2014",
-      "T1": "Three Problems",
-      "T2": "Van der Waals gas",
-      "T3": "Gas discharge",
+      "T1": "Hadley Circulation",
+      "T2": "Two-Slit Electron Interference",
+      "T3": "Gravitational Lensing",
+      "E1": "Speed of Ultrasonic Sound in Solution",
+      "E2": "",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2013",
+      "T1": "Conductors in Conducting Liquid",
+      "T2": "Relativistic Correction on GPS Satellite",
+      "T3": "Physics of Spin",
+      "E1": "Wind power",
+      "E2": "",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2012",
+      "T1": "The Drag on a Falling Magnet",
+      "T2": "Chandrasekhar Limit",
+      "T3": "Pancharatnam Phase",
+      "E1": "Friction",
+      "E2": "Electromagnetic Induction",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2011",
+      "T1": "The Shockley-James Paradox",
+      "T2": "Creaking Door",
+      "T3": "Birthday Balloon",
+      "E1": "Levitation of conductors",
+      "E2": "Optical Black Box",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2010",
+      "T1": "Particles and Waves",
+      "T2": "Strong Resistive Electromagnets",
+      "T3": "Electron and Gas Bubbles in Liquids",
+      "E1": "Magnetic force probe",
+      "E2": "Understanding Semiconductor Lasers",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2009",
+      "T1": "Rolling Cylinders",
+      "T2": "A Self-excited Magnetic Dynamo",
+      "T3": "The Leidenfrost Phenomenon",
+      "E1": "The Earth's Horizontal Magnetic Field",
+      "E2": "Oscillation of Water-Filled Vessel",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2008",
+      "T1": "Tea Ceremony and Physics of Bubbles",
+      "T2": "Ionic Crystal Yukawa-type Potential and Pauli Principle",
+      "T3": "How does a superluminal object look like?",
+      "E1": "The Physics of Sound Wave",
+      "E2": "",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2007",
+      "T1": "Back-and-Forth Rolling of a Liquid-Filled Sphere",
+      "T2": "Optical properties of an unusual material",
+      "T3": "Specific heat of free electron gas at constant volume",
+      "E1": "Refractive Index of Glass",
+      "E2": "Measurement of liquid electric conductivity",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2006",
+      "T1": "Laser cooling of atoms",
+      "T2": "Oscillator damped by sliding friction",
+      "T3": "Three Problems",
       "E1": "",
       "E2": "",
       "T4": "",
       "T5": ""
     },
     {
-      "year": "2015",
-      "T1": "Particles from the Sun",
-      "T2": "The Extremum Princple",
-      "T3": "The Design of a Nuclear Reactor",
-      "E1": "Diffraction due to Helical Structure",
-      "E2": "Diffraction due to surface tension waves on water",
+      "year": "2004",
+      "T1": "Measure the mass in the weightless state",
+      "T2": "Optical fiber",
+      "T3": "Compression and expansion of a two gases system",
+      "E1": "Hall effect and Magnetoresistivity effect",
+      "E2": "Black Box",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2003",
+      "T1": "Satellite's orbit transfer",
+      "T2": "Optical Gyroscope",
+      "T3": "Plasma Lens",
+      "E1": "Determination of Capacitance",
+      "E2": "Cylindrical Bore",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2001",
+      "T1": "When will the Moon become a Synchronous Satellite?",
+      "T2": "Motion of an Electric Dipole in a Magnetic Field",
+      "T3": "Thermal Vibrations of Surface Atoms",
+      "E1": "Characteristics of Solar Cells",
+      "E2": "",
       "T4": "",
       "T5": ""
     }

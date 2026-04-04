@@ -1,17 +1,26 @@
 import fs from 'fs';
 import { parse } from 'csv-parse';
 
-const results = {};
-const parser = parse({ columns: true, trim: true });
+type ProblemEntry = Record<string, string>;
+type ResultsMap = Record<string, ProblemEntry[]>;
+
+const results: ResultsMap = {};
+
+const parser = parse({ 
+	columns: true, 
+	trim: true
+});
 
 fs.createReadStream('./src/lib/pregen/problemNames.csv')
 	.pipe(parser)
-	.on('data', (row) => {
+	.on('data', (row: Record<string, string>) => {
 		const columns = Object.keys(row);
-		const key = row[columns[0]]; // Use first column as key
-		const entry = {}; // Object to store the rest of the row
+		if (columns.length === 0) return;
 
-		// Build the object excluding the first column
+		const key = row[columns[0]];
+		const entry: ProblemEntry = {};
+
+		// Build the object excluding the first column (the key)
 		columns.slice(1).forEach((col) => {
 			entry[col] = row[col];
 		});
@@ -23,7 +32,16 @@ fs.createReadStream('./src/lib/pregen/problemNames.csv')
 		results[key].push(entry);
 	})
 	.on('end', () => {
-		// console.log(JSON.stringify(results, null, 2));
-		// Optionally write to file:
-		fs.writeFileSync('src/lib/pregen/problemNames.json', JSON.stringify(results, null, 2));
+		try {
+			fs.writeFileSync(
+				'src/lib/pregen/problemNames.json', 
+				JSON.stringify(results, null, 2)
+			);
+			console.log('Successfully converted CSV to JSON.');
+		} catch (err) {
+			console.error('Failed to write file:', err);
+		}
+	})
+	.on('error', (err: Error) => {
+		console.error('Parsing error:', err.message);
 	});

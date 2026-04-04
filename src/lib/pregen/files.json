@@ -352,7 +352,7 @@
                 },
                 {
                     "number": "T2",
-                    "title": "Microwave Oven",
+                    "title": "The Physics of a Microwave Oven",
                     "problems": "/contests/ipho/2019/T2.pdf",
                     "solutions": "/contests/ipho/2019/T2_S.pdf",
                     "ms": "/contests/ipho/2019/T2_M.pdf",
@@ -415,7 +415,7 @@
                 },
                 {
                     "number": "E1",
-                    "title": "Paper transistor",
+                    "title": "Paper Transistor",
                     "problems": "/contests/ipho/2018/E1.pdf",
                     "solutions": "/contests/ipho/2018/E1_S.pdf",
                     "ans": "/contests/ipho/2018/E1_A.pdf",
@@ -423,7 +423,7 @@
                 },
                 {
                     "number": "E2",
-                    "title": "Viscoelasticity of a polymer thread",
+                    "title": "Viscoelasticity of a Polymer Thread",
                     "problems": "/contests/ipho/2018/E2.pdf",
                     "solutions": "/contests/ipho/2018/E2_S.pdf",
                     "ans": "/contests/ipho/2018/E2_A.pdf",
@@ -437,35 +437,35 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Dark Matter",
                     "problems": "/contests/ipho/2017/T1.pdf",
                     "solutions": "/contests/ipho/2017/T1_S.pdf",
                     "ans": "/contests/ipho/2017/T1_A.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Earthquake Volcano and Tsunami",
                     "problems": "/contests/ipho/2017/T2.pdf",
                     "solutions": "/contests/ipho/2017/T2_S.pdf",
                     "ans": "/contests/ipho/2017/T2_A.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Cosmic Inflation",
                     "problems": "/contests/ipho/2017/T3.pdf",
                     "solutions": "/contests/ipho/2017/T3_S.pdf",
                     "ans": "/contests/ipho/2017/T3_A.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Optics of a Salt Solution",
                     "problems": "/contests/ipho/2017/E1.pdf",
                     "solutions": "/contests/ipho/2017/E1_S.pdf",
                     "ans": "/contests/ipho/2017/E1_A.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Earthquake and Volcano Sensing",
                     "problems": "/contests/ipho/2017/E2.pdf",
                     "solutions": "/contests/ipho/2017/E2_S.pdf",
                     "ans": "/contests/ipho/2017/E2_A.pdf"
@@ -504,7 +504,7 @@
                 },
                 {
                     "number": "E1",
-                    "title": "Electrical conductivity",
+                    "title": "Electrical Conductivity in 2D",
                     "problems": "/contests/ipho/2016/E1.pdf",
                     "solutions": "/contests/ipho/2016/E1_S.pdf",
                     "ans": "/contests/ipho/2016/E1_A.pdf",
@@ -514,7 +514,7 @@
                 },
                 {
                     "number": "E2",
-                    "title": "Jumping beads",
+                    "title": "Jumping Beads",
                     "problems": "/contests/ipho/2016/E2.pdf",
                     "solutions": "/contests/ipho/2016/E2_S.pdf",
                     "ans": "/contests/ipho/2016/E2_A.pdf",
@@ -538,7 +538,7 @@
                 },
                 {
                     "number": "T2",
-                    "title": "The Extremum Princple",
+                    "title": "The Extremum Principle",
                     "problems": "/contests/ipho/2015/T2.pdf",
                     "solutions": "/contests/ipho/2015/T2_S.pdf"
                 },
@@ -556,7 +556,7 @@
                 },
                 {
                     "number": "E2",
-                    "title": "Diffraction due to surface tension waves on water",
+                    "title": "Diffraction due to Surface Tension",
                     "problems": "/contests/ipho/2015/E2.pdf",
                     "solutions": "/contests/ipho/2015/E2_S.pdf"
                 }
@@ -576,14 +576,14 @@
                 },
                 {
                     "number": "T2",
-                    "title": "Van der Waals gas",
+                    "title": "Van der Waals Gas",
                     "problems": "/contests/ipho/2014/T2.pdf",
                     "solutions": "/contests/ipho/2014/T2_S.pdf",
                     "pres": "/contests/ipho/2014/T2_P.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "Gas discharge",
+                    "title": "Gas Discharge",
                     "problems": "/contests/ipho/2014/T3.pdf",
                     "solutions": "/contests/ipho/2014/T3_S.pdf",
                     "pres": "/contests/ipho/2014/T3_P.pdf"
@@ -616,13 +616,13 @@
                 },
                 {
                     "number": "E1",
-                    "title": "Speed of light",
+                    "title": "Speed of Light",
                     "problems": "/contests/ipho/2013/E1.pdf",
                     "solutions": "/contests/ipho/2013/E1_S.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "Solar cells",
+                    "title": "Solar Cells",
                     "problems": "/contests/ipho/2013/E2.pdf",
                     "solutions": "/contests/ipho/2013/E2_S.pdf"
                 }
@@ -659,21 +659,21 @@
                 },
                 {
                     "number": "T3",
-                    "title": "Scattering of an Ion",
+                    "title": "Scattering of an Ion by a Neutral Atom",
                     "problems": "/contests/ipho/2011/T3.pdf",
                     "solutions": "/contests/ipho/2011/T3_S.pdf",
                     "ans": "/contests/ipho/2011/T3_A.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "Electrical Blackbox",
+                    "title": "Electrical Black Box: Capacitive Displacement Sensor",
                     "problems": "/contests/ipho/2011/E1.pdf",
                     "solutions": "/contests/ipho/2011/E1_S.pdf",
                     "ans": "/contests/ipho/2011/E1_A.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "Mechanical Blackbox",
+                    "title": "Mechanical Black Box: a cylinder with a ball inside",
                     "problems": "/contests/ipho/2011/E2.pdf",
                     "solutions": "/contests/ipho/2011/E2_S.pdf",
                     "ans": "/contests/ipho/2011/E2_A.pdf"
@@ -686,35 +686,35 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Image of a charge in a metallic object",
                     "problems": "/contests/ipho/2010/T1.pdf",
                     "solutions": "/contests/ipho/2010/T1_S.pdf",
                     "ans": "/contests/ipho/2010/T1_A.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Chimney physics",
                     "problems": "/contests/ipho/2010/T2.pdf",
                     "solutions": "/contests/ipho/2010/T2_S.pdf",
                     "ans": "/contests/ipho/2010/T2_A.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Simple model of an atomic nucleus",
                     "problems": "/contests/ipho/2010/T3.pdf",
                     "solutions": "/contests/ipho/2010/T3_S.pdf",
                     "ans": "/contests/ipho/2010/T3_A.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Elasticity of Sheets",
                     "problems": "/contests/ipho/2010/E1.pdf",
                     "solutions": "/contests/ipho/2010/E1_S.pdf",
                     "ans": "/contests/ipho/2010/E1_A.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Forces between Magnets",
                     "problems": "/contests/ipho/2010/E2.pdf",
                     "solutions": "/contests/ipho/2010/E2_S.pdf",
                     "ans": "/contests/ipho/2010/E2_A.pdf"
@@ -729,35 +729,35 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Evolution of the Earth-Moon System",
                     "problems": "/contests/ipho/2009/T1.pdf",
                     "solutions": "/contests/ipho/2009/T1_S.pdf",
                     "ans": "/contests/ipho/2009/T1_A.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Doppler Laser Cooling and Optical Molasses",
                     "problems": "/contests/ipho/2009/T2.pdf",
                     "solutions": "/contests/ipho/2009/T2_S.pdf",
                     "ans": "/contests/ipho/2009/T2_A.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Why are Stars so Large?",
                     "problems": "/contests/ipho/2009/T3.pdf",
                     "solutions": "/contests/ipho/2009/T3_S.pdf",
                     "ans": "/contests/ipho/2009/T3_A.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Wavelength of a Diode Laser",
                     "problems": "/contests/ipho/2009/E1.pdf",
                     "solutions": "/contests/ipho/2009/E1_S.pdf",
                     "ans": "/contests/ipho/2009/E1_A.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Birefringence of Mica",
                     "problems": "/contests/ipho/2009/E2.pdf",
                     "solutions": "/contests/ipho/2009/E2_S.pdf",
                     "ans": "/contests/ipho/2009/E2_A.pdf"
@@ -770,25 +770,25 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Water-Powered Rice-Pounding Mortar",
                     "problems": "/contests/ipho/2008/T1.pdf",
                     "solutions": "/contests/ipho/2008/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Cherenkov Light and Ring Imaging Counter",
                     "problems": "/contests/ipho/2008/T2.pdf",
                     "solutions": "/contests/ipho/2008/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Change of Air Temperature in the Atmosphere",
                     "problems": "/contests/ipho/2008/T3.pdf",
                     "solutions": "/contests/ipho/2008/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Differential Thermometric Method",
                     "problems": "/contests/ipho/2008/E1.pdf",
                     "solutions": "/contests/ipho/2008/E1_S.pdf"
                 }
@@ -800,25 +800,25 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Black Holes",
                     "problems": "/contests/ipho/2007/T1.pdf",
                     "solutions": "/contests/ipho/2007/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Air Bags",
                     "problems": "/contests/ipho/2007/T2.pdf",
                     "solutions": "/contests/ipho/2007/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Binary Stars",
                     "problems": "/contests/ipho/2007/T3.pdf",
                     "solutions": "/contests/ipho/2007/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Band Gap of Semiconductor Thin Films",
                     "problems": "/contests/ipho/2007/E1.pdf",
                     "solutions": "/contests/ipho/2007/E1_S.pdf"
                 }
@@ -831,25 +831,25 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Gravity in a Neutron Interferometer",
                     "problems": "/contests/ipho/2006/T1.pdf",
                     "solutions": "/contests/ipho/2006/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Watching a Rod in Motion",
                     "problems": "/contests/ipho/2006/T2.pdf",
                     "solutions": "/contests/ipho/2006/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Five Estimations",
                     "problems": "/contests/ipho/2006/T3.pdf",
                     "solutions": "/contests/ipho/2006/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Interference Reflection and Diffraction",
                     "problems": "/contests/ipho/2006/E1.pdf",
                     "solutions": "/contests/ipho/2006/E1_S.pdf"
                 }
@@ -861,25 +861,25 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "An Ill Fated Satellite",
                     "problems": "/contests/ipho/2005/T1.pdf",
                     "solutions": "/contests/ipho/2005/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Absolute Measurements of Electrical Quantities",
                     "problems": "/contests/ipho/2005/T2.pdf",
                     "solutions": "/contests/ipho/2005/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Neutrons in a Gravitational Field",
                     "problems": "/contests/ipho/2005/T3.pdf",
                     "solutions": "/contests/ipho/2005/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Planck's Constant in an Incandescent Lamp",
                     "problems": "/contests/ipho/2005/E1.pdf",
                     "solutions": "/contests/ipho/2005/E1_S.pdf"
                 }
@@ -891,21 +891,21 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "\"Ping-Pong\" Resistor",
                     "problems": "/contests/ipho/2004/T1.pdf",
                     "solutions": "/contests/ipho/2004/T1_S.pdf",
                     "ans": "/contests/ipho/2004/T1_A.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Rising Balloon",
                     "problems": "/contests/ipho/2004/T2.pdf",
                     "solutions": "/contests/ipho/2004/T2_S.pdf",
                     "ans": "/contests/ipho/2004/T2_A.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Atomic Probe Microscope",
                     "problems": "/contests/ipho/2004/T3.pdf",
                     "solutions": "/contests/ipho/2004/T3_S.pdf",
                     "ans": "/contests/ipho/2004/T3_A.pdf"
@@ -1270,26 +1270,26 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Precession of the Earth's axis",
                     "solutions": "/contests/apho/2025/T1_S.pdf",
                     "ans": "/contests/apho/2025/T1_A.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Waves and Phase Transitions",
                     "solutions": "/contests/apho/2025/T2_S.pdf",
                     "ans": "/contests/apho/2025/T2_A.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Physics of the Atmosphere",
                     "solutions": "/contests/apho/2025/T3_S.pdf",
                     "ans": "/contests/apho/2025/T3_A.pdf",
                     "sol_hand": "/contests/apho/2025/T3_S_H.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Physics of Induction Cooking",
                     "problems": "/contests/apho/2025/E1.pdf",
                     "solutions": "/contests/apho/2025/E1_S.pdf",
                     "ans": "/contests/apho/2025/E1_A.pdf"
@@ -1310,34 +1310,34 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "ISS Orbital Decay Dynamics",
                     "problems": "/contests/apho/2023/T1.pdf",
                     "solutions": "/contests/apho/2023/T1_S.pdf",
                     "ms": "/contests/apho/2023/T1_M.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "A ball on a turntable",
                     "problems": "/contests/apho/2023/T2.pdf",
                     "solutions": "/contests/apho/2023/T2_S.pdf",
                     "ms": "/contests/apho/2023/T2_M.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Cavitation",
                     "problems": "/contests/apho/2023/T3.pdf",
                     "solutions": "/contests/apho/2023/T3_S.pdf",
                     "ms": "/contests/apho/2023/T3_M.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Hertzian Contact Stress",
                     "problems": "/contests/apho/2023/E1.pdf",
                     "solutions": "/contests/apho/2023/E1_S.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Interference from thermally deformed surface (thermos-deformation)",
                     "problems": "/contests/apho/2023/E2.pdf",
                     "solutions": "/contests/apho/2023/E2_S.pdf"
                 }
@@ -1349,28 +1349,28 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "The Stern-Gerlach Experiment",
                     "problems": "/contests/apho/2022/T1.pdf",
                     "solutions": "/contests/apho/2022/T1_S.pdf",
                     "ans": "/contests/apho/2022/T1_A.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "A Mechanical Model for Phase Transitions",
                     "problems": "/contests/apho/2022/T2.pdf",
                     "solutions": "/contests/apho/2022/T2_S.pdf",
                     "ans": "/contests/apho/2022/T2_A.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Maxwell Rayleigh and Mount Everest",
                     "problems": "/contests/apho/2022/T3.pdf",
                     "solutions": "/contests/apho/2022/T3_S.pdf",
                     "ans": "/contests/apho/2022/T3_A.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Magnetic Black Box",
                     "problems": "/contests/apho/2022/E1.pdf",
                     "solutions": "/contests/apho/2022/E1_S.pdf",
                     "ans": "/contests/apho/2022/E1_A.pdf",
@@ -1378,7 +1378,7 @@
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Acoustic Black Box",
                     "problems": "/contests/apho/2022/E2.pdf",
                     "solutions": "/contests/apho/2022/E2_S.pdf",
                     "ans": "/contests/apho/2022/E2_A.pdf",
@@ -1395,7 +1395,7 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Water-Hammer Effect",
                     "problems": "/contests/apho/2021/T1.pdf",
                     "solutions": "/contests/apho/2021/T1_S.pdf",
                     "ans": "/contests/apho/2021/T1_A.pdf",
@@ -1403,7 +1403,7 @@
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Ray Tracing",
                     "problems": "/contests/apho/2021/T2.pdf",
                     "solutions": "/contests/apho/2021/T2_S.pdf",
                     "ans": "/contests/apho/2021/T2_A.pdf",
@@ -1411,7 +1411,7 @@
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Magnetic Levitation",
                     "problems": "/contests/apho/2021/T3.pdf",
                     "solutions": "/contests/apho/2021/T3_S.pdf",
                     "ans": "/contests/apho/2021/T3_A.pdf",
@@ -1419,7 +1419,7 @@
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Elasticity of cantilever",
                     "problems": "/contests/apho/2021/E1.pdf",
                     "solutions": "/contests/apho/2021/E1_S.pdf",
                     "ans": "/contests/apho/2021/E1_A.pdf",
@@ -1427,7 +1427,7 @@
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Optical methods",
                     "problems": "/contests/apho/2021/E2.pdf",
                     "solutions": "/contests/apho/2021/E2_S.pdf",
                     "ans": "/contests/apho/2021/E2_A.pdf",
@@ -1442,7 +1442,7 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "RF Reflectometry of Single-Electron Circuits",
                     "problems": "/contests/apho/2019/T1.pdf",
                     "solutions": "/contests/apho/2019/T1_S.pdf",
                     "ans": "/contests/apho/2019/T1_A.pdf",
@@ -1450,7 +1450,7 @@
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Jets from AGN",
                     "problems": "/contests/apho/2019/T2.pdf",
                     "solutions": "/contests/apho/2019/T2_S.pdf",
                     "ans": "/contests/apho/2019/T2_A.pdf",
@@ -1458,7 +1458,7 @@
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Tippe top",
                     "problems": "/contests/apho/2019/T3.pdf",
                     "solutions": "/contests/apho/2019/T3_S.pdf",
                     "ans": "/contests/apho/2019/T3_A.pdf",
@@ -1466,7 +1466,7 @@
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Static response of ferrofluid",
                     "problems": "/contests/apho/2019/E1.pdf",
                     "solutions": "/contests/apho/2019/E1_S.pdf",
                     "ans": "/contests/apho/2019/E1_A.pdf",
@@ -1474,7 +1474,7 @@
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Wave pulses in ferrofluid",
                     "problems": "/contests/apho/2019/E2.pdf",
                     "solutions": "/contests/apho/2019/E2_S.pdf",
                     "ans": "/contests/apho/2019/E2_A.pdf",
@@ -1491,25 +1491,25 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Optical Trap of Neutral Atoms",
                     "problems": "/contests/apho/2018/T1.pdf",
                     "solutions": "/contests/apho/2018/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Space Elevator",
                     "problems": "/contests/apho/2018/T2.pdf",
                     "solutions": "/contests/apho/2018/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Thermoelectric Effects",
                     "problems": "/contests/apho/2018/T3.pdf",
                     "solutions": "/contests/apho/2018/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Giant magnetoresistance (GMR)",
                     "problems": "/contests/apho/2018/E1.pdf",
                     "solutions": "/contests/apho/2018/E1_S.pdf",
                     "ans": "/contests/apho/2018/E1_A.pdf"
@@ -1521,7 +1521,7 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Vortices in superfluid",
                     "problems": "/contests/apho/2017/T1.pdf",
                     "solutions": "/contests/apho/2017/T1_S.pdf",
                     "ans": "/contests/apho/2017/T1_A.pdf",
@@ -1529,7 +1529,7 @@
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Evolution of Supermassive Black Holes Binary",
                     "problems": "/contests/apho/2017/T2.pdf",
                     "solutions": "/contests/apho/2017/T2_S.pdf",
                     "ans": "/contests/apho/2017/T2_A.pdf",
@@ -1537,7 +1537,7 @@
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Space Debris",
                     "problems": "/contests/apho/2017/T3.pdf",
                     "solutions": "/contests/apho/2017/T3_S.pdf",
                     "ans": "/contests/apho/2017/T3_A.pdf",
@@ -1545,7 +1545,7 @@
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Photonic Crystal",
                     "problems": "/contests/apho/2017/E1.pdf",
                     "solutions": "/contests/apho/2017/E1_S.pdf",
                     "ans": "/contests/apho/2017/E1_A.pdf",
@@ -1559,7 +1559,7 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Mechanics of a Deformable Lattice",
                     "problems": "/contests/apho/2016/T1.pdf",
                     "solutions": "/contests/apho/2016/T1_S.pdf",
                     "ans": "/contests/apho/2016/T1_A.pdf",
@@ -1567,7 +1567,7 @@
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "The Expanding Universe",
                     "problems": "/contests/apho/2016/T2.pdf",
                     "solutions": "/contests/apho/2016/T2_S.pdf",
                     "ans": "/contests/apho/2016/T2_A.pdf",
@@ -1575,7 +1575,7 @@
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Magnetic Field Effects on Superconductors",
                     "problems": "/contests/apho/2016/T3.pdf",
                     "solutions": "/contests/apho/2016/T3_S.pdf",
                     "ans": "/contests/apho/2016/T3_A.pdf",
@@ -1583,7 +1583,7 @@
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Optical diffraction",
                     "problems": "/contests/apho/2016/E1.pdf",
                     "solutions": "/contests/apho/2016/E1_S.pdf",
                     "ans": "/contests/apho/2016/E1_A.pdf",
@@ -1592,7 +1592,7 @@
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Reflection phase shift of metal",
                     "problems": "/contests/apho/2016/E2.pdf",
                     "solutions": "/contests/apho/2016/E2_S.pdf",
                     "ans": "/contests/apho/2016/E2_A.pdf",
@@ -1607,28 +1607,28 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Fractional Quantum Hall effect",
                     "problems": "/contests/apho/2015/T1.pdf",
                     "solutions": "/contests/apho/2015/T1_S.pdf",
                     "ans": "/contests/apho/2015/T1_A.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "How are Aurora Ignited by the Solar Wind?",
                     "problems": "/contests/apho/2015/T2.pdf",
                     "solutions": "/contests/apho/2015/T2_S.pdf",
                     "ans": "/contests/apho/2015/T2_A.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Fabry-Perot etalon",
                     "problems": "/contests/apho/2015/T3.pdf",
                     "solutions": "/contests/apho/2015/T3_S.pdf",
                     "ans": "/contests/apho/2015/T3_A.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Piezoelectric Effect",
                     "problems": "/contests/apho/2015/E1.pdf",
                     "solutions": "/contests/apho/2015/E1_S.pdf",
                     "ans": "/contests/apho/2015/E1_A.pdf"
@@ -1641,28 +1641,28 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Hadley Circulation",
                     "problems": "/contests/apho/2014/T1.pdf",
                     "solutions": "/contests/apho/2014/T1_S.pdf",
                     "ans": "/contests/apho/2014/T1_A.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Two-Slit Electron Interference",
                     "problems": "/contests/apho/2014/T2.pdf",
                     "solutions": "/contests/apho/2014/T2_S.pdf",
                     "ans": "/contests/apho/2014/T2_A.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Gravitational Lensing",
                     "problems": "/contests/apho/2014/T3.pdf",
                     "solutions": "/contests/apho/2014/T3_S.pdf",
                     "ans": "/contests/apho/2014/T3_A.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Speed of Ultrasonic Sound in Solution",
                     "problems": "/contests/apho/2014/E1.pdf",
                     "solutions": "/contests/apho/2014/E1_S.pdf",
                     "ans": "/contests/apho/2014/E1_A.pdf"
@@ -1675,28 +1675,28 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Conductors in Conducting Liquid",
                     "problems": "/contests/apho/2013/T1.pdf",
                     "solutions": "/contests/apho/2013/T1_S.pdf",
                     "ans": "/contests/apho/2013/T1_A.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Relativistic Correction on GPS Satellite",
                     "problems": "/contests/apho/2013/T2.pdf",
                     "solutions": "/contests/apho/2013/T2_S.pdf",
                     "ans": "/contests/apho/2013/T2_A.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Physics of Spin",
                     "problems": "/contests/apho/2013/T3.pdf",
                     "solutions": "/contests/apho/2013/T3_S.pdf",
                     "ans": "/contests/apho/2013/T3_A.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Wind power",
                     "problems": "/contests/apho/2013/E1.pdf",
                     "solutions": "/contests/apho/2013/E1_S.pdf"
                 }
@@ -1708,32 +1708,32 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "The Drag on a Falling Magnet",
                     "problems": "/contests/apho/2012/T1.pdf",
                     "solutions": "/contests/apho/2012/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Chandrasekhar Limit",
                     "problems": "/contests/apho/2012/T2.pdf",
                     "solutions": "/contests/apho/2012/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Pancharatnam Phase",
                     "problems": "/contests/apho/2012/T3.pdf",
                     "solutions": "/contests/apho/2012/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Friction",
                     "problems": "/contests/apho/2012/E1.pdf",
                     "solutions": "/contests/apho/2012/E1_S.pdf",
                     "ms": "/contests/apho/2012/E1_M.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Electromagnetic Induction",
                     "problems": "/contests/apho/2012/E2.pdf",
                     "solutions": "/contests/apho/2012/E2_S.pdf",
                     "ans": "/contests/apho/2012/E2_A.pdf",
@@ -1747,7 +1747,7 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "The Shockley-James Paradox",
                     "problems": "/contests/apho/2011/T1.pdf",
                     "solutions": "/contests/apho/2011/T1_S.pdf",
                     "ans": "/contests/apho/2011/T1_A.pdf",
@@ -1755,7 +1755,7 @@
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Creaking Door",
                     "problems": "/contests/apho/2011/T2.pdf",
                     "solutions": "/contests/apho/2011/T2_S.pdf",
                     "ans": "/contests/apho/2011/T2_A.pdf",
@@ -1763,7 +1763,7 @@
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Birthday Balloon",
                     "problems": "/contests/apho/2011/T3.pdf",
                     "solutions": "/contests/apho/2011/T3_S.pdf",
                     "ans": "/contests/apho/2011/T3_A.pdf",
@@ -1771,7 +1771,7 @@
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Levitation of conductors",
                     "problems": "/contests/apho/2011/E1.pdf",
                     "solutions": "/contests/apho/2011/E1_S.pdf",
                     "ans": "/contests/apho/2011/E1_A.pdf",
@@ -1779,7 +1779,7 @@
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Optical Black Box",
                     "problems": "/contests/apho/2011/E2.pdf",
                     "solutions": "/contests/apho/2011/E2_S.pdf",
                     "ans": "/contests/apho/2011/E2_A.pdf",
@@ -1793,7 +1793,7 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Particles and Waves",
                     "problems": "/contests/apho/2010/T1.pdf",
                     "solutions": "/contests/apho/2010/T1_S.pdf",
                     "ans": "/contests/apho/2010/T1_A.pdf",
@@ -1801,7 +1801,7 @@
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Strong Resistive Electromagnets",
                     "problems": "/contests/apho/2010/T2.pdf",
                     "solutions": "/contests/apho/2010/T2_S.pdf",
                     "ans": "/contests/apho/2010/T2_A.pdf",
@@ -1809,7 +1809,7 @@
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Electron and Gas Bubbles in Liquids",
                     "problems": "/contests/apho/2010/T3.pdf",
                     "solutions": "/contests/apho/2010/T3_S.pdf",
                     "ans": "/contests/apho/2010/T3_A.pdf",
@@ -1817,7 +1817,7 @@
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Magnetic force probe",
                     "problems": "/contests/apho/2010/E1.pdf",
                     "solutions": "/contests/apho/2010/E1_S.pdf",
                     "ans": "/contests/apho/2010/E1_A.pdf",
@@ -1825,7 +1825,7 @@
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Understanding Semiconductor Lasers",
                     "problems": "/contests/apho/2010/E2.pdf",
                     "solutions": "/contests/apho/2010/E2_S.pdf",
                     "ans": "/contests/apho/2010/E2_A.pdf",
@@ -1839,27 +1839,27 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Rolling Cylinders",
                     "solutions": "/contests/apho/2009/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "A Self-excited Magnetic Dynamo",
                     "solutions": "/contests/apho/2009/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "The Leidenfrost Phenomenon",
                     "solutions": "/contests/apho/2009/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "The Earth's Horizontal Magnetic Field",
                     "solutions": "/contests/apho/2009/E1_S.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Oscillation of Water-Filled Vessel",
                     "solutions": "/contests/apho/2009/E2_S.pdf"
                 }
             ],
@@ -1872,25 +1872,25 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Tea Ceremony and Physics of Bubbles",
                     "problems": "/contests/apho/2008/T1.pdf",
                     "solutions": "/contests/apho/2008/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Ionic Crystal Yukawa-type Potential and Pauli Principle",
                     "problems": "/contests/apho/2008/T2.pdf",
                     "solutions": "/contests/apho/2008/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "How does a superluminal object look like?",
                     "problems": "/contests/apho/2008/T3.pdf",
                     "solutions": "/contests/apho/2008/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "The Physics of Sound Wave",
                     "problems": "/contests/apho/2008/E1.pdf"
                 }
             ],
@@ -1901,31 +1901,31 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Back-and-Forth Rolling of a Liquid-Filled Sphere",
                     "problems": "/contests/apho/2007/T1.pdf",
                     "solutions": "/contests/apho/2007/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Optical properties of an unusual material",
                     "problems": "/contests/apho/2007/T2.pdf",
                     "solutions": "/contests/apho/2007/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Specific heat of free electron gas at constant volume",
                     "problems": "/contests/apho/2007/T3.pdf",
                     "solutions": "/contests/apho/2007/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Refractive Index of Glass",
                     "problems": "/contests/apho/2007/E1.pdf",
                     "solutions": "/contests/apho/2007/E1_S.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Measurement of liquid electric conductivity",
                     "problems": "/contests/apho/2007/E2.pdf",
                     "solutions": "/contests/apho/2007/E2_S.pdf"
                 }
@@ -1937,19 +1937,19 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Laser cooling of atoms",
                     "problems": "/contests/apho/2006/T1.pdf",
                     "solutions": "/contests/apho/2006/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Oscillator damped by sliding friction",
                     "problems": "/contests/apho/2006/T2.pdf",
                     "solutions": "/contests/apho/2006/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Three Problems",
                     "problems": "/contests/apho/2006/T3.pdf",
                     "solutions": "/contests/apho/2006/T3_S.pdf"
                 },
@@ -1975,31 +1975,31 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Measure the mass in the weightless state",
                     "problems": "/contests/apho/2004/T1.pdf",
                     "solutions": "/contests/apho/2004/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Optical fiber",
                     "problems": "/contests/apho/2004/T2.pdf",
                     "solutions": "/contests/apho/2004/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Compression and expansion of a two gases system",
                     "problems": "/contests/apho/2004/T3.pdf",
                     "solutions": "/contests/apho/2004/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Hall effect and Magnetoresistivity effect",
                     "problems": "/contests/apho/2004/E1.pdf",
                     "solutions": "/contests/apho/2004/E1_S.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Black Box",
                     "problems": "/contests/apho/2004/E2.pdf",
                     "solutions": "/contests/apho/2004/E2_S.pdf"
                 }
@@ -2011,31 +2011,31 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Satellite's orbit transfer",
                     "problems": "/contests/apho/2003/T1.pdf",
                     "solutions": "/contests/apho/2003/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Optical Gyroscope",
                     "problems": "/contests/apho/2003/T2.pdf",
                     "solutions": "/contests/apho/2003/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Plasma Lens",
                     "problems": "/contests/apho/2003/T3.pdf",
                     "solutions": "/contests/apho/2003/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Determination of Capacitance",
                     "problems": "/contests/apho/2003/E1.pdf",
                     "solutions": "/contests/apho/2003/E1_S.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Cylindrical Bore",
                     "problems": "/contests/apho/2003/E2.pdf",
                     "solutions": "/contests/apho/2003/E2_S.pdf"
                 }
@@ -2067,7 +2067,7 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "When will the Moon become a Synchronous Satellite?",
                     "problems": "/contests/apho/2001/T1.pdf",
                     "solutions": "/contests/apho/2001/T1_S.pdf",
                     "ans": "/contests/apho/2001/T1_A.pdf",
@@ -2075,7 +2075,7 @@
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Motion of an Electric Dipole in a Magnetic Field",
                     "problems": "/contests/apho/2001/T2.pdf",
                     "solutions": "/contests/apho/2001/T2_S.pdf",
                     "ans": "/contests/apho/2001/T2_A.pdf",
@@ -2083,7 +2083,7 @@
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Thermal Vibrations of Surface Atoms",
                     "problems": "/contests/apho/2001/T3.pdf",
                     "solutions": "/contests/apho/2001/T3_S.pdf",
                     "ans": "/contests/apho/2001/T3_A.pdf",
@@ -2091,7 +2091,7 @@
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Characteristics of Solar Cells",
                     "problems": "/contests/apho/2001/E1.pdf",
                     "solutions": "/contests/apho/2001/E1_S.pdf",
                     "ms": "/contests/apho/2001/E1_M.pdf"
