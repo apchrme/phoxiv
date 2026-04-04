@@ -215,10 +215,80 @@
       "T1": "\"Ping-Pong\" Resistor",
       "T2": "Rising Balloon",
       "T3": "Atomic Probe Microscope",
-      "E1": "",
+      "E1": "Mechanical Black Box",
       "E2": "",
       "T4": "",
       "T5": ""
+    },
+    {
+      "year": "2003",
+      "T1": "A Swing with a Falling Weight",
+      "T2": "A Piezoelectric Crystal Resonator",
+      "T3": "Neutrino Mass and Neutron Decay",
+      "E1": "Optical Properties of Laser Diode",
+      "E2": "",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2002",
+      "T1": "Ground-Penetrating Radar",
+      "T2": "Sensing Electrical Signals",
+      "T3": "A Heavy Vehicle Moving on an Inclined Road",
+      "E1": "Physical Constants with Electrolysis",
+      "E2": "Optical Black Box",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "2000",
+      "T1": "Five Problems",
+      "T2": "Cathode Ray Tube",
+      "T3": "Gravitational Waves and Light",
+      "E1": "CDROM Spectrometer",
+      "E2": "The Magnetic Puck",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "1999",
+      "T1": "Absorption of Radiation by a Gas",
+      "T2": "Magnetic Field with a V-Shaped Wire",
+      "T3": "A Space Probe to Jupiter",
+      "E1": "Torsion Pendulum",
+      "E2": "",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "1995",
+      "T1": "Gravitational Red Shift and Stellar Mass",
+      "T2": "Sound Propagation",
+      "T3": "Cylindrical Buoy",
+      "E1": "Terminal Velocity in a Viscous Liquid",
+      "E2": "Diffraction and Scattering of Laser Light",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "1992",
+      "T1": "A Rotating Satellite",
+      "T2": "The Longitudinal Motion of a Linear Molecule",
+      "T3": "A Satellite in Sunshine",
+      "E1": "Electric Breakdown of Air",
+      "E2": "A Grating and Optical Filters",
+      "T4": "",
+      "T5": ""
+    },
+    {
+      "year": "1983",
+      "T1": "Jumping Particle",
+      "T2": "Different Kind of Oscillation",
+      "T3": "Prisms",
+      "E1": "",
+      "E2": "",
+      "T4": "Compton Scattering",
+      "T5": "IPhO's Logo"
     }
   ],
   "apho": [

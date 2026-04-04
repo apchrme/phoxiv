@@ -912,7 +912,7 @@
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Mechanical Black Box",
                     "problems": "/contests/ipho/2004/E1.pdf",
                     "solutions": "/contests/ipho/2004/E1_S.pdf",
                     "ans": "/contests/ipho/2004/E1_A.pdf"
@@ -925,25 +925,25 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "A Swing with a Falling Weight",
                     "problems": "/contests/ipho/2003/T1.pdf",
                     "solutions": "/contests/ipho/2003/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "A Piezoelectric Crystal Resonator",
                     "problems": "/contests/ipho/2003/T2.pdf",
                     "solutions": "/contests/ipho/2003/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Neutrino Mass and Neutron Decay",
                     "problems": "/contests/ipho/2003/T3.pdf",
                     "solutions": "/contests/ipho/2003/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Optical Properties of Laser Diode",
                     "problems": "/contests/ipho/2003/E1.pdf",
                     "solutions": "/contests/ipho/2003/E1_S.pdf"
                 }
@@ -955,31 +955,31 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Ground-Penetrating Radar",
                     "problems": "/contests/ipho/2002/T1.pdf",
                     "solutions": "/contests/ipho/2002/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Sensing Electrical Signals",
                     "problems": "/contests/ipho/2002/T2.pdf",
                     "solutions": "/contests/ipho/2002/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "A Heavy Vehicle Moving on an Inclined Road",
                     "problems": "/contests/ipho/2002/T3.pdf",
                     "solutions": "/contests/ipho/2002/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Physical Constants with Electrolysis",
                     "problems": "/contests/ipho/2002/E1.pdf",
                     "solutions": "/contests/ipho/2002/E1_S.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Optical Black Box",
                     "problems": "/contests/ipho/2002/E2.pdf",
                     "solutions": "/contests/ipho/2002/E2_S.pdf"
                 }
@@ -1001,30 +1001,30 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Five Problems",
                     "problems": "/contests/ipho/2000/T1.htm",
                     "solutions": "/contests/ipho/2000/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Cathode Ray Tube",
                     "problems": "/contests/ipho/2000/T2.pdf",
                     "solutions": "/contests/ipho/2000/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Gravitational Waves and Light",
                     "problems": "/contests/ipho/2000/T3.htm",
                     "solutions": "/contests/ipho/2000/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "CDROM Spectrometer",
                     "problems": "/contests/ipho/2000/E1.htm"
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "The Magnetic Puck",
                     "problems": "/contests/ipho/2000/E2.htm"
                 }
             ],
@@ -1035,25 +1035,25 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Absorption of Radiation by a Gas",
                     "problems": "/contests/ipho/1999/T1.pdf",
                     "solutions": "/contests/ipho/1999/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Magnetic Field with a V-Shaped Wire",
                     "problems": "/contests/ipho/1999/T2.pdf",
                     "solutions": "/contests/ipho/1999/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "A Space Probe to Jupiter",
                     "problems": "/contests/ipho/1999/T3.pdf",
                     "solutions": "/contests/ipho/1999/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Torsion Pendulum",
                     "problems": "/contests/ipho/1999/E1.pdf",
                     "solutions": "/contests/ipho/1999/E1_S.pdf"
                 }
@@ -1083,13 +1083,13 @@
             "files": [
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Terminal Velocity in a Viscous Liquid",
                     "problems": "/contests/ipho/1995/E1.pdf",
                     "solutions": "/contests/ipho/1995/E1_S.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "Diffraction and Scattering of Laser Light",
                     "problems": "/contests/ipho/1995/E2.pdf",
                     "solutions": "/contests/ipho/1995/E2_S.pdf"
                 }
@@ -1111,30 +1111,30 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "A Rotating Satellite",
                     "problems": "/contests/ipho/1992/T1.pdf",
                     "solutions": "/contests/ipho/1992/T1_S.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "The Longitudinal Motion of a Linear Molecule",
                     "problems": "/contests/ipho/1992/T2.pdf",
                     "solutions": "/contests/ipho/1992/T2_S.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "A Satellite in Sunshine",
                     "problems": "/contests/ipho/1992/T3.pdf",
                     "solutions": "/contests/ipho/1992/T3_S.pdf"
                 },
                 {
                     "number": "E1",
-                    "title": "",
+                    "title": "Electric Breakdown of Air",
                     "problems": "/contests/ipho/1992/E1.pdf"
                 },
                 {
                     "number": "E2",
-                    "title": "",
+                    "title": "A Grating and Optical Filters",
                     "problems": "/contests/ipho/1992/E2.pdf"
                 }
             ]
@@ -1179,31 +1179,31 @@
             "files": [
                 {
                     "number": "T1",
-                    "title": "",
+                    "title": "Jumping Particle",
                     "solutions": "/contests/ipho/1983/T1_S.pdf",
                     "ms": "/contests/ipho/1983/T1_M.pdf"
                 },
                 {
                     "number": "T2",
-                    "title": "",
+                    "title": "Different Kind of Oscillation",
                     "solutions": "/contests/ipho/1983/T2_S.pdf",
                     "ms": "/contests/ipho/1983/T2_M.pdf"
                 },
                 {
                     "number": "T3",
-                    "title": "",
+                    "title": "Prisms",
                     "solutions": "/contests/ipho/1983/T3_S.pdf",
                     "ms": "/contests/ipho/1983/T3_M.pdf"
                 },
                 {
                     "number": "T4",
-                    "title": "",
+                    "title": "Compton Scattering",
                     "solutions": "/contests/ipho/1983/T4_S.pdf",
                     "ms": "/contests/ipho/1983/T4_M.pdf"
                 },
                 {
                     "number": "T5",
-                    "title": "",
+                    "title": "IPhO's Logo",
                     "solutions": "/contests/ipho/1983/T5_S.pdf"
                 }
             ],
