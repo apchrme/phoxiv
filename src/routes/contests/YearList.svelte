@@ -1,7 +1,7 @@
 <script lang="ts">
 	const { contestId }: { contestId: string } = $props();
 	import files from '$lib/pregen/files.json';
-	import AdditionalYearFiles from '$lib/components/AdditionalYearFiles.svelte';
+	import AdditionalYearFiles from './AdditionalYearFiles.svelte';
 	import { fileSyntax } from '$lib/pregen/fileSyntax';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';

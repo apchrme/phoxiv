@@ -8,7 +8,7 @@
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import AppSidebar from '$lib/components/AppSidebar.svelte';
-	import NavButtons from '$lib/components/NavButtons.svelte';
+	import NavButtons from './NavButtons.svelte';
 
 	const navLinks = [
 		{ url: '/', label: 'home' },
