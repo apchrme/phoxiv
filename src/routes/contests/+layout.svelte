@@ -1,5 +1,5 @@
 <script lang="ts">
-	import YearList from '$lib/components/YearList.svelte';
+	import YearList from './YearList.svelte';
 	let { children } = $props();
 	import { page } from '$app/state';
 	import { contests } from '$lib/pregen/contests';
