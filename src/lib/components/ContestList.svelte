@@ -3,6 +3,7 @@
 	import * as Card from '$lib/components/ui/card/index';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
 	import { cn } from '$lib/utils.js';
 
 	const ALL_TAGS: ContestTag[] = ['International', 'Regional', 'National', 'Open'];
@@ -38,33 +39,17 @@
 		<Input type="search" placeholder="Search contests…" bind:value={query} class="pl-9" />
 	</div>
 
-	<!-- Tag filter pills -->
-	<div class="flex flex-wrap gap-2">
-		<button
-			onclick={() => (activeTag = null)}
-			class={cn(
-				'rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
-				activeTag === null
-					? 'bg-primary text-primary-foreground'
-					: 'border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground'
-			)}
-		>
-			All
-		</button>
+	<!-- Tag filter toggle group -->
+	<ToggleGroup.Root
+		type="single"
+		value={activeTag ?? ''}
+		onValueChange={(v) => (activeTag = (v as ContestTag) || null)}
+	>
+		<ToggleGroup.Item value="">All</ToggleGroup.Item>
 		{#each ALL_TAGS as tag (tag)}
-			<button
-				onclick={() => (activeTag = activeTag === tag ? null : tag)}
-				class={cn(
-					'rounded-lg px-3 py-1.5 text-xs font-medium transition-colors',
-					activeTag === tag
-						? 'bg-primary text-primary-foreground'
-						: 'border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground'
-				)}
-			>
-				{tag}
-			</button>
+			<ToggleGroup.Item value={tag}>{tag}</ToggleGroup.Item>
 		{/each}
-	</div>
+	</ToggleGroup.Root>
 </div>
 
 <!-- Contest grid -->
