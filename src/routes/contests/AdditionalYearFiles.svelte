@@ -1,24 +1,21 @@
 <script lang="ts">
+	import Badge from '$lib/components/ui/badge/badge.svelte';
 	const { contestId, yearFiles } = $props();
 	const year = $derived(yearFiles.year);
 </script>
 
-<!-- Custom links -->
-{#if contestId == 'ipho' && year == 2017}<span class="font-bold">
-		Note: most of this year's problems have major issues.
-	</span>{/if}
+{#if contestId == 'ipho' && year == 2017}
+	<span class="text-xs font-medium text-destructive">Note: most of this year's problems have major issues.</span>
+{/if}
 {#if contestId == 'ipho' && year == 2020}
-	<a href="https://i20.mipt.ru/#problems" class="text-center" target="_blank">Solutions</a>
+	<Badge variant="outline" href="https://i20.mipt.ru/#problems" target="_blank">Solutions</Badge>
 {/if}
 {#if contestId == 'apho' && year == 2022}
-	<a href="https://apho2022.github.io" target="_blank">Experimental Simulation</a>
+	<Badge variant="outline" href="https://apho2022.github.io" target="_blank">Experimental Simulation</Badge>
 {/if}
 {#if contestId == 'apho' && year == 2017}
-	<a href="https://apho2017.mipt.ru/results/" target="-_blank">Results</a>
+	<Badge variant="outline" href="https://apho2017.mipt.ru/results/" target="_blank">Results</Badge>
 {/if}
 {#if contestId == 'apho' && year == 2025}
-	<span
-		>Note: there are two sets of solutions for T3. The handwritten one is the updated one used for
-		the final marking.</span
-	>
+	<span class="text-xs text-muted-foreground">Note: there are two sets of solutions for T3. The handwritten one is the updated one used for the final marking.</span>
 {/if}
