@@ -16,6 +16,13 @@ export const contests = [
 		tag: 'International' as ContestTag
 	},
 	{
+		id: 'izho',
+		name: 'International Zhautykov Olympiad',
+		summary: 'Olympiad held in Kazakhstan',
+		icon: '🇰🇿',
+		tag: 'International' as ContestTag
+	},
+	{
 		id: 'apho',
 		name: 'Asian Physics Olympiad',
 		summary: 'The Asian version of IPhO, often used by countries to select their IPhO teams.',
