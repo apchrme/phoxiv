@@ -4,6 +4,7 @@
 @import './styles/theme.css';
 @import 'tw-animate-css';
 @import '@fontsource-variable/dm-sans';
+@import '@fontsource-variable/jetbrains-mono/wght.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
