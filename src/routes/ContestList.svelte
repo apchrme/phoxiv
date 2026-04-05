@@ -43,7 +43,7 @@
 
 <!-- Contest grid -->
 {#if filtered().length > 0}
-	<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">
 		{#each filtered() as contest (contest.id)}
 			<a href="/contests/{contest.id}" class="group block">
 				<Card.Root
