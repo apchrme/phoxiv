@@ -23,9 +23,12 @@ The structure of this website is as follows: competitions are known as "contests
 
 You may have noticed that the build script runs [problems.ts](./src/lib/pregen/problems.ts). This is a pregeneration script that generates the file [files.json](./src/lib/pregen/files.json) containing all the problems in a javascript object. The purpose of this is to make adding problems easier. In some ways this makes the website a glorified file explorer.
 
+All of the pregeneration scripts can be run by simply doing `bun run pregen`.
+
 File syntax can be customised in [fileSyntax.ts](./src/lib/pregen/fileSyntax.ts).
 
 ## Adding content
+
 
 ### Adding new contests
 
@@ -35,13 +38,17 @@ File syntax can be customised in [fileSyntax.ts](./src/lib/pregen/fileSyntax.ts)
 
 ### Adding new problems
 
-Most of the time, this is simply done by including the files in the contest folder within the static folder, with the necessary file syntax: `<year><file syntax>`. The file syntax indicates what kind of file it is (problem, solution etc.). The allowed file extensions are in the pregeneration file [problems.ts](./src/lib/pregen/problems.ts). These are known as **year-level files**
+There are two types of files you can add:
+1. Year-level files: these are the files that apply to all problems within that year. 
+2. Problem-level files: files that only apply to a specific problem, like T1, T1 solutions, etc.
 
-However, sometimes the problems are separated. The **problem-level files** should be included in the year's folder, i.e. `<contest>/<year>/`, with the syntax `<problem number><file syntax>`. The allowed problem numbers are in the pregeneration file too.
+**Year-level files** should be added to the contest folder within [static](/static/contests), with the necessary file syntax: `<year><file syntax>`. The file syntax indicates what kind of file it is (problem, solution etc.). For example, the path to the problems for the USAPhO 2019 is `/static/contests/usapho/2019.pdf`, and the solutions are `/static/contests/usapho/2019_S.pdf`. All file syntaxes can be found in [fileSyntax.ts](./src/lib/pregen/fileSyntax.ts) The allowed file extensions are in the pregeneration file [problems.ts](./src/lib/pregen/problems.ts), but usually you don't have to care because most files are pdfs.
 
+**Problem-level files** should be included in the year's folder, i.e. `<contest>/<year>/`, with the syntax `<problem number><file syntax>`. The allowed problem numbers are in the pregeneration file too. For example, the solution to IPhO 2025 T2 has the path `/static/contests/ipho/2025/T2_S.pdf`.
+
+### Problem names
 You may optionally include the problem names (titles) by editing [problemNames.csv](./src/lib/pregen/problemNames.csv) and running the conversion script [problemNames.ts](./src/lib/pregen/problemNames.ts) to generate [the json file](./src/lib/pregen/problemNames.json).
 
-All of the pregeneration scripts can be run by simply doing `bun run pregen`.
 
 ### External links/comments
 

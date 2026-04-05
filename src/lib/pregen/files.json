@@ -2108,6 +2108,146 @@
             "minutes": "/contests/apho/2000_min.pdf"
         }
     ],
+    "nbpho": [
+        {
+            "year": 2025,
+            "problems": "/contests/nbpho/2025.pdf",
+            "solutions": "/contests/nbpho/2025_S.pdf",
+            "results": "/contests/nbpho/2025_R.pdf"
+        },
+        {
+            "year": 2024,
+            "problems": "/contests/nbpho/2024.pdf",
+            "solutions": "/contests/nbpho/2024_S.pdf",
+            "results": "/contests/nbpho/2024_R.pdf"
+        },
+        {
+            "year": 2023,
+            "problems": "/contests/nbpho/2023.pdf",
+            "solutions": "/contests/nbpho/2023_S.pdf",
+            "results": "/contests/nbpho/2023_R.pdf"
+        },
+        {
+            "year": 2022,
+            "problems": "/contests/nbpho/2022.pdf",
+            "solutions": "/contests/nbpho/2022_S.pdf",
+            "results": "/contests/nbpho/2022_R.pdf"
+        },
+        {
+            "year": 2021,
+            "problems": "/contests/nbpho/2021.pdf",
+            "solutions": "/contests/nbpho/2021_S.pdf",
+            "results": "/contests/nbpho/2021_R.pdf"
+        },
+        {
+            "year": 2020,
+            "problems": "/contests/nbpho/2020.pdf",
+            "solutions": "/contests/nbpho/2020_S.pdf",
+            "results": "/contests/nbpho/2020_R.pdf"
+        },
+        {
+            "year": 2019,
+            "problems": "/contests/nbpho/2019.pdf",
+            "solutions": "/contests/nbpho/2019_S.pdf",
+            "results": "/contests/nbpho/2019_R.pdf"
+        },
+        {
+            "year": 2018,
+            "problems": "/contests/nbpho/2018.pdf",
+            "solutions": "/contests/nbpho/2018_S.pdf",
+            "results": "/contests/nbpho/2018_R.pdf"
+        },
+        {
+            "year": 2017,
+            "problems": "/contests/nbpho/2017.pdf",
+            "solutions": "/contests/nbpho/2017_S.pdf",
+            "results": "/contests/nbpho/2017_R.pdf"
+        },
+        {
+            "year": 2016,
+            "problems": "/contests/nbpho/2016.pdf",
+            "solutions": "/contests/nbpho/2016_S.pdf",
+            "results": "/contests/nbpho/2016_R.pdf"
+        },
+        {
+            "year": 2015,
+            "problems": "/contests/nbpho/2015.pdf",
+            "solutions": "/contests/nbpho/2015_S.pdf",
+            "results": "/contests/nbpho/2015_R.pdf"
+        },
+        {
+            "year": 2014,
+            "problems": "/contests/nbpho/2014.pdf",
+            "solutions": "/contests/nbpho/2014_S.pdf",
+            "results": "/contests/nbpho/2014_R.pdf"
+        },
+        {
+            "year": 2013,
+            "problems": "/contests/nbpho/2013.pdf",
+            "solutions": "/contests/nbpho/2013_S.pdf",
+            "results": "/contests/nbpho/2013_R.pdf"
+        },
+        {
+            "year": 2012,
+            "problems": "/contests/nbpho/2012.pdf",
+            "solutions": "/contests/nbpho/2012_S.pdf",
+            "results": "/contests/nbpho/2012_R.pdf"
+        },
+        {
+            "year": 2011,
+            "problems": "/contests/nbpho/2011.pdf",
+            "solutions": "/contests/nbpho/2011_S.pdf",
+            "results": "/contests/nbpho/2011_R.pdf"
+        },
+        {
+            "year": 2010,
+            "problems": "/contests/nbpho/2010.pdf",
+            "solutions": "/contests/nbpho/2010_S.pdf",
+            "results": "/contests/nbpho/2010_R.pdf"
+        },
+        {
+            "year": 2009,
+            "problems": "/contests/nbpho/2009.pdf",
+            "solutions": "/contests/nbpho/2009_S.pdf",
+            "results": "/contests/nbpho/2009_R.pdf"
+        },
+        {
+            "year": 2008,
+            "problems": "/contests/nbpho/2008.pdf",
+            "solutions": "/contests/nbpho/2008_S.pdf",
+            "results": "/contests/nbpho/2008_R.pdf"
+        },
+        {
+            "year": 2007,
+            "problems": "/contests/nbpho/2007.pdf",
+            "solutions": "/contests/nbpho/2007_S.pdf",
+            "results": "/contests/nbpho/2007_R.pdf"
+        },
+        {
+            "year": 2006,
+            "problems": "/contests/nbpho/2006.pdf",
+            "solutions": "/contests/nbpho/2006_S.pdf",
+            "results": "/contests/nbpho/2006_R.pdf"
+        },
+        {
+            "year": 2005,
+            "problems": "/contests/nbpho/2005.pdf",
+            "solutions": "/contests/nbpho/2005_S.pdf",
+            "results": "/contests/nbpho/2005_R.pdf"
+        },
+        {
+            "year": 2004,
+            "problems": "/contests/nbpho/2004.pdf",
+            "solutions": "/contests/nbpho/2004_S.pdf",
+            "results": "/contests/nbpho/2004_R.pdf"
+        },
+        {
+            "year": 2003,
+            "problems": "/contests/nbpho/2003.pdf",
+            "solutions": "/contests/nbpho/2003_S.pdf",
+            "results": "/contests/nbpho/2003_R.pdf"
+        }
+    ],
     "usapho": [
         {
             "year": 2025,

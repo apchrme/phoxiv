@@ -23,6 +23,13 @@ export const contests = [
 		tag: 'Regional' as ContestTag
 	},
 	{
+		id: 'nbpho',
+		name: 'Nordic-Baltic Physics Olympiad',
+		summary: 'A short and sweet competition used as a team selection test for IPhO in a few countries',
+		icon: '🇪🇪',
+		tag: 'Regional' as ContestTag
+	},
+	{
 		id: 'usapho',
 		name: 'USA Physics Olympiad',
 		summary: 'Second round of selection for the US Physics Team',
