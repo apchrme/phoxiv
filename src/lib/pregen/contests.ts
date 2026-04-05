@@ -84,5 +84,12 @@ export const contests = [
 		summary: 'The first round of the selection for IPhO in Singapore',
 		icon: '🇸🇬',
 		tag: 'National' as ContestTag
+	},
+	{
+		id: 'nbpho',
+		name: 'Nordic-Baltic Physics Olympiad',
+		summary: 'The Nordic-Baltic Physics Olympiad',
+		icon: '🇳🇴',
+		tag: 'Regional' as ContestTag
 	}
 ];
