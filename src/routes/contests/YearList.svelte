@@ -3,7 +3,7 @@
 	import files from '$lib/pregen/files.json';
 	import AdditionalYearFiles from './AdditionalYearFiles.svelte';
 	import { fileSyntax } from '$lib/pregen/fileSyntax';
-	import Separator from '$lib/components/ui/separator/separator.svelte';
+	import Badge from '$lib/components/ui/badge/badge.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
@@ -27,7 +27,6 @@
 			if (yearMatches) {
 				results.push({ ...yearEntry, matchedFiles: yearEntry.files ?? [] });
 			} else if (matchedProblems.length > 0) {
-				// Show full year files if toggle is on, otherwise only matched problems
 				results.push({
 					...yearEntry,
 					matchedFiles: showFullYear ? (yearEntry.files ?? []) : matchedProblems
@@ -37,7 +36,6 @@
 		return results;
 	});
 
-	// Whether the current query has any problem-level matches (not just year matches)
 	const hasProblemMatches = $derived(() => {
 		const q = query.trim().toLowerCase();
 		if (!q) return false;
@@ -49,16 +47,21 @@
 				)
 		);
 	});
+
+	function showYearLevel(yearEntry: (typeof filtered extends () => infer R ? R : never)[number]) {
+		const q = query.trim().toLowerCase();
+		return !q || String(yearEntry.year).includes(q) || showFullYear;
+	}
 </script>
 
-<section class="py-4">
+<section class="my-4">
 	<div class="mb-4">
 		<SearchBar placeholder="Search by year or problem…" bind:value={query}>
 			{#snippet filters()}
 				{#if hasProblemMatches()}
 					<label class="flex cursor-pointer items-center gap-2">
 						<Switch bind:checked={showFullYear} />
-						<span class="text-xs font-medium text-muted-foreground">Show full year</span>
+						<span class="text-sm font-medium text-muted-foreground">Show full year</span>
 					</label>
 				{/if}
 			{/snippet}
@@ -66,48 +69,74 @@
 	</div>
 
 	{#if filtered().length > 0}
-		{#each filtered() as yearEntry (yearEntry.year)}
-			<Separator />
-			<div class="flex flex-col items-center py-4 sm:flex-row">
-				<h3 class="shrink-0 px-4 py-0 text-center sm:mb-0 sm:basis-[80pt]">{yearEntry.year}</h3>
+		<div class="flex flex-col gap-4">
+			{#each filtered() as yearEntry (yearEntry.year)}
+				{@const yearLinks = fileSyntax.filter((ft) => yearEntry[ft.id] != undefined)}
 
-				<div class="flex w-full flex-auto flex-col">
-					<!-- General files — shown when: no query, year matched, or "show full year" is on -->
-					{#if !query.trim() || String(yearEntry.year).includes(query.trim().toLowerCase()) || showFullYear}
-						<div class="flex flex-row flex-wrap justify-evenly gap-x-10 gap-y-1 sm:m-0">
-							<AdditionalYearFiles {contestId} yearFiles={yearEntry} />
-							{#each fileSyntax as fileType (fileType.id)}
-								{#if yearEntry[fileType.id] != undefined}
-									<a href={yearEntry[fileType.id]} class="text-center" target="_blank"
-										>{fileType.display}</a
-									>
-								{/if}
-							{/each}
-						</div>
-					{/if}
+				<div class="overflow-hidden rounded-2xl border border-border bg-card">
 
-					<!-- Problem-specific files -->
-					{#if yearEntry.matchedFiles && yearEntry.matchedFiles.length > 0}
-						<div class="flex flex-row flex-wrap justify-evenly gap-3 py-2 xs:gap-5 xs:py-3">
-							{#each yearEntry.matchedFiles as problem (problem.number)}
-								<div
-									class="flex flex-auto flex-col items-center rounded-xl bg-card p-4 xs:p-5"
-								>
-									<p class="text-center font-medium">{problem.number}: {problem.title}</p>
-									<div class="flex flex-row flex-wrap justify-around gap-x-6 gap-y-1">
-										{#each fileSyntax as fileType (fileType.id)}
-											{#if problem[fileType.id] != undefined}
-												<a href={problem[fileType.id]} target="_blank">{fileType.display}</a>
+					<!-- Year header -->
+					<div class="flex items-center border-b border-border bg-muted/60 px-4 py-2.5">
+						<span class="font-mono text-lg font-semibold tabular-nums text-foreground">
+							{yearEntry.year}
+						</span>
+					</div>
+
+					<div class="flex flex-col gap-4 p-4">
+
+						<!-- Year-level files — always rendered when year is visible, so
+						     AdditionalYearFiles can contribute even if yearLinks is empty -->
+						{#if showYearLevel(yearEntry)}
+							<div class="flex flex-wrap items-center gap-2">
+								<AdditionalYearFiles {contestId} yearFiles={yearEntry} />
+								{#each yearLinks as fileType (fileType.id)}
+									<Badge variant="outline" href={yearEntry[fileType.id]} target="_blank">
+										{fileType.display}
+									</Badge>
+								{/each}
+							</div>
+						{/if}
+
+						<!-- Problem cards grid -->
+						{#if yearEntry.matchedFiles && yearEntry.matchedFiles.length > 0}
+							<div class="grid grid-cols-1 gap-3 xs:grid-cols-2 lg:grid-cols-3">
+								{#each yearEntry.matchedFiles as problem (problem.number)}
+									{@const problemLinks = fileSyntax.filter((ft) => problem[ft.id] != undefined)}
+									<div class="flex flex-col gap-3 rounded-xl bg-background p-4">
+										<!-- Problem identifier + title -->
+										<div class="flex flex-col gap-0.5">
+											<span class="font-mono text-sm font-semibold text-primary">
+												{problem.number}
+											</span>
+											{#if problem.title}
+												<span class="text-sm font-medium leading-snug text-left text-foreground">
+													{problem.title}
+												</span>
 											{/if}
-										{/each}
+										</div>
+										<!-- File links -->
+										{#if problemLinks.length > 0}
+											<div class="flex flex-wrap gap-1.5">
+												{#each problemLinks as fileType (fileType.id)}
+													<Badge
+														variant="outline"
+														href={problem[fileType.id]}
+														target="_blank"
+													>
+														{fileType.display}
+													</Badge>
+												{/each}
+											</div>
+										{/if}
 									</div>
-								</div>
-							{/each}
-						</div>
-					{/if}
+								{/each}
+							</div>
+						{/if}
+
+					</div>
 				</div>
-			</div>
-		{/each}
+			{/each}
+		</div>
 	{:else}
 		<SearchEmptyState
 			message="No results found"
