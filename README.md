@@ -35,13 +35,17 @@ File syntax can be customised in [fileSyntax.ts](./src/lib/pregen/fileSyntax.ts)
 
 ### Adding new problems
 
-Most of the time, this is simply done by including the files in the contest folder within the static folder, with the necessary file syntax: `<year><file syntax>`. The file syntax indicates what kind of file it is (problem, solution etc.). The allowed file extensions are in the pregeneration file [problems.ts](./src/lib/pregen/problems.ts).
+Most of the time, this is simply done by including the files in the contest folder within the static folder, with the necessary file syntax: `<year><file syntax>`. The file syntax indicates what kind of file it is (problem, solution etc.). The allowed file extensions are in the pregeneration file [problems.ts](./src/lib/pregen/problems.ts). These are known as **year-level files**
 
-However, sometimes the problems are separated. The per-problem files should be included in the year's folder, i.e. `<contest>/<year>/`, with the syntax `<problem number><file syntax>`. The allowed problem numbers are in the pregeneration file too.
+However, sometimes the problems are separated. The **problem-level files** should be included in the year's folder, i.e. `<contest>/<year>/`, with the syntax `<problem number><file syntax>`. The allowed problem numbers are in the pregeneration file too.
 
 You may optionally include the problem names (titles) by editing [problemNames.csv](./src/lib/pregen/problemNames.csv) and running the conversion script [problemNames.ts](./src/lib/pregen/problemNames.ts) to generate [the json file](./src/lib/pregen/problemNames.json).
 
 All of the pregeneration scripts can be run by simply doing `bun run pregen`.
+
+### External links/comments
+
+Adding comments to specific years can be done in [AdditionalYearFiles.svelte](./src/routes/contests/AdditionalYearFiles.svelte). Remember to update the [helper function](./src/routes/contests/additionalYearFiles.ts).
 
 ## TODO
 

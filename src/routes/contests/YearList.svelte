@@ -7,6 +7,7 @@
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
+	import { hasAdditionalYearFiles } from './additionalYearFiles.js';
 
 	const contestFiles = $derived(files[contestId]);
 
@@ -86,7 +87,7 @@
 
 						<!-- Year-level files — always rendered when year is visible, so
 						     AdditionalYearFiles can contribute even if yearLinks is empty -->
-						{#if showYearLevel(yearEntry)}
+						{#if showYearLevel(yearEntry) && (yearLinks.length > 0 || hasAdditionalYearFiles(contestId, yearEntry.year))}
 							<div class="flex flex-wrap items-center gap-2">
 								<AdditionalYearFiles {contestId} yearFiles={yearEntry} />
 								{#each yearLinks as fileType (fileType.id)}
