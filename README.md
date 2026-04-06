@@ -1,5 +1,7 @@
 # phoXiv
 
+To contribute, fork the repository, make your own changes on a separate branch, then open a pull request. See the [GitHub docs](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project#creating-a-branch-to-work-on) for more information.
+
 ## Building
 
 First, install a Javascript runtime like [Bun](https://bun.com/). Then, run any of the scripts below with `bun run <script>` or the equivalent in whatever runtime you use. All important commands are in [package.json](./package.json).
