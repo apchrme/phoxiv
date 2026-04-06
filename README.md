@@ -4,7 +4,9 @@ To contribute, fork the repository, make your own changes on a separate branch, 
 
 ## Building
 
-First, install a Javascript runtime like [Bun](https://bun.com/). Then, run any of the scripts below with `bun run <script>` or the equivalent in whatever runtime you use. All important commands are in [package.json](./package.json).
+First, install a Javascript runtime like [Bun](https://bun.com/). Then, install all dependencies with `bun install`.
+
+Run any of the scripts below with `bun run <script>` or the equivalent in whatever runtime you use. All important commands are in [package.json](./package.json).
 
 - `dev` - run local development server
 - `preview` - run deployment preview
