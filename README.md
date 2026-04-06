@@ -8,7 +8,7 @@ First, install a Javascript runtime like [Bun](https://bun.com/). Then, install 
 
 Run any of the scripts below with `bun run <script>` or the equivalent in whatever runtime you use. All important commands are in [package.json](./package.json).
 
-- `dev` - run local development server **warning: there is an issue that I have not fixed yet. you need to manually create an empty directory for pcup (at `/static/contests/pcup/`)so the pregeneration script doesn't crash when it tries to read a nonexistent directory. I have it on my local repository but git does not track empty directories!**
+- `dev` - run local development server. **warning: there is an issue that I have not fixed yet. you need to manually create an empty directory for pcup (at `/static/contests/pcup/`)so the pregeneration script doesn't crash when it tries to read a nonexistent directory. I have it on my local repository but git does not track empty directories!**
 - `preview` - run deployment preview
 - `deploy` - deploy to remote
 
