@@ -16,6 +16,13 @@ export const contests = [
 		tag: 'International' as ContestTag
 	},
 	{
+		id: 'aupho',
+		name: 'Australian Physics Olympiad',
+		summary: 'An olympiad known for many real-life/experimentals physics problems.',
+		icon: '🇦🇺',
+		tag: 'Regional' as ContestTag
+	},
+	{
 		id: 'apho',
 		name: 'Asian Physics Olympiad',
 		summary: 'The Asian version of IPhO, often used by countries to select their IPhO teams.',
