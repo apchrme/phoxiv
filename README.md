@@ -60,6 +60,12 @@ Adding comments to specific years can be done in [AdditionalYearFiles.svelte](./
 
 ## TODO
 
+### pregen overhaul
+the pregen scripts are a mess of spaghetti code. things to fix:
+
+1. problems.ts is absolute garbage
+2. the data is stored in a really inconvenient format (fileSyntax.ts, contests.ts). Get Claude to maybe convert this into a more human-friendly format and integrate it with the pregen scripts.
+
 ### High priority
 - fix the stupid looking emojis in the contest list
 - add a "hide solutions" button
