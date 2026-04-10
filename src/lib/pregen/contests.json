@@ -845,6 +845,89 @@
     }
   },
   {
+    "id": "izho",
+    "name": "International Zhautykov Olympiad",
+    "summary": "A multi-subject olympiad comprising of Mathematics, Physics and Computing",
+    "icon": "🇰🇿",
+    "tag": "International",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    }
+  },
+  {
     "id": "inpho",
     "name": "Indian National Physics Olympiad",
     "summary": "Second round of selection for the Indian IPhO team.",

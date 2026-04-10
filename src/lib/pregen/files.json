@@ -4146,6 +4146,187 @@
       "problems": []
     }
   ],
+  "izho": [
+    {
+      "year": 2026,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2026_T.pdf",
+        "experiment": "/contests/izho/2026_E.pdf",
+        "theorySolutions": "/contests/izho/2026_T_S.pdf",
+        "experimentSolutions": "/contests/izho/2026_E_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2024,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2024_T.pdf",
+        "experiment": "/contests/izho/2024_E.pdf",
+        "theorySolutions": "/contests/izho/2024_T_S.pdf",
+        "experimentSolutions": "/contests/izho/2024_E_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2023,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2023_T.pdf",
+        "experiment": "/contests/izho/2023_E.pdf",
+        "theorySolutions": "/contests/izho/2023_T_S.pdf",
+        "experimentSolutions": "/contests/izho/2023_E_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2022,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2022_T.pdf",
+        "experiment": "/contests/izho/2022_E.pdf",
+        "theorySolutions": "/contests/izho/2022_T_S.pdf",
+        "experimentSolutions": "/contests/izho/2022_E_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2021,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2021_T.pdf",
+        "experiment": "/contests/izho/2021_E.pdf",
+        "theorySolutions": "/contests/izho/2021_T_S.pdf",
+        "experimentSolutions": "/contests/izho/2021_E_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2020,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2020_T.pdf",
+        "experiment": "/contests/izho/2020_E.pdf",
+        "theorySolutions": "/contests/izho/2020_T_S.pdf",
+        "experimentSolutions": "/contests/izho/2020_E_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2019,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2019_T.pdf",
+        "experiment": "/contests/izho/2019_E.pdf",
+        "theorySolutions": "/contests/izho/2019_T_S.pdf",
+        "experimentSolutions": "/contests/izho/2019_E_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2018,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2018_T.pdf",
+        "theorySolutions": "/contests/izho/2018_T_S.pdf",
+        "experimentSolutions": "/contests/izho/2018_E_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2017,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2017_T.pdf",
+        "experiment": "/contests/izho/2017_E.pdf",
+        "theorySolutions": "/contests/izho/2017_T_S.pdf",
+        "experimentSolutions": "/contests/izho/2017_E_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2016,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2016_T.pdf",
+        "experiment": "/contests/izho/2016_E.pdf",
+        "theorySolutions": "/contests/izho/2016_T_S.pdf",
+        "experimentSolutions": "/contests/izho/2016_E_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2015,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2015_T.pdf",
+        "experiment": "/contests/izho/2015_E.pdf",
+        "theorySolutions": "/contests/izho/2015_T_S.pdf",
+        "experimentSolutions": "/contests/izho/2015_E_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2014,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2014_T.pdf",
+        "experiment": "/contests/izho/2014_E.pdf",
+        "theorySolutions": "/contests/izho/2014_T_S.pdf",
+        "experimentSolutions": "/contests/izho/2014_E_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2012,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2012_T.pdf",
+        "experiment": "/contests/izho/2012_E.pdf",
+        "theorySolutions": "/contests/izho/2012_T_S.pdf",
+        "experimentSolutions": "/contests/izho/2012_E_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2011,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2011_T.pdf",
+        "experiment": "/contests/izho/2011_E.pdf",
+        "theorySolutions": "/contests/izho/2011_T_S.pdf",
+        "experimentSolutions": "/contests/izho/2011_E_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2010,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2010_T.pdf",
+        "experiment": "/contests/izho/2010_E.pdf",
+        "theorySolutions": "/contests/izho/2010_T_S.pdf",
+        "experimentSolutions": "/contests/izho/2010_E_S.pdf"
+      },
+      "problems": []
+    }
+  ],
   "inpho": [
     {
       "year": 2025,
