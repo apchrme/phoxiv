@@ -18,7 +18,7 @@
 		return contests.filter((c) => {
 			const matchesTag = activeTag === null || c.tag === activeTag;
 			const matchesQuery =
-				!q || c.name.toLowerCase().includes(q) || c.summary.toLowerCase().includes(q);
+				!q || c.name.toLowerCase().includes(q) || c.summary.toLowerCase().includes(q) || c.id.toLowerCase().includes(q);
 			return matchesTag && matchesQuery;
 		});
 	});
