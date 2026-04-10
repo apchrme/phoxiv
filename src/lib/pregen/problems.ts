@@ -12,7 +12,7 @@ import path from 'path';
 
 // exports all problems grouped by the contest id
 const all_problems = {};
-const problemNumbers = ['T1', 'T2', 'T3', 'T4', 'E1', 'E2', 'T5'];
+const problemNumbers = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'PE', 'E1', 'E2'];
 const fileExtensions = ['pdf', 'xlsx', 'zip', 'htm', 'html', 'doc', 'docx'];
 
 // iterate through contests

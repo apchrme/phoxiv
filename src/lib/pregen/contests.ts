@@ -58,6 +58,27 @@ export const contests = [
 		tag: 'Open' as ContestTag
 	},
 	{
+		id: 'rupho-w',
+		name: 'Russian TST Round 1 (W)',
+		summary: 'First round of the Russian team selection (TST), letter W',
+		icon: '🇷🇺',
+		tag: 'National' as ContestTag
+	},
+	{
+		id: 'rupho-x',
+		name: 'Russian TST Round 2 (X)',
+		summary: 'Second round of the Russian team selection (TST), letter X',
+		icon: '🇷🇺',
+		tag: 'National' as ContestTag
+	},
+	{
+		id: 'rupho-y',
+		name: 'Russian TST Round 3 (Y)',
+		summary: 'Third round of the Russian team selection (TST), letter Y',
+		icon: '🇷🇺',
+		tag: 'National' as ContestTag
+	},
+	{
 		id: 'spot',
 		name: 'Singapore IPhO/APhO TST',
 		summary: 'Selection test for the Singapore team at IPhO and APhO.',
