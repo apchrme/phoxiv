@@ -2,15 +2,21 @@
 
 To contribute, fork the repository, make your own changes on a separate branch, then open a pull request. See the [GitHub docs](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project#creating-a-branch-to-work-on) for more information.
 
-## Building
+## Quickstart
 
-First, install a Javascript runtime like [Bun](https://bun.com/). Then, install all dependencies with `bun install`.
+```bash
+# Install dependencies
 
-Run any of the scripts below with `bun run <script>` or the equivalent in whatever runtime you use. All important commands are in [package.json](./package.json).
+bun install
 
-- `dev` - run local development server. **warning: there is an issue that I have not fixed yet. you need to manually create an empty directory for pcup (at `/static/contests/pcup/`)so the pregeneration script doesn't crash when it tries to read a nonexistent directory. I have it on my local repository but git does not track empty directories!**
-- `preview` - run deployment preview
-- `deploy` - deploy to remote
+# Run development server
+
+bun run dev
+
+# Deploy to Cloudflare
+
+bun run deploy
+```
 
 This project is built with:
 
@@ -23,48 +29,72 @@ This project is built with:
 
 The structure of this website is as follows: competitions are known as "contests". Each contest is split into "years", and within a year, there are multiple "problems".
 
-### Pregeneration
-
-You may have noticed that the build script runs [problems.ts](./src/lib/pregen/problems.ts). This is a pregeneration script that generates the file [files.json](./src/lib/pregen/files.json) containing all the problems in a javascript object. The purpose of this is to make adding problems easier. In some ways this makes the website a glorified file explorer.
-
-All of the pregeneration scripts can be run by simply doing `bun run pregen`.
-
-File syntax can be customised in [fileSyntax.ts](./src/lib/pregen/fileSyntax.ts).
-
 ## Adding content
-
 
 ### Adding new contests
 
-1. Create a new entry in [contests.ts](./src/lib/pregen/contests.ts) with the information about the contest. This will automatically add the contest to the homepage and "registers" the contest in the automated scripts.
-2. Add the necessary files to the folder in static, with the right file syntax.
-3. Add a folder with the corresponding contest id in `./src/routes/contests`, and include a `+page.svx` file. Optionally include a description.
+1. Create a folder with the id of the contest, such as `ipho` or `eupho`.
+2. Create an `index.yaml` file in the folder. An example is shown below.
+
+```yaml
+
+name: The Physics Olympiad
+summary: One of the physics olympiads of all time
+icon: ⚛️
+tag: International
+order: 2
+extraFileTypes:
+  year:
+    extraMinutes:
+      suffix: "_min2",
+      label: "Extraordinary Minutes"
+  problem:
+    calibration:
+      suffix: "_C"
+      label: "Calibration"
+
+```
 
 ### Adding new problems
 
-There are two types of files you can add:
+All file types can be found in [fileTypes.ts](/src/lib/pregen/fileTypes.ts).
+
+There are two "levels" of files you can add:
 1. Year-level files: these are the files that apply to all problems within that year. 
 2. Problem-level files: files that only apply to a specific problem, like T1, T1 solutions, etc.
 
-**Year-level files** should be added to the contest folder within [static](/static/contests), with the necessary file syntax: `<year><file syntax>`. The file syntax indicates what kind of file it is (problem, solution etc.). For example, the path to the problems for the USAPhO 2019 is `/static/contests/usapho/2019.pdf`, and the solutions are `/static/contests/usapho/2019_S.pdf`. All file syntaxes can be found in [fileSyntax.ts](./src/lib/pregen/fileSyntax.ts) The allowed file extensions are in the pregeneration file [problems.ts](./src/lib/pregen/problems.ts), but usually you don't have to care because most files are pdfs.
+**Year-level files** should be added to the contest folder within [static](/static/contests), with the necessary file syntax: `<year><type (suffix)>`. The file type indicates what kind of file it is (problem, solution etc.). For example, the path to the problems for the USAPhO 2019 is `/static/contests/usapho/2019.pdf`, and the solutions are `/static/contests/usapho/2019_S.pdf`. 
 
-**Problem-level files** should be included in the year's folder, i.e. `<contest>/<year>/`, with the syntax `<problem number><file syntax>`. The allowed problem numbers are in the pregeneration file too. For example, the solution to IPhO 2025 T2 has the path `/static/contests/ipho/2025/T2_S.pdf`.
+**Problem-level files** should be included in the year's folder, i.e. `<contest>/<year>/`, with the syntax `<problem number><file syntax>`. The allowed problem numbers are in the pregeneration file [generate.ts](/src/lib/pregen/generate.ts) too. For example, the solution to IPhO 2025 T2 has the path `/static/contests/ipho/2025/T2_S.pdf`.
 
-### Problem names
-You may optionally include the problem names (titles) by editing [problemNames.csv](./src/lib/pregen/problemNames.csv) and running the conversion script [problemNames.ts](./src/lib/pregen/problemNames.ts) to generate [the json file](./src/lib/pregen/problemNames.json).
+### Problem names and external links/comments
 
+Can be configured in `/static/contests/<contest id>/<year>/index.yaml`. Example:
 
-### External links/comments
+```yaml
 
-Adding comments to specific years can be done in [AdditionalYearFiles.svelte](./src/routes/contests/AdditionalYearFiles.svelte). Remember to update the [helper function](./src/routes/contests/additionalYearFiles.ts).
+problems:
+  T1:
+    title: On Newton's 4th law
+  T2:
+    title: The Industrial Revolution and its consequences
+  T3:
+    title: Time Dilation in Interstellar
+  E1:
+    title: Measuring the speed of light
+  E2:
+    title: Finding dark matter
+
+notes:
+  - "Note: I love this year's problems!"
+
+extraLinks:
+  - label: Official website
+    url: https://example.com
+
+```
 
 ## TODO
-
-### pregen overhaul
-the pregen scripts are a mess of spaghetti code. things to fix:
-
-1. problems.ts is absolute garbage
-2. the data is stored in a really inconvenient format (fileSyntax.ts, contests.ts). Get Claude to maybe convert this into a more human-friendly format and integrate it with the pregen scripts.
 
 ### High priority
 - fix the stupid looking emojis in the contest list

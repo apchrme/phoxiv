@@ -1,0 +1,1108 @@
+[
+  {
+    "id": "eupho",
+    "name": "European Physics Olympiad",
+    "summary": "A relatively new and highly interesting olympiad",
+    "icon": "🇪🇺",
+    "tag": "Regional",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    }
+  },
+  {
+    "id": "ipho",
+    "name": "International Physics Olympiad",
+    "summary": "The most well-known physics olympiad, attracting participants from 90+ countries",
+    "icon": "🌐",
+    "tag": "International",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      },
+      "extraMinutes": {
+        "label": "Extraordinary Minutes"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      },
+      "calibration": {
+        "label": "Calibration"
+      }
+    }
+  },
+  {
+    "id": "apho",
+    "name": "Asian Physics Olympiad",
+    "summary": "The Asian version of IPhO, often used by countries to select their IPhO teams.",
+    "icon": "🌏",
+    "tag": "Regional",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      },
+      "alignmentChart": {
+        "label": "Alignment Chart"
+      },
+      "handwrittenSolution": {
+        "label": "Solution (Handwritten)"
+      }
+    }
+  },
+  {
+    "id": "nbpho",
+    "name": "Nordic-Baltic Physics Olympiad",
+    "summary": "The most well-known physics olympiad, attracting participants from 90+ countries",
+    "icon": "🇪🇪",
+    "tag": "Regional",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      },
+      "calibration": {
+        "label": "Calibration"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    }
+  },
+  {
+    "id": "usapho",
+    "name": "USA Physics Olympiad",
+    "summary": "Second round of selection for the US Physics Team",
+    "icon": "🇺🇸",
+    "tag": "National",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    }
+  },
+  {
+    "id": "usatst",
+    "name": "USA Team Selection Test",
+    "summary": "Final round of selection for the US Physics Team",
+    "icon": "🇺🇸",
+    "tag": "National",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    }
+  },
+  {
+    "id": "eotvos",
+    "name": "Eötvös Competition",
+    "summary": "One of the oldest high school physics contests.",
+    "icon": "🇭🇺",
+    "tag": "National",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    }
+  },
+  {
+    "id": "pcup",
+    "name": "Physics Cup",
+    "summary": "The most difficult high school physics contest",
+    "icon": "🏆",
+    "tag": "Open",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    }
+  },
+  {
+    "id": "spot",
+    "name": "Singapore IPhO/APhO TST",
+    "summary": "Selection test for the Singapore team at IPhO and APhO.",
+    "icon": "🇸🇬",
+    "tag": "National",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    }
+  },
+  {
+    "id": "cpho-f",
+    "name": "Chinese Physics Olympiad (Finals)",
+    "summary": "Third phase of selection for the Chinese IPhO team",
+    "icon": "🇨🇳",
+    "tag": "National",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    }
+  },
+  {
+    "id": "inpho",
+    "name": "Indian National Physics Olympiad",
+    "summary": "Second round of selection for the Indian IPhO team.",
+    "icon": "🇮🇳",
+    "tag": "National",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      },
+      "detailedSolutions": {
+        "label": "Detailed Solutions"
+      }
+    }
+  },
+  {
+    "id": "sjpo",
+    "name": "Singapore Junior Physics Olympiad",
+    "summary": "A well-set national olympiad for secondary school students",
+    "icon": "🇸🇬",
+    "tag": "National",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      },
+      "version2": {
+        "label": "Problems (unused)"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    }
+  },
+  {
+    "id": "spho",
+    "name": "Singapore Physics Olympiad",
+    "summary": "The first round of the selection for IPhO in Singapore",
+    "icon": "🇸🇬",
+    "tag": "National",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      },
+      "paper1": {
+        "label": "Paper 1"
+      },
+      "paper2": {
+        "label": "Paper 2"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    }
+  }
+]

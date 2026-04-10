@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import { cn } from '$lib/utils.js';
+	import contests from "$lib/pregen/contests.json";
 
 	const stats = [
-		{ value: '12', label: 'olympiads' },
-		{ value: '100+', label: 'years' },
-		{ value: '1151+', label: 'files' }
+		{ value: contests.length, label: 'olympiads' },
+		{ value: '1200+', label: 'files' }
 	] as const;
 </script>
 

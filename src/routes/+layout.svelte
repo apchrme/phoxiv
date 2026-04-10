@@ -18,11 +18,10 @@
 </script>
 
 <svelte:head>
-<link rel="icon" type="image/x-icon" href="/logo.svg" />
+<link rel="icon" href="/logo.svg?v=2" />
 </svelte:head>
 
 <ModeWatcher />
-
 
 <Sidebar.Provider>
 	<AppSidebar {navLinks} />

@@ -2,7 +2,7 @@
 	import YearList from './YearList.svelte';
 	let { children } = $props();
 	import { page } from '$app/state';
-	import { contests } from '$lib/pregen/contests';
+	import contests from '$lib/pregen/contests.json';
 	import SvelteSeo from 'svelte-seo';
 	let contest = $derived(
 		contests.find(
@@ -12,13 +12,13 @@
 </script>
 
 <SvelteSeo
-	title={contest.name}
-	description="An archive of problems and solutions from the {contest.name}, in PDF format."
+	title={contest?.name}
+	description="An archive of problems and solutions from the {contest?.name}, in PDF format."
 	keywords="problems, solutions, olympiad, physics"
 />
 
-<h1>{contest.name}</h1>
+<h1>{contest?.name}</h1>
 
 {@render children()}
 
-<YearList contestId={contest.id} />
+<YearList contestId={contest?.id} />

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { contests, type ContestTag } from '$lib/pregen/contests';
+	import contests from '$lib/pregen/contests.json';
+	import type { ContestTag, ContestEntry } from '$lib/pregen/types.js';
 	import * as Card from '$lib/components/ui/card/index';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
