@@ -4,6 +4,8 @@ To contribute, fork the repository, make your own changes on a separate branch, 
 
 ## Quickstart
 
+Install [bun](https://bun.com)
+
 ```bash
 # Install dependencies
 bun install
