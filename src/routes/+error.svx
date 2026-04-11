@@ -6,5 +6,5 @@
 # {page.status}: {page.error.message}
 
 {#if (page.status == "404")}
-<p>A page link doesn't exist here. I recently overhauled the directory system used on this website, so many links have been changed. You may have to find what you're looking for again.</p>
+<p class="text-center">A page link doesn't exist here. Did you type the URL correctly?</p>
 {/if}
