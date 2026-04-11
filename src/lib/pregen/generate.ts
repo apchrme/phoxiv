@@ -136,7 +136,7 @@ for (const contest of internalContests) {
 	const contestDir     = path.join(STATIC_DIR, contest.id);
 	const contestEntries = fs.readdirSync(contestDir);
 
-	console.log('\n' + contest.id + ':');
+	// console.log('\n' + contest.id + ':');
 
 	const yearNumbers = new Set<number>();
 	for (const entry of contestEntries) {
@@ -192,7 +192,7 @@ for (const contest of internalContests) {
 			meta.notes?.length           ? meta.notes.length + ' note(s)'             : null,
 			meta.extraLinks?.length      ? meta.extraLinks.length + ' extra link(s)'  : null,
 		].filter(Boolean);
-		console.log('  ' + year + ': ' + (parts.join(', ') || 'empty'));
+		// console.log('  ' + year + ': ' + (parts.join(', ') || 'empty'));
 	}
 
 	filesOutput[contest.id] = years;

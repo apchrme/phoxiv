@@ -4160,6 +4160,18 @@
       "problems": []
     },
     {
+      "year": 2025,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2025_T.pdf",
+        "experiment": "/contests/izho/2025_E.pdf",
+        "theorySolutions": "/contests/izho/2025_T_S.pdf",
+        "experimentSolutions": "/contests/izho/2025_E_S.pdf"
+      },
+      "problems": []
+    },
+    {
       "year": 2024,
       "notes": [],
       "extraLinks": [],
@@ -4287,6 +4299,16 @@
         "experiment": "/contests/izho/2014_E.pdf",
         "theorySolutions": "/contests/izho/2014_T_S.pdf",
         "experimentSolutions": "/contests/izho/2014_E_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2013,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "theory": "/contests/izho/2013_T.pdf",
+        "theorySolutions": "/contests/izho/2013_T_S.pdf"
       },
       "problems": []
     },
