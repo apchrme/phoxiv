@@ -19,6 +19,7 @@ export const yearFileTypes: Record<string, FileType> = {
 	theory:                   { suffix: '_T',       label: 'Theory' },
 	experiment:               { suffix: '_E',       label: 'Experiment' },
 	solutions:                { suffix: '_S',       label: 'Solutions' },
+	answerSheet:			  { suffix: '_A',       label: 'Answer Sheets' },
 	theorySolutions:          { suffix: '_T_S',     label: 'Theory Solutions' },
 	experimentSolutions:      { suffix: '_E_S',     label: 'Experiment Solutions' },
 	theoryMarkingScheme:      { suffix: '_T_M',     label: 'Theory Marking Scheme' },
@@ -31,7 +32,7 @@ export const yearFileTypes: Record<string, FileType> = {
 	results:                  { suffix: '_R',       label: 'Results' },
 	minutes:                  { suffix: '_min',     label: 'Minutes' },
 	proceedings:              { suffix: '_proc',    label: 'Proceedings' },
-	comments:                 { suffix: '_comments', label: 'Comments' },
+	comments:                 { suffix: '_comments',label: 'Comments' },
 };
 
 /** Problem-level file types (e.g. T1_S.pdf). Labels use the singular form. */

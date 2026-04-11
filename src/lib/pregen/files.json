@@ -3854,6 +3854,179 @@
     }
   ],
   "pcup": [],
+  "aupho": [
+    {
+      "year": 2024,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2024.pdf",
+        "solutions": "/contests/aupho/2024_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2023,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2023.pdf",
+        "solutions": "/contests/aupho/2023_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2022,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2022.pdf",
+        "solutions": "/contests/aupho/2022_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2021,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2021.pdf",
+        "solutions": "/contests/aupho/2021_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2020,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2020.pdf",
+        "solutions": "/contests/aupho/2020_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2019,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2019.pdf",
+        "solutions": "/contests/aupho/2019_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2017,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2017.pdf",
+        "solutions": "/contests/aupho/2017_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2016,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2016.pdf",
+        "solutions": "/contests/aupho/2016_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2015,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2015.pdf",
+        "solutions": "/contests/aupho/2015_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2014,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2014.pdf",
+        "solutions": "/contests/aupho/2014_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2013,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2013.pdf",
+        "solutions": "/contests/aupho/2013_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2012,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2012.pdf",
+        "solutions": "/contests/aupho/2012_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2011,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2011.pdf",
+        "solutions": "/contests/aupho/2011_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2010,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2010.pdf",
+        "solutions": "/contests/aupho/2010_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2009,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2009.pdf",
+        "solutions": "/contests/aupho/2009_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2008,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2008.pdf",
+        "SolutionA": "/contests/aupho/2008_S_A.pdf",
+        "SolutionB": "/contests/aupho/2008_S_B.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2007,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/aupho/2007.pdf",
+        "solutions": "/contests/aupho/2007_S.pdf"
+      },
+      "problems": []
+    }
+  ],
   "spot": [
     {
       "year": 2026,
@@ -4356,7 +4529,8 @@
       "extraLinks": [],
       "yearFiles": {
         "problems": "/contests/inpho/2025.pdf",
-        "solutions": "/contests/inpho/2025_S.pdf"
+        "solutions": "/contests/inpho/2025_S.pdf",
+        "answerSheet": "/contests/inpho/2025_A.pdf"
       },
       "problems": []
     },
@@ -4366,7 +4540,8 @@
       "extraLinks": [],
       "yearFiles": {
         "problems": "/contests/inpho/2024.pdf",
-        "solutions": "/contests/inpho/2024_S.pdf"
+        "solutions": "/contests/inpho/2024_S.pdf",
+        "answerSheet": "/contests/inpho/2024_A.pdf"
       },
       "problems": []
     },
