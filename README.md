@@ -65,9 +65,9 @@ There are two "levels" of files you can add:
 1. Year-level files: these are the files that apply to all problems within that year.
 2. Problem-level files: files that only apply to a specific problem, like T1, T1 solutions, etc.
 
-**Year-level files** should be added to the contest folder within [static](/static/contests), with the necessary file syntax: `<year><type (suffix)>`. The file type indicates what kind of file it is (problem, solution etc.). For example, the path to the problems for the USAPhO 2019 is `/static/contests/usapho/2019.pdf`, and the solutions are `/static/contests/usapho/2019_S.pdf`.
+**Year-level files** should be added to the contest folder directly: `/static/contests/<contest>/<year><file type>`. The file type indicates what kind of file it is (problem, solution etc.). For example, the path to the problems for the USAPhO 2019 is `/static/contests/usapho/2019.pdf` (problems have no suffix), and the solutions are `/static/contests/usapho/2019_S.pdf`.
 
-**Problem-level files** should be included in the year's folder, i.e. `<contest>/<year>/`, with the syntax `<problem number><file syntax>`. The allowed problem numbers are in the pregeneration file [generate.ts](/src/lib/pregen/generate.ts) too. For example, the solution to IPhO 2025 T2 has the path `/static/contests/ipho/2025/T2_S.pdf`.
+**Problem-level files** are included in this path: `/static/contests/<contest>/<year>/<problem number><file type>`. The allowed problem numbers are in the pregeneration file [generate.ts](/src/lib/pregen/generate.ts) too. For example, the solution to IPhO 2025 T2 has the path `/static/contests/ipho/2025/T2_S.pdf`.
 
 ### Problem names and external links/comments
 
