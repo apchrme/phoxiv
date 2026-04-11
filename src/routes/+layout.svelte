@@ -18,7 +18,7 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href="/logo.svg?v=2" />
+	<link rel="icon" href="/logo.svg?v=3" />
 </svelte:head>
 
 <ModeWatcher />
@@ -26,7 +26,7 @@
 <Sidebar.Provider>
 	<AppSidebar {navLinks} />
 	<div
-		class="flex min-h-screen w-full flex-col items-center bg-background px-8 py-8 sm:px-10 sm:py-10"
+		class="flex min-h-screen w-full flex-col items-center bg-background px-8 py-3 sm:px-10 sm:py-6"
 	>
 		<div class="w-full md:w-5/6 xl:w-2/3">
 			<nav class="grid grid-cols-3 items-center md:hidden">
