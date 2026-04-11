@@ -1,0 +1,14 @@
+name: Australian Physics Olympiad
+summary: Australia's national physics olympiads, serving as the first round of selection for the Australian team at the International Physics Olympiad.
+icon: 🇦🇺
+tag: National
+order: 9
+
+extraFileTypes:
+  year:
+    SolutionA:
+      suffix: "_S_A"
+      label: "Solutions (Section A)"
+    SolutionB:
+      suffix: "_S_B"
+      label: "Solutions (Section B)"

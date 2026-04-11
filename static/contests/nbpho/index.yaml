@@ -3,8 +3,3 @@ summary: A regional physics olympiad for students from the Nordic and Baltic cou
 icon: 🇪🇪 🇫🇮 🇸🇪 🇱🇻
 tag: Regional
 order: 4
-extraFileTypes:
-  year:
-    calibration:
-      suffix: "_C"
-      label: "Calibration"

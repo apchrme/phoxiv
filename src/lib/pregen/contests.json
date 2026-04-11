@@ -21,6 +21,9 @@
       "solutions": {
         "label": "Solutions"
       },
+      "answerSheet": {
+        "label": "Answer Sheets"
+      },
       "theorySolutions": {
         "label": "Theory Solutions"
       },
@@ -103,6 +106,9 @@
       },
       "solutions": {
         "label": "Solutions"
+      },
+      "answerSheet": {
+        "label": "Answer Sheets"
       },
       "theorySolutions": {
         "label": "Theory Solutions"
@@ -193,6 +199,9 @@
       "solutions": {
         "label": "Solutions"
       },
+      "answerSheet": {
+        "label": "Answer Sheets"
+      },
       "theorySolutions": {
         "label": "Theory Solutions"
       },
@@ -263,7 +272,7 @@
   {
     "id": "nbpho",
     "name": "Nordic-Baltic Physics Olympiad",
-    "summary": "The most well-known physics olympiad, attracting participants from 90+ countries",
+    "summary": "A regional physics olympiad for students from the Nordic and Baltic countries, including Estonia, Finland, Sweden and Latvia.",
     "icon": "🇪🇪 🇫🇮 🇸🇪 🇱🇻",
     "tag": "Regional",
     "yearFileTypes": {
@@ -281,6 +290,9 @@
       },
       "solutions": {
         "label": "Solutions"
+      },
+      "answerSheet": {
+        "label": "Answer Sheets"
       },
       "theorySolutions": {
         "label": "Theory Solutions"
@@ -320,9 +332,6 @@
       },
       "comments": {
         "label": "Comments"
-      },
-      "calibration": {
-        "label": "Calibration"
       }
     },
     "problemFileTypes": {
@@ -367,6 +376,9 @@
       },
       "solutions": {
         "label": "Solutions"
+      },
+      "answerSheet": {
+        "label": "Answer Sheets"
       },
       "theorySolutions": {
         "label": "Theory Solutions"
@@ -451,6 +463,9 @@
       "solutions": {
         "label": "Solutions"
       },
+      "answerSheet": {
+        "label": "Answer Sheets"
+      },
       "theorySolutions": {
         "label": "Theory Solutions"
       },
@@ -533,6 +548,9 @@
       },
       "solutions": {
         "label": "Solutions"
+      },
+      "answerSheet": {
+        "label": "Answer Sheets"
       },
       "theorySolutions": {
         "label": "Theory Solutions"
@@ -617,6 +635,9 @@
       "solutions": {
         "label": "Solutions"
       },
+      "answerSheet": {
+        "label": "Answer Sheets"
+      },
       "theorySolutions": {
         "label": "Theory Solutions"
       },
@@ -679,6 +700,98 @@
     }
   },
   {
+    "id": "aupho",
+    "name": "Australian Physics Olympiad",
+    "summary": "Australia's national physics olympiads, serving as the first round of selection for the Australian team at the International Physics Olympiad.",
+    "icon": "🇦🇺",
+    "tag": "National",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "answerSheet": {
+        "label": "Answer Sheets"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      },
+      "SolutionA": {
+        "label": "Solution (Section A)"
+      },
+      "SolutionB": {
+        "label": "Solution (Section B)"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    }
+  },
+  {
     "id": "spot",
     "name": "Singapore IPhO/APhO TST",
     "summary": "Selection test for the Singapore team at IPhO and APhO.",
@@ -699,6 +812,9 @@
       },
       "solutions": {
         "label": "Solutions"
+      },
+      "answerSheet": {
+        "label": "Answer Sheets"
       },
       "theorySolutions": {
         "label": "Theory Solutions"
@@ -783,6 +899,9 @@
       "solutions": {
         "label": "Solutions"
       },
+      "answerSheet": {
+        "label": "Answer Sheets"
+      },
       "theorySolutions": {
         "label": "Theory Solutions"
       },
@@ -866,6 +985,9 @@
       "solutions": {
         "label": "Solutions"
       },
+      "answerSheet": {
+        "label": "Answer Sheets"
+      },
       "theorySolutions": {
         "label": "Theory Solutions"
       },
@@ -948,6 +1070,9 @@
       },
       "solutions": {
         "label": "Solutions"
+      },
+      "answerSheet": {
+        "label": "Answer Sheets"
       },
       "theorySolutions": {
         "label": "Theory Solutions"
@@ -1035,6 +1160,9 @@
       "solutions": {
         "label": "Solutions"
       },
+      "answerSheet": {
+        "label": "Answer Sheets"
+      },
       "theorySolutions": {
         "label": "Theory Solutions"
       },
@@ -1120,6 +1248,9 @@
       },
       "solutions": {
         "label": "Solutions"
+      },
+      "answerSheet": {
+        "label": "Answer Sheets"
       },
       "theorySolutions": {
         "label": "Theory Solutions"
