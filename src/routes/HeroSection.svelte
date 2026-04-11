@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import { cn } from '$lib/utils.js';
-	import contests from "$lib/pregen/contests.json";
+	import contests from '$lib/pregen/contests.json';
 
 	const stats = [
 		{ value: contests.length, label: 'olympiads' },

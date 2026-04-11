@@ -63,6 +63,8 @@
 	},
 	"dependencies": {
 		"@fontsource-variable/jetbrains-mono": "^5.2.8",
-		"js-yaml": "^4.1.1"
+		"isomorphic-dompurify": "^3.8.0",
+		"js-yaml": "^4.1.1",
+		"marked": "^18.0.0"
 	}
 }

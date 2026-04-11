@@ -16,6 +16,8 @@ export type ContestEntry = {
 	yearFileTypes: Record<string, FileTypeLabel>;
 	/** Merged (global + contest-specific) problem-level file type labels, in render order. */
 	problemFileTypes: Record<string, FileTypeLabel>;
+	description?: string; // raw Markdown (in YAML)
+	descriptionHtml?: string; // compiled HTML (in contests.json)
 };
 
 /** Shape of static/contests/<id>/index.yaml */
@@ -34,6 +36,7 @@ export type ContestIndexYaml = {
 		year?: Record<string, { suffix: string; label: string }>;
 		problem?: Record<string, { suffix: string; label: string }>;
 	};
+	description?: string; // raw Markdown (in YAML)
 };
 
 /** Shape of static/contests/<id>/<year>/index.yaml */

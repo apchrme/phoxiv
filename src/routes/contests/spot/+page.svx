@@ -1,6 +1,0 @@
-
-The Singapore Team Selection Test for IPhO, APhO and INSO. As of now, the top 5 participants go for IPhO, the next 8 go for APhO and recently the next 4 go to INSO (the nuclear science olympiad). It is decent practice for IPhO, being much more guided, but the time pressure is significantly higher too. Difficulty and time pressure varies wildly over the years, though.
-
-Recently, the first few problems have been short standard problems similar to the InPhO, while the later problems are similar to USAPhO, though slightly longer.
-
-**I only recommend doing the 2023-2026 papers, as the earlier years are mostly copied from well-known sources.** Note that the 2023-2025 papers have many problems that are copied from other olympiads. Most of those are copied from the <a target="_blank" href="https://olimpiada.ru/activity/74/tasks">All-Russian Olympiad</a> (11th grade finals). The original problems have errors: see my <a target="_blank" href="https://apochrome.notion.site/TST-Errata-1cfb933f14fe80788b41e3058b6522df?pvs=4">errata page</a>.

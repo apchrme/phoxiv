@@ -8,11 +8,13 @@
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 
-	const contestFiles: YearEntry[] = $derived((files as Record<string, YearEntry[]>)[contestId] ?? []);
+	const contestFiles: YearEntry[] = $derived(
+		(files as unknown as Record<string, YearEntry[]>)[contestId] ?? []
+	);
 
 	// Merged file type labels for this specific contest
 	const contest = $derived(
-		(contestsData as ContestEntry[]).find((c) => c.id === contestId)
+		(contestsData as unknown as ContestEntry[]).find((c) => c.id === contestId)
 	);
 	const yearFTEntries = $derived(Object.entries(contest?.yearFileTypes ?? {}));
 	const probFTEntries = $derived(Object.entries(contest?.problemFileTypes ?? {}));
@@ -28,9 +30,7 @@
 		for (const year of contestFiles) {
 			const yearMatches = String(year.year).includes(q);
 			const matchedProblems = year.problems.filter(
-				(p) =>
-					p.number.toLowerCase().includes(q) ||
-					(p.title?.toLowerCase().includes(q) ?? false)
+				(p) => p.number.toLowerCase().includes(q) || (p.title?.toLowerCase().includes(q) ?? false)
 			);
 			if (yearMatches) {
 				results.push({ ...year, matchedProblems: year.problems });
@@ -48,9 +48,7 @@
 			(y) =>
 				!String(y.year).includes(q) &&
 				y.problems.some(
-					(p) =>
-						p.number.toLowerCase().includes(q) ||
-						(p.title?.toLowerCase().includes(q) ?? false)
+					(p) => p.number.toLowerCase().includes(q) || (p.title?.toLowerCase().includes(q) ?? false)
 				)
 		);
 	});
@@ -62,9 +60,7 @@
 
 	function hasYearLevelContent(year: YearEntry) {
 		return (
-			Object.keys(year.yearFiles).length > 0 ||
-			year.notes.length > 0 ||
-			year.extraLinks.length > 0
+			Object.keys(year.yearFiles).length > 0 || year.notes.length > 0 || year.extraLinks.length > 0
 		);
 	}
 </script>
@@ -87,15 +83,13 @@
 		<div class="flex flex-col gap-4">
 			{#each filtered() as year (year.year)}
 				<div class="overflow-hidden rounded-2xl border border-border bg-card">
-
 					<div class="flex items-center border-b border-border bg-muted/60 px-4 py-2.5">
-						<span class="font-mono text-lg font-semibold tabular-nums text-foreground">
+						<span class="font-mono text-lg font-semibold text-foreground tabular-nums">
 							{year.year}
 						</span>
 					</div>
 
 					<div class="flex flex-col gap-4 p-4">
-
 						{#if showYearLevel(year) && hasYearLevelContent(year)}
 							<div class="flex flex-col gap-2">
 								{#each year.notes as note (note)}
@@ -129,7 +123,7 @@
 												{problem.number}
 											</span>
 											{#if problem.title}
-												<span class="text-sm font-medium leading-snug text-foreground">
+												<span class="text-sm leading-snug font-medium text-foreground">
 													{problem.title}
 												</span>
 											{/if}
@@ -147,7 +141,6 @@
 								{/each}
 							</div>
 						{/if}
-
 					</div>
 				</div>
 			{/each}
@@ -156,7 +149,9 @@
 		<SearchEmptyState
 			message="No results found"
 			hint="Try a different year or problem name."
-			onClear={() => { query = ''; }}
+			onClear={() => {
+				query = '';
+			}}
 		/>
 	{/if}
 </section>

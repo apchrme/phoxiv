@@ -16,13 +16,16 @@ import { parse } from 'csv-parse/sync';
 import yaml from 'js-yaml';
 import type { YearIndexYaml } from './types.js';
 
-const CSV_PATH    = path.resolve('src/lib/pregen/problemTitles.csv');
-const STATIC_DIR  = path.resolve('static/contests');
+const CSV_PATH = path.resolve('src/lib/pregen/problemTitles.csv');
+const STATIC_DIR = path.resolve('static/contests');
 
 // ── Read CSV ──────────────────────────────────────────────────────────────────
 
 const csvText = fs.readFileSync(CSV_PATH, 'utf8');
-const rows = parse(csvText, { columns: true, trim: true, skip_empty_lines: true }) as Record<string, string>[];
+const rows = parse(csvText, { columns: true, trim: true, skip_empty_lines: true }) as Record<
+	string,
+	string
+>[];
 
 // Columns other than 'contest' and 'year' are problem numbers
 const header = Object.keys(rows[0]);
@@ -49,7 +52,7 @@ for (const row of rows) {
 		continue;
 	}
 
-	const yearDir  = path.join(STATIC_DIR, contestId, year);
+	const yearDir = path.join(STATIC_DIR, contestId, year);
 	const yamlPath = path.join(yearDir, 'index.yaml');
 
 	// Read existing index.yaml if present, so we don't clobber notes/extraLinks
@@ -73,9 +76,9 @@ for (const row of rows) {
 	}
 
 	const updated: YearIndexYaml = {
-		...(existing.notes      ? { notes:      existing.notes }      : {}),
+		...(existing.notes ? { notes: existing.notes } : {}),
 		...(existing.extraLinks ? { extraLinks: existing.extraLinks } : {}),
-		problems: mergedProblems,
+		problems: mergedProblems
 	};
 
 	fs.mkdirSync(yearDir, { recursive: true });
@@ -84,4 +87,6 @@ for (const row of rows) {
 	written++;
 }
 
-console.log(`\nDone. Wrote ${written} index.yaml file(s), skipped ${skipped} row(s) with no titles.`);
+console.log(
+	`\nDone. Wrote ${written} index.yaml file(s), skipped ${skipped} row(s) with no titles.`
+);

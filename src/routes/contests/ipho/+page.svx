@@ -1,2 +1,0 @@
-
-The most famous physics olympiad in existence. Most of the files here have been compiled by <a href="https://stefanivanov.site/teaching" target="_blank">Stefan Ivanov</a>, who got them from the [official IPhO website](https://www.ipho-new.org/documentations/) and the individual webpages. Some are from personal connections. Take note of the <a href="https://stefanivanov.site/teaching/errata.pdf" target="_blank">errata list</a>.

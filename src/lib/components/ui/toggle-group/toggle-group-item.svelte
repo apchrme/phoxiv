@@ -17,7 +17,7 @@
 		'inline-flex items-center rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors',
 		'hover:bg-muted hover:text-foreground',
 		'data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground',
-		'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+		'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
 		'disabled:pointer-events-none disabled:opacity-50',
 		className
 	)}

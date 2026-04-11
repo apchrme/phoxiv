@@ -1,1 +1,0 @@
-Most of the files here are from [Stefan Ivanov's](https://stefanivanov.site/teaching/) archive. Take note of the [errata list](https://stefanivanov.site/teaching/errata.pdf).

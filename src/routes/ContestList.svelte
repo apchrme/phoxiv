@@ -1,6 +1,6 @@
 <script lang="ts">
 	import contests from '$lib/pregen/contests.json';
-	import type { ContestTag, ContestEntry } from '$lib/pregen/types.js';
+	import type { ContestTag } from '$lib/pregen/types.js';
 	import * as Card from '$lib/components/ui/card/index';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
@@ -18,7 +18,10 @@
 		return contests.filter((c) => {
 			const matchesTag = activeTag === null || c.tag === activeTag;
 			const matchesQuery =
-				!q || c.name.toLowerCase().includes(q) || c.summary.toLowerCase().includes(q) || c.id.toLowerCase().includes(q);
+				!q ||
+				c.name.toLowerCase().includes(q) ||
+				c.summary.toLowerCase().includes(q) ||
+				c.id.toLowerCase().includes(q);
 			return matchesTag && matchesQuery;
 		});
 	});
@@ -98,6 +101,9 @@
 		message="No contests found"
 		hint="Try a different search term or clear the filter."
 		clearLabel="Clear filters"
-		onClear={() => { query = ''; activeTag = null; }}
+		onClear={() => {
+			query = '';
+			activeTag = null;
+		}}
 	/>
 {/if}

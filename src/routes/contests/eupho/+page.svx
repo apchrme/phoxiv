@@ -1,2 +1,0 @@
-
-A highly interesting olympiad with short but insightful problems, though some may call them contrived. It has a relatively short history, with the first edition in 2017. In many ways, this olympiad follows the IPhO statutes even better than IPhO itself, as the problems requires physical insight and you rarely need to rush for time. Inspired by the [Eötvös Competition](/contests/eotvos).

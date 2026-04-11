@@ -18,7 +18,7 @@
 </script>
 
 <svelte:head>
-<link rel="icon" href="/logo.svg?v=2" />
+	<link rel="icon" href="/logo.svg?v=2" />
 </svelte:head>
 
 <ModeWatcher />

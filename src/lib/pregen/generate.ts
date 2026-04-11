@@ -17,6 +17,7 @@
 import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
+import { marked } from 'marked';
 import { yearFileTypes, problemFileTypes } from './fileTypes.js';
 import type { FileType } from './fileTypes.js';
 import type {
@@ -26,15 +27,15 @@ import type {
 	YearEntry,
 	ProblemEntry,
 	FilesJson,
-	FileTypeLabel,
+	FileTypeLabel
 } from './types.js';
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const STATIC_DIR   = path.resolve('static/contests');
+const STATIC_DIR = path.resolve('static/contests');
 const CONTESTS_OUT = path.resolve('src/lib/pregen/contests.json');
-const FILES_OUT    = path.resolve('src/lib/pregen/files.json');
-const EXTENSIONS   = ['pdf', 'xlsx', 'zip', 'htm', 'html', 'doc', 'docx'];
+const FILES_OUT = path.resolve('src/lib/pregen/files.json');
+const EXTENSIONS = ['pdf', 'xlsx', 'zip', 'htm', 'html', 'doc', 'docx'];
 const PROBLEM_NUMS = ['T1', 'T2', 'T3', 'T4', 'T5', 'E1', 'E2'];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -61,7 +62,7 @@ function resolveLinks(
 	entries: string[],
 	base: string,
 	types: Record<string, FileType>,
-	urlPrefix: string,
+	urlPrefix: string
 ): Record<string, string> {
 	const links: Record<string, string> = {};
 	for (const [key, ft] of Object.entries(types)) {
@@ -100,30 +101,34 @@ for (const id of contestDirs) {
 		continue;
 	}
 
-	const extraYear    = meta.extraFileTypes?.year    ?? {};
+	const extraYear = meta.extraFileTypes?.year ?? {};
 	const extraProblem = meta.extraFileTypes?.problem ?? {};
-	const mergedYear    = { ...yearFileTypes,    ...extraYear };
+	const mergedYear = { ...yearFileTypes, ...extraYear };
 	const mergedProblem = { ...problemFileTypes, ...extraProblem };
 
 	internalContests.push({
 		id,
-		name:             meta.name,
-		summary:          meta.summary,
-		icon:             meta.icon,
-		tag:              meta.tag,
-		yearFileTypes:    toLabels(mergedYear),
+		name: meta.name,
+		summary: meta.summary,
+		icon: meta.icon,
+		tag: meta.tag,
+		yearFileTypes: toLabels(mergedYear),
 		problemFileTypes: toLabels(mergedProblem),
-		_order:           meta.order ?? Infinity,
-		_yearTypes:       mergedYear,
-		_problemTypes:    mergedProblem,
+		description: meta.description,
+		descriptionHtml: meta.description ? (marked.parse(meta.description) as string) : undefined,
+		_order: meta.order ?? Infinity,
+		_yearTypes: mergedYear,
+		_problemTypes: mergedProblem
 	});
 }
 
-internalContests.sort((a, b) => a._order !== b._order ? a._order - b._order : a.id.localeCompare(b.id));
+internalContests.sort((a, b) =>
+	a._order !== b._order ? a._order - b._order : a.id.localeCompare(b.id)
+);
 
 // Write contests.json
 const contestsJson: ContestEntry[] = internalContests.map(
-	({ _order, _yearTypes, _problemTypes, ...rest }) => rest,
+	({ _order, _yearTypes, _problemTypes, ...rest }) => rest
 );
 fs.writeFileSync(CONTESTS_OUT, JSON.stringify(contestsJson, null, 2));
 console.log('Wrote ' + CONTESTS_OUT + ' (' + contestsJson.length + ' contests)');
@@ -133,7 +138,7 @@ console.log('Wrote ' + CONTESTS_OUT + ' (' + contestsJson.length + ' contests)')
 const filesOutput: FilesJson = {};
 
 for (const contest of internalContests) {
-	const contestDir     = path.join(STATIC_DIR, contest.id);
+	const contestDir = path.join(STATIC_DIR, contest.id);
 	const contestEntries = fs.readdirSync(contestDir);
 
 	// console.log('\n' + contest.id + ':');
@@ -149,8 +154,8 @@ for (const contest of internalContests) {
 	const years: YearEntry[] = [];
 
 	for (const year of [...yearNumbers].sort((a, b) => b - a)) {
-		const yearDir     = path.join(contestDir, String(year));
-		const hasDir      = fs.existsSync(yearDir);
+		const yearDir = path.join(contestDir, String(year));
+		const hasDir = fs.existsSync(yearDir);
 		const yearEntries = hasDir ? fs.readdirSync(yearDir) : [];
 		const meta: YearIndexYaml = hasDir
 			? (readYaml<YearIndexYaml>(path.join(yearDir, 'index.yaml')) ?? {})
@@ -160,7 +165,7 @@ for (const contest of internalContests) {
 			contestEntries,
 			String(year),
 			contest._yearTypes,
-			'/contests/' + contest.id,
+			'/contests/' + contest.id
 		);
 
 		const problems: ProblemEntry[] = [];
@@ -169,7 +174,7 @@ for (const contest of internalContests) {
 				yearEntries,
 				num,
 				contest._problemTypes,
-				'/contests/' + contest.id + '/' + year,
+				'/contests/' + contest.id + '/' + year
 			);
 			if (Object.keys(files).length === 0) continue;
 			const title = meta.problems?.[num]?.title;
@@ -180,17 +185,17 @@ for (const contest of internalContests) {
 
 		years.push({
 			year,
-			notes:      meta.notes      ?? [],
+			notes: meta.notes ?? [],
 			extraLinks: meta.extraLinks ?? [],
 			yearFiles,
-			problems,
+			problems
 		});
 
 		const parts = [
-			problems.length              ? problems.length + ' problems'              : null,
-			Object.keys(yearFiles).length? Object.keys(yearFiles).length + ' year files' : null,
-			meta.notes?.length           ? meta.notes.length + ' note(s)'             : null,
-			meta.extraLinks?.length      ? meta.extraLinks.length + ' extra link(s)'  : null,
+			problems.length ? problems.length + ' problems' : null,
+			Object.keys(yearFiles).length ? Object.keys(yearFiles).length + ' year files' : null,
+			meta.notes?.length ? meta.notes.length + ' note(s)' : null,
+			meta.extraLinks?.length ? meta.extraLinks.length + ' extra link(s)' : null
 		].filter(Boolean);
 		// console.log('  ' + year + ': ' + (parts.join(', ') || 'empty'));
 	}
