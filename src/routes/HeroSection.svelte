@@ -12,22 +12,9 @@
 			year.problems.reduce((n, p) => n + Object.keys(p.files).length, 0)
 		);
 	}, 0);
-	import filesData from '$lib/pregen/files.json';
-	import { cn } from '$lib/utils.js';
-	import logo from '$lib/assets/branding/logo.svg';
-
-	const fileCount = Object.values(filesData).flat().reduce((total, year) => {
-		return (
-			total +
-			Object.keys(year.yearFiles).length +
-			year.problems.reduce((n, p) => n + Object.keys(p.files).length, 0)
-		);
-	}, 0);
 
 	const stats = [
 		{ value: contests.length, label: 'olympiads' },
-		{ value: fileCount, label: 'files' }
-	];
 		{ value: fileCount, label: 'files' }
 	];
 </script>
@@ -50,11 +37,6 @@
 			A comprehensive archive of physics olympiads — from the well-known IPhO and EuPhO to hidden
 			gems like the Eötvös competition. Includes marking schemes and answer sheets you rarely find elsewhere.
 		</p>
-		<!-- Description -->
-		<p class="my-5 max-w-prose text-left text-base leading-relaxed text-foreground/75">
-			A comprehensive archive of physics olympiads — from the well-known IPhO and EuPhO to hidden
-			gems like the Eötvös competition. Includes marking schemes and answer sheets you rarely find elsewhere.
-		</p>
 
 		<!-- CTAs -->
 		<div class="mb-8 flex flex-wrap gap-3">
@@ -62,30 +44,6 @@
 			<a href="https://github.com/apchrme/phoxiv" class={cn(buttonVariants({ variant: 'outline' }))}>
 				Contribute
 			</a>
-		</div>
-		<!-- CTAs -->
-		<div class="mb-8 flex flex-wrap gap-3">
-			<a href="#contests" class={cn(buttonVariants({ variant: 'default' }))}>Browse contests</a>
-			<a href="https://github.com/apchrme/phoxiv" class={cn(buttonVariants({ variant: 'outline' }))}>
-				Contribute
-			</a>
-		</div>
-
-		<!-- Stats strip -->
-		<div class="flex w-fit flex-wrap items-center gap-x-6 gap-y-3">
-			{#each stats as stat, i (stat.label)}
-				<div class="flex flex-col gap-0.5">
-					<span class="font-mono text-2xl font-bold leading-none text-foreground">
-						{stat.value}
-					</span>
-					<span class="font-mono text-xs text-muted-foreground uppercase tracking-wider">
-						{stat.label}
-					</span>
-				</div>
-				{#if i < stats.length - 1}
-					<div class="hidden h-8 w-px bg-border sm:block"></div>
-				{/if}
-			{/each}
 		</div>
 		<!-- Stats strip -->
 		<div class="flex w-fit flex-wrap items-center gap-x-6 gap-y-3">
