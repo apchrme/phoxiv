@@ -4,8 +4,8 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
+		"dev": "bunx --bun vite dev",
+		"build": "bunx --bun vite build",
 		"preview": "bun run build && wrangler dev",
 		"deploy": "bun run build && wrangler deploy",
 		"prepare": "svelte-kit sync || echo ''",
@@ -46,7 +46,6 @@
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.17.0",
 		"globals": "^17.4.0",
-		"isomorphic-dompurify": "^3.8.0",
 		"js-yaml": "^4.1.1",
 		"marked": "^18.0.0",
 		"mdsvex": "^0.12.7",
