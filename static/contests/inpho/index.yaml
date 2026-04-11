@@ -4,7 +4,7 @@ icon: 🇮🇳
 tag: National
 order: 11
 extraFileTypes:
-  problem:
+  year:
     detailedSolutions:
       suffix: "_S2"
       label: "Detailed Solutions"
