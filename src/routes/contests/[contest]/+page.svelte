@@ -19,7 +19,7 @@
 	<h1>{contest.name}</h1>
 
 	{#if contest?.descriptionHtml}
-		<div class="prose prose-sm mb-4 max-w-none">
+		<div class="mb-4 max-w-none">
 			{@html DOMPurify.sanitize(contest.descriptionHtml)}
 		</div>
 	{/if}
