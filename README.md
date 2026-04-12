@@ -43,7 +43,7 @@ static/
       
       # Examples
       2025.pdf # problems for the year 2025
-      2025_S # solutions for the year 2025 
+      2025_S.pdf # solutions for the year 2025 
       
       <year>/
         index.yaml # year config
