@@ -33,7 +33,7 @@ The structure of this website is as follows: competitions are known as "contests
 ### Adding new contests
 
 1. Choose a unique contest ID. It will be matched in search results, so choose something that people often use as a shorthand for the competition (like `ipho` for the International Physics Olympiad)
-2. Create an `index.yaml` file in the path `/static/contests/<contest ID>/index.yaml` with the following format:
+2. Create an `index.yaml` file in the path `/static/contests/<contest ID>/index.yaml` with the following format. This is the **contest config**
 
 ```yaml
 
@@ -78,9 +78,17 @@ static/
       index.yaml # contest config
       <year><suffix> # year-level file
       
+      # Examples
+      2025.pdf # problems for the year 2025
+      2025_S # solutions for the year 2025 
+      
       <year>/
         index.yaml # year config
         <problem number><suffix> # problem-level file
+        
+        # Examples
+        T1.pdf # T1 problem pdf
+        T1_M.pdf # Marking scheme for T1
 
 ```
 
