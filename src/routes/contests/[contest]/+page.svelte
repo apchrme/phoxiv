@@ -3,11 +3,11 @@
 	let { params }: PageProps = $props();
 	import contests from '$lib/pregen/contests.json';
 	import SvelteSeo from 'svelte-seo';
+	import YearList from './YearList.svelte';
 	let contest = $derived(contests.find((i) => i.id == params.contest));
 
 	// contest will definitely be found, as the page.ts will throw a 404 if it isn't.
 
-	import YearList from './YearList.svelte';
 </script>
 
 <SvelteSeo

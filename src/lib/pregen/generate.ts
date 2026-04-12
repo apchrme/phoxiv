@@ -205,3 +205,22 @@ for (const contest of internalContests) {
 
 fs.writeFileSync(FILES_OUT, JSON.stringify(filesOutput, null, 2));
 console.log('\nWrote ' + FILES_OUT);
+
+// ── Write stats.json ──────────────────────────────────────────────────────────
+
+const stats = {
+	contests: contestsJson.length,
+	years: Object.values(filesOutput).reduce((n, years) => n + years.length, 0),
+	files: Object.values(filesOutput).flat().reduce((total, year) => {
+		return (
+			total +
+			Object.keys(year.yearFiles).length +
+			year.problems.reduce((n, p) => n + Object.keys(p.files).length, 0)
+		);
+	}, 0),
+};
+
+const STATS_OUT = path.resolve('src/lib/pregen/stats.json');
+fs.writeFileSync(STATS_OUT, JSON.stringify(stats, null, 2));
+console.log('Wrote ' + STATS_OUT + ' (' + JSON.stringify(stats) + ')');
+
