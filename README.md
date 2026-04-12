@@ -30,12 +30,35 @@ The structure of this website is as follows: competitions are known as "contests
 
 ## Adding content
 
-Whenever content is added to `/static`, the pregeneration script should be run prior to production with `bun run pregen` to update [files.json](src/lib/pregen/files.json), [contests.json](src/lib/pregen/contests.json) and [stats.json](src/lib/pregen/stats.json).
+### Directory structure 
+
+The types of files and how to structure the config files will be explained below.
+
+```
+static/
+  contests/
+    <contest ID>/
+      index.yaml # contest config
+      <year><suffix> # year-level file
+      
+      # Examples
+      2025.pdf # problems for the year 2025
+      2025_S.pdf # solutions for the year 2025 
+      
+      <year>/
+        index.yaml # year config
+        <problem number><suffix> # problem-level file
+        
+        # Examples
+        T1.pdf # T1 problem pdf
+        T1_M.pdf # Marking scheme for T1
+
+```
 
 ### Adding new contests
 
-1. Create a folder with the id of the contest in `/static/contests`, such as `ipho` or `eupho`.
-2. Create an `index.yaml` file in the folder. An example is shown below.
+1. Choose a unique contest ID. It will be matched in search results, so choose something that people often use as a shorthand for the competition (like `ipho` for the International Physics Olympiad)
+2. Create an `index.yaml` file in the path `/static/contests/<contest ID>/index.yaml` with the following structure. This is the **contest config**
 
 ```yaml
 
@@ -73,20 +96,18 @@ description: |
 
 ### Adding new problems
 
-All file types can be found in [fileTypes.ts](/src/lib/pregen/fileTypes.ts).
+There are different **file types**, such as problems and solutions. You can indicate what type a file is by appending a suffix. The default suffixes can be found in [fileTypes.ts](/src/lib/pregen/fileTypes.ts), but you can add more in the year config described above.
 
 There are two "levels" of files you can add:
 
 1. Year-level files: these are the files that apply to all problems within that year.
-2. Problem-level files: files that only apply to a specific problem, like T1, T1 solutions, etc.
+2. Problem-level files: files that only apply to a specific problem, like T1, T1 solutions, etc. The allowed problem numbers are in the pregeneration file [generate.ts](/src/lib/pregen/generate.ts).
 
-**Year-level files** should be added to the contest folder directly: `/static/contests/<contest>/<year><file type>`. The file type indicates what kind of file it is (problem, solution etc.). For example, the path to the problems for the USAPhO 2019 is `/static/contests/usapho/2019.pdf` (problems have no suffix), and the solutions are `/static/contests/usapho/2019_S.pdf`.
+The syntax and file location of these files can be found in the directory structure above.
 
-**Problem-level files** are included in this path: `/static/contests/<contest>/<year>/<problem number><file type>`. The allowed problem numbers are in the pregeneration file [generate.ts](/src/lib/pregen/generate.ts) too. For example, the solution to IPhO 2025 T2 has the path `/static/contests/ipho/2025/T2_S.pdf`.
+Problem titles and external links/comments can be configured in the **year config**, at `/static/contests/<contest id>/<year>/index.yaml`.
 
-### Problem names and external links/comments
-
-Can be configured in an **optional** file:`/static/contests/<contest id>/<year>/index.yaml`. Example:
+The year config has the following structure:
 
 ```yaml
 # problem titles
