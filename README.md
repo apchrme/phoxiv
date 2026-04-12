@@ -58,7 +58,7 @@ static
 ### Adding new contests
 
 1. Choose a unique contest ID. It will be matched in search results, so choose something that people often use as a shorthand for the competition (like `ipho` for the International Physics Olympiad)
-2. Create an `index.yaml` file in the path `/static/contests/<contest ID>/index.yaml` with the following structure. This is the **contest config**
+2. Create an `index.yaml` file in the path `/static/contests/<contest ID>/index.yaml` with the following structure. This is the **contest config**.
 
 ```yaml
 
@@ -96,7 +96,7 @@ description: |
 
 ### Adding new problems
 
-There are different **file types**, such as problems and solutions. You can indicate what type a file is by appending a suffix. The default suffixes can be found in [fileTypes.ts](/src/lib/pregen/fileTypes.ts), but you can add more in the year config described above.
+There are different **file types**, such as problems and solutions. You can indicate what type a file is by appending a suffix. The default suffixes can be found in [fileTypes.ts](/src/lib/pregen/fileTypes.ts), but you can add more in the contest config described above.
 
 There are two "levels" of files you can add:
 
@@ -105,9 +105,7 @@ There are two "levels" of files you can add:
 
 The syntax and file location of these files can be found in the directory structure above.
 
-Problem titles and external links/comments can be configured in the **year config**, at `/static/contests/<contest id>/<year>/index.yaml`.
-
-The year config has the following structure:
+Problem titles and external links/comments can be configured in the **year config**, at `/static/contests/<contest id>/<year>/index.yaml`. The year config has the following structure:
 
 ```yaml
 # problem titles
