@@ -1,7 +1,33 @@
 <script lang="ts">
 	import SvelteSeo from 'svelte-seo';
-	import HeroSection from './HeroSection.svelte';
-	import ContestList from './ContestList.svelte';
+	import { buttonVariants } from '$lib/components/ui/button/index.js';
+	import stats from '$lib/pregen/stats.json';
+	import { cn } from '$lib/utils.js';
+	import { onMount } from 'svelte';
+	import logo from '$lib/assets/branding/logo.svg';
+
+	let rotX = $state(12);
+	let rotY = $state(-18);
+	let mounted = $state(false);
+
+	function handleMouseMove(e: MouseEvent) {
+		const cx = window.innerWidth / 2;
+		const cy = window.innerHeight / 2;
+		rotY = ((e.clientX - cx) / cx) * 25;
+		rotX = -((e.clientY - cy) / cy) * 18;
+	}
+
+	onMount(() => {
+		mounted = true;
+		window.addEventListener('mousemove', handleMouseMove, { passive: true });
+		return () => window.removeEventListener('mousemove', handleMouseMove);
+	});
+
+	const statItems = [
+		{ value: stats.contests, label: 'Olympiads' },
+		{ value: stats.years,    label: 'Years' },
+		{ value: stats.files,    label: 'Files' },
+	];
 </script>
 
 <SvelteSeo
@@ -10,32 +36,84 @@
 	keywords="problems, solutions, olympiad, physics, ipho, apho, eupho, singapore, eotvos"
 />
 
-<HeroSection />
+<div class="relative flex min-h-[calc(100svh-10rem)] flex-col items-center justify-center gap-8 py-12 md:flex-row md:items-center md:justify-between">
 
-<!-- Contests -->
-<section id="contests" class="mb-4">
-	<div class="mb-4">
-		<h2 class="py-0">Contests</h2>
-		<p class="mb-0 text-sm text-muted-foreground">
-			Click any card to explore problems, solutions &amp; marking schemes.
-		</p>
+	<!-- Mobile: static logo in background -->
+	<div class="pointer-events-none absolute inset-0 flex items-center justify-end overflow-hidden md:hidden" aria-hidden="true">
+		<img
+			src={logo}
+			alt=""
+			class="h-[28rem] w-[28rem] select-none opacity-10 dark:opacity-5 [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)]"
+		/>
 	</div>
-	<ContestList />
-</section>
 
-<!-- Contribute CTA -->
-<section class="">
+	<!-- Left: text content -->
 	<div
-		class="flex flex-col items-start justify-between gap-4 rounded-2xl bg-primary px-6 py-5 sm:flex-row sm:items-center"
+		class={cn(
+			'relative z-10 flex justify-center min-w-0 flex-1 flex-col gap-7 transition-[opacity,transform] duration-[600ms] ease-in-out',
+			mounted ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
+		)}
 	>
-		<p class="mb-0 text-sm font-medium text-primary-foreground/90">
-			Want to add problems or help maintain the site? Open a PR or reach out.
+		<!-- Title -->
+		<div class="flex flex-col gap-1">
+			<h1 class="text-left! text-[clamp(4rem,10vw,7rem)] font-bold leading-none tracking-[-0.03em] text-foreground">
+				phoXiv
+			</h1>
+			<span class="font-mono text-xs tracking-[0.02em] text-muted-foreground">/ foʊkaɪv /</span>
+		</div>
+
+		<!-- Description -->
+		<p class="m-0 max-w-[44ch] text-left text-base leading-[1.7] text-foreground/70">
+			A comprehensive archive of physics olympiads, from the well-known IPhO and EuPhO
+			to hidden gems like the Eötvös competition. Includes marking schemes and answer sheets you rarely find elsewhere.
 		</p>
-		<a
-			href="mailto:admin@phoxiv.org"
-			class="shrink-0 rounded-lg bg-primary-foreground px-4 py-2 text-sm font-semibold text-primary transition-opacity hover:opacity-90"
-		>
-			Get in touch →
-		</a>
+
+		<!-- CTAs -->
+		<div class="flex flex-wrap gap-3">
+			<a href="/contests" class={cn(buttonVariants({ variant: 'default' }))}>Browse contests</a>
+			<a href="https://github.com/apchrme/phoxiv" class={cn(buttonVariants({ variant: 'outline' }))}>
+				Contribute
+			</a>
+		</div>
+
+		<!-- Stats -->
+		<div class="flex flex-wrap items-center gap-6">
+			{#each statItems as { value, label }, i (label)}
+				<div class="flex flex-col gap-0.5">
+					<span class="font-mono text-[1.75rem] font-bold leading-none text-foreground">{value}</span>
+					<span class="font-mono text-[0.65rem] uppercase tracking-[0.1em] text-muted-foreground">{label}</span>
+				</div>
+				{#if i < statItems.length - 1}
+					<div class="hidden h-8 w-px bg-border sm:block" aria-hidden="true"></div>
+				{/if}
+			{/each}
+		</div>
 	</div>
-</section>
+
+	<!-- Right: interactive 3-D logo (desktop only) -->
+	<div
+		class={cn(
+			'hidden shrink-0 items-center justify-center transition-[opacity] delay-300 duration-[800ms] ease-in-out md:flex',
+			mounted ? 'opacity-100' : 'opacity-0'
+		)}
+		aria-hidden="true"
+	>
+		<div
+			class="relative flex h-[clamp(16rem,28vw,26rem)] w-[clamp(16rem,28vw,26rem)] items-center justify-center [transform-style:preserve-3d] [transition:transform_0.08s_ease-out]"
+			style="transform: perspective(900px) rotateX({rotX}deg) rotateY({rotY}deg);"
+		>
+			<!-- Glow ring behind logo -->
+			<div
+				class="absolute inset-0 rounded-full [background:radial-gradient(circle_at_center,color-mix(in_oklab,var(--primary)_40%,transparent),transparent_50%)] [transform:translateZ(-20px)]"
+			></div>
+
+			<!-- Logo -->
+			<img
+				src={logo}
+				alt=""
+				class="pointer-events-none h-full w-full select-none object-contain opacity-80 dark:opacity-60 [transform:translateZ(30px)]"
+			/>
+		</div>
+	</div>
+
+</div>

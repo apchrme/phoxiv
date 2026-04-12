@@ -2,16 +2,18 @@
 	import '../app.css';
 	let { children } = $props();
 
-	import NavLink from '$lib/components/NavLink.svelte';
+	import NavLink from './NavLink.svelte';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { ModeWatcher } from 'mode-watcher';
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import AppSidebar from '$lib/components/AppSidebar.svelte';
+	import AppSidebar from './AppSidebar.svelte';
 	import NavButtons from './NavButtons.svelte';
 
+	// source of truth for nav links, used in both AppSidebar and the desktop nav menu
 	const navLinks = [
 		{ url: '/', label: 'home' },
+		{ url: '/contests', label: 'contests' },
 		{ url: '/resources', label: 'resources' },
 		{ url: '/blog', label: 'blog' }
 	];
