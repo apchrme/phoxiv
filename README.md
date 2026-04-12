@@ -35,23 +35,23 @@ The structure of this website is as follows: competitions are known as "contests
 The types of files and how to structure the config files will be explained below.
 
 ```
-static/
-  contests/
-    <contest ID>/
-      index.yaml # contest config
-      <year><suffix> # year-level file
-      
-      # Examples
-      2025.pdf # problems for the year 2025
-      2025_S.pdf # solutions for the year 2025 
-      
-      <year>/
-        index.yaml # year config
-        <problem number><suffix> # problem-level file
-        
-        # Examples
-        T1.pdf # T1 problem pdf
-        T1_M.pdf # Marking scheme for T1
+static
+└── contests
+    └── <contest ID>
+        ├── index.yaml # contest config
+        ├── <year><suffix> # year-level file
+        |
+        |   # Examples
+        ├── 2025.pdf # problems for the year 2025
+        ├── 2025_S.pdf # solutions for the year 2025 
+        |
+        └── <year>
+            ├── index.yaml # year config (optional)
+            ├── <problem number><suffix> # problem-level file
+            |
+            |   # Examples
+            ├── T1.pdf # T1 problem pdf
+            └── T1_M.pdf # Marking scheme for T1
 
 ```
 
@@ -75,7 +75,7 @@ tag: International
 # (Optional) Order the contest appears on the contests page.
 order: 2
 
-# additional file types to contain niche files
+# (Optional) additional file types to contain niche files
 extraFileTypes:
   year:
     extraMinutes:
@@ -86,7 +86,7 @@ extraFileTypes:
       suffix: "_C"
       label: "Calibration"
 
-# this appears in the contest page itself. Markdown can be used.
+# (Optional) this appears in the contest page itself. Markdown can be used.
 description: |
   This is a description
   This is the second line
