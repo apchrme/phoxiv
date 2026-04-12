@@ -58,7 +58,7 @@ static/
 ### Adding new contests
 
 1. Choose a unique contest ID. It will be matched in search results, so choose something that people often use as a shorthand for the competition (like `ipho` for the International Physics Olympiad)
-2. Create an `index.yaml` file in the path `/static/contests/<contest ID>/index.yaml` with the following format. This is the **contest config**
+2. Create an `index.yaml` file in the path `/static/contests/<contest ID>/index.yaml` with the following structure. This is the **contest config**
 
 ```yaml
 
@@ -92,9 +92,11 @@ There are two "levels" of files you can add:
 1. Year-level files: these are the files that apply to all problems within that year.
 2. Problem-level files: files that only apply to a specific problem, like T1, T1 solutions, etc. The allowed problem numbers are in the pregeneration file [generate.ts](/src/lib/pregen/generate.ts).
 
+The syntax and file location of these files can be found in the directory structure above.
+
 Problem titles and external links/comments can be configured in the **year config**, at `/static/contests/<contest id>/<year>/index.yaml`.
 
-The year config has the following format:
+The year config has the following structure:
 
 ```yaml
 problems:
