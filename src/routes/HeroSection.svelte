@@ -1,21 +1,13 @@
 <script lang="ts">
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
-	import contests from '$lib/pregen/contests.json';
-	import filesData from '$lib/pregen/files.json';
+	import stats from '$lib/pregen/stats.json';
 	import { cn } from '$lib/utils.js';
 	import logo from '$lib/assets/branding/logo.svg';
 
-	const fileCount = Object.values(filesData).flat().reduce((total, year) => {
-		return (
-			total +
-			Object.keys(year.yearFiles).length +
-			year.problems.reduce((n, p) => n + Object.keys(p.files).length, 0)
-		);
-	}, 0);
-
-	const stats = [
-		{ value: contests.length, label: 'olympiads' },
-		{ value: fileCount, label: 'files' }
+	const statItems = [
+		{ value: stats.contests, label: 'olympiads' },
+		{ value: stats.years,    label: 'years' },
+		{ value: stats.files,    label: 'files' },
 	];
 </script>
 
@@ -45,9 +37,10 @@
 				Contribute
 			</a>
 		</div>
+
 		<!-- Stats strip -->
 		<div class="flex w-fit flex-wrap items-center gap-x-6 gap-y-3">
-			{#each stats as stat, i (stat.label)}
+			{#each statItems as stat, i (stat.label)}
 				<div class="flex flex-col gap-0.5">
 					<span class="font-mono text-2xl font-bold leading-none text-foreground">
 						{stat.value}
@@ -56,7 +49,7 @@
 						{stat.label}
 					</span>
 				</div>
-				{#if i < stats.length - 1}
+				{#if i < statItems.length - 1}
 					<div class="hidden h-8 w-px bg-border sm:block"></div>
 				{/if}
 			{/each}

@@ -718,7 +718,7 @@
   {
     "id": "aupho",
     "name": "Australian Physics Olympiad",
-    "summary": "Australia's national physics olympiads, serving as the first round of selection for the Australian team at the International Physics Olympiad.",
+    "summary": "First round of selection for the Australian team at the IPhO.",
     "icon": "🇦🇺",
     "tag": "National",
     "yearFileTypes": {
@@ -1136,6 +1136,9 @@
       },
       "comments": {
         "label": "Comments"
+      },
+      "detailedSolutions": {
+        "label": "Detailed Solutions"
       }
     },
     "problemFileTypes": {
@@ -1156,9 +1159,6 @@
       },
       "presentation": {
         "label": "Presentation"
-      },
-      "detailedSolutions": {
-        "label": "Detailed Solutions"
       }
     },
     "description": "The Indian National Physics Olympiad (InPhO) is the second round of selection for the Indian IPhO team. I thank [Ashmit Dutta](https://github.com/aedutta) for writing the detailed solutions for 2011 and 2012.\n",
