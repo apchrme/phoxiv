@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import NavButtons from '../../routes/NavButtons.svelte';
+	import NavButtons from './NavButtons.svelte';
+	// navLinks is passed as a prop from +layout.svelte, which gets it from the same array defined there.
 	const { navLinks } = $props();
 
 	const sidebar = Sidebar.useSidebar();
