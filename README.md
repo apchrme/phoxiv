@@ -32,8 +32,8 @@ The structure of this website is as follows: competitions are known as "contests
 
 ### Adding new contests
 
-1. Create a folder with the id of the contest, such as `ipho` or `eupho`.
-2. Create an `index.yaml` file in the folder. An example is shown below.
+1. Choose a unique contest ID. It will be matched in search results, so choose something that people often use as a shorthand for the competition (like `ipho` for the International Physics Olympiad)
+2. Create an `index.yaml` file in the path `/static/contests/<contest ID>/index.yaml` with the following format:
 
 ```yaml
 
@@ -60,20 +60,31 @@ description: |
 
 ### Adding new problems
 
-All file types can be found in [fileTypes.ts](/src/lib/pregen/fileTypes.ts).
+There are different **file types**, such as problems and solutions. You can indicate what type a file is by appending a suffix. The default suffixes can be found in [fileTypes.ts](/src/lib/pregen/fileTypes.ts), but you can add more in the year config described above.
 
 There are two "levels" of files you can add:
 
 1. Year-level files: these are the files that apply to all problems within that year.
-2. Problem-level files: files that only apply to a specific problem, like T1, T1 solutions, etc.
+2. Problem-level files: files that only apply to a specific problem, like T1, T1 solutions, etc. The allowed problem numbers are in the pregeneration file [generate.ts](/src/lib/pregen/generate.ts).
 
-**Year-level files** should be added to the contest folder directly: `/static/contests/<contest>/<year><file type>`. The file type indicates what kind of file it is (problem, solution etc.). For example, the path to the problems for the USAPhO 2019 is `/static/contests/usapho/2019.pdf` (problems have no suffix), and the solutions are `/static/contests/usapho/2019_S.pdf`.
+Problem titles and external links/comments can be configured in the **year config**, at `/static/contests/<contest id>/<year>/index.yaml`.
 
-**Problem-level files** are included in this path: `/static/contests/<contest>/<year>/<problem number><file type>`. The allowed problem numbers are in the pregeneration file [generate.ts](/src/lib/pregen/generate.ts) too. For example, the solution to IPhO 2025 T2 has the path `/static/contests/ipho/2025/T2_S.pdf`.
+The shape these files follow is
 
-### Problem names and external links/comments
+```
+static/
+  contests/
+    <contest ID>/
+      index.yaml # contest config
+      <year><suffix> # year-level file
+      
+      <year>/
+        index.yaml # year config
+        <problem number><suffix> # problem-level file
 
-Can be configured in `/static/contests/<contest id>/<year>/index.yaml`. Example:
+```
+
+The year config has the following format:
 
 ```yaml
 problems:
