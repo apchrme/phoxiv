@@ -49,7 +49,7 @@
 			<h1 class="text-left! text-[clamp(4rem,10vw,7rem)] font-bold leading-none tracking-[-0.03em] text-foreground">
 				phoXiv
 			</h1>
-			<span class="font-mono text-xs tracking-[0.02em] text-muted-foreground">/ foʊkaɪv /</span>
+			<span class="font-mono text-sm tracking-[0.02em] text-muted-foreground">/ foʊkaɪv /</span>
 		</div>
 
 		<!-- Description -->
