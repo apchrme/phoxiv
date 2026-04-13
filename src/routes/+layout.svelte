@@ -9,6 +9,7 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import AppSidebar from './AppSidebar.svelte';
 	import NavButtons from './NavButtons.svelte';
+	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
 
 	// source of truth for nav links, used in both AppSidebar and the desktop nav menu
 	const navLinks = [
@@ -59,3 +60,5 @@
 		</div>
 	</div>
 </Sidebar.Provider>
+
+<ScrollToTop />

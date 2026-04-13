@@ -8,7 +8,6 @@
 
 	let rotX = $state(12);
 	let rotY = $state(-18);
-	let mounted = $state(false);
 
 	function handleMouseMove(e: MouseEvent) {
 		const cx = window.innerWidth / 2;
@@ -16,12 +15,6 @@
 		rotY = ((e.clientX - cx) / cx) * 25;
 		rotX = -((e.clientY - cy) / cy) * 18;
 	}
-
-	onMount(() => {
-		mounted = true;
-		window.addEventListener('mousemove', handleMouseMove, { passive: true });
-		return () => window.removeEventListener('mousemove', handleMouseMove);
-	});
 
 	const statItems = [
 		{ value: stats.contests, label: 'Olympiads' },
@@ -36,6 +29,8 @@
 	keywords="problems, solutions, olympiad, physics, ipho, apho, eupho, singapore, eotvos"
 />
 
+<svelte:window onmousemove={handleMouseMove} />
+
 <div class="relative flex min-h-[calc(100svh-10rem)] flex-col items-center justify-center gap-8 py-12 md:flex-row md:items-center md:justify-between">
 
 	<!-- Mobile: static logo in background -->
@@ -48,12 +43,7 @@
 	</div>
 
 	<!-- Left: text content -->
-	<div
-		class={cn(
-			'relative z-10 flex justify-center min-w-0 flex-1 flex-col gap-7 transition-[opacity,translate] duration-[600ms] ease-in-out',
-			mounted ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
-		)}
-	>
+	<div class="hero-text relative z-10 flex justify-center min-w-0 flex-1 flex-col gap-7">
 		<!-- Title -->
 		<div class="flex flex-col gap-1">
 			<h1 class="text-left! text-[clamp(4rem,10vw,7rem)] font-bold leading-none tracking-[-0.03em] text-foreground">
@@ -91,13 +81,7 @@
 	</div>
 
 	<!-- Right: interactive 3-D logo (desktop only) -->
-	<div
-		class={cn(
-			'hidden shrink-0 items-center justify-center transition-[opacity] delay-300 duration-[800ms] ease-in-out md:flex',
-			mounted ? 'opacity-100' : 'opacity-0'
-		)}
-		aria-hidden="true"
-	>
+	<div class="hero-logo hidden shrink-0 items-center justify-center md:flex" aria-hidden="true">
 		<div
 			class="relative flex h-[clamp(16rem,28vw,26rem)] w-[clamp(16rem,28vw,26rem)] items-center justify-center [transform-style:preserve-3d] [transition:transform_0.08s_ease-out]"
 			style="transform: perspective(900px) rotateX({rotX}deg) rotateY({rotY}deg);"
@@ -117,3 +101,23 @@
 	</div>
 
 </div>
+
+<style>
+	@keyframes fade-up {
+		from { opacity: 0; translate: 0 1.25rem; }
+		to   { opacity: 1; translate: 0 0; }
+	}
+
+	@keyframes fade-in {
+		from { opacity: 0; }
+		to   { opacity: 1; }
+	}
+
+	.hero-text {
+		animation: fade-up 600ms ease-in-out both;
+	}
+
+	.hero-logo {
+		animation: fade-in 800ms ease-in-out 300ms both;
+	}
+</style>
