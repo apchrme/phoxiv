@@ -4,6 +4,7 @@
  * Reads static/contests/ and produces:
  *   - src/lib/pregen/contests.json   (contest metadata + merged file type labels)
  *   - src/lib/pregen/files.json      (all file links per contest/year/problem)
+ *   - src/lib/pregen/stats.json      (statistics that appear on the landing page)
  *
  * Adding a new contest: create static/contests/<id>/index.yaml with the
  * required fields (name, summary, icon, tag). No other files need editing.
