@@ -83,7 +83,9 @@
       "presentation": {
         "label": "Presentation"
       }
-    }
+    },
+    "description": "A highly interesting olympiad with short but insightful problems, though some may call them contrived. It has a relatively short history, with the first edition in 2017. In many ways, this olympiad follows the IPhO statutes even better than IPhO itself, as the problems requires physical insight and you rarely need to rush for time. Inspired by the [Eötvös Competition](/contests/eotvos).\n",
+    "descriptionHtml": "<p>A highly interesting olympiad with short but insightful problems, though some may call them contrived. It has a relatively short history, with the first edition in 2017. In many ways, this olympiad follows the IPhO statutes even better than IPhO itself, as the problems requires physical insight and you rarely need to rush for time. Inspired by the <a href=\"/contests/eotvos\">Eötvös Competition</a>.</p>\n"
   },
   {
     "id": "ipho",
@@ -175,7 +177,9 @@
       "calibration": {
         "label": "Calibration"
       }
-    }
+    },
+    "description": "The International Physics Olympiad (IPhO) is the most prestigious international physics competition for secondary school students. The main aim of IPhO is to test the highest level of knowledge, critical thinking, problem solving, proper practices of presentation and analysis, and hands-on skills in theoretical and experimental physics. The IPhO is organized annually in different countries as a 9-10 day competition where national teams comprising a maximum of five of their best physics students and two team leaders participate.\n\nThe files here have been collected from various sources, including the official website, national team websites, and personal connections. If you have any missing files or corrections, please let us know!\n",
+    "descriptionHtml": "<p>The International Physics Olympiad (IPhO) is the most prestigious international physics competition for secondary school students. The main aim of IPhO is to test the highest level of knowledge, critical thinking, problem solving, proper practices of presentation and analysis, and hands-on skills in theoretical and experimental physics. The IPhO is organized annually in different countries as a 9-10 day competition where national teams comprising a maximum of five of their best physics students and two team leaders participate.</p>\n<p>The files here have been collected from various sources, including the official website, national team websites, and personal connections. If you have any missing files or corrections, please let us know!</p>\n"
   },
   {
     "id": "apho",
@@ -267,7 +271,9 @@
       "handwrittenSolution": {
         "label": "Solution (Handwritten)"
       }
-    }
+    },
+    "description": "Most of the files here are from [Stefan Ivanov's](https://stefanivanov.site/teaching/) archive. Take note of the [errata list](https://stefanivanov.site/teaching/errata.pdf).\n",
+    "descriptionHtml": "<p>Most of the files here are from <a href=\"https://stefanivanov.site/teaching/\">Stefan Ivanov&#39;s</a> archive. Take note of the <a href=\"https://stefanivanov.site/teaching/errata.pdf\">errata list</a>.</p>\n"
   },
   {
     "id": "nbpho",
@@ -353,7 +359,9 @@
       "presentation": {
         "label": "Presentation"
       }
-    }
+    },
+    "description": "The Nordic-Baltic Physics Olympiad (NBPhO) is a regional physics olympiad for students in Estonia, Finland, Sweden and Latvia. It serves as a selection test for the International Physics Olympiad (IPhO) and is held annually in the spring. The problems tend to be highly insightful, reminiscent of [EuPhO](/contests/eupho), but easier and more guided. Check out the [official website](https://nbpho.ee/) and [errata](https://stefanivanov.site/teaching/errata.pdf) for more information.\n",
+    "descriptionHtml": "<p>The Nordic-Baltic Physics Olympiad (NBPhO) is a regional physics olympiad for students in Estonia, Finland, Sweden and Latvia. It serves as a selection test for the International Physics Olympiad (IPhO) and is held annually in the spring. The problems tend to be highly insightful, reminiscent of <a href=\"/contests/eupho\">EuPhO</a>, but easier and more guided. Check out the <a href=\"https://nbpho.ee/\">official website</a> and <a href=\"https://stefanivanov.site/teaching/errata.pdf\">errata</a> for more information.</p>\n"
   },
   {
     "id": "usapho",
@@ -439,7 +447,9 @@
       "presentation": {
         "label": "Presentation"
       }
-    }
+    },
+    "description": "This is the second round of selection for the U.S. Physics Team. You are given 90 minutes for each part (A and B) of the competition, with a short break in between. For more information, see [the official website](https://www.aapt.org/physicsteam/).\n",
+    "descriptionHtml": "<p>This is the second round of selection for the U.S. Physics Team. You are given 90 minutes for each part (A and B) of the competition, with a short break in between. For more information, see <a href=\"https://www.aapt.org/physicsteam/\">the official website</a>.</p>\n"
   },
   {
     "id": "usatst",
@@ -525,7 +535,9 @@
       "presentation": {
         "label": "Presentation"
       }
-    }
+    },
+    "description": "The final round of selection for the U.S. IPhO team, held during the Physics Team camp in Maryland. These are the only publicly available exams.\n",
+    "descriptionHtml": "<p>The final round of selection for the U.S. IPhO team, held during the Physics Team camp in Maryland. These are the only publicly available exams.</p>\n"
   },
   {
     "id": "eotvos",
@@ -611,7 +623,9 @@
       "presentation": {
         "label": "Presentation"
       }
-    }
+    },
+    "description": "The Hungarian Eötvös competition is perhaps the oldest high school physics competition in the world, with over a century of competition since its first edition in 1894. Each contest lasts for 5 hours and has 3 short problems. The competition tests creativity and problem-solving skills not found in most modern physics olympiads, and inspired the [European Physics Olympiad](/contests/eupho). Many of the old problems (pre-2018) have made their way into 200 Puzzling Physics Problems and its sequel. Note that it is an open-book exam, so you are expected to have a standard constants sheet with you (e.g [this](https://sgphysicsleague.org/data_sheet.pdf)). In my translations, I will make a note when it requires information that isn't in a standard constants sheet.\n\nThere was a typo in the 2018 paper, where the final temperature in problem 2 is wrong. I have corrected it in all versions, including the problem statement in Hungarian. Other than that, problems 1 and 3 are _really_ good.\n\nSources: [Problems](http://eik.bme.hu/~vanko/fizika/eotvos.htm) and [Solutions in KoMaL (pre-2021)](http://db.komal.hu/KomalHU/). If you're interested, here's some [history of the competition](https://eik.bme.hu/~vanko/fizika/konferencia/wfphc/talk8.pdf)\n",
+    "descriptionHtml": "<p>The Hungarian Eötvös competition is perhaps the oldest high school physics competition in the world, with over a century of competition since its first edition in 1894. Each contest lasts for 5 hours and has 3 short problems. The competition tests creativity and problem-solving skills not found in most modern physics olympiads, and inspired the <a href=\"/contests/eupho\">European Physics Olympiad</a>. Many of the old problems (pre-2018) have made their way into 200 Puzzling Physics Problems and its sequel. Note that it is an open-book exam, so you are expected to have a standard constants sheet with you (e.g <a href=\"https://sgphysicsleague.org/data_sheet.pdf\">this</a>). In my translations, I will make a note when it requires information that isn&#39;t in a standard constants sheet.</p>\n<p>There was a typo in the 2018 paper, where the final temperature in problem 2 is wrong. I have corrected it in all versions, including the problem statement in Hungarian. Other than that, problems 1 and 3 are <em>really</em> good.</p>\n<p>Sources: <a href=\"http://eik.bme.hu/~vanko/fizika/eotvos.htm\">Problems</a> and <a href=\"http://db.komal.hu/KomalHU/\">Solutions in KoMaL (pre-2021)</a>. If you&#39;re interested, here&#39;s some <a href=\"https://eik.bme.hu/~vanko/fizika/konferencia/wfphc/talk8.pdf\">history of the competition</a></p>\n"
   },
   {
     "id": "pcup",
@@ -697,12 +711,14 @@
       "presentation": {
         "label": "Presentation"
       }
-    }
+    },
+    "description": "Coming soon! For now, see a pdf version of the problems [here](https://github.com/m-spitfire/phys_cup). Thanks to spitfire for collating this.\n",
+    "descriptionHtml": "<p>Coming soon! For now, see a pdf version of the problems <a href=\"https://github.com/m-spitfire/phys_cup\">here</a>. Thanks to spitfire for collating this.</p>\n"
   },
   {
     "id": "aupho",
     "name": "Australian Physics Olympiad",
-    "summary": "Australia's national physics olympiads, serving as the first round of selection for the Australian team at the International Physics Olympiad.",
+    "summary": "First round of selection for the Australian team at the IPhO.",
     "icon": "🇦🇺",
     "tag": "National",
     "yearFileTypes": {
@@ -789,7 +805,9 @@
       "presentation": {
         "label": "Presentation"
       }
-    }
+    },
+    "description": "[Errata](https://www.physicsforums.com/insights/corrections-to-the-australian-physics-olympiad-questions-and-solutions/)\n",
+    "descriptionHtml": "<p><a href=\"https://www.physicsforums.com/insights/corrections-to-the-australian-physics-olympiad-questions-and-solutions/\">Errata</a></p>\n"
   },
   {
     "id": "spot",
@@ -875,7 +893,9 @@
       "presentation": {
         "label": "Presentation"
       }
-    }
+    },
+    "description": "The Singapore Team Selection Test for IPhO, APhO and INSO. As of now, the top 5 participants go for IPhO, the next 8 go for APhO and recently the next 4 go to INSO (the nuclear science olympiad). It is decent practice for IPhO, being much more guided, but the time pressure is significantly higher too. Difficulty and time pressure varies wildly over the years, though.\n\nRecently, the first few problems have been short standard problems similar to the InPhO, while the later problems are similar to USAPhO, though slightly longer.\n\n**I only recommend doing the 2023-2026 papers, as the earlier years are mostly copied from well-known sources.** Note that the 2023-2025 papers have many problems that are copied from other olympiads. Most of those are copied from the <a target=\"_blank\" href=\"https://olimpiada.ru/activity/74/tasks\">All-Russian Olympiad</a> (11th grade finals). The original problems have errors: see my <a target=\"_blank\" href=\"https://apochrome.notion.site/TST-Errata-1cfb933f14fe80788b41e3058b6522df?pvs=4\">errata page</a>.\n",
+    "descriptionHtml": "<p>The Singapore Team Selection Test for IPhO, APhO and INSO. As of now, the top 5 participants go for IPhO, the next 8 go for APhO and recently the next 4 go to INSO (the nuclear science olympiad). It is decent practice for IPhO, being much more guided, but the time pressure is significantly higher too. Difficulty and time pressure varies wildly over the years, though.</p>\n<p>Recently, the first few problems have been short standard problems similar to the InPhO, while the later problems are similar to USAPhO, though slightly longer.</p>\n<p><strong>I only recommend doing the 2023-2026 papers, as the earlier years are mostly copied from well-known sources.</strong> Note that the 2023-2025 papers have many problems that are copied from other olympiads. Most of those are copied from the <a target=\"_blank\" href=\"https://olimpiada.ru/activity/74/tasks\">All-Russian Olympiad</a> (11th grade finals). The original problems have errors: see my <a target=\"_blank\" href=\"https://apochrome.notion.site/TST-Errata-1cfb933f14fe80788b41e3058b6522df?pvs=4\">errata page</a>.</p>\n"
   },
   {
     "id": "cpho-f",
@@ -961,7 +981,9 @@
       "presentation": {
         "label": "Presentation"
       }
-    }
+    },
+    "description": "This is the third round of selection for the Chinese IPhO team. This round of selection is followed by the team selection test, which is confidential and often contains problems from higher physics (analytical mechanics, advanced electrodynamics, quantum mechanics and statistical mechanics). Many of the files here are Word documents, but I will be converting them to pdfs in the near future for easier web viewing.\n",
+    "descriptionHtml": "<p>This is the third round of selection for the Chinese IPhO team. This round of selection is followed by the team selection test, which is confidential and often contains problems from higher physics (analytical mechanics, advanced electrodynamics, quantum mechanics and statistical mechanics). Many of the files here are Word documents, but I will be converting them to pdfs in the near future for easier web viewing.</p>\n"
   },
   {
     "id": "izho",
@@ -1047,7 +1069,9 @@
       "presentation": {
         "label": "Presentation"
       }
-    }
+    },
+    "description": "The International Zhautykov Olympiad (IZhO) is an annual multi-subject olympiad comprising of Mathematics, Physics and Computing. It is held in Kazakhstan and is named after the Kazakh mathematician and educator, Ilyas Zhautykov. The IZhO attracts top high school students from around the world to compete in challenging problems across these three subjects. The competition aims to foster international cooperation and promote excellence in science and mathematics among young students. \n\nUnfortunately, the Physics problems in this olympiad have many mistakes, as detailed in the [errata list](https://stefanivanov.site/teaching/errata.pdf).\n",
+    "descriptionHtml": "<p>The International Zhautykov Olympiad (IZhO) is an annual multi-subject olympiad comprising of Mathematics, Physics and Computing. It is held in Kazakhstan and is named after the Kazakh mathematician and educator, Ilyas Zhautykov. The IZhO attracts top high school students from around the world to compete in challenging problems across these three subjects. The competition aims to foster international cooperation and promote excellence in science and mathematics among young students. </p>\n<p>Unfortunately, the Physics problems in this olympiad have many mistakes, as detailed in the <a href=\"https://stefanivanov.site/teaching/errata.pdf\">errata list</a>.</p>\n"
   },
   {
     "id": "inpho",
@@ -1112,6 +1136,9 @@
       },
       "comments": {
         "label": "Comments"
+      },
+      "detailedSolutions": {
+        "label": "Detailed Solutions"
       }
     },
     "problemFileTypes": {
@@ -1132,11 +1159,10 @@
       },
       "presentation": {
         "label": "Presentation"
-      },
-      "detailedSolutions": {
-        "label": "Detailed Solutions"
       }
-    }
+    },
+    "description": "The Indian National Physics Olympiad (InPhO) is the second round of selection for the Indian IPhO team. I thank [Ashmit Dutta](https://github.com/aedutta) for writing the detailed solutions for 2011 and 2012.\n",
+    "descriptionHtml": "<p>The Indian National Physics Olympiad (InPhO) is the second round of selection for the Indian IPhO team. I thank <a href=\"https://github.com/aedutta\">Ashmit Dutta</a> for writing the detailed solutions for 2011 and 2012.</p>\n"
   },
   {
     "id": "sjpo",
@@ -1225,7 +1251,9 @@
       "presentation": {
         "label": "Presentation"
       }
-    }
+    },
+    "description": "The Singapore Junior Physics Olympiad (SJPO) is an algebra-based olympiad for secondary school students that assumes no knowledge of calculus. It is quite well-set, with many thought-provoking problems. The time pressure can be quite high, with contestants having to solve 50 multiple-choice questions in 2 hours. The questions here are from the general round. In 2024 there was some technical issue which caused the competition to have to be taken again, so there are two versions of the problems. SJPO 2020 is pointless as it was a compilation of past year problems, so I won't include it here. There were some technical issues in 2021 so it didn't really work out. I've tried my best to find as many papers as I can, but if you have a paper or its solutions that isn't here, do let me know. I thank the folks at [PD Stem Education](https://www.pd-stem.com/) for making solutions to 2022 and 2024, found [here](https://drive.google.com/drive/folders/18B5GEA6r5dmef2QbzQteKk3EKrXxuU05).\n\nSJPO does have quite a few errors, unfortunately. I have started to maintain an [errata page](https://apochrome.notion.site/SJPO-Errata-315b933f14fe800994d1f9d524ab1f39?source=copy_link) here. I do not have time to go through every paper, so I would appreciate it if you dropp me an email when you find an error. See errata page for my email address.\n",
+    "descriptionHtml": "<p>The Singapore Junior Physics Olympiad (SJPO) is an algebra-based olympiad for secondary school students that assumes no knowledge of calculus. It is quite well-set, with many thought-provoking problems. The time pressure can be quite high, with contestants having to solve 50 multiple-choice questions in 2 hours. The questions here are from the general round. In 2024 there was some technical issue which caused the competition to have to be taken again, so there are two versions of the problems. SJPO 2020 is pointless as it was a compilation of past year problems, so I won&#39;t include it here. There were some technical issues in 2021 so it didn&#39;t really work out. I&#39;ve tried my best to find as many papers as I can, but if you have a paper or its solutions that isn&#39;t here, do let me know. I thank the folks at <a href=\"https://www.pd-stem.com/\">PD Stem Education</a> for making solutions to 2022 and 2024, found <a href=\"https://drive.google.com/drive/folders/18B5GEA6r5dmef2QbzQteKk3EKrXxuU05\">here</a>.</p>\n<p>SJPO does have quite a few errors, unfortunately. I have started to maintain an <a href=\"https://apochrome.notion.site/SJPO-Errata-315b933f14fe800994d1f9d524ab1f39?source=copy_link\">errata page</a> here. I do not have time to go through every paper, so I would appreciate it if you dropp me an email when you find an error. See errata page for my email address.</p>\n"
   },
   {
     "id": "spho",
@@ -1317,193 +1345,8 @@
       "presentation": {
         "label": "Presentation"
       }
-    }
-  },
-  {
-    "id": "bpho-r1",
-    "name": "British Physics Olympiad Round 1",
-    "summary": "The first round of the British Physics Olympiad, a physics competition for high school students in the UK.",
-    "icon": "🇬🇧",
-    "tag": "National",
-    "yearFileTypes": {
-      "problems": {
-        "label": "Problems"
-      },
-      "problemsEn": {
-        "label": "Problems (EN)"
-      },
-      "theory": {
-        "label": "Theory"
-      },
-      "experiment": {
-        "label": "Experiment"
-      },
-      "solutions": {
-        "label": "Solutions"
-      },
-      "answerSheet": {
-        "label": "Answer Sheets"
-      },
-      "theorySolutions": {
-        "label": "Theory Solutions"
-      },
-      "experimentSolutions": {
-        "label": "Experiment Solutions"
-      },
-      "theoryMarkingScheme": {
-        "label": "Theory Marking Scheme"
-      },
-      "experimentMarkingScheme": {
-        "label": "Experiment Marking Scheme"
-      },
-      "theoryInstructions": {
-        "label": "Theory General Instructions"
-      },
-      "experimentalInstructions": {
-        "label": "Experiment General Instructions"
-      },
-      "experimentalFiles": {
-        "label": "Experimental Files"
-      },
-      "experimentalPresentation": {
-        "label": "Experimental Presentation"
-      },
-      "report": {
-        "label": "Report"
-      },
-      "results": {
-        "label": "Results"
-      },
-      "minutes": {
-        "label": "Minutes"
-      },
-      "proceedings": {
-        "label": "Proceedings"
-      },
-      "comments": {
-        "label": "Comments"
-      },
-      "FirstSection": {
-        "label": "Section 1"
-      },
-      "SecondSection": {
-        "label": "Section 2"
-      },
-      "BothSectionsSolutions": {
-        "label": "Solutions"
-      },
-      "FirstSectionSolutions": {
-        "label": "Solutions (Section 1)"
-      },
-      "SecondSectionSolutions": {
-        "label": "Solutions (Section 2)"
-      }
     },
-    "problemFileTypes": {
-      "problem": {
-        "label": "Problem"
-      },
-      "problemEn": {
-        "label": "Problem (EN)"
-      },
-      "solution": {
-        "label": "Solution"
-      },
-      "answerSheet": {
-        "label": "Answer Sheet"
-      },
-      "markingScheme": {
-        "label": "Marking Scheme"
-      },
-      "presentation": {
-        "label": "Presentation"
-      }
-    }
-  },
-  {
-    "id": "bpho-r2",
-    "name": "British Physics Olympiad Round 2",
-    "summary": "The second round of the British Physics Olympiad, a physics competition for high school students in the UK.",
-    "icon": "🇬🇧",
-    "tag": "National",
-    "yearFileTypes": {
-      "problems": {
-        "label": "Problems"
-      },
-      "problemsEn": {
-        "label": "Problems (EN)"
-      },
-      "theory": {
-        "label": "Theory"
-      },
-      "experiment": {
-        "label": "Experiment"
-      },
-      "solutions": {
-        "label": "Solutions"
-      },
-      "answerSheet": {
-        "label": "Answer Sheets"
-      },
-      "theorySolutions": {
-        "label": "Theory Solutions"
-      },
-      "experimentSolutions": {
-        "label": "Experiment Solutions"
-      },
-      "theoryMarkingScheme": {
-        "label": "Theory Marking Scheme"
-      },
-      "experimentMarkingScheme": {
-        "label": "Experiment Marking Scheme"
-      },
-      "theoryInstructions": {
-        "label": "Theory General Instructions"
-      },
-      "experimentalInstructions": {
-        "label": "Experiment General Instructions"
-      },
-      "experimentalFiles": {
-        "label": "Experimental Files"
-      },
-      "experimentalPresentation": {
-        "label": "Experimental Presentation"
-      },
-      "report": {
-        "label": "Report"
-      },
-      "results": {
-        "label": "Results"
-      },
-      "minutes": {
-        "label": "Minutes"
-      },
-      "proceedings": {
-        "label": "Proceedings"
-      },
-      "comments": {
-        "label": "Comments"
-      }
-    },
-    "problemFileTypes": {
-      "problem": {
-        "label": "Problem"
-      },
-      "problemEn": {
-        "label": "Problem (EN)"
-      },
-      "solution": {
-        "label": "Solution"
-      },
-      "answerSheet": {
-        "label": "Answer Sheet"
-      },
-      "markingScheme": {
-        "label": "Marking Scheme"
-      },
-      "presentation": {
-        "label": "Presentation"
-      }
-    }
+    "description": "The Singapore Physics Olympiad (SPhO) is the first round of the selection process for the International Physics Olympiad (IPhO) in Singapore. It is arguably easier than SJPO. I only recommend doing past year papers if you are preparing specifically for this, but even then you should only do 1 or 2 to get a feeling of how the paper is like, and spend the rest of your time learning physics properly. Most of the problems are straightforward, but intentionally niche or vague to make it artifically difficult. For example, in 2024, you needed to know what a Hohmann transfer was. If you did, it becomes a trivial application of the vis-viva equation, but impossible if you didn't. Just like SJPO, it also tends to have quite a lot of mistakes, so don't go insane if your answer differs from theirs. Generally, to do well, you just need to have superficial knowledge of everything in the syllabus, as the problems rarely go beyond the absolute basics of what you learn. \n\nPre-2018 papers were set by NUS instead of NTU, so you'll see a large difference in the style. Pre-2018 problems are sometimes copied from popular books like Morin's Classical Mechanics, but there are some really nice original problems too. The more recent ones are also copied, but from other sources. For example, SPhO 2024 Q4 is copied wholesale from problem 177 of 200 More Puzzling Physics Problems. Funnily enough, SPhO even copies questions from itself, which is weird because the problems aren't even that good. For example, 2023 Paper 2 copies a lot of problems from 2019 Paper 2.\n\nLinks: [Official Website](https://singaporephysics.wordpress.com/), [Old Website](https://ipssingapore.org/events/IPhO.html)\n",
+    "descriptionHtml": "<p>The Singapore Physics Olympiad (SPhO) is the first round of the selection process for the International Physics Olympiad (IPhO) in Singapore. It is arguably easier than SJPO. I only recommend doing past year papers if you are preparing specifically for this, but even then you should only do 1 or 2 to get a feeling of how the paper is like, and spend the rest of your time learning physics properly. Most of the problems are straightforward, but intentionally niche or vague to make it artifically difficult. For example, in 2024, you needed to know what a Hohmann transfer was. If you did, it becomes a trivial application of the vis-viva equation, but impossible if you didn&#39;t. Just like SJPO, it also tends to have quite a lot of mistakes, so don&#39;t go insane if your answer differs from theirs. Generally, to do well, you just need to have superficial knowledge of everything in the syllabus, as the problems rarely go beyond the absolute basics of what you learn. </p>\n<p>Pre-2018 papers were set by NUS instead of NTU, so you&#39;ll see a large difference in the style. Pre-2018 problems are sometimes copied from popular books like Morin&#39;s Classical Mechanics, but there are some really nice original problems too. The more recent ones are also copied, but from other sources. For example, SPhO 2024 Q4 is copied wholesale from problem 177 of 200 More Puzzling Physics Problems. Funnily enough, SPhO even copies questions from itself, which is weird because the problems aren&#39;t even that good. For example, 2023 Paper 2 copies a lot of problems from 2019 Paper 2.</p>\n<p>Links: <a href=\"https://singaporephysics.wordpress.com/\">Official Website</a>, <a href=\"https://ipssingapore.org/events/IPhO.html\">Old Website</a></p>\n"
   }
 ]
