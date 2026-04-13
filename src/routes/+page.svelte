@@ -50,7 +50,7 @@
 	<!-- Left: text content -->
 	<div
 		class={cn(
-			'relative z-10 flex justify-center min-w-0 flex-1 flex-col gap-7 transition-[opacity,transform] duration-[600ms] ease-in-out',
+			'relative z-10 flex justify-center min-w-0 flex-1 flex-col gap-7 transition-[opacity,translate] duration-[600ms] ease-in-out',
 			mounted ? 'translate-y-0 opacity-100' : 'translate-y-5 opacity-0'
 		)}
 	>
