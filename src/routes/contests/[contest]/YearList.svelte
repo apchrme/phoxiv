@@ -90,6 +90,13 @@
 					</div>
 
 					<div class="flex flex-col gap-4 p-4">
+
+						{#snippet FileLink(url:string, label:string)}
+							<Badge variant="outline" href={url} target="_blank" class="text-sm px-2.5 py-2.5">
+								{label}
+							</Badge>
+						{/snippet}
+
 						{#if showYearLevel(year) && hasYearLevelContent(year)}
 							<div class="flex flex-col gap-2">
 								{#each year.notes as note (note)}
@@ -98,15 +105,11 @@
 								{#if year.extraLinks.length > 0 || Object.keys(year.yearFiles).length > 0}
 									<div class="flex flex-wrap gap-2">
 										{#each year.extraLinks as link (link.label)}
-											<Badge variant="outline" href={link.url} target="_blank">
-												{link.label}
-											</Badge>
+											{@render FileLink(link.url, link.label)}
 										{/each}
 										{#each yearFTEntries as [key, ft] (key)}
 											{#if year.yearFiles[key]}
-												<Badge variant="outline" href={year.yearFiles[key]} target="_blank">
-													{ft.label}
-												</Badge>
+												{@render FileLink(year.yearFiles[key], ft.label)}
 											{/if}
 										{/each}
 									</div>
@@ -119,21 +122,19 @@
 								{#each year.matchedProblems as problem (problem.number)}
 									<div class="flex flex-col gap-3 rounded-xl bg-background p-4">
 										<div class="flex flex-col gap-0.5">
-											<span class="font-mono text-sm font-semibold text-primary">
+											<span class="font-mono text-base font-semibold text-primary">
 												{problem.number}
 											</span>
 											{#if problem.title}
-												<span class="text-sm leading-snug font-medium text-foreground">
+												<span class="text-base leading-snug font-medium text-foreground">
 													{problem.title}
 												</span>
 											{/if}
 										</div>
-										<div class="flex flex-wrap gap-1.5">
+										<div class="flex flex-wrap gap-2">
 											{#each probFTEntries as [key, ft] (key)}
 												{#if problem.files[key]}
-													<Badge variant="outline" href={problem.files[key]} target="_blank">
-														{ft.label}
-													</Badge>
+													{@render FileLink(problem.files[key], ft.label)}
 												{/if}
 											{/each}
 										</div>

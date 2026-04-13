@@ -2,7 +2,7 @@
 	import contests from '$lib/pregen/contests.json';
 	import type { ContestTag } from '$lib/pregen/types.js';
 	import * as Card from '$lib/components/ui/card/index';
-	import Badge from '$lib/components/ui/badge/badge.svelte';
+	import { Badge } from '$lib/components/ui/badge/index';
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
