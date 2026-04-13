@@ -13,7 +13,7 @@
 	} = $props();
 </script>
 
-<div class="flex flex-col items-center gap-4 sm:flex-row">
+<div class="flex flex-col gap-4 sm:flex-row items-center">
 	<div class="relative w-full flex-1">
 		<svg
 			class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"

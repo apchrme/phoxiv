@@ -38,7 +38,7 @@
 		<img
 			src={logo}
 			alt=""
-			class="h-[28rem] w-[28rem] select-none opacity-10 dark:opacity-5 [mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_80%)]"
+			class="h-[28rem] w-[28rem] select-none opacity-20 [mask-image:radial-gradient(ellipse_at_center,black,transparent_100%)]"
 		/>
 	</div>
 

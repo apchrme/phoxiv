@@ -8,6 +8,7 @@
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
 	import { cn } from '$lib/utils.js';
 
+	// this seems redundant. I should remove this
 	const ALL_TAGS: ContestTag[] = ['International', 'Regional', 'National', 'Open'];
 
 	let query = $state('');
@@ -35,6 +36,7 @@
 				type="single"
 				value={activeTag ?? ''}
 				onValueChange={(v) => (activeTag = (v as ContestTag) || null)}
+				class="justify-center"
 			>
 				<ToggleGroup.Item value="">All</ToggleGroup.Item>
 				{#each ALL_TAGS as tag (tag)}
