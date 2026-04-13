@@ -764,10 +764,10 @@
         "label": "Comments"
       },
       "SolutionA": {
-        "label": "Solution (Section A)"
+        "label": "Solutions (Section A)"
       },
       "SolutionB": {
-        "label": "Solution (Section B)"
+        "label": "Solutions (Section B)"
       }
     },
     "problemFileTypes": {
@@ -1296,6 +1296,190 @@
       },
       "paper2": {
         "label": "Paper 2"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    }
+  },
+  {
+    "id": "bpho-r1",
+    "name": "British Physics Olympiad Round 1",
+    "summary": "The first round of the British Physics Olympiad, a physics competition for high school students in the UK.",
+    "icon": "🇬🇧",
+    "tag": "National",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "answerSheet": {
+        "label": "Answer Sheets"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      },
+      "FirstSection": {
+        "label": "Section 1"
+      },
+      "SecondSection": {
+        "label": "Section 2"
+      },
+      "BothSectionsSolutions": {
+        "label": "Solutions"
+      },
+      "FirstSectionSolutions": {
+        "label": "Solutions (Section 1)"
+      },
+      "SecondSectionSolutions": {
+        "label": "Solutions (Section 2)"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    }
+  },
+  {
+    "id": "bpho-r2",
+    "name": "British Physics Olympiad Round 2",
+    "summary": "The second round of the British Physics Olympiad, a physics competition for high school students in the UK.",
+    "icon": "🇬🇧",
+    "tag": "National",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "answerSheet": {
+        "label": "Answer Sheets"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      },
+      "Solutions": {
+        "label": "Solutions"
       }
     },
     "problemFileTypes": {

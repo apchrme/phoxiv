@@ -2,18 +2,8 @@ name: British Physics Olympiad Round 2
 summary: The second round of the British Physics Olympiad, a physics competition for high school students in the UK.
 icon: 🇬🇧
 tag: National
-order: 4
 extraFileTypes:
   year:
-    FirstSection:
-      suffix: "_1"
-      label: "Section 1"
-    SecondSection:
-      suffix: "_2"
-      label: "Section 2"
-    FirstSectionSolutions:
-      suffix: "_1_S"
-      label: "Solutions (Section 1)"
-    SecondSectionSolutions:
-      suffix: "_2_S"
-      label: "Solutions (Section 2)"
+    Solutions:
+      suffix: "_S"
+      label: "Solutions"

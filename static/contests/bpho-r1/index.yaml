@@ -3,7 +3,6 @@ name: British Physics Olympiad Round 1
 summary: The first round of the British Physics Olympiad, a physics competition for high school students in the UK.
 icon: 🇬🇧
 tag: National
-order: 4
 extraFileTypes:
   year:
     FirstSection:
@@ -12,6 +11,9 @@ extraFileTypes:
     SecondSection:
       suffix: "_2"
       label: "Section 2"
+    BothSectionsSolutions:
+      suffix: "_S"
+      label: "Solutions"
     FirstSectionSolutions:
       suffix: "_1_S"
       label: "Solutions (Section 1)"
