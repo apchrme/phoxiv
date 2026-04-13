@@ -135,7 +135,7 @@ extraLinks:
 
 ### High priority
 
-- fix the stupid looking emojis in the contest list
+- fix windows not loading flag emojis: https://geyer.dev/blog/windows-flag-emojis/
 - add a "hide solutions" button
 
 ### Medium priority
