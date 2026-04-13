@@ -1338,6 +1338,9 @@
       "experiment": {
         "label": "Experiment"
       },
+      "solutions": {
+        "label": "Solutions"
+      },
       "answerSheet": {
         "label": "Answer Sheets"
       },
@@ -1436,6 +1439,9 @@
       "experiment": {
         "label": "Experiment"
       },
+      "solutions": {
+        "label": "Solutions"
+      },
       "answerSheet": {
         "label": "Answer Sheets"
       },
@@ -1477,9 +1483,6 @@
       },
       "comments": {
         "label": "Comments"
-      },
-      "Solutions": {
-        "label": "Solutions"
       }
     },
     "problemFileTypes": {
