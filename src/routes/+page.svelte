@@ -55,7 +55,7 @@
 		<!-- Description -->
 		<p class="m-0 max-w-[44ch] text-left text-base leading-[1.7] text-foreground/70">
 			A comprehensive archive of physics olympiads, from the well-known IPhO and EuPhO
-			to hidden gems like the Eötvös competition. Includes marking schemes and answer sheets you rarely find elsewhere.
+			to hidden gems like the Eötvös competition. Includes marking schemes and answer sheets you rarely find elsewhere, all in a mobile-friendly interface.
 		</p>
 
 		<!-- CTAs -->
@@ -74,7 +74,7 @@
 					<span class="font-mono text-[0.65rem] uppercase tracking-[0.1em] text-muted-foreground">{label}</span>
 				</div>
 				{#if i < statItems.length - 1}
-					<div class="hidden h-8 w-px bg-border sm:block" aria-hidden="true"></div>
+					<div class="h-8 w-px bg-border block" aria-hidden="true"></div>
 				{/if}
 			{/each}
 		</div>
