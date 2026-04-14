@@ -98,7 +98,7 @@
 	{#if filtered().length > 0}
 		<div class="flex flex-col gap-4">
 			{#each filtered() as year (year.year)}
-				<div class="overflow-hidden rounded-2xl border border-border bg-card">
+				<div class="overflow-hidden rounded-2xl border border-border bg-card" id={year.year}>
 					<div class="flex items-center border-b border-border bg-muted/60 px-4 py-2.5">
 						<span class="font-mono text-lg font-semibold text-foreground tabular-nums">
 							{year.year}

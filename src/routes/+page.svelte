@@ -3,7 +3,6 @@
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import stats from '$lib/pregen/stats.json';
 	import { cn } from '$lib/utils.js';
-	import { onMount } from 'svelte';
 	import logo from '$lib/assets/branding/logo.svg';
 
 	let rotX = $state(12);

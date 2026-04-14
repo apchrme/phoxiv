@@ -5097,5 +5097,44 @@
       },
       "problems": []
     }
+  ],
+  "upho": [
+    {
+      "year": 2025,
+      "notes": [
+        "Theoretical round, 11th grade. Hosted in Lviv, March 2025."
+      ],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/upho/2025.pdf"
+      },
+      "problems": [
+        {
+          "number": "T1",
+          "title": "Electromagnetic stereometry",
+          "files": {}
+        },
+        {
+          "number": "T2",
+          "title": "Schematic madness",
+          "files": {}
+        },
+        {
+          "number": "T3",
+          "title": "Alien disk",
+          "files": {}
+        },
+        {
+          "number": "T4",
+          "title": "Problem with intranslatable name",
+          "files": {}
+        },
+        {
+          "number": "T5",
+          "title": "Day/Night",
+          "files": {}
+        }
+      ]
+    }
   ]
 }
