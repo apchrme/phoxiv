@@ -1876,7 +1876,6 @@
       ],
       "extraLinks": [],
       "yearFiles": {
-        "theory": "/contests/apho/2025_T.pdf",
         "results": "/contests/apho/2025_R.pdf"
       },
       "problems": [
@@ -1884,6 +1883,7 @@
           "number": "T1",
           "title": "Precession of the Earth's axis",
           "files": {
+            "problem": "/contests/apho/2025/T1.pdf",
             "solution": "/contests/apho/2025/T1_S.pdf",
             "answerSheet": "/contests/apho/2025/T1_A.pdf"
           }
@@ -1892,6 +1892,7 @@
           "number": "T2",
           "title": "Waves and Phase Transitions",
           "files": {
+            "problem": "/contests/apho/2025/T2.pdf",
             "solution": "/contests/apho/2025/T2_S.pdf",
             "answerSheet": "/contests/apho/2025/T2_A.pdf"
           }
@@ -1900,6 +1901,7 @@
           "number": "T3",
           "title": "Physics of the Atmosphere",
           "files": {
+            "problem": "/contests/apho/2025/T3.pdf",
             "solution": "/contests/apho/2025/T3_S.pdf",
             "answerSheet": "/contests/apho/2025/T3_A.pdf",
             "handwrittenSolution": "/contests/apho/2025/T3_S_H.pdf"
