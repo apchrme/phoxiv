@@ -1350,6 +1350,266 @@
     "descriptionHtml": "<p>The Singapore Physics Olympiad (SPhO) is the first round of the selection process for the International Physics Olympiad (IPhO) in Singapore. It is arguably easier than SJPO. I only recommend doing past year papers if you are preparing specifically for this, but even then you should only do 1 or 2 to get a feeling of how the paper is like, and spend the rest of your time learning physics properly. Most of the problems are straightforward, but intentionally niche or vague to make it artifically difficult. For example, in 2024, you needed to know what a Hohmann transfer was. If you did, it becomes a trivial application of the vis-viva equation, but impossible if you didn&#39;t. Just like SJPO, it also tends to have quite a lot of mistakes, so don&#39;t go insane if your answer differs from theirs. Generally, to do well, you just need to have superficial knowledge of everything in the syllabus, as the problems rarely go beyond the absolute basics of what you learn. </p>\n<p>Pre-2018 papers were set by NUS instead of NTU, so you&#39;ll see a large difference in the style. Pre-2018 problems are sometimes copied from popular books like Morin&#39;s Classical Mechanics, but there are some really nice original problems too. The more recent ones are also copied, but from other sources. For example, SPhO 2024 Q4 is copied wholesale from problem 177 of 200 More Puzzling Physics Problems. Funnily enough, SPhO even copies questions from itself, which is weird because the problems aren&#39;t even that good. For example, 2023 Paper 2 copies a lot of problems from 2019 Paper 2.</p>\n<p>Links: <a href=\"https://singaporephysics.wordpress.com/\">Official Website</a>, <a href=\"https://ipssingapore.org/events/IPhO.html\">Old Website</a></p>\n"
   },
   {
+    "id": "rupho-w",
+    "name": "Russian IPhO Team Selection Test (W)",
+    "summary": "Preparation for 10th graders in Russia for the TST",
+    "icon": "🇷🇺",
+    "tag": "National",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "answerSheet": {
+        "label": "Answer Sheets"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    },
+    "description": "A IPhO-style competition for 10th graders in Russia to prepare for the team selection test (X and Y).\n",
+    "descriptionHtml": "<p>A IPhO-style competition for 10th graders in Russia to prepare for the team selection test (X and Y).</p>\n"
+  },
+  {
+    "id": "rupho-x",
+    "name": "Russian IPhO Team Selection Test (X)",
+    "summary": "1st stage of the Russian IPhO team selection",
+    "icon": "🇷🇺",
+    "tag": "National",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "answerSheet": {
+        "label": "Answer Sheets"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    }
+  },
+  {
+    "id": "rupho-y",
+    "name": "Russian IPhO Team Selection Test (X)",
+    "summary": "2nd stage of the Russian IPhO team selection",
+    "icon": "🇷🇺",
+    "tag": "National",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "answerSheet": {
+        "label": "Answer Sheets"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    }
+  },
+  {
     "id": "upho",
     "name": "All-Ukrainian Physics Olympiad",
     "summary": "Annual national physics olympiad for Ukrainian secondary school students.",
