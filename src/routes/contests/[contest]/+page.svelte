@@ -116,7 +116,7 @@
 						{#if showYearLevel(year) && hasYearLevelContent(year)}
 							<div class="flex flex-col gap-2">
 								{#each year.notes as note (note)}
-									<p class="text-xs text-muted-foreground m-0">{note}</p>
+									<p class="text-sm text-muted-foreground m-0">{note}</p>
 								{/each}
 								{#if year.extraLinks.length > 0 || Object.keys(year.yearFiles).length > 0}
 									<div class="flex flex-wrap gap-2">

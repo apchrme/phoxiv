@@ -10,14 +10,18 @@
 	import AppSidebar from './AppSidebar.svelte';
 	import NavButtons from './NavButtons.svelte';
 	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
+	import GlobalSearch from '$lib/components/GlobalSearch.svelte';
+	import SearchIcon from '@lucide/svelte/icons/search';
+	import { buttonVariants } from '$lib/components/ui/button/index.js';
 
-	// source of truth for nav links, used in both AppSidebar and the desktop nav menu
 	const navLinks = [
 		{ url: '/', label: 'home' },
 		{ url: '/contests', label: 'contests' },
 		{ url: '/resources', label: 'resources' },
 		{ url: '/blog', label: 'blog' }
 	];
+
+	let searchOpen = $state(false);
 </script>
 
 <svelte:head>
@@ -25,6 +29,7 @@
 </svelte:head>
 
 <ModeWatcher />
+<GlobalSearch bind:open={searchOpen} />
 
 <Sidebar.Provider>
 	<AppSidebar {navLinks} />
@@ -32,6 +37,7 @@
 		class="flex min-h-screen w-full flex-col items-center bg-background px-8 py-3 sm:px-10 sm:py-6"
 	>
 		<div class="w-full md:w-5/6 xl:w-2/3">
+			<!-- Mobile nav -->
 			<nav class="grid grid-cols-3 items-center md:hidden">
 				<Sidebar.Trigger />
 				<a
@@ -40,8 +46,16 @@
 				>
 					phoXiv
 				</a>
-				<div></div>
+				<button
+					onclick={() => (searchOpen = true)}
+					class="{buttonVariants({ variant: 'ghost', size: 'icon' })} justify-self-end"
+					aria-label="Search problems"
+				>
+					<SearchIcon class="size-4" />
+				</button>
 			</nav>
+
+			<!-- Desktop nav -->
 			<nav class="hidden flex-row flex-wrap items-center justify-between gap-2 md:flex">
 				<NavigationMenu.Root>
 					<NavigationMenu.List class="gap-2 sm:gap-3">
@@ -50,7 +64,18 @@
 						{/each}
 					</NavigationMenu.List>
 				</NavigationMenu.Root>
-				<NavButtons />
+				<div class="flex items-center gap-2">
+					<button
+						onclick={() => (searchOpen = true)}
+						class="{buttonVariants({ variant: 'outline' })} flex items-center gap-2 text-sm text-muted-foreground"
+						aria-label="Search problems"
+					>
+						<SearchIcon class="size-4" />
+						<span>Search…</span>
+						<kbd class="font-mono text-xs opacity-60">⌘K</kbd>
+					</button>
+					<NavButtons />
+				</div>
 			</nav>
 
 			<Separator class="my-3" />

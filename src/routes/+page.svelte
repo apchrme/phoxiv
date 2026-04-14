@@ -37,7 +37,7 @@
 		<img
 			src={logo}
 			alt=""
-			class="h-[28rem] w-[28rem] select-none opacity-20 [mask-image:radial-gradient(ellipse_at_center,black,transparent_100%)]"
+			class="h-[28rem] w-[28rem] select-none opacity-20 mask-[radial-gradient(ellipse_at_center,black,transparent_100%)]"
 		/>
 	</div>
 
@@ -82,19 +82,19 @@
 	<!-- Right: interactive 3-D logo (desktop only) -->
 	<div class="hero-logo hidden shrink-0 items-center justify-center md:flex" aria-hidden="true">
 		<div
-			class="relative flex h-[clamp(16rem,28vw,26rem)] w-[clamp(16rem,28vw,26rem)] items-center justify-center [transform-style:preserve-3d] [transition:transform_0.08s_ease-out]"
+			class="relative flex h-[clamp(16rem,28vw,26rem)] w-[clamp(16rem,28vw,26rem)] items-center justify-center transform-3d [transition:transform_0.08s_ease-out]"
 			style="transform: perspective(900px) rotateX({rotX}deg) rotateY({rotY}deg);"
 		>
 			<!-- Glow ring behind logo -->
 			<div
-				class="absolute inset-0 rounded-full [background:radial-gradient(circle_at_center,color-mix(in_oklab,var(--primary)_40%,transparent),transparent_50%)] [transform:translateZ(-20px)]"
+				class="absolute inset-0 rounded-full [background:radial-gradient(circle_at_center,color-mix(in_oklab,var(--primary)_40%,transparent),transparent_50%)] transform-[translateZ(-20px)]"
 			></div>
 
 			<!-- Logo -->
 			<img
 				src={logo}
 				alt=""
-				class="pointer-events-none h-full w-full select-none object-contain opacity-80 dark:opacity-60 [transform:translateZ(30px)]"
+				class="pointer-events-none h-full w-full select-none object-contain opacity-80 dark:opacity-60 transform-[translateZ(30px)]"
 			/>
 		</div>
 	</div>
