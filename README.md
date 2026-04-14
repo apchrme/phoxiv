@@ -137,7 +137,6 @@ extraLinks:
 
 - fix windows not loading flag emojis: https://geyer.dev/blog/windows-flag-emojis/
 - add a "hide solutions" button
-- should the page.ts file in [contest] be a page.server.ts file since it uses data from the filesystem?
 
 ### Medium priority
 
