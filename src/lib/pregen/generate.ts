@@ -37,7 +37,7 @@ const STATIC_DIR = path.resolve('static/contests');
 const CONTESTS_OUT = path.resolve('src/lib/pregen/contests.json');
 const FILES_OUT = path.resolve('src/lib/pregen/files.json');
 const EXTENSIONS = ['pdf', 'xlsx', 'zip', 'htm', 'html', 'doc', 'docx'];
-const PROBLEM_NUMS = ['T1', 'T2', 'T3', 'T4', 'T5', 'E1', 'E2'];
+const PROBLEM_NUMS = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'E1', 'E2', 'PE'];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
