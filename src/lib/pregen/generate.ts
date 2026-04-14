@@ -177,8 +177,8 @@ for (const contest of internalContests) {
 				contest._problemTypes,
 				'/contests/' + contest.id + '/' + year
 			);
-			if (Object.keys(files).length === 0) continue;
 			const title = meta.problems?.[num]?.title;
+			if (Object.keys(files).length === 0 && !title) continue;
 			problems.push({ number: num, ...(title ? { title } : {}), files });
 		}
 

@@ -805,6 +805,11 @@
             "solution": "/contests/ipho/2014/T3_S.pdf",
             "presentation": "/contests/ipho/2014/T3_P.pdf"
           }
+        },
+        {
+          "number": "E1",
+          "title": "To see invisible!",
+          "files": {}
         }
       ]
     },
@@ -872,7 +877,33 @@
         "results": "/contests/ipho/2012_R.xlsx",
         "minutes": "/contests/ipho/2012_min.pdf"
       },
-      "problems": []
+      "problems": [
+        {
+          "number": "T1",
+          "title": "Focus on sketches",
+          "files": {}
+        },
+        {
+          "number": "T2",
+          "title": "Kelvin water dropper",
+          "files": {}
+        },
+        {
+          "number": "T3",
+          "title": "Protostar formation",
+          "files": {}
+        },
+        {
+          "number": "E1",
+          "title": "The Magnetic Permeability of Water",
+          "files": {}
+        },
+        {
+          "number": "E2",
+          "title": "Nonlinear Black Box",
+          "files": {}
+        }
+      ]
     },
     {
       "year": 2011,
@@ -1496,6 +1527,21 @@
         "comments": "/contests/ipho/1995_comments.pdf"
       },
       "problems": [
+        {
+          "number": "T1",
+          "title": "Gravitational Red Shift and Stellar Mass",
+          "files": {}
+        },
+        {
+          "number": "T2",
+          "title": "Sound Propagation",
+          "files": {}
+        },
+        {
+          "number": "T3",
+          "title": "Cylindrical Buoy",
+          "files": {}
+        },
         {
           "number": "E1",
           "title": "Terminal Velocity in a Viscous Liquid",
