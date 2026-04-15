@@ -70,13 +70,13 @@
 						onclick={() => (searchOpen = true)}
 						class="{buttonVariants({
 							variant: 'outline'
-						})} flex items-center gap-2 text-sm text-muted-foreground"
+						})} items-center gap-2 text-sm text-muted-foreground"
 						aria-label="Search problems"
 					>
 						<Search class="size-4" />
-						<span>Search…</span>
-						<Kbd.Root class="font-mono">⌘</Kbd.Root>
-						<Kbd.Root class="font-mono">K</Kbd.Root>
+						<span class="hidden lg:block">Search…</span>
+						<Kbd.Root class="font-mono hidden lg:inline-flex">⌘</Kbd.Root>
+						<Kbd.Root class="font-mono hidden lg:inline-flex">K</Kbd.Root>
 					</button>
 					<NavButtons />
 				</div>
