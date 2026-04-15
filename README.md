@@ -131,6 +131,19 @@ extraLinks:
     url: https://example.com
 ```
 
+### Pregeneration
+The website generates hyperlinks and other data based on the `.json` files in `src/lib/pregen/output/`. To update these files after modifying content in `static/`, run `bun run pregen`.
+
+```bash
+bun run pregen
+  --contests
+  --files
+  --stats
+  --search
+
+```
+
+
 ## TODO
 
 ### High priority
