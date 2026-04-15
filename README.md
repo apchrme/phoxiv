@@ -137,6 +137,7 @@ extraLinks:
 
 - fix windows not loading flag emojis: https://geyer.dev/blog/windows-flag-emojis/
 - add a "hide solutions" button
+- trap scroll in global search
 
 ### Medium priority
 

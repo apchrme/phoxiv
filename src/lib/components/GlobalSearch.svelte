@@ -65,6 +65,8 @@
 	let query = $state('');
 	let focusedIndex = $state(0);
 	let inputEl: HTMLInputElement | undefined = $state();
+	let dialogEl: HTMLElement | undefined = $state();
+	let returnFocusEl: HTMLElement | null = null;
 
 	const results = $derived.by(() => {
 		const q = query.trim();
@@ -87,12 +89,14 @@
 		open = true;
 		query = '';
 		focusedIndex = 0;
+		returnFocusEl = document.activeElement as HTMLElement | null;
 		requestAnimationFrame(() => inputEl?.focus());
 	}
 
 	function closeSearch() {
 		open = false;
 		query = '';
+		requestAnimationFrame(() => returnFocusEl?.focus());
 	}
 
 	function navigateTo(item: SearchItem) {
@@ -127,6 +131,33 @@
 			navigateTo(results[focusedIndex]);
 		}
 	}
+
+	// ---------------------------------------------------------------------------
+	// Focus trap
+	// ---------------------------------------------------------------------------
+
+	function trapFocus(e: KeyboardEvent) {
+		if (e.key !== 'Tab') return;
+		const focusable = Array.from(
+			dialogEl?.querySelectorAll<HTMLElement>(
+				'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), input:not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])'
+			) ?? []
+		).filter((el) => !el.closest('[inert]'));
+		if (!focusable.length) return;
+		const first = focusable[0];
+		const last = focusable[focusable.length - 1];
+		if (e.shiftKey) {
+			if (document.activeElement === first) {
+				e.preventDefault();
+				last.focus();
+			}
+		} else {
+			if (document.activeElement === last) {
+				e.preventDefault();
+				first.focus();
+			}
+		}
+	}
 </script>
 
 <svelte:window onkeydown={onWindowKeydown} />
@@ -134,7 +165,7 @@
 {#if open}
 	<!-- Backdrop -->
 	<div
-		class="fixed inset-0 z-50 bg-black/50"
+		class="fixed inset-0 z-50 bg-black/50 supports-backdrop-filter:backdrop-blur-xs"
 		transition:fade={{ duration: 120 }}
 		role="presentation"
 		onclick={closeSearch}
@@ -146,11 +177,14 @@
 		role="presentation"
 	>
 		<div
-			class="pointer-events-auto flex w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
+			bind:this={dialogEl}
+			class="pointer-events-auto flex h-[min(600px,72vh)] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
 			role="dialog"
 			aria-modal="true"
 			aria-label="Search problems"
 			transition:scale={{ duration: 150, start: 0.96 }}
+			onkeydown={trapFocus}
+			tabindex="-1"
 		>
 			<!-- Input row -->
 			<div class="flex items-center gap-2 border-b border-border px-4 py-3">
@@ -172,13 +206,13 @@
 			</div>
 
 			<!-- Results -->
-			<div class="max-h-[55vh] overflow-y-auto">
+			<div class="flex min-h-0 flex-1 flex-col overflow-y-auto">
 				{#if !query.trim()}
-					<p class="py-8 text-center text-sm text-muted-foreground">
+					<p class="flex flex-1 items-center justify-center text-sm text-muted-foreground">
 						Type to search across all olympiads…
 					</p>
 				{:else if results.length === 0}
-					<p class="py-8 text-center text-sm text-muted-foreground">No results found.</p>
+					<p class="flex flex-1 items-center justify-center text-sm text-muted-foreground">No results found.</p>
 				{:else}
 					<ul>
 						{#each results as item, i (item.contestId + item.year + item.problem.number)}
@@ -252,7 +286,7 @@
 
 			<!-- Footer hints -->
 			<div
-				class="flex items-center gap-4 border-t border-border px-4 py-2 font-mono text-xs text-muted-foreground"
+				class="hidden md:flex items-center gap-4 border-t border-border px-4 py-2 text-xs text-muted-foreground"
 			>
 				<span><Kbd.Root>↑↓</Kbd.Root> navigate</span>
 				<span><Kbd.Root>↵</Kbd.Root> go to year</span>
