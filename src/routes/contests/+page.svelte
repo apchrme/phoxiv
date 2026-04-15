@@ -1,5 +1,5 @@
 <script lang="ts">
-	import contests from '$lib/pregen/contests.json';
+	import contests from '$lib/pregen/output/contests.json';
 	import type { ContestTag } from '$lib/pregen/types.js';
 	import * as Card from '$lib/components/ui/card/index';
 	import { Badge } from '$lib/components/ui/badge/index';
@@ -31,11 +31,11 @@
 <section id="contests" class="mb-4">
 	<div class="mb-4">
 		<h1 class="py-0">Contests</h1>
-		<p class="mb-0 text-base text-center text-muted-foreground">
+		<p class="mb-0 text-center text-base text-muted-foreground">
 			Click any card to explore problems, solutions &amp; marking schemes.
 		</p>
 	</div>
-	
+
 	<!-- Search + filter toolbar -->
 	<div class="mb-5">
 		<SearchBar placeholder="Search contests…" bind:value={query}>
@@ -44,7 +44,7 @@
 					type="single"
 					value={activeTag ?? ''}
 					onValueChange={(v) => (activeTag = (v as ContestTag) || null)}
-					class="justify-center"
+					class="justify-center flex-wrap sm:flex-nowrap"
 				>
 					<ToggleGroup.Item value="">All</ToggleGroup.Item>
 					{#each ALL_TAGS as tag (tag)}

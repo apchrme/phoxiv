@@ -66,3 +66,12 @@ export type YearEntry = {
 };
 
 export type FilesJson = Record<string, YearEntry[]>;
+
+/** One entry in the pregenerated search index. */
+export type SearchIndexItem = {
+	contestId: string;
+	year: number;
+	problem: ProblemEntry;
+	/** Pre-lowercased concatenation of all searchable fields, in match-priority order. */
+	searchText: string;
+};
