@@ -1,6 +1,6 @@
 <script lang="ts">
 	import uFuzzy from '@leeoniya/ufuzzy';
-	import searchIndex from '$lib/pregen/searchIndex.json';
+	import searchIndex from '$lib/pregen/output/searchIndex.json';
 	import type { ProblemEntry } from '$lib/pregen/types.js';
 	import type { FileTypeLabel } from '$lib/pregen/types.js';
 	import { Search } from '@lucide/svelte';
@@ -29,7 +29,7 @@
 	};
 
 	const index: SearchItem[] = searchIndex.items.map((item) => {
-		const meta = (searchIndex as SearchItem[]).contestMeta[item.contestId];
+		const meta = searchIndex.contestMeta[item.contestId];
 		return {
 			...item,
 			problem: item.problem as ProblemEntry,
