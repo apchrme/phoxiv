@@ -254,12 +254,12 @@
 			<div
 				class="flex items-center gap-4 border-t border-border px-4 py-2 font-mono text-xs text-muted-foreground"
 			>
-				<span><Kbd.Root class="font-mono">↑↓</Kbd.Root> navigate</span>
-				<span><Kbd.Root class="font-mono">↵</Kbd.Root> go to year</span>
-				<span><Kbd.Root class="font-mono">Esc</Kbd.Root> close</span>
+				<span><Kbd.Root>↑↓</Kbd.Root> navigate</span>
+				<span><Kbd.Root>↵</Kbd.Root> go to year</span>
+				<span><Kbd.Root>Esc</Kbd.Root> close</span>
 				<span class="ml-auto">
-					<Kbd.Root class="font-mono">⌘</Kbd.Root>
-					<Kbd.Root class="font-mono">K</Kbd.Root>
+					<Kbd.Root>⌘</Kbd.Root>
+					<Kbd.Root>K</Kbd.Root>
 				</span>
 			</div>
 		</div>

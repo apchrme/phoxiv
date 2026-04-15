@@ -75,8 +75,8 @@
 					>
 						<Search class="size-4" />
 						<span class="hidden lg:block">Search…</span>
-						<Kbd.Root class="font-mono hidden lg:inline-flex">⌘</Kbd.Root>
-						<Kbd.Root class="font-mono hidden lg:inline-flex">K</Kbd.Root>
+						<Kbd.Root class="hidden lg:inline-flex">⌘</Kbd.Root>
+						<Kbd.Root class="hidden lg:inline-flex">K</Kbd.Root>
 					</button>
 					<NavButtons />
 				</div>
