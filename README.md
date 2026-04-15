@@ -30,7 +30,7 @@ The structure of this website is as follows: competitions are known as "contests
 
 ## Adding content
 
-### Directory structure 
+### Directory structure
 
 The types of files and how to structure the config files will be explained below.
 
@@ -43,7 +43,7 @@ static
         |
         |   # Examples
         ├── 2025.pdf # problems for the year 2025
-        ├── 2025_S.pdf # solutions for the year 2025 
+        ├── 2025_S.pdf # solutions for the year 2025
         |
         └── <year>
             ├── index.yaml # year config (optional)

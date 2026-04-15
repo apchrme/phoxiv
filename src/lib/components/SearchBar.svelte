@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Input } from '$lib/components/ui/input/index.js';
+	import * as InputGroup from "$lib/components/ui/input-group/index.js";
+	import { Search } from '@lucide/svelte';
 	import type { Snippet } from 'svelte';
 
 	let {
@@ -12,22 +13,15 @@
 		filters?: Snippet;
 	} = $props();
 </script>
-
-<div class="flex flex-col gap-4 sm:flex-row items-center">
-	<div class="relative w-full flex-1">
-		<svg
-			class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			stroke-width="2"
-			aria-hidden="true"
-		>
-			<circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-		</svg>
-		<Input type="search" {placeholder} bind:value class="pl-9" />
+<div class="flex flex-col items-center gap-4 sm:flex-row">
+	<div class="flex grow flex-col gap-6">
+	<InputGroup.Root>
+		<InputGroup.Input type="search" {placeholder} bind:value/>
+		<InputGroup.Addon>
+			<Search />
+		</InputGroup.Addon>
+	</InputGroup.Root>
 	</div>
-
 	{#if filters}
 		{@render filters()}
 	{/if}

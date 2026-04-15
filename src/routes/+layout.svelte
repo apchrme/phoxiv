@@ -11,8 +11,10 @@
 	import NavButtons from './NavButtons.svelte';
 	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
 	import GlobalSearch from '$lib/components/GlobalSearch.svelte';
-	import SearchIcon from '@lucide/svelte/icons/search';
+	import { Search } from '@lucide/svelte';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
+	import * as Kbd from "$lib/components/ui/kbd/index.js";
+
 
 	const navLinks = [
 		{ url: '/', label: 'home' },
@@ -51,7 +53,7 @@
 					class="{buttonVariants({ variant: 'ghost', size: 'icon' })} justify-self-end"
 					aria-label="Search problems"
 				>
-					<SearchIcon class="size-4" />
+					<Search class="size-4" />
 				</button>
 			</nav>
 
@@ -67,12 +69,15 @@
 				<div class="flex items-center gap-2">
 					<button
 						onclick={() => (searchOpen = true)}
-						class="{buttonVariants({ variant: 'outline' })} flex items-center gap-2 text-sm text-muted-foreground"
+						class="{buttonVariants({
+							variant: 'outline'
+						})} flex items-center gap-2 text-sm text-muted-foreground"
 						aria-label="Search problems"
 					>
-						<SearchIcon class="size-4" />
+						<Search class="size-4" />
 						<span>Search…</span>
-						<kbd class="font-mono text-xs opacity-60">⌘K</kbd>
+						<Kbd.Root class="font-mono">⌘</Kbd.Root>
+						<Kbd.Root class="font-mono">K</Kbd.Root>
 					</button>
 					<NavButtons />
 				</div>

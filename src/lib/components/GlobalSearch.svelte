@@ -1,21 +1,21 @@
 <script lang="ts">
 	import uFuzzy from '@leeoniya/ufuzzy';
-	import files from '$lib/pregen/files.json';
-	import contests from '$lib/pregen/contests.json';
-	import type { YearEntry, ProblemEntry } from '$lib/pregen/types.js';
+	import searchIndex from '$lib/pregen/searchIndex.json';
+	import type { ProblemEntry } from '$lib/pregen/types.js';
 	import type { FileTypeLabel } from '$lib/pregen/types.js';
-	import SearchIcon from '@lucide/svelte/icons/search';
+	import { Search } from '@lucide/svelte';
 	import XIcon from '@lucide/svelte/icons/x';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
 	import { cn } from '$lib/utils.js';
 	import { goto } from '$app/navigation';
 	import { fade, scale } from 'svelte/transition';
+	import * as Kbd from "$lib/components/ui/kbd/index.js";
 
 	let { open = $bindable(false) }: { open?: boolean } = $props();
 
 	// ---------------------------------------------------------------------------
-	// Search index — built once at module load time
+	// Search index — lifted from pregenerated searchIndex.json
 	// ---------------------------------------------------------------------------
 
 	type SearchItem = {
@@ -25,36 +25,19 @@
 		year: number;
 		problem: ProblemEntry;
 		probFTEntries: [string, FileTypeLabel][];
-		/** Pre-lowercased concatenation of all searchable fields. */
 		searchText: string;
 	};
 
-	const index: SearchItem[] = [];
-	for (const contest of contests) {
-		const years = (files as unknown as Record<string, YearEntry[]>)[contest.id] ?? [];
-		const probFTEntries = Object.entries(contest.problemFileTypes);
-		for (const yearEntry of years) {
-			for (const problem of yearEntry.problems) {
-				index.push({
-					contestId: contest.id,
-					contestName: contest.name,
-					contestIcon: contest.icon,
-					year: yearEntry.year,
-					problem,
-					probFTEntries,
-					searchText: [
-						String(yearEntry.year),
-						problem.number,
-						problem.title ?? '',
-						contest.name,
-						contest.id,
-					]
-						.join(' ')
-						.toLowerCase(),
-				});
-			}
-		}
-	}
+	const index: SearchItem[] = searchIndex.items.map((item) => {
+		const meta = searchIndex.contestMeta[item.contestId];
+		return {
+			...item,
+			problem: item.problem as ProblemEntry,
+			contestName: meta.name,
+			contestIcon: meta.icon,
+			probFTEntries: meta.probFTEntries as [string, FileTypeLabel][],
+		};
+	});
 
 	const haystack = index.map((i) => i.searchText);
 
@@ -168,7 +151,7 @@
 		>
 			<!-- Input row -->
 			<div class="flex items-center gap-2 border-b border-border px-4 py-3">
-				<SearchIcon class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+				<Search class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 				<input
 					bind:this={inputEl}
 					bind:value={query}
@@ -262,11 +245,14 @@
 			</div>
 
 			<!-- Footer hints -->
-			<div class="flex items-center gap-4 border-t border-border px-4 py-2 text-xs text-muted-foreground">
-				<span><kbd class="font-mono">↑↓</kbd> navigate</span>
-				<span><kbd class="font-mono">↵</kbd> go to year</span>
-				<span><kbd class="font-mono">Esc</kbd> close</span>
-				<span class="ml-auto font-mono">⌘K</span>
+			<div class="flex items-center gap-4 border-t border-border px-4 py-2 text-xs text-muted-foreground font-mono">
+				<span><Kbd.Root class="font-mono">↑↓</Kbd.Root> navigate</span>
+				<span><Kbd.Root class="font-mono">↵</Kbd.Root> go to year</span>
+				<span><Kbd.Root class="font-mono">Esc</Kbd.Root> close</span>
+				<span class="ml-auto">
+					<Kbd.Root class="font-mono">⌘</Kbd.Root>
+					<Kbd.Root class="font-mono">K</Kbd.Root>
+				</span>
 			</div>
 		</div>
 	</div>

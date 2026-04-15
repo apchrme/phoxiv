@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	let { params }: PageProps = $props();
-	import contests from '$lib/pregen/contests.json';
+	import contests from '$lib/pregen/output/contests.json';
 	import SvelteSeo from 'svelte-seo';
 
-	import files from '$lib/pregen/files.json';
+	import files from '$lib/pregen/output/files.json';
 	import type { YearEntry } from '$lib/pregen/types.js';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
@@ -106,9 +106,8 @@
 					</div>
 
 					<div class="flex flex-col gap-4 p-4">
-
-						{#snippet FileLink(url:string, label:string)}
-							<Badge variant="outline" href={url} target="_blank" class="text-sm px-2.5 py-2.5">
+						{#snippet FileLink(url: string, label: string)}
+							<Badge variant="outline" href={url} target="_blank" class="px-2.5 py-2.5 text-sm">
 								{label}
 							</Badge>
 						{/snippet}
@@ -116,7 +115,7 @@
 						{#if showYearLevel(year) && hasYearLevelContent(year)}
 							<div class="flex flex-col gap-2">
 								{#each year.notes as note (note)}
-									<p class="text-sm text-muted-foreground m-0">{note}</p>
+									<p class="m-0 text-sm text-muted-foreground">{note}</p>
 								{/each}
 								{#if year.extraLinks.length > 0 || Object.keys(year.yearFiles).length > 0}
 									<div class="flex flex-wrap gap-2">

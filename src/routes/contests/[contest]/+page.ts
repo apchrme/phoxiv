@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import contests from '$lib/pregen/contests.json';
+import contests from '$lib/pregen/output/contests.json';
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = async ({ params }) => {

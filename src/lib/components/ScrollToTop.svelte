@@ -6,13 +6,20 @@
 	let visible = $state(false);
 </script>
 
-<svelte:window onscroll={() => { visible = window.scrollY > 400; }} />
+<svelte:window
+	onscroll={() => {
+		visible = window.scrollY > 400;
+	}}
+/>
 
 {#if visible}
 	<button
 		transition:fade={{ duration: 150 }}
 		onclick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-		class="{buttonVariants({ variant: 'outline', size: 'icon' })} fixed bottom-6 right-6 z-50 shadow-md"
+		class="{buttonVariants({
+			variant: 'outline',
+			size: 'icon'
+		})} fixed right-6 bottom-6 z-50 shadow-md"
 		aria-label="Return to top"
 	>
 		<ArrowUpIcon />
