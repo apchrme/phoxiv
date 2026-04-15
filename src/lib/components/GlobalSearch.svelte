@@ -10,7 +10,7 @@
 	import { cn } from '$lib/utils.js';
 	import { goto } from '$app/navigation';
 	import { fade, scale } from 'svelte/transition';
-	import * as Kbd from "$lib/components/ui/kbd/index.js";
+	import * as Kbd from '$lib/components/ui/kbd/index.js';
 
 	let { open = $bindable(false) }: { open?: boolean } = $props();
 
@@ -29,13 +29,13 @@
 	};
 
 	const index: SearchItem[] = searchIndex.items.map((item) => {
-		const meta = searchIndex.contestMeta[item.contestId];
+		const meta = (searchIndex as SearchItem[]).contestMeta[item.contestId];
 		return {
 			...item,
 			problem: item.problem as ProblemEntry,
 			contestName: meta.name,
 			contestIcon: meta.icon,
-			probFTEntries: meta.probFTEntries as [string, FileTypeLabel][],
+			probFTEntries: meta.probFTEntries as [string, FileTypeLabel][]
 		};
 	});
 
@@ -111,7 +111,10 @@
 			return;
 		}
 		if (!open) return;
-		if (e.key === 'Escape') { closeSearch(); return; }
+		if (e.key === 'Escape') {
+			closeSearch();
+			return;
+		}
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
 			focusedIndex = Math.min(focusedIndex + 1, results.length - 1);
@@ -139,7 +142,7 @@
 
 	<!-- Dialog -->
 	<div
-		class="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[15vh] pointer-events-none"
+		class="pointer-events-none fixed inset-0 z-50 flex items-start justify-center px-4 pt-[15vh]"
 		role="presentation"
 	>
 		<div
@@ -183,7 +186,10 @@
 								<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 								<a
 									href="/contests/{item.contestId}#{item.year}"
-									onclick={(e) => { e.preventDefault(); navigateTo(item); }}
+									onclick={(e) => {
+										e.preventDefault();
+										navigateTo(item);
+									}}
 									onmousemove={() => (focusedIndex = i)}
 									class={cn(
 										'flex flex-col gap-1.5 border-b border-border/50 px-4 py-3 transition-colors last:border-0 hover:bg-muted/60',
@@ -245,7 +251,9 @@
 			</div>
 
 			<!-- Footer hints -->
-			<div class="flex items-center gap-4 border-t border-border px-4 py-2 text-xs text-muted-foreground font-mono">
+			<div
+				class="flex items-center gap-4 border-t border-border px-4 py-2 font-mono text-xs text-muted-foreground"
+			>
 				<span><Kbd.Root class="font-mono">↑↓</Kbd.Root> navigate</span>
 				<span><Kbd.Root class="font-mono">↵</Kbd.Root> go to year</span>
 				<span><Kbd.Root class="font-mono">Esc</Kbd.Root> close</span>

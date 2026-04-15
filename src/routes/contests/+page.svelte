@@ -44,7 +44,7 @@
 					type="single"
 					value={activeTag ?? ''}
 					onValueChange={(v) => (activeTag = (v as ContestTag) || null)}
-					class="justify-center flex-wrap sm:flex-nowrap"
+					class="flex-wrap justify-center sm:flex-nowrap"
 				>
 					<ToggleGroup.Item value="">All</ToggleGroup.Item>
 					{#each ALL_TAGS as tag (tag)}

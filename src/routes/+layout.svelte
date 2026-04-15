@@ -13,8 +13,7 @@
 	import GlobalSearch from '$lib/components/GlobalSearch.svelte';
 	import { Search } from '@lucide/svelte';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
-	import * as Kbd from "$lib/components/ui/kbd/index.js";
-
+	import * as Kbd from '$lib/components/ui/kbd/index.js';
 
 	const navLinks = [
 		{ url: '/', label: 'home' },
