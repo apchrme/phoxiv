@@ -137,7 +137,7 @@ extraLinks:
 
 - fix windows not loading flag emojis: https://geyer.dev/blog/windows-flag-emojis/
 - add a "hide solutions" button
-- trap scroll in global search
+- trap scroll in global search. maybe use the dialog component from shadcn?
 
 ### Medium priority
 
