@@ -135,7 +135,7 @@ extraLinks:
 ```
 
 ### Pregeneration
-The website generates hyperlinks and other data based on the `.json` files in `src/lib/pregen/output/`, and does not read the files in `static/`. The files in static are only read by the pregeneration script, which can be run with `bun run pregen`:
+The website generates hyperlinks and other data based on the `.json` files in `src/lib/pregen/output/`, and does not read the files in `static/`. The files in static are converted to the json files by the pregeneration script, which can be run with `bun run pregen`:
 
 ```bash
 bun run pregen
