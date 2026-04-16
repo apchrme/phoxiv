@@ -1652,7 +1652,10 @@
       "problem": {
         "number": "E1",
         "title": "To see invisible!",
-        "files": {}
+        "files": {
+          "problem": "/contests/ipho/2014/E1.pdf",
+          "solution": "/contests/ipho/2014/E1_S.pdf"
+        }
       },
       "searchText": "ipho international physics olympiad 2014 e1 to see invisible!"
     },

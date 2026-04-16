@@ -774,8 +774,6 @@
       "notes": [],
       "extraLinks": [],
       "yearFiles": {
-        "experiment": "/contests/ipho/2014_E.pdf",
-        "experimentSolutions": "/contests/ipho/2014_E_S.pdf",
         "minutes": "/contests/ipho/2014_min.pdf"
       },
       "problems": [
@@ -809,7 +807,10 @@
         {
           "number": "E1",
           "title": "To see invisible!",
-          "files": {}
+          "files": {
+            "problem": "/contests/ipho/2014/E1.pdf",
+            "solution": "/contests/ipho/2014/E1_S.pdf"
+          }
         }
       ]
     },
