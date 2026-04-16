@@ -55,6 +55,7 @@
 	let query = $state('');
 	let focusedIndex = $state(0);
 	let inputEl: HTMLInputElement | undefined = $state();
+	let resultsEl: HTMLDivElement | undefined = $state();
 
 	const results = $derived.by(() => {
 		const q = query.trim();
@@ -67,6 +68,10 @@
 	$effect(() => {
 		query;
 		focusedIndex = 0;
+	});
+
+	$effect(() => {
+		resultsEl?.querySelectorAll('li')[focusedIndex]?.scrollIntoView({ block: 'nearest' });
 	});
 
 	// ---------------------------------------------------------------------------
@@ -160,7 +165,7 @@
 				</div>
 
 				<!-- Results -->
-				<div class="flex min-h-0 flex-1 flex-col overflow-y-auto">
+				<div bind:this={resultsEl} class="flex min-h-0 flex-1 flex-col overflow-y-auto">
 					{#if !query.trim()}
 						<p class="flex flex-1 items-center justify-center text-sm text-muted-foreground">
 							Type to search across all olympiads…
