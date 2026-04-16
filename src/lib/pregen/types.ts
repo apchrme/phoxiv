@@ -65,6 +65,7 @@ export type YearEntry = {
 	problems: ProblemEntry[];
 };
 
+/** Shape of files.json */
 export type FilesJson = Record<string, YearEntry[]>;
 
 /** One entry in the pregenerated search index. */
@@ -76,11 +77,18 @@ export type SearchIndexItem = {
 	searchText: string;
 };
 
+/** Shape of the metadata of the contests in the search index */
 export type ContestSearchIndexEntry = {
 	name: string;
 	icon: string;
 	probFTEntries:[string, FileTypeLabel][];
 };
+
+/** Shape of the search index used in global search */
+export type SearchIndex = {
+	contestMeta: Record<string, ContestSearchIndexEntry>;
+	items: SearchIndexItem[];
+}
 
 export type SearchItem = {
 	contestId: string;
@@ -91,8 +99,4 @@ export type SearchItem = {
 	probFTEntries: [string, FileTypeLabel][];
 	searchText: string;
 };
-export type SearchIndex = {
-	contestMeta: Record<string, ContestSearchIndexEntry>;
-	items: SearchIndexItem[];
-}
 
