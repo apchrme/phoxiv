@@ -10,10 +10,10 @@ Install [bun](https://bun.com)
 # Install dependencies
 bun install
 
-# Run development server
+# Run local development server
 bun run dev
 
-# Deploy to Cloudflare
+# Deploy to Cloudflare (only the website owner can do this)
 bun run deploy
 ```
 
@@ -61,6 +61,7 @@ static
 2. Create an `index.yaml` file in the path `/static/contests/<contest ID>/index.yaml` with the following structure. This is the **contest config**.
 
 ```yaml
+# /static/contests/<contest ID>/index.yaml
 
 name: The Physics Olympiad
 
@@ -108,6 +109,8 @@ The syntax and file location of these files can be found in the directory struct
 Problem titles and external links/comments can be configured in the **year config**, at `/static/contests/<contest id>/<year>/index.yaml`. The year config has the following structure:
 
 ```yaml
+# /static/contests/<contest ID>/<year>/index.yaml
+
 # problem titles
 problems:
   T1:
@@ -132,7 +135,7 @@ extraLinks:
 ```
 
 ### Pregeneration
-The website generates hyperlinks and other data based on the `.json` files in `src/lib/pregen/output/`. To update these files after modifying content in `static/`, run `bun run pregen`.
+The website generates hyperlinks and other data based on the `.json` files in `src/lib/pregen/output/`, and does not read the files in `static/`. The files in static are only read by the pregeneration script, which can be run with `bun run pregen`:
 
 ```bash
 bun run pregen
