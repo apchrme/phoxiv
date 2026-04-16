@@ -160,3 +160,6 @@ bun run pregen
 - include eupho statutes
 - add "collections" to group contests together
 - make links in mdsvex external (use custom components)
+
+## Acknowledgements
+- Mozilla for the [Twemoji-colr](https://github.com/mozilla/twemoji-colr) font.

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import uFuzzy from '@leeoniya/ufuzzy';
 	import searchIndex from '$lib/pregen/output/searchIndex.json';
-	import type { ProblemEntry } from '$lib/pregen/types.js';
-	import type { FileTypeLabel } from '$lib/pregen/types.js';
+	import type { ProblemEntry, SearchIndex, SearchItem } from '$lib/pregen/types.js';
 	import { Search } from '@lucide/svelte';
 	import XIcon from '@lucide/svelte/icons/x';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
@@ -18,24 +17,15 @@
 	// Search index — lifted from pregenerated searchIndex.json
 	// ---------------------------------------------------------------------------
 
-	type SearchItem = {
-		contestId: string;
-		contestName: string;
-		contestIcon: string;
-		year: number;
-		problem: ProblemEntry;
-		probFTEntries: [string, FileTypeLabel][];
-		searchText: string;
-	};
 
 	const index: SearchItem[] = searchIndex.items.map((item) => {
-		const meta = searchIndex.contestMeta[item.contestId];
+		const meta = (searchIndex as unknown as SearchIndex).contestMeta[item.contestId];
 		return {
 			...item,
 			problem: item.problem as ProblemEntry,
 			contestName: meta.name,
 			contestIcon: meta.icon,
-			probFTEntries: meta.probFTEntries as [string, FileTypeLabel][]
+			probFTEntries: meta.probFTEntries
 		};
 	});
 

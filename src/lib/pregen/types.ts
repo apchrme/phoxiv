@@ -75,3 +75,24 @@ export type SearchIndexItem = {
 	/** Pre-lowercased concatenation of all searchable fields, in match-priority order. */
 	searchText: string;
 };
+
+export type ContestSearchIndexEntry = {
+	name: string;
+	icon: string;
+	probFTEntries:[string, FileTypeLabel][];
+};
+
+export type SearchItem = {
+	contestId: string;
+	contestName: string;
+	contestIcon: string;
+	year: number;
+	problem: ProblemEntry;
+	probFTEntries: [string, FileTypeLabel][];
+	searchText: string;
+};
+export type SearchIndex = {
+	contestMeta: Record<string, ContestSearchIndexEntry>;
+	items: SearchIndexItem[];
+}
+
