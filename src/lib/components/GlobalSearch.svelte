@@ -54,8 +54,8 @@
 
 	let query = $state('');
 	let focusedIndex = $state(0);
-	let inputEl: HTMLInputElement | undefined = $state();
-	let resultsEl: HTMLDivElement | undefined = $state();
+	let inputEl: HTMLInputElement = $state();
+	let resultsEl: HTMLDivElement = $state();
 
 	const results = $derived.by(() => {
 		const q = query.trim();
@@ -104,12 +104,12 @@
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
 			focusedIndex = Math.min(focusedIndex + 1, results.length - 1);
-			resultsEl?.querySelectorAll('li')[focusedIndex]?.scrollIntoView({ block: 'nearest' });
+			resultsEl.querySelectorAll('li')[focusedIndex].scrollIntoView({ block: 'nearest' });
 		}
 		if (e.key === 'ArrowUp') {
 			e.preventDefault();
 			focusedIndex = Math.max(focusedIndex - 1, 0);
-			resultsEl?.querySelectorAll('li')[focusedIndex]?.scrollIntoView({ block: 'nearest' });
+			resultsEl.querySelectorAll('li')[focusedIndex].scrollIntoView({ block: 'nearest' });
 		}
 		if (e.key === 'Enter' && results[focusedIndex]) {
 			navigateTo(results[focusedIndex]);
