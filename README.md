@@ -12,9 +12,6 @@ bun install
 
 # Run local development server
 bun run dev
-
-# Deploy to Cloudflare (only the website owner can do this)
-bun run deploy
 ```
 
 This project is built with:
@@ -65,7 +62,7 @@ static
 
 name: The Physics Olympiad
 
-# summary appears on the contests page
+# summary appears on the list of contests
 summary: One of the physics olympiads of all time
 
 icon: ⚛️
@@ -73,7 +70,7 @@ icon: ⚛️
 # tag can be International, Regional, National or Open
 tag: International
 
-# (Optional) Order the contest appears on the contests page.
+# (Optional) Order the contest appears on the list of contests.
 order: 2
 
 # (Optional) additional file types to contain niche files
@@ -106,7 +103,7 @@ There are two "levels" of files you can add:
 
 The syntax and file location of these files can be found in the directory structure above.
 
-Problem titles and external links/comments can be configured in the **year config**, at `/static/contests/<contest id>/<year>/index.yaml`. The year config has the following structure:
+Problem titles and external links/comments can be configured in the optional **year config**, at `/static/contests/<contest id>/<year>/index.yaml`. The year config has the following structure:
 
 ```yaml
 # /static/contests/<contest ID>/<year>/index.yaml
