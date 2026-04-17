@@ -1,5 +1,7 @@
 # phoXiv
 
+phoXiv intends to be a comprehensive archive of the high school physics olympiad problems. In particular, we aim to have the most complete and up-to-date set of files for the canonical physics olympiads, with a secondary goal of showcasing the lesser-known olympiads. 
+
 To contribute, fork the repository, make your own changes on a separate branch, then open a pull request. See the [GitHub docs](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project) for more information.
 
 ## Quickstart
