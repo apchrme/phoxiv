@@ -82,7 +82,7 @@
 				</div>
 			</nav>
 
-			<Separator class="my-3" />
+			<Separator class="mt-3" />
 			<main>
 				{@render children?.()}
 			</main>
