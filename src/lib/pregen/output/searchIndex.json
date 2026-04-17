@@ -771,6 +771,24 @@
           {
             "label": "Presentation"
           }
+        ],
+        [
+          "Part 1",
+          {
+            "label": "Part 1"
+          }
+        ],
+        [
+          "Part 2",
+          {
+            "label": "Part 2"
+          }
+        ],
+        [
+          "Part 3",
+          {
+            "label": "Part 3"
+          }
         ]
       ]
     },
@@ -812,6 +830,24 @@
           "presentation",
           {
             "label": "Presentation"
+          }
+        ],
+        [
+          "Part 1",
+          {
+            "label": "Part 1"
+          }
+        ],
+        [
+          "Part 2",
+          {
+            "label": "Part 2"
+          }
+        ],
+        [
+          "Part 3",
+          {
+            "label": "Part 3"
           }
         ]
       ]
@@ -4104,6 +4140,18 @@
     },
     {
       "contestId": "rupho-w",
+      "year": 2026,
+      "problem": {
+        "number": "PE+",
+        "files": {
+          "problem": "/contests/rupho-w/2026/PE+.pdf",
+          "solution": "/contests/rupho-w/2026/PE+_S.pdf"
+        }
+      },
+      "searchText": "rupho-w russian team selection test (w) 2026 pe+ "
+    },
+    {
+      "contestId": "rupho-w",
       "year": 2025,
       "problem": {
         "number": "T1",
@@ -4317,6 +4365,18 @@
         }
       },
       "searchText": "rupho-w russian team selection test (w) 2021 t6 "
+    },
+    {
+      "contestId": "rupho-w",
+      "year": 2021,
+      "problem": {
+        "number": "T7",
+        "files": {
+          "problem": "/contests/rupho-w/2021/T7.pdf",
+          "solution": "/contests/rupho-w/2021/T7_S.pdf"
+        }
+      },
+      "searchText": "rupho-w russian team selection test (w) 2021 t7 "
     },
     {
       "contestId": "rupho-w",
@@ -4933,6 +4993,18 @@
       "contestId": "rupho-x",
       "year": 2021,
       "problem": {
+        "number": "T7",
+        "files": {
+          "problem": "/contests/rupho-x/2021/T7.pdf",
+          "solution": "/contests/rupho-x/2021/T7_S.pdf"
+        }
+      },
+      "searchText": "rupho-x russian team selection test (x) 2021 t7 "
+    },
+    {
+      "contestId": "rupho-x",
+      "year": 2021,
+      "problem": {
         "number": "E1",
         "files": {
           "problem": "/contests/rupho-x/2021/E1.pdf",
@@ -5036,6 +5108,18 @@
         }
       },
       "searchText": "rupho-x russian team selection test (x) 2020 t6 "
+    },
+    {
+      "contestId": "rupho-x",
+      "year": 2020,
+      "problem": {
+        "number": "T7",
+        "files": {
+          "problem": "/contests/rupho-x/2020/T7.pdf",
+          "solution": "/contests/rupho-x/2020/T7_S.pdf"
+        }
+      },
+      "searchText": "rupho-x russian team selection test (x) 2020 t7 "
     },
     {
       "contestId": "rupho-x",
@@ -5146,6 +5230,30 @@
     },
     {
       "contestId": "rupho-x",
+      "year": 2019,
+      "problem": {
+        "number": "T7",
+        "files": {
+          "problem": "/contests/rupho-x/2019/T7.pdf",
+          "solution": "/contests/rupho-x/2019/T7_S.pdf"
+        }
+      },
+      "searchText": "rupho-x russian team selection test (x) 2019 t7 "
+    },
+    {
+      "contestId": "rupho-x",
+      "year": 2019,
+      "problem": {
+        "number": "T8",
+        "files": {
+          "problem": "/contests/rupho-x/2019/T8.pdf",
+          "solution": "/contests/rupho-x/2019/T8_S.pdf"
+        }
+      },
+      "searchText": "rupho-x russian team selection test (x) 2019 t8 "
+    },
+    {
+      "contestId": "rupho-x",
       "year": 2018,
       "problem": {
         "number": "T1",
@@ -5218,6 +5326,42 @@
     },
     {
       "contestId": "rupho-x",
+      "year": 2018,
+      "problem": {
+        "number": "T7",
+        "files": {
+          "problem": "/contests/rupho-x/2018/T7.pdf",
+          "solution": "/contests/rupho-x/2018/T7_S.pdf"
+        }
+      },
+      "searchText": "rupho-x russian team selection test (x) 2018 t7 "
+    },
+    {
+      "contestId": "rupho-x",
+      "year": 2018,
+      "problem": {
+        "number": "T8",
+        "files": {
+          "problem": "/contests/rupho-x/2018/T8.pdf",
+          "solution": "/contests/rupho-x/2018/T8_S.pdf"
+        }
+      },
+      "searchText": "rupho-x russian team selection test (x) 2018 t8 "
+    },
+    {
+      "contestId": "rupho-x",
+      "year": 2017,
+      "problem": {
+        "number": "T1",
+        "files": {
+          "Part 1": "/contests/rupho-x/2017/T1_1.pdf",
+          "Part 2": "/contests/rupho-x/2017/T1_2.pdf"
+        }
+      },
+      "searchText": "rupho-x russian team selection test (x) 2017 t1 "
+    },
+    {
+      "contestId": "rupho-x",
       "year": 2017,
       "problem": {
         "number": "T2",
@@ -5226,6 +5370,18 @@
         }
       },
       "searchText": "rupho-x russian team selection test (x) 2017 t2 "
+    },
+    {
+      "contestId": "rupho-x",
+      "year": 2017,
+      "problem": {
+        "number": "T3",
+        "files": {
+          "Part 1": "/contests/rupho-x/2017/T3_1.pdf",
+          "Part 2": "/contests/rupho-x/2017/T3_2.pdf"
+        }
+      },
+      "searchText": "rupho-x russian team selection test (x) 2017 t3 "
     },
     {
       "contestId": "rupho-x",
@@ -5251,6 +5407,18 @@
     },
     {
       "contestId": "rupho-x",
+      "year": 2017,
+      "problem": {
+        "number": "T6",
+        "files": {
+          "Part 1": "/contests/rupho-x/2017/T6_1.pdf",
+          "Part 2": "/contests/rupho-x/2017/T6_2.pdf"
+        }
+      },
+      "searchText": "rupho-x russian team selection test (x) 2017 t6 "
+    },
+    {
+      "contestId": "rupho-x",
       "year": 2016,
       "problem": {
         "number": "T1",
@@ -5271,6 +5439,19 @@
         }
       },
       "searchText": "rupho-x russian team selection test (x) 2016 t2 "
+    },
+    {
+      "contestId": "rupho-x",
+      "year": 2016,
+      "problem": {
+        "number": "T3",
+        "files": {
+          "Part 1": "/contests/rupho-x/2016/T3_1.pdf",
+          "Part 2": "/contests/rupho-x/2016/T3_2.pdf",
+          "Part 3": "/contests/rupho-x/2016/T3_3.pdf"
+        }
+      },
+      "searchText": "rupho-x russian team selection test (x) 2016 t3 "
     },
     {
       "contestId": "rupho-x",
@@ -5786,6 +5967,42 @@
     },
     {
       "contestId": "rupho-y",
+      "year": 2022,
+      "problem": {
+        "number": "PE1",
+        "files": {
+          "problem": "/contests/rupho-y/2022/PE1.pdf",
+          "solution": "/contests/rupho-y/2022/PE1_S.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2022 pe1 "
+    },
+    {
+      "contestId": "rupho-y",
+      "year": 2022,
+      "problem": {
+        "number": "PE2",
+        "files": {
+          "problem": "/contests/rupho-y/2022/PE2.pdf",
+          "solution": "/contests/rupho-y/2022/PE2_S.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2022 pe2 "
+    },
+    {
+      "contestId": "rupho-y",
+      "year": 2022,
+      "problem": {
+        "number": "PE3",
+        "files": {
+          "problem": "/contests/rupho-y/2022/PE3.pdf",
+          "solution": "/contests/rupho-y/2022/PE3_S.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2022 pe3 "
+    },
+    {
+      "contestId": "rupho-y",
       "year": 2021,
       "problem": {
         "number": "T1",
@@ -5870,6 +6087,42 @@
     },
     {
       "contestId": "rupho-y",
+      "year": 2021,
+      "problem": {
+        "number": "PE1",
+        "files": {
+          "problem": "/contests/rupho-y/2021/PE1.pdf",
+          "solution": "/contests/rupho-y/2021/PE1_S.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2021 pe1 "
+    },
+    {
+      "contestId": "rupho-y",
+      "year": 2021,
+      "problem": {
+        "number": "PE2",
+        "files": {
+          "problem": "/contests/rupho-y/2021/PE2.pdf",
+          "solution": "/contests/rupho-y/2021/PE2_S.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2021 pe2 "
+    },
+    {
+      "contestId": "rupho-y",
+      "year": 2021,
+      "problem": {
+        "number": "PE3",
+        "files": {
+          "problem": "/contests/rupho-y/2021/PE3.pdf",
+          "solution": "/contests/rupho-y/2021/PE3_S.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2021 pe3 "
+    },
+    {
+      "contestId": "rupho-y",
       "year": 2020,
       "problem": {
         "number": "T1",
@@ -5939,6 +6192,18 @@
         }
       },
       "searchText": "rupho-y russian team selection test (y) 2020 t6 "
+    },
+    {
+      "contestId": "rupho-y",
+      "year": 2020,
+      "problem": {
+        "number": "T7",
+        "files": {
+          "problem": "/contests/rupho-y/2020/T7.pdf",
+          "solution": "/contests/rupho-y/2020/T7_S.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2020 t7 "
     },
     {
       "contestId": "rupho-y",
@@ -6119,6 +6384,19 @@
       "contestId": "rupho-y",
       "year": 2017,
       "problem": {
+        "number": "T1",
+        "files": {
+          "Part 1": "/contests/rupho-y/2017/T1_1.pdf",
+          "Part 2": "/contests/rupho-y/2017/T1_2.pdf",
+          "Part 3": "/contests/rupho-y/2017/T1_3.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2017 t1 "
+    },
+    {
+      "contestId": "rupho-y",
+      "year": 2017,
+      "problem": {
         "number": "T2",
         "files": {
           "problem": "/contests/rupho-y/2017/T2.pdf",
@@ -6220,6 +6498,30 @@
     },
     {
       "contestId": "rupho-y",
+      "year": 2016,
+      "problem": {
+        "number": "T5",
+        "files": {
+          "Part 1": "/contests/rupho-y/2016/T5_1.pdf",
+          "Part 2": "/contests/rupho-y/2016/T5_2.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2016 t5 "
+    },
+    {
+      "contestId": "rupho-y",
+      "year": 2016,
+      "problem": {
+        "number": "T6",
+        "files": {
+          "Part 1": "/contests/rupho-y/2016/T6_1.pdf",
+          "Part 2": "/contests/rupho-y/2016/T6_2.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2016 t6 "
+    },
+    {
+      "contestId": "rupho-y",
       "year": 2014,
       "problem": {
         "number": "T1",
@@ -6272,6 +6574,64 @@
         }
       },
       "searchText": "rupho-y russian team selection test (y) 2014 t5 "
+    },
+    {
+      "contestId": "rupho-y",
+      "year": 2014,
+      "problem": {
+        "number": "T7",
+        "files": {
+          "problem": "/contests/rupho-y/2014/T7.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2014 t7 "
+    },
+    {
+      "contestId": "rupho-y",
+      "year": 2014,
+      "problem": {
+        "number": "T8",
+        "files": {
+          "Part 1": "/contests/rupho-y/2014/T8_1.pdf",
+          "Part 2": "/contests/rupho-y/2014/T8_2.pdf",
+          "Part 3": "/contests/rupho-y/2014/T8_3.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2014 t8 "
+    },
+    {
+      "contestId": "rupho-y",
+      "year": 2014,
+      "problem": {
+        "number": "T10",
+        "files": {
+          "problem": "/contests/rupho-y/2014/T10.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2014 t10 "
+    },
+    {
+      "contestId": "rupho-y",
+      "year": 2014,
+      "problem": {
+        "number": "T11",
+        "files": {
+          "problem": "/contests/rupho-y/2014/T11.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2014 t11 "
+    },
+    {
+      "contestId": "rupho-y",
+      "year": 2014,
+      "problem": {
+        "number": "T12",
+        "files": {
+          "Part 1": "/contests/rupho-y/2014/T12_1.pdf",
+          "Part 2": "/contests/rupho-y/2014/T12_2.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2014 t12 "
     },
     {
       "contestId": "rupho-y",
@@ -6339,6 +6699,40 @@
         }
       },
       "searchText": "rupho-y russian team selection test (y) 2013 t6 "
+    },
+    {
+      "contestId": "rupho-y",
+      "year": 2013,
+      "problem": {
+        "number": "T7",
+        "files": {
+          "problem": "/contests/rupho-y/2013/T7.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2013 t7 "
+    },
+    {
+      "contestId": "rupho-y",
+      "year": 2013,
+      "problem": {
+        "number": "T8",
+        "files": {
+          "problem": "/contests/rupho-y/2013/T8.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2013 t8 "
+    },
+    {
+      "contestId": "rupho-y",
+      "year": 2013,
+      "problem": {
+        "number": "T9",
+        "files": {
+          "Part 1": "/contests/rupho-y/2013/T9_1.pdf",
+          "Part 2": "/contests/rupho-y/2013/T9_2.pdf"
+        }
+      },
+      "searchText": "rupho-y russian team selection test (y) 2013 t9 "
     },
     {
       "contestId": "rupho-y",

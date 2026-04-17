@@ -68,7 +68,7 @@ export type YearEntry = {
 /** Shape of files.json */
 export type FilesJson = Record<string, YearEntry[]>;
 
-/** One entry in the pregenerated search index. */
+/** One problem entry in the pregenerated search index. */
 export type SearchIndexItem = {
 	contestId: string;
 	year: number;
@@ -90,6 +90,7 @@ export type SearchIndex = {
 	items: SearchIndexItem[];
 }
 
+/** A problem entry with the extra properties needed for the UI in GlobalSearch.svelte */
 export type SearchItem = {
 	contestId: string;
 	contestName: string;
