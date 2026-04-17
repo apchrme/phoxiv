@@ -8,19 +8,19 @@
 	}
 
 	h3 {
-		@apply text-lg leading-6 font-semibold sm:text-xl;
+		@apply text-lg font-semibold sm:text-xl;
 	}
 
 	p {
-		@apply mb-2 text-justify text-base leading-relaxed;
+		@apply text-base leading-relaxed;
 	}
 
 	span {
-		@apply text-justify text-base leading-relaxed font-normal text-muted-foreground;
+		@apply text-base leading-relaxed text-muted-foreground;
 	}
 
 	a {
-		@apply text-base leading-relaxed font-medium text-primary decoration-2 underline-offset-4 transition-all hover:text-primary/50;
+		@apply text-base leading-relaxed text-primary hover:text-primary/50;
 	}
 
 	button {
