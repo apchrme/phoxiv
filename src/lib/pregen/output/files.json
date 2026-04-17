@@ -5128,6 +5128,13 @@
             "problem": "/contests/rupho-w/2026/PE.pdf",
             "solution": "/contests/rupho-w/2026/PE_S.pdf"
           }
+        },
+        {
+          "number": "PE+",
+          "files": {
+            "problem": "/contests/rupho-w/2026/PE+.pdf",
+            "solution": "/contests/rupho-w/2026/PE+_S.pdf"
+          }
         }
       ]
     },
@@ -5293,6 +5300,13 @@
           "files": {
             "problem": "/contests/rupho-w/2021/T6.pdf",
             "solution": "/contests/rupho-w/2021/T6_S.pdf"
+          }
+        },
+        {
+          "number": "T7",
+          "files": {
+            "problem": "/contests/rupho-w/2021/T7.pdf",
+            "solution": "/contests/rupho-w/2021/T7_S.pdf"
           }
         },
         {
@@ -5702,6 +5716,13 @@
           }
         },
         {
+          "number": "T7",
+          "files": {
+            "problem": "/contests/rupho-x/2021/T7.pdf",
+            "solution": "/contests/rupho-x/2021/T7_S.pdf"
+          }
+        },
+        {
           "number": "E1",
           "files": {
             "problem": "/contests/rupho-x/2021/E1.pdf",
@@ -5773,6 +5794,13 @@
           }
         },
         {
+          "number": "T7",
+          "files": {
+            "problem": "/contests/rupho-x/2020/T7.pdf",
+            "solution": "/contests/rupho-x/2020/T7_S.pdf"
+          }
+        },
+        {
           "number": "E1",
           "files": {
             "problem": "/contests/rupho-x/2020/E1.pdf",
@@ -5841,6 +5869,20 @@
             "problem": "/contests/rupho-x/2019/T6.pdf",
             "solution": "/contests/rupho-x/2019/T6_S.pdf"
           }
+        },
+        {
+          "number": "T7",
+          "files": {
+            "problem": "/contests/rupho-x/2019/T7.pdf",
+            "solution": "/contests/rupho-x/2019/T7_S.pdf"
+          }
+        },
+        {
+          "number": "T8",
+          "files": {
+            "problem": "/contests/rupho-x/2019/T8.pdf",
+            "solution": "/contests/rupho-x/2019/T8_S.pdf"
+          }
         }
       ]
     },
@@ -5891,6 +5933,20 @@
             "problem": "/contests/rupho-x/2018/T6.pdf",
             "solution": "/contests/rupho-x/2018/T6_S.pdf"
           }
+        },
+        {
+          "number": "T7",
+          "files": {
+            "problem": "/contests/rupho-x/2018/T7.pdf",
+            "solution": "/contests/rupho-x/2018/T7_S.pdf"
+          }
+        },
+        {
+          "number": "T8",
+          "files": {
+            "problem": "/contests/rupho-x/2018/T8.pdf",
+            "solution": "/contests/rupho-x/2018/T8_S.pdf"
+          }
         }
       ]
     },
@@ -5901,9 +5957,23 @@
       "yearFiles": {},
       "problems": [
         {
+          "number": "T1",
+          "files": {
+            "Part 1": "/contests/rupho-x/2017/T1_1.pdf",
+            "Part 2": "/contests/rupho-x/2017/T1_2.pdf"
+          }
+        },
+        {
           "number": "T2",
           "files": {
             "problem": "/contests/rupho-x/2017/T2.pdf"
+          }
+        },
+        {
+          "number": "T3",
+          "files": {
+            "Part 1": "/contests/rupho-x/2017/T3_1.pdf",
+            "Part 2": "/contests/rupho-x/2017/T3_2.pdf"
           }
         },
         {
@@ -5916,6 +5986,13 @@
           "number": "T5",
           "files": {
             "problem": "/contests/rupho-x/2017/T5.pdf"
+          }
+        },
+        {
+          "number": "T6",
+          "files": {
+            "Part 1": "/contests/rupho-x/2017/T6_1.pdf",
+            "Part 2": "/contests/rupho-x/2017/T6_2.pdf"
           }
         }
       ]
@@ -5937,6 +6014,14 @@
           "number": "T2",
           "files": {
             "problem": "/contests/rupho-x/2016/T2.pdf"
+          }
+        },
+        {
+          "number": "T3",
+          "files": {
+            "Part 1": "/contests/rupho-x/2016/T3_1.pdf",
+            "Part 2": "/contests/rupho-x/2016/T3_2.pdf",
+            "Part 3": "/contests/rupho-x/2016/T3_3.pdf"
           }
         },
         {
@@ -6277,6 +6362,27 @@
             "problem": "/contests/rupho-y/2022/E1.pdf",
             "solution": "/contests/rupho-y/2022/E1_S.pdf"
           }
+        },
+        {
+          "number": "PE1",
+          "files": {
+            "problem": "/contests/rupho-y/2022/PE1.pdf",
+            "solution": "/contests/rupho-y/2022/PE1_S.pdf"
+          }
+        },
+        {
+          "number": "PE2",
+          "files": {
+            "problem": "/contests/rupho-y/2022/PE2.pdf",
+            "solution": "/contests/rupho-y/2022/PE2_S.pdf"
+          }
+        },
+        {
+          "number": "PE3",
+          "files": {
+            "problem": "/contests/rupho-y/2022/PE3.pdf",
+            "solution": "/contests/rupho-y/2022/PE3_S.pdf"
+          }
         }
       ]
     },
@@ -6334,6 +6440,27 @@
             "problem": "/contests/rupho-y/2021/E1.pdf",
             "solution": "/contests/rupho-y/2021/E1_S.pdf"
           }
+        },
+        {
+          "number": "PE1",
+          "files": {
+            "problem": "/contests/rupho-y/2021/PE1.pdf",
+            "solution": "/contests/rupho-y/2021/PE1_S.pdf"
+          }
+        },
+        {
+          "number": "PE2",
+          "files": {
+            "problem": "/contests/rupho-y/2021/PE2.pdf",
+            "solution": "/contests/rupho-y/2021/PE2_S.pdf"
+          }
+        },
+        {
+          "number": "PE3",
+          "files": {
+            "problem": "/contests/rupho-y/2021/PE3.pdf",
+            "solution": "/contests/rupho-y/2021/PE3_S.pdf"
+          }
         }
       ]
     },
@@ -6383,6 +6510,13 @@
           "files": {
             "problem": "/contests/rupho-y/2020/T6.pdf",
             "solution": "/contests/rupho-y/2020/T6_S.pdf"
+          }
+        },
+        {
+          "number": "T7",
+          "files": {
+            "problem": "/contests/rupho-y/2020/T7.pdf",
+            "solution": "/contests/rupho-y/2020/T7_S.pdf"
           }
         },
         {
@@ -6510,6 +6644,14 @@
       "yearFiles": {},
       "problems": [
         {
+          "number": "T1",
+          "files": {
+            "Part 1": "/contests/rupho-y/2017/T1_1.pdf",
+            "Part 2": "/contests/rupho-y/2017/T1_2.pdf",
+            "Part 3": "/contests/rupho-y/2017/T1_3.pdf"
+          }
+        },
+        {
           "number": "T2",
           "files": {
             "problem": "/contests/rupho-y/2017/T2.pdf",
@@ -6574,6 +6716,20 @@
           "files": {
             "problem": "/contests/rupho-y/2016/T4.pdf"
           }
+        },
+        {
+          "number": "T5",
+          "files": {
+            "Part 1": "/contests/rupho-y/2016/T5_1.pdf",
+            "Part 2": "/contests/rupho-y/2016/T5_2.pdf"
+          }
+        },
+        {
+          "number": "T6",
+          "files": {
+            "Part 1": "/contests/rupho-y/2016/T6_1.pdf",
+            "Part 2": "/contests/rupho-y/2016/T6_2.pdf"
+          }
         }
       ]
     },
@@ -6611,6 +6767,39 @@
           "number": "T5",
           "files": {
             "problem": "/contests/rupho-y/2014/T5.pdf"
+          }
+        },
+        {
+          "number": "T7",
+          "files": {
+            "problem": "/contests/rupho-y/2014/T7.pdf"
+          }
+        },
+        {
+          "number": "T8",
+          "files": {
+            "Part 1": "/contests/rupho-y/2014/T8_1.pdf",
+            "Part 2": "/contests/rupho-y/2014/T8_2.pdf",
+            "Part 3": "/contests/rupho-y/2014/T8_3.pdf"
+          }
+        },
+        {
+          "number": "T10",
+          "files": {
+            "problem": "/contests/rupho-y/2014/T10.pdf"
+          }
+        },
+        {
+          "number": "T11",
+          "files": {
+            "problem": "/contests/rupho-y/2014/T11.pdf"
+          }
+        },
+        {
+          "number": "T12",
+          "files": {
+            "Part 1": "/contests/rupho-y/2014/T12_1.pdf",
+            "Part 2": "/contests/rupho-y/2014/T12_2.pdf"
           }
         }
       ]
@@ -6656,6 +6845,25 @@
           "files": {
             "problem": "/contests/rupho-y/2013/T6.pdf",
             "solution": "/contests/rupho-y/2013/T6_S.pdf"
+          }
+        },
+        {
+          "number": "T7",
+          "files": {
+            "problem": "/contests/rupho-y/2013/T7.pdf"
+          }
+        },
+        {
+          "number": "T8",
+          "files": {
+            "problem": "/contests/rupho-y/2013/T8.pdf"
+          }
+        },
+        {
+          "number": "T9",
+          "files": {
+            "Part 1": "/contests/rupho-y/2013/T9_1.pdf",
+            "Part 2": "/contests/rupho-y/2013/T9_2.pdf"
           }
         }
       ]
