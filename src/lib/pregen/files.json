@@ -5051,5 +5051,156 @@
       },
       "problems": []
     }
+  ],
+  "bdpho": [
+    {
+      "year": 2025,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "SectionA": "/contests/bdpho/2025_1.pdf",
+        "SectionB": "/contests/bdpho/2025_2.pdf",
+        "SectionC": "/contests/bdpho/2025_3.pdf",
+        "SectionD": "/contests/bdpho/2025_4.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2024,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "SectionA": "/contests/bdpho/2024_1.pdf",
+        "SectionB": "/contests/bdpho/2024_2.pdf",
+        "SectionC": "/contests/bdpho/2024_3.pdf",
+        "SectionD": "/contests/bdpho/2024_4.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2023,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "SectionA": "/contests/bdpho/2023_1.pdf",
+        "SectionB": "/contests/bdpho/2023_2.pdf",
+        "SectionC": "/contests/bdpho/2023_3.pdf",
+        "SectionD": "/contests/bdpho/2023_4.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2022,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "SectionA": "/contests/bdpho/2022_1.pdf",
+        "SectionB": "/contests/bdpho/2022_2.pdf",
+        "SectionC": "/contests/bdpho/2022_3.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2021,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "SectionA": "/contests/bdpho/2021_1.pdf",
+        "SectionB": "/contests/bdpho/2021_2.pdf",
+        "SectionC": "/contests/bdpho/2021_3.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2020,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "SectionB": "/contests/bdpho/2020_2.pdf",
+        "SectionC": "/contests/bdpho/2020_3.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2019,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "SectionC": "/contests/bdpho/2019_3.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2018,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "SectionB": "/contests/bdpho/2018_2.pdf",
+        "SectionC": "/contests/bdpho/2018_3.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2017,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "SectionA": "/contests/bdpho/2017_1.pdf",
+        "SectionB": "/contests/bdpho/2017_2.pdf",
+        "SectionC": "/contests/bdpho/2017_3.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2016,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "SectionB": "/contests/bdpho/2016_2.pdf",
+        "SectionC": "/contests/bdpho/2016_3.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2015,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "SectionB": "/contests/bdpho/2015_2.pdf",
+        "SectionC": "/contests/bdpho/2015_3.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2014,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "SectionC": "/contests/bdpho/2014_3.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2013,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "SectionA": "/contests/bdpho/2013_1.pdf",
+        "SectionB": "/contests/bdpho/2013_2.pdf",
+        "SectionC": "/contests/bdpho/2013_3.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2012,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "SectionA": "/contests/bdpho/2012_1.pdf",
+        "SectionB": "/contests/bdpho/2012_2.pdf",
+        "SectionC": "/contests/bdpho/2012_3.pdf"
+      },
+      "problems": []
+    }
   ]
 }
