@@ -9,7 +9,7 @@
 	<NavigationMenu.Link
 		href={url}
 		aria-current={page.url.pathname == url}
-		class="rounded-full py-2 text-base text-foreground {cn(
+		class="rounded-full py-2 text-base font-medium text-foreground {cn(
 			page.url.pathname == url && 'bg-muted'
 		)} hover:text-primary ">{label}</NavigationMenu.Link
 	>

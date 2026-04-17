@@ -73,13 +73,15 @@
 	keywords="problems, solutions, olympiad, physics"
 />
 
+<div class="my-5 md:my-10">
 <h1>{contest.name}</h1>
 
 {#if contest?.descriptionHtml}
-	<div class="mb-4 max-w-none">
+	<div class="mb-4 max-w-none prose">
 		{@html contest.descriptionHtml}
 	</div>
 {/if}
+</div>
 
 <section class="my-4">
 	<div class="mb-4">
