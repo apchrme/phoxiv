@@ -5101,6 +5101,473 @@
       "problems": []
     }
   ],
+  "bpho-r1": [
+    {
+      "year": 2024,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "FirstSection": "/contests/bpho-r1/2024_1.pdf",
+        "SecondSection": "/contests/bpho-r1/2024_2.pdf",
+        "FirstSectionSolutions": "/contests/bpho-r1/2024_1_S.pdf",
+        "SecondSectionSolutions": "/contests/bpho-r1/2024_2_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2023,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2023_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2023_1.pdf",
+        "SecondSection": "/contests/bpho-r1/2023_2.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2022,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2022_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2022_1.pdf",
+        "SecondSection": "/contests/bpho-r1/2022_2.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2021,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2021_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2021_1.pdf",
+        "SecondSection": "/contests/bpho-r1/2021_2.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2020,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2020_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2020_1.pdf",
+        "SecondSection": "/contests/bpho-r1/2020_2.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2019,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2019_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2019_1.pdf",
+        "SecondSection": "/contests/bpho-r1/2019_2.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2018,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2018_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2018_1.pdf",
+        "SecondSection": "/contests/bpho-r1/2018_2.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2017,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2017_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2017_1.pdf",
+        "SecondSection": "/contests/bpho-r1/2017_2.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2016,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2016_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2016_1.pdf",
+        "SecondSection": "/contests/bpho-r1/2016_2.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2015,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2015_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2015_1.pdf",
+        "SecondSection": "/contests/bpho-r1/2015_2.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2014,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2014_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2014_1.pdf",
+        "SecondSection": "/contests/bpho-r1/2014_2.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2013,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2013_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2013_1.pdf",
+        "SecondSection": "/contests/bpho-r1/2013_2.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2012,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2012_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2012_1.pdf",
+        "SecondSection": "/contests/bpho-r1/2012_2.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2011,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2011_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2011_1.pdf",
+        "SecondSection": "/contests/bpho-r1/2011_2.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2010,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2010_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2010_1.pdf",
+        "SecondSection": "/contests/bpho-r1/2010_2.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2009,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2009_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2009_1.pdf",
+        "SecondSection": "/contests/bpho-r1/2009_2.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2008,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2008_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2008_1.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2007,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2007_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2007_1.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2006,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2006_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2006_1.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2005,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2005_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2005_1.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2004,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2004_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2004_1.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2003,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2003_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2003_1.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2002,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2002_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2002_1.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2001,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "solutions": "/contests/bpho-r1/2001_S.pdf",
+        "FirstSection": "/contests/bpho-r1/2001_1.pdf"
+      },
+      "problems": []
+    }
+  ],
+  "bpho-r2": [
+    {
+      "year": 2025,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2025.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2024,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2024.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2023,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2023.pdf",
+        "solutions": "/contests/bpho-r2/2023_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2022,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2022.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2021,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2021.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2020,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2020.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2019,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2019.pdf",
+        "solutions": "/contests/bpho-r2/2019_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2018,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2018.pdf",
+        "solutions": "/contests/bpho-r2/2018_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2017,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2017.pdf",
+        "solutions": "/contests/bpho-r2/2017_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2016,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2016.pdf",
+        "solutions": "/contests/bpho-r2/2016_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2015,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2015.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2014,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2014.pdf",
+        "solutions": "/contests/bpho-r2/2014_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2013,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2013.pdf",
+        "solutions": "/contests/bpho-r2/2013_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2012,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2012.pdf",
+        "solutions": "/contests/bpho-r2/2012_S.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2011,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2011.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2010,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2010.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2008,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2008.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2007,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2007.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2006,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2006.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2005,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2005.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2004,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2004.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2003,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "problems": "/contests/bpho-r2/2003.pdf"
+      },
+      "problems": []
+    }
+  ],
   "kphc": [
     {
       "year": 2022,
