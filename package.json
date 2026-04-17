@@ -1,26 +1,6 @@
 {
 	"name": "phoxiv",
-	"private": true,
 	"version": "0.0.1",
-	"type": "module",
-	"scripts": {
-		"dev": "bunx --bun vite dev",
-		"build": "bunx --bun vite build",
-		"preview": "bun run build && wrangler dev",
-		"deploy": "bun run build && wrangler deploy",
-		"prepare": "svelte-kit sync || echo ''",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"lint": "prettier --check . && eslint .",
-		"format": "prettier --write .",
-		"db:push": "drizzle-kit push",
-		"db:generate": "drizzle-kit generate",
-		"db:migrate": "wrangler d1 migrations apply DB",
-		"db:migrate-remote": "wrangler d1 migrations apply DB --remote",
-		"db:studio": "drizzle-kit studio",
-		"cf-typegen": "wrangler types ./src/worker-configuration.d.ts",
-		"pregen": "bun run ./src/lib/pregen/generate.ts"
-	},
 	"devDependencies": {
 		"@catppuccin/tailwindcss": "^1.0.0",
 		"@eslint/compat": "^2.0.5",
@@ -28,6 +8,7 @@
 		"@fontsource-variable/dm-sans": "^5.2.8",
 		"@fontsource-variable/jetbrains-mono": "^5.2.8",
 		"@internationalized/date": "^3.12.0",
+		"@leeoniya/ufuzzy": "^1.0.19",
 		"@lucide/svelte": "^1.8.0",
 		"@sveltejs/adapter-auto": "^7.0.1",
 		"@sveltejs/adapter-cloudflare": "^7.2.8",
@@ -65,7 +46,24 @@
 		"vite": "^8.0.8",
 		"wrangler": "^4.81.1"
 	},
-	"dependencies": {
-		"@leeoniya/ufuzzy": "^1.0.19"
-	}
+	"private": true,
+	"scripts": {
+		"dev": "bunx --bun vite dev",
+		"build": "bunx --bun vite build",
+		"preview": "bun run build && wrangler dev",
+		"deploy": "bun run build && wrangler deploy",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"lint": "prettier --check . && eslint .",
+		"format": "prettier --write .",
+		"db:push": "drizzle-kit push",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "wrangler d1 migrations apply DB",
+		"db:migrate-remote": "wrangler d1 migrations apply DB --remote",
+		"db:studio": "drizzle-kit studio",
+		"cf-typegen": "wrangler types ./src/worker-configuration.d.ts",
+		"pregen": "bun run ./src/lib/pregen/generate.ts"
+	},
+	"type": "module"
 }

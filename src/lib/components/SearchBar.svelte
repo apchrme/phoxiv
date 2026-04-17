@@ -14,8 +14,8 @@
 	} = $props();
 </script>
 
-<div class="flex flex-col items-center gap-4 sm:flex-row">
-	<div class="flex grow flex-col gap-6">
+<div class="flex flex-col items-center gap-4 md:flex-row">
+	<div class="w-full">
 		<InputGroup.Root>
 			<InputGroup.Input type="search" {placeholder} bind:value />
 			<InputGroup.Addon>

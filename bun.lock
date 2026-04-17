@@ -4,9 +4,6 @@
   "workspaces": {
     "": {
       "name": "phoxiv",
-      "dependencies": {
-        "@leeoniya/ufuzzy": "^1.0.19",
-      },
       "devDependencies": {
         "@catppuccin/tailwindcss": "^1.0.0",
         "@eslint/compat": "^2.0.5",
@@ -14,6 +11,7 @@
         "@fontsource-variable/dm-sans": "^5.2.8",
         "@fontsource-variable/jetbrains-mono": "^5.2.8",
         "@internationalized/date": "^3.12.0",
+        "@leeoniya/ufuzzy": "^1.0.19",
         "@lucide/svelte": "^1.8.0",
         "@sveltejs/adapter-auto": "^7.0.1",
         "@sveltejs/adapter-cloudflare": "^7.2.8",
