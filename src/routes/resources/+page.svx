@@ -1,7 +1,8 @@
-<div class="my-5 md:my-10">
-    <h1>Resources</h1>
-    <p class="m-0 text-muted-foreground">A collection of resources I find to be the most useful</p>
-</div>
+<script lang="ts">
+    import Title from '$lib/components/Title.svelte';
+</script>
+
+<Title title="Resources" description="A collection of resources I find to be the most useful."/>
 
 [Kevin Zhou's handouts](https://knzhou.github.io/#physics-olympiad-handouts) - **the best resource for learning Olympiad physics**. Many important resources can be found in the syllabus for the handouts. You may also want to look at his [advice](https://knzhou.github.io/#advice). 
 

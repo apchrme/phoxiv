@@ -2,7 +2,8 @@
 	import type { PageData } from './$types';
 	import SvelteSeo from 'svelte-seo';
 	import * as Badge from '$lib/components/ui/badge/index.js';
-	import { Calendar, Tag, User, ArrowRight, Rss } from '@lucide/svelte';
+	import { Calendar, Tag, User, ArrowRight} from '@lucide/svelte';
+	import Title from '$lib/components/Title.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -22,14 +23,7 @@
 
 <div class="blog-page">
 	<!-- Header -->
-	<div class="my-5 md:my-10">
-		<h1>
-			Blog
-		</h1>
-		<p class="m-0 text-muted-foreground">
-			Just a collection of anything going on in my brain
-		</p>
-	</div>
+	<Title title="Blog" description="Just a collection of anything going on in my brain"/>
 
 	<!-- Post list -->
 	{#if data.posts.length === 0}
