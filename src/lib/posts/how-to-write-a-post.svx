@@ -1,0 +1,51 @@
+---
+title: How to Write a Blog Post
+date: 2025-04-17
+description: A quick guide on adding new posts to the phoXiv blog using mdsvex.
+tags: [meta, guide]
+author: apchrme
+---
+
+Adding a new blog post to phoXiv takes about thirty seconds. Here's how.
+
+## Step 1: Create a file
+
+Create a new `.svx` file in `src/lib/posts/`. The filename becomes the URL slug — so `my-post.svx` will be available at `/blog/my-post`.
+
+## Step 2: Add frontmatter
+
+Every post needs a YAML frontmatter block at the top:
+
+```yaml
+---
+title: My Post Title
+date: 2025-01-15
+description: A one-sentence description shown in the blog index.
+tags: [tag1, tag2]
+author: your-name
+---
+```
+
+The fields are:
+
+| Field | Required | Description |
+|---|---|---|
+| `title` | ✓ | Displayed as the post heading |
+| `date` | ✓ | ISO date (`YYYY-MM-DD`); used for sorting |
+| `description` | — | Short summary shown in the index |
+| `tags` | — | List of tag strings |
+| `author` | — | Your name or handle |
+
+## Step 3: Write your content
+
+Everything after the frontmatter block is standard Markdown. You can use all the usual syntax:
+
+- **Bold** and _italic_ text
+- `inline code` and fenced code blocks
+- Links, blockquotes, tables, and headings
+
+Because mdsvex compiles posts as Svelte components, you can also import and use Svelte components inside a post if you need something interactive.
+
+## That's it
+
+The post will automatically appear in the blog index, sorted by date. No build step, no config change needed.
