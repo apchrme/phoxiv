@@ -272,8 +272,8 @@
         "label": "Solution (Handwritten)"
       }
     },
-    "description": "Most of the files here are from [Stefan Ivanov's](https://stefanivanov.site/teaching/) archive. Take note of the [errata list](https://stefanivanov.site/teaching/errata.pdf).\n",
-    "descriptionHtml": "<p>Most of the files here are from <a href=\"https://stefanivanov.site/teaching/\">Stefan Ivanov&#39;s</a> archive. Take note of the <a href=\"https://stefanivanov.site/teaching/errata.pdf\">errata list</a>.</p>\n"
+    "description": "The Asian Physics Olympiad (APhO), initiated in the year of 2000 by Indonesia, is an annual international physics competition devoted to secondary school students in Asia. It is usually held in late April or early May, and more than 20 countries participate in it regularly. It is very similar in style and process to [IPhO](/contests/ipho), except each participating country can send 8 contestants at most instead of 5 in IPhO.\n\nMost of the files here are from [Stefan Ivanov's](https://stefanivanov.site/teaching/) archive. Take note of the [errata list](https://stefanivanov.site/teaching/errata.pdf).\n",
+    "descriptionHtml": "<p>The Asian Physics Olympiad (APhO), initiated in the year of 2000 by Indonesia, is an annual international physics competition devoted to secondary school students in Asia. It is usually held in late April or early May, and more than 20 countries participate in it regularly. It is very similar in style and process to <a href=\"/contests/ipho\">IPhO</a>, except each participating country can send 8 contestants at most instead of 5 in IPhO.</p>\n<p>Most of the files here are from <a href=\"https://stefanivanov.site/teaching/\">Stefan Ivanov&#39;s</a> archive. Take note of the <a href=\"https://stefanivanov.site/teaching/errata.pdf\">errata list</a>.</p>\n"
   },
   {
     "id": "nbpho",
