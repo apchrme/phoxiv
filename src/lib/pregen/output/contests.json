@@ -1413,8 +1413,11 @@
       "comments": {
         "label": "Comments"
       },
-      "version2": {
-        "label": "Problems (unused)"
+      "part1": {
+        "label": "Round 1"
+      },
+      "part2": {
+        "label": "Round 2"
       }
     },
     "problemFileTypes": {

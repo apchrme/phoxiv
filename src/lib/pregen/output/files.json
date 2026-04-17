@@ -5103,6 +5103,16 @@
   ],
   "kphc": [
     {
+      "year": 2022,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "part1": "/contests/kphc/2022_1.pdf",
+        "part2": "/contests/kphc/2022_2.pdf"
+      },
+      "problems": []
+    },
+    {
       "year": 2021,
       "notes": [],
       "extraLinks": [],
@@ -5153,6 +5163,16 @@
       "extraLinks": [],
       "yearFiles": {
         "problems": "/contests/kphc/2016.pdf"
+      },
+      "problems": []
+    },
+    {
+      "year": 2015,
+      "notes": [],
+      "extraLinks": [],
+      "yearFiles": {
+        "part1": "/contests/kphc/2015_1.pdf",
+        "part2": "/contests/kphc/2015_2.pdf"
       },
       "problems": []
     }
