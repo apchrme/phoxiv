@@ -1,0 +1,15 @@
+name: Korean Middle School Physics Competition
+summary: A national physics olympiad for middle-school students
+icon: 🇰🇷
+tag: National
+order: 20
+extraFileTypes:
+  year:
+    version2:
+      suffix: "_U"
+      label: "Problems (unused)"
+
+description: |
+  The Korean Physics Middle-School Contest (KPhC) serves individuals targeting admission into specialized Science High Schools. The examination consists of 30 multiple-choice questions covering a broad range of classical and modern physics. On average, mechanics constitutes approximately 45% of the exam, followed by electromagnetism at 25%, waves and optics at 20%, and thermodynamics and modern physics accounting for roughly 5% each. The test is "multiple-selection", where certain questions may require selecting up to four correct options or identifying a single specific correct statement among several complex distractors.
+
+  The time limit have NOT consistent been consistent throughout the years. For example, the 2015 exam was split between two 1h40m sessions with a recess whereas the 2020 exam was one 2h45m session.
