@@ -648,6 +648,90 @@
         ]
       ]
     },
+    "bpho-r1": {
+      "name": "British Physics Olympiad Round 1",
+      "icon": "🇬🇧",
+      "probFTEntries": [
+        [
+          "problem",
+          {
+            "label": "Problem"
+          }
+        ],
+        [
+          "problemEn",
+          {
+            "label": "Problem (EN)"
+          }
+        ],
+        [
+          "solution",
+          {
+            "label": "Solution"
+          }
+        ],
+        [
+          "answerSheet",
+          {
+            "label": "Answer Sheet"
+          }
+        ],
+        [
+          "markingScheme",
+          {
+            "label": "Marking Scheme"
+          }
+        ],
+        [
+          "presentation",
+          {
+            "label": "Presentation"
+          }
+        ]
+      ]
+    },
+    "bpho-r2": {
+      "name": "British Physics Olympiad Round 2",
+      "icon": "🇬🇧",
+      "probFTEntries": [
+        [
+          "problem",
+          {
+            "label": "Problem"
+          }
+        ],
+        [
+          "problemEn",
+          {
+            "label": "Problem (EN)"
+          }
+        ],
+        [
+          "solution",
+          {
+            "label": "Solution"
+          }
+        ],
+        [
+          "answerSheet",
+          {
+            "label": "Answer Sheet"
+          }
+        ],
+        [
+          "markingScheme",
+          {
+            "label": "Marking Scheme"
+          }
+        ],
+        [
+          "presentation",
+          {
+            "label": "Presentation"
+          }
+        ]
+      ]
+    },
     "kphc": {
       "name": "Korean Middle School Physics Competition",
       "icon": "🇰🇷",
