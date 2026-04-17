@@ -648,6 +648,48 @@
         ]
       ]
     },
+    "kphc": {
+      "name": "Korean Middle School Physics Competition",
+      "icon": "🇰🇷",
+      "probFTEntries": [
+        [
+          "problem",
+          {
+            "label": "Problem"
+          }
+        ],
+        [
+          "problemEn",
+          {
+            "label": "Problem (EN)"
+          }
+        ],
+        [
+          "solution",
+          {
+            "label": "Solution"
+          }
+        ],
+        [
+          "answerSheet",
+          {
+            "label": "Answer Sheet"
+          }
+        ],
+        [
+          "markingScheme",
+          {
+            "label": "Marking Scheme"
+          }
+        ],
+        [
+          "presentation",
+          {
+            "label": "Presentation"
+          }
+        ]
+      ]
+    },
     "rupho-w": {
       "name": "Russian Team Selection Test (W)",
       "icon": "🇷🇺",
