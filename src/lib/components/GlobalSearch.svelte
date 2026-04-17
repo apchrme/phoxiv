@@ -70,9 +70,6 @@
 		focusedIndex = 0;
 	});
 
-	$effect(() => {
-	});
-
 	// ---------------------------------------------------------------------------
 	// Helpers
 	// ---------------------------------------------------------------------------
@@ -128,7 +125,7 @@
 	onOpenChange fires when the primitive closes the dialog (e.g. Escape or
 	clicking the overlay), so we keep our internal state in sync.
 -->
-<Dialog.Root bind:open onOpenChange={(v) => { if (!v) closeSearch(); }}>
+<Dialog.Root bind:open>
 	<Dialog.Portal>
 		<!-- Backdrop -->
 		<Dialog.Overlay
@@ -140,6 +137,7 @@
 			<Dialog.Content
 				class="pointer-events-auto flex h-[min(600px,72vh)] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.96] data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-[0.96] data-closed:duration-150 data-open:duration-150"
 				onOpenAutoFocus={(e) => { e.preventDefault(); inputEl?.focus(); }}
+				onCloseAutoFocus={(e) => { e.preventDefault(); }}
 			>
 				<!--
 					Dialog.Title is required by ARIA for dialog elements.
