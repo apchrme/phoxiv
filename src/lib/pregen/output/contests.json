@@ -1350,6 +1350,97 @@
     "descriptionHtml": "<p>The Singapore Physics Olympiad (SPhO) is the first round of the selection process for the International Physics Olympiad (IPhO) in Singapore. It is arguably easier than SJPO. I only recommend doing past year papers if you are preparing specifically for this, but even then you should only do 1 or 2 to get a feeling of how the paper is like, and spend the rest of your time learning physics properly. Most of the problems are straightforward, but intentionally niche or vague to make it artifically difficult. For example, in 2024, you needed to know what a Hohmann transfer was. If you did, it becomes a trivial application of the vis-viva equation, but impossible if you didn&#39;t. Just like SJPO, it also tends to have quite a lot of mistakes, so don&#39;t go insane if your answer differs from theirs. Generally, to do well, you just need to have superficial knowledge of everything in the syllabus, as the problems rarely go beyond the absolute basics of what you learn. </p>\n<p>Pre-2018 papers were set by NUS instead of NTU, so you&#39;ll see a large difference in the style. Pre-2018 problems are sometimes copied from popular books like Morin&#39;s Classical Mechanics, but there are some really nice original problems too. The more recent ones are also copied, but from other sources. For example, SPhO 2024 Q4 is copied wholesale from problem 177 of 200 More Puzzling Physics Problems. Funnily enough, SPhO even copies questions from itself, which is weird because the problems aren&#39;t even that good. For example, 2023 Paper 2 copies a lot of problems from 2019 Paper 2.</p>\n<p>Links: <a href=\"https://singaporephysics.wordpress.com/\">Official Website</a>, <a href=\"https://ipssingapore.org/events/IPhO.html\">Old Website</a></p>\n"
   },
   {
+    "id": "kphc",
+    "name": "Korean Middle School Physics Competition",
+    "summary": "A national physics olympiad for middle-school students",
+    "icon": "🇰🇷",
+    "tag": "National",
+    "yearFileTypes": {
+      "problems": {
+        "label": "Problems"
+      },
+      "problemsEn": {
+        "label": "Problems (EN)"
+      },
+      "theory": {
+        "label": "Theory"
+      },
+      "experiment": {
+        "label": "Experiment"
+      },
+      "solutions": {
+        "label": "Solutions"
+      },
+      "answerSheet": {
+        "label": "Answer Sheets"
+      },
+      "theorySolutions": {
+        "label": "Theory Solutions"
+      },
+      "experimentSolutions": {
+        "label": "Experiment Solutions"
+      },
+      "theoryMarkingScheme": {
+        "label": "Theory Marking Scheme"
+      },
+      "experimentMarkingScheme": {
+        "label": "Experiment Marking Scheme"
+      },
+      "theoryInstructions": {
+        "label": "Theory General Instructions"
+      },
+      "experimentalInstructions": {
+        "label": "Experiment General Instructions"
+      },
+      "experimentalFiles": {
+        "label": "Experimental Files"
+      },
+      "experimentalPresentation": {
+        "label": "Experimental Presentation"
+      },
+      "report": {
+        "label": "Report"
+      },
+      "results": {
+        "label": "Results"
+      },
+      "minutes": {
+        "label": "Minutes"
+      },
+      "proceedings": {
+        "label": "Proceedings"
+      },
+      "comments": {
+        "label": "Comments"
+      },
+      "version2": {
+        "label": "Problems (unused)"
+      }
+    },
+    "problemFileTypes": {
+      "problem": {
+        "label": "Problem"
+      },
+      "problemEn": {
+        "label": "Problem (EN)"
+      },
+      "solution": {
+        "label": "Solution"
+      },
+      "answerSheet": {
+        "label": "Answer Sheet"
+      },
+      "markingScheme": {
+        "label": "Marking Scheme"
+      },
+      "presentation": {
+        "label": "Presentation"
+      }
+    },
+    "description": "The Korean Physics Middle-School Contest (KPhC) serves individuals targeting admission into specialized Science High Schools. The examination consists of 30 multiple-choice questions covering a broad range of classical and modern physics. On average, mechanics constitutes approximately 45% of the exam, followed by electromagnetism at 25%, waves and optics at 20%, and thermodynamics and modern physics accounting for roughly 5% each. The test is \"multiple-selection\", where certain questions may require selecting up to four correct options or identifying a single specific correct statement among several complex distractors.\n\nThe time limit have NOT consistent been consistent throughout the years. For example, the 2015 exam was split between two 1h40m sessions with a recess whereas the 2020 exam was one 2h45m session.\n",
+    "descriptionHtml": "<p>The Korean Physics Middle-School Contest (KPhC) serves individuals targeting admission into specialized Science High Schools. The examination consists of 30 multiple-choice questions covering a broad range of classical and modern physics. On average, mechanics constitutes approximately 45% of the exam, followed by electromagnetism at 25%, waves and optics at 20%, and thermodynamics and modern physics accounting for roughly 5% each. The test is &quot;multiple-selection&quot;, where certain questions may require selecting up to four correct options or identifying a single specific correct statement among several complex distractors.</p>\n<p>The time limit have NOT consistent been consistent throughout the years. For example, the 2015 exam was split between two 1h40m sessions with a recess whereas the 2020 exam was one 2h45m session.</p>\n"
+  },
+  {
     "id": "rupho-w",
     "name": "Russian Team Selection Test (W)",
     "summary": "Preparation for 10th graders in Russia for the TST",
