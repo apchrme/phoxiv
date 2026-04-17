@@ -1,17 +1,10 @@
 import fs from 'fs';
-import type { FilesJson, FileTypeLabel, SearchIndexItem } from '../types.js';
+import type { FilesJson, SearchIndexItem, SearchIndex } from '../types.js';
 import { OUT } from '../utils.js';
 import type { InternalContest } from './readContests.js';
 
 export function genSearchIndex(internalContests: InternalContest[], filesOutput: FilesJson): void {
-	const contestMeta: Record<
-		string,
-		{
-			name: string;
-			icon: string;
-			probFTEntries: [string, FileTypeLabel][];
-		}
-	> = {};
+	const contestMeta: SearchIndex["contestMeta"] = {};
 
 	for (const contest of internalContests) {
 		contestMeta[contest.id] = {

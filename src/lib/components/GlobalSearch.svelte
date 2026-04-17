@@ -71,7 +71,6 @@
 	});
 
 	$effect(() => {
-		resultsEl?.querySelectorAll('li')[focusedIndex]?.scrollIntoView({ block: 'nearest' });
 	});
 
 	// ---------------------------------------------------------------------------
@@ -108,10 +107,12 @@
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
 			focusedIndex = Math.min(focusedIndex + 1, results.length - 1);
+			resultsEl?.querySelectorAll('li')[focusedIndex]?.scrollIntoView({ block: 'nearest' });
 		}
 		if (e.key === 'ArrowUp') {
 			e.preventDefault();
 			focusedIndex = Math.max(focusedIndex - 1, 0);
+			resultsEl?.querySelectorAll('li')[focusedIndex]?.scrollIntoView({ block: 'nearest' });
 		}
 		if (e.key === 'Enter' && results[focusedIndex]) {
 			navigateTo(results[focusedIndex]);
@@ -157,10 +158,10 @@
 						class="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
 					/>
 					<Dialog.Close
-						class={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'size-7 shrink-0')}
+						class={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
 						aria-label="Close search"
 					>
-						<XIcon class="size-3.5" />
+						<XIcon class="size-4" />
 					</Dialog.Close>
 				</div>
 
@@ -190,7 +191,7 @@
 										)}
 									>
 										<!-- Contest + year -->
-										<div class="flex items-center gap-1.5 text-xs text-muted-foreground">
+										<div class="flex items-center gap-1.5 text-muted-foreground">
 											<span aria-hidden="true">{item.contestIcon}</span>
 											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 											<span>{@html highlight(item.contestName, query)}</span>
@@ -201,12 +202,12 @@
 
 										<!-- Problem number + title -->
 										<div class="flex items-baseline gap-2">
-											<span class="font-mono text-sm font-semibold text-primary">
+											<span class="font-mono font-semibold text-primary">
 												<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 												{@html highlight(item.problem.number, query)}
 											</span>
 											{#if item.problem.title}
-												<span class="text-sm font-medium text-foreground">
+												<span class="font-medium text-foreground">
 													<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 													{@html highlight(item.problem.title, query)}
 												</span>
@@ -222,7 +223,7 @@
 															variant="outline"
 															href={item.problem.files[key]}
 															target="_blank"
-															class="px-2 py-1 text-xs"
+															class="px-2 py-1 text-sm"
 															onclick={(e: MouseEvent) => e.stopPropagation()}
 														>
 															{ft.label}

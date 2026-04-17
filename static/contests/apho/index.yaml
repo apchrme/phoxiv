@@ -13,4 +13,6 @@ extraFileTypes:
       label: "Solution (Handwritten)"
 
 description: |
+  The Asian Physics Olympiad (APhO), initiated in the year of 2000 by Indonesia, is an annual international physics competition devoted to secondary school students in Asia. It is usually held in late April or early May, and more than 20 countries participate in it regularly. It is very similar in style and process to [IPhO](/contests/ipho), except each participating country can send 8 contestants at most instead of 5 in IPhO.
+  
   Most of the files here are from [Stefan Ivanov's](https://stefanivanov.site/teaching/) archive. Take note of the [errata list](https://stefanivanov.site/teaching/errata.pdf).
