@@ -29,9 +29,11 @@
 </script>
 
 <section id="contests" class="mb-4">
-	<div class="mb-4">
-		<h1 class="py-0">Contests</h1>
-		<p class="mb-0 text-center text-base text-muted-foreground">
+	<div class="my-5 md:my-10">
+		<h1>
+			Contests
+		</h1>
+		<p class="m-0 text-muted-foreground">
 			Click any card to explore problems, solutions &amp; marking schemes.
 		</p>
 	</div>
