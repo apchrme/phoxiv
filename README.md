@@ -155,7 +155,6 @@ tl;dr after modifying anything in `static/`, run `bun run pregen` to ensure your
 
 ### High priority
 
-- fix windows not loading flag emojis: https://geyer.dev/blog/windows-flag-emojis/
 - add a "hide solutions" button
 
 ### Medium priority
