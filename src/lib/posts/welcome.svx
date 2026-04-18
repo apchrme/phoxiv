@@ -19,9 +19,7 @@ phoXiv intends to be the most comprehensive archive of the high school physics o
 
 ## Why?
 
-This website was made out of pure frustration. Really.
-
-When I was studying for IPhO, I was extremely annoyed by the fact that the documentation for physics olympiads were so terrible. It seemed impossible to find somewhere that contained all the problems I wanted. When I was doing APhO problems, I found that the commonly-used [olimpicos APhO archive](https://apho.olimpicos.net/) is both outdated and does not have experimental problems. Meanwhile, for IPhO problems, the official website has not been updated since 2019. In fact, the official website literally has Lorem ipsum on the front page. I'm not even kidding.
+This website was made out of pure frustration. When I was studying for IPhO, I was extremely annoyed by the fact that the documentation for physics olympiads were so terrible. It seemed impossible to find somewhere that contained all the problems I wanted. When I was doing APhO problems, I found that the commonly-used [olimpicos APhO archive](https://apho.olimpicos.net/) is both outdated and does not have experimental problems. Meanwhile, for IPhO problems, the official website has not been updated since 2019. In fact, the official website literally has Lorem ipsum on the front page.
 
 <img alt="IPhO Lorem Ipsum" src={iphoClowning} class="w-full sm:w-3/4 mx-auto" />
 
@@ -40,6 +38,10 @@ The vast majority of this website, from collating files to writing the backend a
 
 ## Is this sustainable?
 
-I have mentioned above that many physics olympiad websites have been lost to time, like olimpicos, which has not updated any of its files (other than the IPhO ones) past 2021, and the IPhO official website which is practically dead since 2019. This is inevitable due to how decentralised physics olympiads are. Many of the students or team leaders who make such websites become too busy to maintain them. I will be personally maintaining the site for the forseeable future (at least the next 2 years), but after that, I can't be completely sure I'll have time for this. To prepare for that eventuality, I have open-sourced the website to encourage more people to contribute, and written detailed documentation. One of the few physics olympiad websites that remains up-to-date is [ipho-unofficial](https://ipho-unofficial.org/). I hope that, just like for ipho-unofficial, making this website open-source and providing detailed documentation will be enough to keep this project alive.
+I have mentioned above that many physics olympiad websites have been lost to time, like olimpicos, which has not updated any of its files (other than the IPhO ones) past 2021, and the IPhO official website which is practically dead since 2019. This is inevitable due to how decentralised physics olympiads are. Many of the students or team leaders who make such websites become too busy to maintain them. I will be personally maintaining this site for the forseeable future (at least the next 2 years), but after that, I can't be completely sure I'll have time for this. To prepare for that eventuality, I have open-sourced this website to encourage more people to contribute, and written detailed documentation. One of the few physics olympiad websites that remains up-to-date is [ipho-unofficial](https://ipho-unofficial.org/). I hope that, just like for ipho-unofficial, making this website open-source and providing detailed documentation will be enough to keep this project alive.
 
-Here's hoping.
+## Sounds cool! How do I contribute?
+
+OH BOY AM I GLAD YOU ASKED
+
+Click [this](https://github.com/apchrme/phoxiv) or [this](https://github.com/apchrme/phoxiv) or [this](https://github.com/apchrme/phoxiv)! If you're not familiar with coding, don't be intimidated; it's pretty straightforward. If you can't figure out how to make it work, feel free to just [email me the files](mailto:admin@phoxiv.org), though I can't guarantee I'll add them if I'm busy.

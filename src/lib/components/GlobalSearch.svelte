@@ -6,6 +6,7 @@
 	import XIcon from '@lucide/svelte/icons/x';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
+	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
 	import { cn } from '$lib/utils.js';
 	import { goto } from '$app/navigation';
 	import { Dialog } from 'bits-ui';
@@ -190,7 +191,12 @@
 									>
 										<!-- Olympiad + year -->
 										<div class="flex items-center gap-1.5 text-muted-foreground">
-											<span aria-hidden="true">{item.olympiadIcon}</span>
+											<!--
+												OlympiadIcon replaces the raw emoji span to fix the
+												two-letter rendering bug on Windows/Chromium for flag emojis.
+												h-4 w-auto matches the surrounding text-sm line height.
+											-->
+											<OlympiadIcon icon={item.olympiadIcon} id={item.olympiadId} class="h-4 w-auto shrink-0 text-base" />
 											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 											<span>{@html highlight(item.olympiadName, query)}</span>
 											<span aria-hidden="true">·</span>

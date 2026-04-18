@@ -6,6 +6,7 @@
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
+	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
 	import { ArrowRight } from '@lucide/svelte';
 	import { cn } from '$lib/utils.js';
 	import Title from '$lib/components/Title.svelte';
@@ -64,9 +65,16 @@
 						)}
 					>
 						<Card.Content class="flex h-full flex-col gap-3 px-5">
-							<!-- Top row: emoji + badge -->
+							<!-- Top row: icon + badge -->
 							<div class="flex items-start justify-between">
-								<span class="text-4xl leading-none">{olympiad.icon}</span>
+								<!--
+									OlympiadIcon replaces the raw emoji <span> to fix the
+									two-letter rendering bug on Windows/Chromium for flag emojis.
+									  • Flag emojis   → Flagpedia SVG, sized to h-9 w-auto
+									  • Other emojis  → plain <span>, sized by text-4xl
+									Both cases get leading-none to match the original layout.
+								-->
+								<OlympiadIcon icon={olympiad.icon} id={olympiad.id} class="h-9 w-auto text-4xl leading-none" />
 								<Badge variant="outline">{olympiad.tag}</Badge>
 							</div>
 

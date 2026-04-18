@@ -67,6 +67,7 @@ name: The Physics Olympiad
 # summary appears on the list of olympiads
 summary: One of the physics olympiads of all time
 
+# This is one of the locations you can add icons. If you use a flag emoji, it looks ugly on Windows (unless you use Firefox), so this is handled by a CDN in OlympiadIcon. If you want to add a custom icon, put it in src/lib/assets/icons/olympiads/<contest.id>.<file extension>
 icon: ⚛️
 
 # tag can be International, Regional, National or Open
