@@ -10,6 +10,7 @@
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
+	import { ChevronLeft } from '@lucide/svelte';
 
 	// olympiad will definitely be found, as the page.ts will throw a 404 if it isn't.
 	let olympiad = $derived(olympiads.find((i) => i.id == params.olympiad));
@@ -73,16 +74,24 @@
 	keywords="problems, solutions, olympiad, physics"
 />
 
-<div class="py-5 md:py-10">
-	<h1 class="mb-1 text-3xl font-bold tracking-tight sm:text-4xl">{olympiad.name}</h1>
+<a
+	href="/olympiads"
+	class="mt-5 inline-flex items-center gap-1.5 text-sm text-muted-foreground no-underline transition-colors hover:text-primary"
+>
+	<ChevronLeft class="size-4" />
+	Back to olympiads
+</a>
+
+<header class="flex flex-col gap-3 pt-3 md:pt-5">
+	<h1 class="text-3xl font-bold leading-tight tracking-tight sm:text-4xl">{olympiad.name}</h1>
 	{#if olympiad?.descriptionHtml}
-		<div class="mb-4 max-w-none prose dark:prose-invert text-foreground">
+		<div class="mb-4 max-w-none prose">
 			{@html olympiad.descriptionHtml}
 		</div>
 	{/if}
-</div>
+</header>
 
-<section class="my-4">
+<section class="py-4">
 	<div class="mb-4">
 		<SearchBar placeholder="Search by year or problem…" bind:value={query}>
 			{#snippet filters()}

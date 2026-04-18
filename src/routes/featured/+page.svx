@@ -1,3 +1,6 @@
+<script lang="ts">
+    import iphoClowning from "$lib/assets/images/ipho-clowning.png";
+</script>
 
+## featured problems
 
-== featured problems

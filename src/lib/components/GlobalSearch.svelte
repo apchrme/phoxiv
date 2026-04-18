@@ -54,8 +54,8 @@
 
 	let query = $state('');
 	let focusedIndex = $state(0);
-	let inputEl: HTMLInputElement = $state();
-	let resultsEl: HTMLDivElement = $state();
+	let inputEl: HTMLInputElement | undefined = $state();
+	let resultsEl: HTMLDivElement | undefined = $state();
 
 	const results = $derived.by(() => {
 		const q = query.trim();
@@ -104,12 +104,12 @@
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
 			focusedIndex = Math.min(focusedIndex + 1, results.length - 1);
-			resultsEl.querySelectorAll('li')[focusedIndex].scrollIntoView({ block: 'nearest' });
+			resultsEl?.querySelectorAll('li')[focusedIndex].scrollIntoView({ block: 'nearest' });
 		}
 		if (e.key === 'ArrowUp') {
 			e.preventDefault();
 			focusedIndex = Math.max(focusedIndex - 1, 0);
-			resultsEl.querySelectorAll('li')[focusedIndex].scrollIntoView({ block: 'nearest' });
+			resultsEl?.querySelectorAll('li')[focusedIndex].scrollIntoView({ block: 'nearest' });
 		}
 		if (e.key === 'Enter' && results[focusedIndex]) {
 			navigateTo(results[focusedIndex]);
@@ -152,7 +152,7 @@
 						bind:this={inputEl}
 						bind:value={query}
 						type="search"
-						placeholder="Search by title, number, olympiad, or year…"
+						placeholder="Search for problems... (fuzzy search)"
 						class="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
 					/>
 					<Dialog.Close
@@ -167,7 +167,7 @@
 				<div bind:this={resultsEl} class="flex min-h-0 flex-1 flex-col overflow-y-auto">
 					{#if !query.trim()}
 						<p class="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-							Type to search across all olympiads…
+							Type to search for problems across all olympiads...
 						</p>
 					{:else if results.length === 0}
 						<p class="flex flex-1 items-center justify-center text-sm text-muted-foreground">No results found.</p>
