@@ -3,6 +3,7 @@
 @import '@catppuccin/tailwindcss/mocha.css';
 @import './styles/base.css';
 @import './styles/fonts.css';
+@import './styles/prose.css';
 @import './styles/theme.css';
 @import 'tw-animate-css';
 @import '@fontsource-variable/dm-sans';
@@ -153,6 +154,7 @@
 	--radius-4xl: calc(var(--radius) * 2.6);
 }
 
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
@@ -163,6 +165,7 @@
 	html {
 		@apply font-sans;
 	}
+
 }
 
 @custom-variant data-open {

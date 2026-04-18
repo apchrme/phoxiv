@@ -9,7 +9,7 @@
     <h1 class = "mb-1 text-3xl font-bold tracking-tight sm:text-4xl">
         {title}
     </h1>
-    <p class="m-0 prose dark:prose-invert text-muted-foreground">
+    <p class="m-0 prose">
         {description}
     </p>
 </div>

@@ -2,17 +2,17 @@ import fs from 'fs';
 import path from 'path';
 import type { FilesJson, YearEntry, YearIndexYaml, ProblemEntry } from '../types.js';
 import { STATIC_DIR, PROBLEM_NUMS, OUT, readYaml, resolveLinks } from '../utils.js';
-import type { InternalContest } from './readContests.js';
+import type { InternalOlympiad } from './readOlympiads.js';
 
-export function genFiles(internalContests: InternalContest[]): FilesJson {
+export function genFiles(internalOlympiads: InternalOlympiad[]): FilesJson {
 	const filesOutput: FilesJson = {};
 
-	for (const contest of internalContests) {
-		const contestDir = path.join(STATIC_DIR, contest.id);
-		const contestEntries = fs.readdirSync(contestDir);
+	for (const olympiad of internalOlympiads) {
+		const olympiadDir = path.join(STATIC_DIR, olympiad.id);
+		const olympiadEntries = fs.readdirSync(olympiadDir);
 
 		const yearNumbers = new Set<number>();
-		for (const entry of contestEntries) {
+		for (const entry of olympiadEntries) {
 			const n = parseInt(entry, 10);
 			if (!isNaN(n) && !entry.includes('.')) yearNumbers.add(n);
 			const m = entry.match(/^(\d{4})[_.]/);
@@ -22,7 +22,7 @@ export function genFiles(internalContests: InternalContest[]): FilesJson {
 		const years: YearEntry[] = [];
 
 		for (const year of [...yearNumbers].sort((a, b) => b - a)) {
-			const yearDir = path.join(contestDir, String(year));
+			const yearDir = path.join(olympiadDir, String(year));
 			const hasDir = fs.existsSync(yearDir);
 			const yearEntries = hasDir ? fs.readdirSync(yearDir) : [];
 			const meta: YearIndexYaml = hasDir
@@ -30,10 +30,10 @@ export function genFiles(internalContests: InternalContest[]): FilesJson {
 				: {};
 
 			const yearFiles = resolveLinks(
-				contestEntries,
+				olympiadEntries,
 				String(year),
-				contest._yearTypes,
-				'/contests/' + contest.id
+				olympiad._yearTypes,
+				'/olympiads/' + olympiad.id
 			);
 
 			const problems: ProblemEntry[] = [];
@@ -41,8 +41,8 @@ export function genFiles(internalContests: InternalContest[]): FilesJson {
 				const files = resolveLinks(
 					yearEntries,
 					num,
-					contest._problemTypes,
-					'/contests/' + contest.id + '/' + year
+					olympiad._problemTypes,
+					'/olympiads/' + olympiad.id + '/' + year
 				);
 				const title = meta.problems?.[num]?.title;
 				if (Object.keys(files).length === 0 && !title) continue;
@@ -60,7 +60,7 @@ export function genFiles(internalContests: InternalContest[]): FilesJson {
 			});
 		}
 
-		filesOutput[contest.id] = years;
+		filesOutput[olympiad.id] = years;
 	}
 
 	fs.writeFileSync(OUT.files, JSON.stringify(filesOutput, null, 2));

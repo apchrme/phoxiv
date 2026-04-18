@@ -16,7 +16,7 @@
 	}
 
 	const statItems = [
-		{ value: stats.contests, label: 'Olympiads' },
+		{ value: stats.olympiads, label: 'Olympiads' },
 		{ value: stats.years, label: 'Years' },
 		{ value: stats.files, label: 'Files' }
 	];
@@ -35,7 +35,7 @@
 >
 	<!-- Mobile: static logo in background -->
 	<div
-		class="pointer-events-none absolute inset-0 flex items-center justify-end overflow-hidden md:hidden"
+		class="pointer-events-none absolute inset-0 flex items-center justify-around overflow-hidden md:hidden"
 		aria-hidden="true"
 	>
 		<img
@@ -58,7 +58,7 @@
 		</div>
 
 		<!-- Description -->
-		<p class="m-0 max-w-[44ch] text-left text-base leading-[1.7] text-foreground/70">
+		<p class="m-0 max-w-[44ch] prose text-foreground/70">
 			A comprehensive archive of physics olympiads, from the well-known IPhO and EuPhO to hidden
 			gems like the Eötvös competition. Includes marking schemes and answer sheets you rarely find
 			elsewhere, all in a mobile-friendly interface.
@@ -66,7 +66,7 @@
 
 		<!-- CTAs -->
 		<div class="flex flex-wrap gap-3">
-			<a href="/contests" class={cn(buttonVariants({ variant: 'default' }))}>Browse contests</a>
+			<a href="/olympiads" class={cn(buttonVariants({ variant: 'default' }))}>Browse olympiads</a>
 			<a
 				href="https://github.com/apchrme/phoxiv"
 				class={cn(buttonVariants({ variant: 'outline' }))}

@@ -1,0 +1,8 @@
+name: Nordic-Baltic Physics Olympiad
+summary: A regional physics olympiad for students from the Nordic and Baltic countries, including Estonia, Finland, Sweden and Latvia.
+icon: 🇪🇪 🇫🇮 🇸🇪 🇱🇻
+tag: Regional
+order: 4
+
+description: |
+  The Nordic-Baltic Physics Olympiad (NBPhO) is a regional physics olympiad for students in Estonia, Finland, Sweden and Latvia. It serves as a selection test for the International Physics Olympiad (IPhO) and is held annually in the spring. The problems tend to be highly insightful, reminiscent of [EuPhO](/olympiads/eupho), but easier and more guided. Check out the [official website](https://nbpho.ee/) and [errata](https://stefanivanov.site/teaching/errata.pdf) for more information.

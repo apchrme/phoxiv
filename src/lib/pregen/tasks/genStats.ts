@@ -1,10 +1,10 @@
 import fs from 'fs';
-import type { ContestEntry, FilesJson } from '../types.js';
+import type { OlympiadEntry, FilesJson } from '../types.js';
 import { OUT } from '../utils.js';
 
-export function genStats(contestsJson: ContestEntry[], filesOutput: FilesJson): void {
+export function genStats(olympiadsJson: OlympiadEntry[], filesOutput: FilesJson): void {
 	const stats = {
-		contests: contestsJson.length,
+		olympiads: olympiadsJson.length,
 		years: Object.values(filesOutput).reduce((n, years) => n + years.length, 0),
 		files: Object.values(filesOutput)
 			.flat()

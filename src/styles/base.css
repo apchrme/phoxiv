@@ -12,15 +12,11 @@
 	}
 
 	p {
-		@apply text-base leading-relaxed;
+		@apply text-base;
 	}
 
 	span {
-		@apply text-base leading-relaxed text-muted-foreground;
-	}
-
-	a {
-		@apply text-base leading-relaxed text-primary hover:text-primary/50;
+		@apply text-base text-muted-foreground;
 	}
 
 	button {

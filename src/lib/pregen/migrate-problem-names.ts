@@ -2,7 +2,7 @@
  * migrate-problem-names.ts
  *
  * One-off migration script. Reads src/lib/pregen/problemNames.csv and writes
- * problem titles into the appropriate static/contests/<id>/<year>/index.yaml
+ * problem titles into the appropriate static/olympiads/<id>/<year>/index.yaml
  * files, merging with any content that already exists there.
  *
  * Safe to re-run — existing notes/extraLinks are preserved.
@@ -17,7 +17,7 @@ import yaml from 'js-yaml';
 import type { YearIndexYaml } from './types.js';
 
 const CSV_PATH = path.resolve('src/lib/pregen/problemTitles.csv');
-const STATIC_DIR = path.resolve('static/contests');
+const STATIC_DIR = path.resolve('static/olympiads');
 
 // ── Read CSV ──────────────────────────────────────────────────────────────────
 
@@ -27,18 +27,18 @@ const rows = parse(csvText, { columns: true, trim: true, skip_empty_lines: true 
 	string
 >[];
 
-// Columns other than 'contest' and 'year' are problem numbers
+// Columns other than 'olympiad' and 'year' are problem numbers
 const header = Object.keys(rows[0]);
-const problemColumns = header.filter((h) => h !== 'contest' && h !== 'year');
+const problemColumns = header.filter((h) => h !== 'olympiad' && h !== 'year');
 
 let written = 0;
 let skipped = 0;
 
 for (const row of rows) {
-	const contestId = row['contest'];
+	const olympiadId = row['olympiad'];
 	const year = row['year'];
 
-	if (!contestId || !year) continue;
+	if (!olympiadId || !year) continue;
 
 	// Collect non-empty titles from this row
 	const titles: Record<string, string> = {};
@@ -52,7 +52,7 @@ for (const row of rows) {
 		continue;
 	}
 
-	const yearDir = path.join(STATIC_DIR, contestId, year);
+	const yearDir = path.join(STATIC_DIR, olympiadId, year);
 	const yamlPath = path.join(yearDir, 'index.yaml');
 
 	// Read existing index.yaml if present, so we don't clobber notes/extraLinks
@@ -83,7 +83,7 @@ for (const row of rows) {
 
 	fs.mkdirSync(yearDir, { recursive: true });
 	fs.writeFileSync(yamlPath, yaml.dump(updated, { lineWidth: 120 }));
-	console.log(`  ✓ ${contestId}/${year} — ${Object.keys(mergedProblems).length} problem(s)`);
+	console.log(`  ✓ ${olympiadId}/${year} — ${Object.keys(mergedProblems).length} problem(s)`);
 	written++;
 }
 

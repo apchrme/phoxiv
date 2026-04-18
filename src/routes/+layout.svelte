@@ -17,7 +17,7 @@
 
 	const navLinks = [
 		{ url: '/', label: 'home' },
-		{ url: '/contests', label: 'contests' },
+		{ url: '/olympiads', label: 'olympiads' },
 		{ url: '/resources', label: 'resources' },
 		{ url: '/blog', label: 'blog' }
 	];
