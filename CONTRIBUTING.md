@@ -1,0 +1,167 @@
+# Contributing
+
+To contribute, fork the repository, make your own changes on a separate branch, then open a pull request. See the [GitHub docs](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project) for more information. You may also want to look at the [Open Source Guide](https://opensource.guide/how-to-contribute/)
+
+
+## Quickstart
+
+Install [bun](https://bun.com)
+
+```sh
+# Install dependencies
+bun install
+
+# Run local development server
+bun run dev
+```
+
+This project is built with:
+
+- Frontend: Svelte
+- Backend: SvelteKit
+- Database (not functional yet): Drizzle ORM
+- UI Library: shadcn-svelte
+
+## Structure
+
+The structure of this website is as follows: competitions are known as "olympiads". Each olympiad is split into "years", and within a year, there are multiple "problems".
+
+## Adding content
+
+### Directory structure
+
+The types of files and how to structure the config files will be explained below.
+
+```
+static
+└── olympiads
+    └── <olympiad ID>
+        ├── index.yaml # olympiad config
+        ├── <year><suffix> # year-level file
+        |
+        |   # Examples
+        ├── 2025.pdf # problems for the year 2025
+        ├── 2025_S.pdf # solutions for the year 2025
+        |
+        └── <year>
+            ├── index.yaml # year config (optional)
+            ├── <problem number><suffix> # problem-level file
+            |
+            |   # Examples
+            ├── T1.pdf # T1 problem pdf
+            └── T1_M.pdf # Marking scheme for T1
+
+```
+
+### Adding new olympiads
+
+1. Choose a unique olympiad ID. It will be matched in search results, so choose something that people often use as a shorthand for the competition (like `ipho` for the International Physics Olympiad)
+2. Create an `index.yaml` file in the path `/static/olympiads/<olympiad ID>/index.yaml` with the following structure. This is the **olympiad config**.
+
+```yaml
+# /static/olympiads/<olympiad ID>/index.yaml
+
+name: The Physics Olympiad
+
+# summary appears on the list of olympiads
+summary: One of the physics olympiads of all time
+
+# This is one of the locations you can add icons. If you use a flag emoji, it looks ugly on Windows (unless you use Firefox), so this is handled by a CDN in OlympiadIcon. If you want to add a custom icon, put it in src/lib/assets/icons/olympiads/<contest.id>.<file extension>
+icon: ⚛️
+
+# tag can be International, Regional, National or Open
+tag: International
+
+# (Optional) Order the olympiad appears on the list of olympiads.
+order: 2
+
+# (Optional) additional file types to contain niche files
+extraFileTypes:
+  year:
+    extraMinutes:
+      suffix: "_min2",
+      label: "Extraordinary Minutes"
+  problem:
+    calibration:
+      suffix: "_C"
+      label: "Calibration"
+
+# (Optional) this appears in the olympiad page itself. Markdown can be used.
+description: |
+  This is a description
+  This is the second line
+  This is a bonus line with a [link](https://example.com)
+
+```
+
+### Adding new problems
+
+There are different **file types**, such as problems and solutions. You can indicate what type a file is by appending a suffix. The default suffixes can be found in [fileTypes.ts](/src/lib/pregen/fileTypes.ts), but you can add more in the olympiad config described above.
+
+There are two "levels" of files you can add:
+
+1. Year-level files: these are the files that apply to all problems within that year.
+2. Problem-level files: files that only apply to a specific problem, like T1, T1 solutions, etc. The allowed problem numbers are in the pregeneration file [generate.ts](/src/lib/pregen/generate.ts).
+
+The syntax and file location of these files can be found in the directory structure above.
+
+Problem titles and external links/comments can be configured in the optional **year config**, at `/static/olympiads/<olympiad id>/<year>/index.yaml`. The year config has the following structure:
+
+```yaml
+# /static/olympiads/<olympiad ID>/<year>/index.yaml
+
+# problem titles
+problems:
+  T1:
+    title: On Newton's 4th law
+  T2:
+    title: The Industrial Revolution and its consequences
+  T3:
+    title: Time Dilation in Interstellar
+  E1:
+    title: Measuring the speed of light
+  E2:
+    title: Finding dark matter
+
+# additional notes
+notes:
+  - "Note: I love this year's problems!"
+
+# links that are not associated with the files in /static
+extraLinks:
+  - label: Official website
+    url: https://example.com
+```
+
+### Pregeneration
+
+You may have noticed that after modifying or adding files in `static/`, the changes don't show up on the local development server (i.e. when you use `bun run dev`) .
+
+This is because the site generates hyperlinks and other data based on the `.json` files in `src/lib/pregen/output/`, and does not read the files in `static/`. The files in static are converted to the json files by the pregeneration script, which can be run with `bun run pregen`:
+
+```sh
+bun run pregen
+  --olympiads
+  --files
+  --stats
+  --search
+
+```
+
+tl;dr after modifying anything in `static/`, run `bun run pregen` to ensure your changes are reflected on the development server.
+
+## TODO
+
+### High priority
+
+- add a "hide solutions" button
+
+### Medium priority
+
+- maybe make files dynamically generated by Vite? As the repo gets larger the build time is getting longer. Using a CDN may be better. See [SvelteKit's /static documentation](https://svelte.dev/docs/kit/project-structure#Project-files-static) or the [image documentation](https://svelte.dev/docs/kit/images#Vite's-built-in-handling)
+
+### Low priority
+
+- include eupho statutes
+- add "collections" to group olympiads together
+- make links in mdsvex external (use custom components)
