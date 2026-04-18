@@ -19,28 +19,29 @@
 </script>
 
 <SvelteSeo
-	title="{metadata.title} — phoXiv Blog"
+	title="{metadata.title} - phoXiv Blog"
 	description={metadata.description}
 />
 
-<article class="blog-post py-4">
+<article class="pb-10">
 	<!-- Back link -->
 	<a
 		href="/blog"
-		class="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground no-underline transition-colors hover:text-primary"
+		class="mt-5 inline-flex items-center gap-1.5 text-sm text-muted-foreground no-underline transition-colors hover:text-primary"
 	>
 		<ChevronLeft class="size-4" />
 		Back to blog
 	</a>
 
 	<!-- Post header -->
-	<header class="mb-8 flex flex-col gap-4">
-		<h1 class="text-left! m-0 text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
+	<header class="py-3 md:py-5 flex flex-col gap-3">
+
+		<h1 class="text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
 			{metadata.title}
 		</h1>
 
 		{#if metadata.description}
-			<p class="m-0 text-base leading-relaxed text-muted-foreground">
+			<p class="mb-1 text-base leading-relaxed text-muted-foreground">
 				{metadata.description}
 			</p>
 		{/if}
@@ -75,7 +76,7 @@
 	<Separator class="mb-8" />
 
 	<!-- Post content -->
-	<div class="post-content prose prose-phoxiv max-w-none">
+	<div class="prose max-w-none">
 		<PostContent />
 	</div>
 </article>

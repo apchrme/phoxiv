@@ -4,7 +4,7 @@
     --tw-prose-body: var(--foreground);
     --tw-prose-headings: var(--foreground);
     --tw-prose-lead: var(--muted-foreground);
-    --tw-prose-links: var(--primary);
+    --tw-prose-links: var(--foreground);
     --tw-prose-bold: var(--foreground);
     --tw-prose-counters: var(--muted-foreground);
     --tw-prose-bullets: var(--muted-foreground);
@@ -59,14 +59,11 @@
 }
 
 .prose a {
-    color: var(--primary);
-    text-decoration-thickness: 1px;
-    text-underline-offset: 3px;
     transition: color 150ms;
 }
 
 .prose a:hover {
-    color: color-mix(in oklab, var(--primary) 60%, transparent);
+    color: var(--primary);
 }
 
 .prose hr {

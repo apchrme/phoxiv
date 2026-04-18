@@ -6,7 +6,9 @@
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
+	import { ArrowRight } from '@lucide/svelte';
 	import { cn } from '$lib/utils.js';
+	import Title from '$lib/components/Title.svelte';
 
 	// this seems redundant. I should remove this
 	const ALL_TAGS: OlympiadTag[] = ['International', 'Regional', 'National', 'Open'];
@@ -29,14 +31,7 @@
 </script>
 
 <section id="olympiads" class="mb-4">
-	<div class="my-5 md:my-10">
-		<h1>
-			Olympiads
-		</h1>
-		<p class="prose">
-			Click any card to explore problems, solutions &amp; marking schemes.
-		</p>
-	</div>
+	<Title title="Olympiads" description="Click any card to explore problems, solutions &amp; marking schemes." />
 
 	<!-- Search + filter toolbar -->
 	<div class="mb-5">
@@ -92,16 +87,7 @@
 								class="flex items-center gap-1 text-xs font-medium text-muted-foreground transition-all duration-150 group-hover:gap-2 group-hover:text-primary"
 							>
 								View archive
-								<svg
-									class="size-3 transition-transform duration-150 group-hover:translate-x-0.5"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									stroke-width="2.5"
-									aria-hidden="true"
-								>
-									<path d="M5 12h14M12 5l7 7-7 7" />
-								</svg>
+								<ArrowRight class="size-4" />
 							</div>
 						</Card.Content>
 					</Card.Root>

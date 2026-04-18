@@ -1,27 +1,49 @@
+
 ---
-title: Welcome to the phoXiv Blog
-date: 2025-04-17
-description: An introduction to what this blog will cover — updates, behind-the-scenes notes, and thoughts on physics olympiad resources.
-tags: [meta, announcement]
-author: apchrme
+title: Welcome!
+date: 2025-04-18
+description: Welcome to phoXiv! Enjoy your stay.
+tags: [meta, introduction]
+author: apochrome
 ---
 
-Welcome to the phoXiv blog. This is where I'll post updates about the archive, notes on ongoing work, and occasionally longer thoughts about physics olympiad resources.
+<script lang="ts">
+    import iphoClowning from "$lib/assets/images/ipho-clowning.png";
+</script>
 
-## What phoXiv is
+Welcome to my blog. This is where I'll post major updates and changes (minor ones will be posted on the Discord server).
 
-[phoXiv](/) is an archive of problems and solutions from physics olympiads around the world — from the well-known IPhO and EuPhO to less-accessible competitions like the Eötvös olympiad or the Singapore olympiads. The goal is to make high-quality problems easy to find, even on mobile.
+## What is phoXiv?
 
-## What this blog will cover
+phoXiv intends to be the most comprehensive archive of the high school physics olympiad problems. It aims to have the most complete and up-to-date set of files for the canonical physics olympiads, and also serve as an introduction to the lesser-known olympiads. At the time of writing, the set of files for [IPhO](/olympiads/ipho) and [APhO](/olympiads/apho) are (as far as I can tell) the most complete out of any website.
 
-A few things I plan to write about:
+## Why?
 
-- **New olympiads added** — when a new competition is added to the archive, I'll post a short note explaining what it is and why it's worth your time.
-- **Behind the scenes** — notes on how the site is built, why certain decisions were made, and what's coming next.
-- **Resource highlights** — pointing to external handouts or materials that pair well with the archive.
+This website was made out of pure frustration. Really.
 
-## Contributing
+When I was studying for IPhO, I was extremely annoyed by the fact that the documentation for physics olympiads were so terrible. It seemed impossible to find somewhere that contained all the problems I wanted. When I was doing APhO problems, I found that the commonly-used [olimpicos APhO archive](https://apho.olimpicos.net/) is both outdated and does not have experimental problems. Meanwhile, for IPhO problems, the official website has not been updated since 2019. In fact, the official website literally has Lorem ipsum on the front page. I'm not even kidding.
 
-If you'd like to help expand the archive — adding missing years, uploading marking schemes, or fixing metadata — take a look at the [GitHub repository](https://github.com/apchrme/phoxiv). Pull requests are very welcome.
+<img alt="IPhO Lorem Ipsum" src={iphoClowning} class="w-full sm:w-3/4 mx-auto" />
 
-That's all for now. More soon.
+
+<p class="text-center -translate-y-4 text-muted-foreground">wow.</p>
+
+I eventually found [Kevin Zhou's handouts](https://knzhou.github.io/#physics-olympiad-handouts), which thankfully contained everything I needed, I found the dropbox folder to be difficult to navigate on mobile.
+
+Finally, I decided to make a website to solve all of these problems once and for all. Also, I kind of felt like learning how to make a website. Now, our IPhO archive is more up-to-date than the [official archive](https://www.ipho-new.org/documentations/), more comprehensive than the commonly-used [olimpicos IPhO archive](https://ipho.olimpicos.net/) while being arguably more convenient to use than either one!
+
+## Who?
+
+The vast majority of this website, from collating files to writing the backend and frontend code, is done solely by me (apochrome). However, I have thankfully found a few people who are interested in adding on to this website (and a couple interested in maintaining it too!). You can see the full list of contributors on [GitHub](https://github.com/apchrme/phoxiv). As a quick thanks to their work:
+
+- Megabrains44: added olympiads (russian tsts, bpho, aupho)
+- Geonwoo Kim: added kphe
+- werwedc: added the all-ukrainian olympiad
+
+## Is this sustainable?
+
+I have mentioned above that many physics olympiad websites have been lost to time, like olimpicos, which has not updated any of its files (other than the IPhO ones) past 2021, and the IPhO official website which is practically dead since 2019. This is inevitably due to how decentralised physics olympiads are. Many of the students or team leaders who make such websites become too busy to maintain them.
+
+I will be personally maintaining the site for the forseeable future (at least the next 2 years), but after that, I can't be completely sure I'll have time for this. To prepare for that eventuality, I have open-sourced the website to encourage more people to contribute, and written documentation to make it much easier to contribute. One of the few physics olympiad websites that remains up-to-date is [ipho-unofficial](https://ipho-unofficial.org/). I hope that, just like for ipho-unofficial, making this website open-source and providing detailed documentation will be enough to keep this project alive.
+
+Here's hoping.

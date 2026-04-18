@@ -50,7 +50,7 @@
 		<!-- Title -->
 		<div class="flex flex-col gap-1">
 			<h1
-				class="text-left! text-[clamp(4rem,10vw,7rem)] leading-none font-bold tracking-[-0.03em] text-foreground"
+				class="mb-2 text-[clamp(4rem,10vw,7rem)] leading-none font-bold tracking-[-0.03em]"
 			>
 				phoXiv
 			</h1>
