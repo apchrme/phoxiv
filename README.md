@@ -25,7 +25,7 @@ This project is built with:
 
 ## Structure
 
-The structure of this website is as follows: competitions are known as "contests". Each contest is split into "years", and within a year, there are multiple "problems".
+The structure of this website is as follows: competitions are known as "olympiads". Each olympiad is split into "years", and within a year, there are multiple "problems".
 
 ## Adding content
 
@@ -35,9 +35,9 @@ The types of files and how to structure the config files will be explained below
 
 ```
 static
-└── contests
-    └── <contest ID>
-        ├── index.yaml # contest config
+└── olympiads
+    └── <olympiad ID>
+        ├── index.yaml # olympiad config
         ├── <year><suffix> # year-level file
         |
         |   # Examples
@@ -54,17 +54,17 @@ static
 
 ```
 
-### Adding new contests
+### Adding new olympiads
 
-1. Choose a unique contest ID. It will be matched in search results, so choose something that people often use as a shorthand for the competition (like `ipho` for the International Physics Olympiad)
-2. Create an `index.yaml` file in the path `/static/contests/<contest ID>/index.yaml` with the following structure. This is the **contest config**.
+1. Choose a unique olympiad ID. It will be matched in search results, so choose something that people often use as a shorthand for the competition (like `ipho` for the International Physics Olympiad)
+2. Create an `index.yaml` file in the path `/static/olympiads/<olympiad ID>/index.yaml` with the following structure. This is the **olympiad config**.
 
 ```yaml
-# /static/contests/<contest ID>/index.yaml
+# /static/olympiads/<olympiad ID>/index.yaml
 
 name: The Physics Olympiad
 
-# summary appears on the list of contests
+# summary appears on the list of olympiads
 summary: One of the physics olympiads of all time
 
 icon: ⚛️
@@ -72,7 +72,7 @@ icon: ⚛️
 # tag can be International, Regional, National or Open
 tag: International
 
-# (Optional) Order the contest appears on the list of contests.
+# (Optional) Order the olympiad appears on the list of olympiads.
 order: 2
 
 # (Optional) additional file types to contain niche files
@@ -86,7 +86,7 @@ extraFileTypes:
       suffix: "_C"
       label: "Calibration"
 
-# (Optional) this appears in the contest page itself. Markdown can be used.
+# (Optional) this appears in the olympiad page itself. Markdown can be used.
 description: |
   This is a description
   This is the second line
@@ -96,7 +96,7 @@ description: |
 
 ### Adding new problems
 
-There are different **file types**, such as problems and solutions. You can indicate what type a file is by appending a suffix. The default suffixes can be found in [fileTypes.ts](/src/lib/pregen/fileTypes.ts), but you can add more in the contest config described above.
+There are different **file types**, such as problems and solutions. You can indicate what type a file is by appending a suffix. The default suffixes can be found in [fileTypes.ts](/src/lib/pregen/fileTypes.ts), but you can add more in the olympiad config described above.
 
 There are two "levels" of files you can add:
 
@@ -105,10 +105,10 @@ There are two "levels" of files you can add:
 
 The syntax and file location of these files can be found in the directory structure above.
 
-Problem titles and external links/comments can be configured in the optional **year config**, at `/static/contests/<contest id>/<year>/index.yaml`. The year config has the following structure:
+Problem titles and external links/comments can be configured in the optional **year config**, at `/static/olympiads/<olympiad id>/<year>/index.yaml`. The year config has the following structure:
 
 ```yaml
-# /static/contests/<contest ID>/<year>/index.yaml
+# /static/olympiads/<olympiad ID>/<year>/index.yaml
 
 # problem titles
 problems:
@@ -141,7 +141,7 @@ This is because the site generates hyperlinks and other data based on the `.json
 
 ```sh
 bun run pregen
-  --contests
+  --olympiads
   --files
   --stats
   --search
@@ -164,7 +164,7 @@ tl;dr after modifying anything in `static/`, run `bun run pregen` to ensure your
 ### Low priority
 
 - include eupho statutes
-- add "collections" to group contests together
+- add "collections" to group olympiads together
 - make links in mdsvex external (use custom components)
 
 ## Acknowledgements

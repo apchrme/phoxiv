@@ -19,12 +19,12 @@
 
 
 	const index: SearchItem[] = searchIndex.items.map((item) => {
-		const meta = (searchIndex as unknown as SearchIndex).contestMeta[item.contestId];
+		const meta = (searchIndex as unknown as SearchIndex).olympiadMeta[item.olympiadId];
 		return {
 			...item,
 			problem: item.problem as ProblemEntry,
-			contestName: meta.name,
-			contestIcon: meta.icon,
+			olympiadName: meta.name,
+			olympiadIcon: meta.icon,
 			probFTEntries: meta.probFTEntries
 		};
 	});
@@ -86,7 +86,7 @@
 	}
 
 	function navigateTo(item: SearchItem) {
-		goto(`/contests/${item.contestId}#${item.year}`);
+		goto(`/olympiads/${item.olympiadId}#${item.year}`);
 		closeSearch();
 	}
 
@@ -152,7 +152,7 @@
 						bind:this={inputEl}
 						bind:value={query}
 						type="search"
-						placeholder="Search by title, number, contest, or year…"
+						placeholder="Search by title, number, olympiad, or year…"
 						class="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
 					/>
 					<Dialog.Close
@@ -173,11 +173,11 @@
 						<p class="flex flex-1 items-center justify-center text-sm text-muted-foreground">No results found.</p>
 					{:else}
 						<ul>
-							{#each results as item, i (item.contestId + item.year + item.problem.number)}
+							{#each results as item, i (item.olympiadId + item.year + item.problem.number)}
 								<li>
 									<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 									<a
-										href="/contests/{item.contestId}#{item.year}"
+										href="/olympiads/{item.olympiadId}#{item.year}"
 										onclick={(e) => {
 											e.preventDefault();
 											navigateTo(item);
@@ -188,11 +188,11 @@
 											i === focusedIndex && 'bg-muted/60'
 										)}
 									>
-										<!-- Contest + year -->
+										<!-- Olympiad + year -->
 										<div class="flex items-center gap-1.5 text-muted-foreground">
-											<span aria-hidden="true">{item.contestIcon}</span>
+											<span aria-hidden="true">{item.olympiadIcon}</span>
 											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-											<span>{@html highlight(item.contestName, query)}</span>
+											<span>{@html highlight(item.olympiadName, query)}</span>
 											<span aria-hidden="true">·</span>
 											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 											<span class="font-mono">{@html highlight(String(item.year), query)}</span>

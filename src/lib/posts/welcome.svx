@@ -10,13 +10,13 @@ Welcome to the phoXiv blog. This is where I'll post updates about the archive, n
 
 ## What phoXiv is
 
-[phoXiv](/) is an archive of problems and solutions from physics olympiads around the world — from the well-known IPhO and EuPhO to less-accessible competitions like the Eötvös contest or the Singapore olympiads. The goal is to make high-quality problems easy to find, even on mobile.
+[phoXiv](/) is an archive of problems and solutions from physics olympiads around the world — from the well-known IPhO and EuPhO to less-accessible competitions like the Eötvös olympiad or the Singapore olympiads. The goal is to make high-quality problems easy to find, even on mobile.
 
 ## What this blog will cover
 
 A few things I plan to write about:
 
-- **New contests added** — when a new competition is added to the archive, I'll post a short note explaining what it is and why it's worth your time.
+- **New olympiads added** — when a new competition is added to the archive, I'll post a short note explaining what it is and why it's worth your time.
 - **Behind the scenes** — notes on how the site is built, why certain decisions were made, and what's coming next.
 - **Resource highlights** — pointing to external handouts or materials that pair well with the archive.
 

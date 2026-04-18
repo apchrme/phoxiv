@@ -1,10 +1,10 @@
 /**
- * Generic file types used across all contests.
- * Contest-specific types (e.g. "Paper 1" for spho) belong in the
- * contest's static/contests/<id>/index.yaml under `extraFileTypes`.
+ * Generic file types used across all olympiads.
+ * Olympiad-specific types (e.g. "Paper 1" for spho) belong in the
+ * olympiad's static/olympiads/<id>/index.yaml under `extraFileTypes`.
  *
  * ORDER MATTERS — the UI renders file links in this order.
- * Extra contest-specific types are appended after these.
+ * Extra olympiad-specific types are appended after these.
  */
 
 export type FileType = {

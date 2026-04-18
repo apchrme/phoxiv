@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	let { params }: PageProps = $props();
-	import contests from '$lib/pregen/output/contests.json';
+	import olympiads from '$lib/pregen/output/olympiads.json';
 	import SvelteSeo from 'svelte-seo';
 
 	import files from '$lib/pregen/output/files.json';
@@ -11,25 +11,25 @@
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 
-	// contest will definitely be found, as the page.ts will throw a 404 if it isn't.
-	let contest = $derived(contests.find((i) => i.id == params.contest));
-	const contestFiles: YearEntry[] = $derived(
-		(files as unknown as Record<string, YearEntry[]>)[contest.id] ?? []
+	// olympiad will definitely be found, as the page.ts will throw a 404 if it isn't.
+	let olympiad = $derived(olympiads.find((i) => i.id == params.olympiad));
+	const olympiadFiles: YearEntry[] = $derived(
+		(files as unknown as Record<string, YearEntry[]>)[olympiad.id] ?? []
 	);
 
-	// Merged file type labels for this specific contest
-	const yearFTEntries = $derived(Object.entries(contest?.yearFileTypes ?? {}));
-	const probFTEntries = $derived(Object.entries(contest?.problemFileTypes ?? {}));
+	// Merged file type labels for this specific olympiad
+	const yearFTEntries = $derived(Object.entries(olympiad?.yearFileTypes ?? {}));
+	const probFTEntries = $derived(Object.entries(olympiad?.problemFileTypes ?? {}));
 
 	let query = $state('');
 	let showFullYear = $state(false);
 
 	const filtered = $derived(() => {
 		const q = query.trim().toLowerCase();
-		if (!q) return contestFiles.map((y) => ({ ...y, matchedProblems: y.problems }));
+		if (!q) return olympiadFiles.map((y) => ({ ...y, matchedProblems: y.problems }));
 
 		const results = [];
-		for (const year of contestFiles) {
+		for (const year of olympiadFiles) {
 			const yearMatches = String(year.year).includes(q);
 			const matchedProblems = year.problems.filter(
 				(p) => p.number.toLowerCase().includes(q) || (p.title?.toLowerCase().includes(q) ?? false)
@@ -46,7 +46,7 @@
 	const hasProblemMatches = $derived(() => {
 		const q = query.trim().toLowerCase();
 		if (!q) return false;
-		return contestFiles.some(
+		return olympiadFiles.some(
 			(y) =>
 				!String(y.year).includes(q) &&
 				y.problems.some(
@@ -68,16 +68,16 @@
 </script>
 
 <SvelteSeo
-	title={contest.name}
-	description="An archive of problems and solutions from the {contest.name}, in PDF format."
+	title={olympiad.name}
+	description="An archive of problems and solutions from the {olympiad.name}, in PDF format."
 	keywords="problems, solutions, olympiad, physics"
 />
 
 <div class="py-5 md:py-10">
-	<h1 class="mb-1 text-3xl font-bold tracking-tight sm:text-4xl">{contest.name}</h1>
-	{#if contest?.descriptionHtml}
+	<h1 class="mb-1 text-3xl font-bold tracking-tight sm:text-4xl">{olympiad.name}</h1>
+	{#if olympiad?.descriptionHtml}
 		<div class="mb-4 max-w-none prose dark:prose-invert text-foreground">
-			{@html contest.descriptionHtml}
+			{@html olympiad.descriptionHtml}
 		</div>
 	{/if}
 </div>

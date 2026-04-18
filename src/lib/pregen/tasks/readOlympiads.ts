@@ -3,26 +3,26 @@ import path from 'path';
 import { marked } from 'marked';
 import { yearFileTypes, problemFileTypes } from '../fileTypes.js';
 import type { FileType } from '../fileTypes.js';
-import type { ContestEntry, ContestIndexYaml, FileTypeLabel } from '../types.js';
+import type { OlympiadEntry, OlympiadIndexYaml, FileTypeLabel } from '../types.js';
 import { STATIC_DIR, readYaml, toLabels } from '../utils.js';
 
-export type InternalContest = ContestEntry & {
+export type InternalOlympiad = OlympiadEntry & {
 	_order: number;
 	_yearTypes: Record<string, FileType>;
 	_problemTypes: Record<string, FileType>;
 };
 
-export function readContests(): InternalContest[] {
-	const contestDirs = fs
+export function readOlympiads(): InternalOlympiad[] {
+	const olympiadDirs = fs
 		.readdirSync(STATIC_DIR, { withFileTypes: true })
 		.filter((d) => d.isDirectory())
 		.map((d) => d.name);
 
-	const contests: InternalContest[] = [];
+	const olympiads: InternalOlympiad[] = [];
 
-	for (const id of contestDirs) {
-		const contestDir = path.join(STATIC_DIR, id);
-		const meta = readYaml<ContestIndexYaml>(path.join(contestDir, 'index.yaml'));
+	for (const id of olympiadDirs) {
+		const olympiadDir = path.join(STATIC_DIR, id);
+		const meta = readYaml<OlympiadIndexYaml>(path.join(olympiadDir, 'index.yaml'));
 		if (!meta) {
 			console.warn('  No index.yaml for "' + id + '" — skipping');
 			continue;
@@ -31,7 +31,7 @@ export function readContests(): InternalContest[] {
 		const mergedYear = { ...yearFileTypes, ...(meta.extraFileTypes?.year ?? {}) };
 		const mergedProblem = { ...problemFileTypes, ...(meta.extraFileTypes?.problem ?? {}) };
 
-		contests.push({
+		olympiads.push({
 			id,
 			name: meta.name,
 			summary: meta.summary,
@@ -47,7 +47,7 @@ export function readContests(): InternalContest[] {
 		});
 	}
 
-	contests.sort((a, b) => (a._order !== b._order ? a._order - b._order : a.id.localeCompare(b.id)));
+	olympiads.sort((a, b) => (a._order !== b._order ? a._order - b._order : a.id.localeCompare(b.id)));
 
-	return contests;
+	return olympiads;
 }

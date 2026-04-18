@@ -1,6 +1,6 @@
 <script lang="ts">
-	import contests from '$lib/pregen/output/contests.json';
-	import type { ContestTag } from '$lib/pregen/types.js';
+	import olympiads from '$lib/pregen/output/olympiads.json';
+	import type { OlympiadTag } from '$lib/pregen/types.js';
 	import * as Card from '$lib/components/ui/card/index';
 	import { Badge } from '$lib/components/ui/badge/index';
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
@@ -9,14 +9,14 @@
 	import { cn } from '$lib/utils.js';
 
 	// this seems redundant. I should remove this
-	const ALL_TAGS: ContestTag[] = ['International', 'Regional', 'National', 'Open'];
+	const ALL_TAGS: OlympiadTag[] = ['International', 'Regional', 'National', 'Open'];
 
 	let query = $state('');
-	let activeTag = $state<ContestTag | null>(null);
+	let activeTag = $state<OlympiadTag | null>(null);
 
 	const filtered = $derived(() => {
 		const q = query.trim().toLowerCase();
-		return contests.filter((c) => {
+		return olympiads.filter((c) => {
 			const matchesTag = activeTag === null || c.tag === activeTag;
 			const matchesQuery =
 				!q ||
@@ -28,24 +28,24 @@
 	});
 </script>
 
-<section id="contests" class="mb-4">
+<section id="olympiads" class="mb-4">
 	<div class="my-5 md:my-10">
 		<h1>
-			Contests
+			Olympiads
 		</h1>
-		<p class="m-0 text-muted-foreground">
+		<p class="prose">
 			Click any card to explore problems, solutions &amp; marking schemes.
 		</p>
 	</div>
 
 	<!-- Search + filter toolbar -->
 	<div class="mb-5">
-		<SearchBar placeholder="Search contests…" bind:value={query}>
+		<SearchBar placeholder="Search olympiads…" bind:value={query}>
 			{#snippet filters()}
 				<ToggleGroup.Root
 					type="single"
 					value={activeTag ?? ''}
-					onValueChange={(v) => (activeTag = (v as ContestTag) || null)}
+					onValueChange={(v) => (activeTag = (v as OlympiadTag) || null)}
 					class="flex-wrap justify-center sm:flex-nowrap"
 				>
 					<ToggleGroup.Item value="">All</ToggleGroup.Item>
@@ -57,11 +57,11 @@
 		</SearchBar>
 	</div>
 
-	<!-- Contest grid -->
+	<!-- Olympiad grid -->
 	{#if filtered().length > 0}
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">
-			{#each filtered() as contest (contest.id)}
-				<a href="/contests/{contest.id}" class="group block">
+			{#each filtered() as olympiad (olympiad.id)}
+				<a href="/olympiads/{olympiad.id}" class="group block">
 					<Card.Root
 						class={cn(
 							'h-full cursor-pointer py-4! transition-all duration-200',
@@ -71,8 +71,8 @@
 						<Card.Content class="flex h-full flex-col gap-3 px-5">
 							<!-- Top row: emoji + badge -->
 							<div class="flex items-start justify-between">
-								<span class="text-4xl leading-none">{contest.icon}</span>
-								<Badge variant="outline">{contest.tag}</Badge>
+								<span class="text-4xl leading-none">{olympiad.icon}</span>
+								<Badge variant="outline">{olympiad.tag}</Badge>
 							</div>
 
 							<!-- Body -->
@@ -80,10 +80,10 @@
 								<h3
 									class="py-0 text-base leading-snug font-semibold text-card-foreground transition-colors duration-150 group-hover:text-primary"
 								>
-									{contest.name}
+									{olympiad.name}
 								</h3>
 								<span class="text-sm leading-relaxed text-muted-foreground">
-									{contest.summary}
+									{olympiad.summary}
 								</span>
 							</div>
 
@@ -110,7 +110,7 @@
 		</div>
 	{:else}
 		<SearchEmptyState
-			message="No contests found"
+			message="No olympiads found"
 			hint="Try a different search term or clear the filter."
 			clearLabel="Clear filters"
 			onClear={() => {

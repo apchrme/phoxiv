@@ -1,35 +1,35 @@
-export type ContestTag = 'International' | 'Regional' | 'National' | 'Open';
+export type OlympiadTag = 'International' | 'Regional' | 'National' | 'Open';
 
 /** A file type descriptor used at runtime (suffix not needed after generation). */
 export type FileTypeLabel = {
 	label: string;
 };
 
-/** A contest entry as written to contests.json. */
-export type ContestEntry = {
+/** A olympiad entry as written to olympiads.json. */
+export type OlympiadEntry = {
 	id: string;
 	name: string;
 	summary: string;
 	icon: string;
-	tag: ContestTag;
-	/** Merged (global + contest-specific) year-level file type labels, in render order. */
+	tag: OlympiadTag;
+	/** Merged (global + olympiad-specific) year-level file type labels, in render order. */
 	yearFileTypes: Record<string, FileTypeLabel>;
-	/** Merged (global + contest-specific) problem-level file type labels, in render order. */
+	/** Merged (global + olympiad-specific) problem-level file type labels, in render order. */
 	problemFileTypes: Record<string, FileTypeLabel>;
 	description?: string; // raw Markdown (in YAML)
-	descriptionHtml?: string; // compiled HTML (in contests.json)
+	descriptionHtml?: string; // compiled HTML (in olympiads.json)
 };
 
-/** Shape of static/contests/<id>/index.yaml */
-export type ContestIndexYaml = {
+/** Shape of static/olympiads/<id>/index.yaml */
+export type OlympiadIndexYaml = {
 	name: string;
 	summary: string;
 	icon: string;
-	tag: ContestTag;
+	tag: OlympiadTag;
 	/** Display order on the homepage (lower = earlier). */
 	order?: number;
 	/**
-	 * Contest-specific extra file types not in the global fileTypes.ts.
+	 * Olympiad-specific extra file types not in the global fileTypes.ts.
 	 * These are appended after the global types when rendering file links.
 	 */
 	extraFileTypes?: {
@@ -39,7 +39,7 @@ export type ContestIndexYaml = {
 	description?: string; // raw Markdown (in YAML)
 };
 
-/** Shape of static/contests/<id>/<year>/index.yaml */
+/** Shape of static/olympiads/<id>/<year>/index.yaml */
 export type YearIndexYaml = {
 	notes?: string[];
 	extraLinks?: ExtraLink[];
@@ -70,15 +70,15 @@ export type FilesJson = Record<string, YearEntry[]>;
 
 /** One problem entry in the pregenerated search index. */
 export type SearchIndexItem = {
-	contestId: string;
+	olympiadId: string;
 	year: number;
 	problem: ProblemEntry;
 	/** Pre-lowercased concatenation of all searchable fields, in match-priority order. */
 	searchText: string;
 };
 
-/** Shape of the metadata of the contests in the search index */
-export type ContestSearchIndexEntry = {
+/** Shape of the metadata of the olympiads in the search index */
+export type OlympiadSearchIndexEntry = {
 	name: string;
 	icon: string;
 	probFTEntries:[string, FileTypeLabel][];
@@ -86,15 +86,15 @@ export type ContestSearchIndexEntry = {
 
 /** Shape of the search index used in global search */
 export type SearchIndex = {
-	contestMeta: Record<string, ContestSearchIndexEntry>;
+	olympiadMeta: Record<string, OlympiadSearchIndexEntry>;
 	items: SearchIndexItem[];
 }
 
 /** A problem entry with the extra properties needed for the UI in GlobalSearch.svelte */
 export type SearchItem = {
-	contestId: string;
-	contestName: string;
-	contestIcon: string;
+	olympiadId: string;
+	olympiadName: string;
+	olympiadIcon: string;
 	year: number;
 	problem: ProblemEntry;
 	probFTEntries: [string, FileTypeLabel][];

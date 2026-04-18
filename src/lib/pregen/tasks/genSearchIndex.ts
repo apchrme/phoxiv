@@ -1,30 +1,30 @@
 import fs from 'fs';
 import type { FilesJson, SearchIndexItem, SearchIndex } from '../types.js';
 import { OUT } from '../utils.js';
-import type { InternalContest } from './readContests.js';
+import type { InternalOlympiad } from './readOlympiads.js';
 
-export function genSearchIndex(internalContests: InternalContest[], filesOutput: FilesJson): void {
-	const contestMeta: SearchIndex["contestMeta"] = {};
+export function genSearchIndex(internalOlympiads: InternalOlympiad[], filesOutput: FilesJson): void {
+	const olympiadMeta: SearchIndex["olympiadMeta"] = {};
 
-	for (const contest of internalContests) {
-		contestMeta[contest.id] = {
-			name: contest.name,
-			icon: contest.icon,
-			probFTEntries: Object.entries(contest.problemFileTypes)
+	for (const olympiad of internalOlympiads) {
+		olympiadMeta[olympiad.id] = {
+			name: olympiad.name,
+			icon: olympiad.icon,
+			probFTEntries: Object.entries(olympiad.problemFileTypes)
 		};
 	}
 
 	const items: SearchIndexItem[] = [];
-	for (const contest of internalContests) {
-		for (const yearEntry of filesOutput[contest.id] ?? []) {
+	for (const olympiad of internalOlympiads) {
+		for (const yearEntry of filesOutput[olympiad.id] ?? []) {
 			for (const problem of yearEntry.problems) {
 				items.push({
-					contestId: contest.id,
+					olympiadId: olympiad.id,
 					year: yearEntry.year,
 					problem,
 					searchText: [
-						contest.id,
-						contest.name,
+						olympiad.id,
+						olympiad.name,
 						String(yearEntry.year),
 						problem.number,
 						problem.title ?? ''
@@ -36,6 +36,6 @@ export function genSearchIndex(internalContests: InternalContest[], filesOutput:
 		}
 	}
 
-	fs.writeFileSync(OUT.searchIndex, JSON.stringify({ contestMeta, items }, null, 2));
+	fs.writeFileSync(OUT.searchIndex, JSON.stringify({ olympiadMeta, items }, null, 2));
 	console.log('Wrote ' + OUT.searchIndex + ' (' + items.length + ' items)');
 }
