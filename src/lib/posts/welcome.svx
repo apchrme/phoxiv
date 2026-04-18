@@ -28,9 +28,7 @@ When I was studying for IPhO, I was extremely annoyed by the fact that the docum
 
 <p class="text-center -translate-y-4 text-muted-foreground">wow.</p>
 
-I eventually found [Kevin Zhou's handouts](https://knzhou.github.io/#physics-olympiad-handouts), which thankfully contained everything I needed, I found the dropbox folder to be difficult to navigate on mobile.
-
-Finally, I decided to make a website to solve all of these problems once and for all. Also, I kind of felt like learning how to make a website. Now, our IPhO archive is more up-to-date than the [official archive](https://www.ipho-new.org/documentations/), more comprehensive than the commonly-used [olimpicos IPhO archive](https://ipho.olimpicos.net/) while being arguably more convenient to use than either one!
+I eventually found [Kevin Zhou's handouts](https://knzhou.github.io/#physics-olympiad-handouts), which thankfully contained everything I needed, but I found the dropbox folder to be difficult to navigate on mobile. So I decided to make a website to solve all of these problems once and for all. Also, I kind of felt like learning how to make a website. Now, our IPhO archive is more up-to-date than the [official archive](https://www.ipho-new.org/documentations/), more comprehensive than the commonly-used [olimpicos IPhO archive](https://ipho.olimpicos.net/) while being arguably more convenient to use than either one!
 
 ## Who?
 
@@ -42,8 +40,6 @@ The vast majority of this website, from collating files to writing the backend a
 
 ## Is this sustainable?
 
-I have mentioned above that many physics olympiad websites have been lost to time, like olimpicos, which has not updated any of its files (other than the IPhO ones) past 2021, and the IPhO official website which is practically dead since 2019. This is inevitably due to how decentralised physics olympiads are. Many of the students or team leaders who make such websites become too busy to maintain them.
-
-I will be personally maintaining the site for the forseeable future (at least the next 2 years), but after that, I can't be completely sure I'll have time for this. To prepare for that eventuality, I have open-sourced the website to encourage more people to contribute, and written documentation to make it much easier to contribute. One of the few physics olympiad websites that remains up-to-date is [ipho-unofficial](https://ipho-unofficial.org/). I hope that, just like for ipho-unofficial, making this website open-source and providing detailed documentation will be enough to keep this project alive.
+I have mentioned above that many physics olympiad websites have been lost to time, like olimpicos, which has not updated any of its files (other than the IPhO ones) past 2021, and the IPhO official website which is practically dead since 2019. This is inevitable due to how decentralised physics olympiads are. Many of the students or team leaders who make such websites become too busy to maintain them. I will be personally maintaining the site for the forseeable future (at least the next 2 years), but after that, I can't be completely sure I'll have time for this. To prepare for that eventuality, I have open-sourced the website to encourage more people to contribute, and written documentation to make it much easier to contribute. One of the few physics olympiad websites that remains up-to-date is [ipho-unofficial](https://ipho-unofficial.org/). I hope that, just like for ipho-unofficial, making this website open-source and providing detailed documentation will be enough to keep this project alive.
 
 Here's hoping.
