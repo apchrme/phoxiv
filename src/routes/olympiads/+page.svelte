@@ -131,7 +131,7 @@
 			Want to add problems or help maintain the site? Open a PR or reach out.
 		</p>
 		<a
-			href="mailto:admin@phoxiv.org"
+			href="mailto:apochrome@proton.me"
 			class="shrink-0 rounded-lg bg-primary-foreground px-4 py-2 text-sm font-semibold text-primary transition-opacity hover:opacity-90"
 		>
 			Get in touch →

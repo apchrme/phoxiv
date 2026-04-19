@@ -41,7 +41,7 @@
 	/** Wraps fuzzy-matched characters in <mark> for a single display field. */
 	function highlight(text: string, q: string): string {
 		if (!text || !q) return text;
-		const [idxs, info, order] = uf.search([text.toLowerCase()], q.toLowerCase());
+		const [idxs, info, order] = uf.search([text.toLowerCase()], q.toLowerCase(), 1);
 		if (!idxs?.length || !order?.length) return text;
 		return uFuzzy.highlight(text, info.ranges[order[0]]);
 	}
@@ -60,7 +60,7 @@
 	const results = $derived.by(() => {
 		const q = query.trim();
 		if (!q) return [];
-		const [idxs, , order] = uf.search(haystack, q.toLowerCase());
+		const [idxs, , order] = uf.search(haystack, q.toLowerCase(), 1);
 		if (!idxs?.length || !order?.length) return [];
 		return order.slice(0, MAX_RESULTS).map((oi) => index[idxs[oi]]);
 	});
