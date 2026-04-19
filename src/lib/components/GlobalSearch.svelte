@@ -39,11 +39,20 @@
 	// ---------------------------------------------------------------------------
 
 	/** Wraps fuzzy-matched characters in <mark> for a single display field. */
+
 	function highlight(text: string, q: string): string {
 		if (!text || !q) return text;
-		const [idxs, info, order] = uf.search([text.toLowerCase()], q.toLowerCase(), 1);
-		if (!idxs?.length || !order?.length) return text;
-		return uFuzzy.highlight(text, info.ranges[order[0]]);
+		const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+		// uFuzzy highlight operates on plain text, so collect all ranges first
+		const ranges: [number, number][] = [];
+		for (const term of terms) {
+			const [idxs, info, order] = uf.search([text.toLowerCase()], term);
+			if (idxs?.length && order?.length) {
+				ranges.push(...info.ranges[order[0]]);
+			}
+		}
+		if (!ranges.length) return text;
+		return uFuzzy.highlight(text, ranges);
 	}
 
 	const MAX_RESULTS = 50;
@@ -56,13 +65,25 @@
 	let focusedIndex = $state(0);
 	let inputEl: HTMLInputElement | undefined = $state();
 	let resultsEl: HTMLDivElement | undefined = $state();
-
+	
+	
 	const results = $derived.by(() => {
 		const q = query.trim();
 		if (!q) return [];
-		const [idxs, , order] = uf.search(haystack, q.toLowerCase(), 1);
-		if (!idxs?.length || !order?.length) return [];
-		return order.slice(0, MAX_RESULTS).map((oi) => index[idxs[oi]]);
+
+		const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+
+		// Search each term independently, then intersect — fully order-agnostic, so users no longer have to search in the same order as the searchText in the search index.
+		const termSets = terms.map((term) => {
+			const [idxs] = uf.search(haystack, term);
+			return new Set(idxs ?? []);
+		});
+
+		const matchingIndices = [...termSets[0]].filter((idx) =>
+			termSets.every((set) => set.has(idx))
+		);
+
+		return matchingIndices.slice(0, MAX_RESULTS).map((idx) => index[idx]);
 	});
 
 	$effect(() => {
