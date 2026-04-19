@@ -1,5 +1,8 @@
 <script lang="ts">
 	import '../app.css';
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { toast } from 'svelte-sonner';
 	let { children } = $props();
 
 	import NavLink from './NavLink.svelte';
@@ -11,6 +14,7 @@
 	import NavButtons from './NavButtons.svelte';
 	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
 	import GlobalSearch from '$lib/components/GlobalSearch.svelte';
+	import { Toaster } from '$lib/components/ui/sonner/index.js';
 	import { Search } from '@lucide/svelte';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Kbd from '$lib/components/ui/kbd/index.js';
@@ -23,6 +27,45 @@
 	];
 
 	let searchOpen = $state(false);
+
+	// Eagerly load all post metadata at build time so we can find the latest post.
+	const postModules = import.meta.glob('/src/lib/posts/*.svx', { eager: true });
+
+	onMount(() => {
+		const posts = Object.entries(postModules)
+			.map(([path, mod]) => {
+				const slug = path.split('/').pop()?.replace('.svx', '') ?? '';
+				const { metadata } = mod as { metadata: Record<string, unknown> };
+				return {
+					slug,
+					title: String(metadata.title ?? 'Untitled'),
+					date: String(metadata.date ?? '')
+				};
+			})
+			.filter((p) => p.date)
+			.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+		const latestPost = posts[0];
+		if (!latestPost) return;
+
+		const STORAGE_KEY = 'blog:last-seen-post';
+		const lastSeen = localStorage.getItem(STORAGE_KEY);
+
+		if (lastSeen !== latestPost.slug) {
+			localStorage.setItem(STORAGE_KEY, latestPost.slug);
+			// Short delay so the page finishes rendering before the toast appears.
+			setTimeout(() => {
+				toast('New blog post!', {
+					description: latestPost.title,
+					action: {
+						label: 'Read',
+						onClick: () => goto(`/blog/${latestPost.slug}`)
+					},
+					duration: 8000
+				});
+			}, 1200);
+		}
+	});
 </script>
 
 <svelte:head>
@@ -31,6 +74,7 @@
 
 <ModeWatcher />
 <GlobalSearch bind:open={searchOpen} />
+<Toaster richColors closeButton position="top-center" />
 
 <Sidebar.Provider>
 	<AppSidebar {navLinks} />
