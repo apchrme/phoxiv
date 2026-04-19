@@ -8,7 +8,27 @@ import type { FileTypeLabel } from './types.js';
 
 export const STATIC_DIR = path.resolve('static/olympiads');
 export const EXTENSIONS = ['pdf', 'xlsx', 'zip', 'htm', 'html', 'doc', 'docx'];
-export const PROBLEM_NUMS = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12', 'E1', 'E2', 'PE', 'PE+', 'PE1', 'PE2', 'PE3'];
+export const PROBLEM_NUMS = [
+	'T1',
+	'T2',
+	'T3',
+	'T4',
+	'T5',
+	'T6',
+	'T7',
+	'T8',
+	'T9',
+	'T10',
+	'T11',
+	'T12',
+	'E1',
+	'E2',
+	'PE',
+	'PE+',
+	'PE1',
+	'PE2',
+	'PE3'
+];
 
 export const OUT = {
 	olympiads: path.resolve('src/lib/pregen/output/olympiads.json'),

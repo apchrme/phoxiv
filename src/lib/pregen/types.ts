@@ -81,14 +81,14 @@ export type SearchIndexItem = {
 export type OlympiadSearchIndexEntry = {
 	name: string;
 	icon: string;
-	probFTEntries:[string, FileTypeLabel][];
+	probFTEntries: [string, FileTypeLabel][];
 };
 
 /** Shape of the search index used in global search */
 export type SearchIndex = {
 	olympiadMeta: Record<string, OlympiadSearchIndexEntry>;
 	items: SearchIndexItem[];
-}
+};
 
 /** A problem entry with the extra properties needed for the UI in GlobalSearch.svelte */
 export type SearchItem = {
@@ -100,4 +100,3 @@ export type SearchItem = {
 	probFTEntries: [string, FileTypeLabel][];
 	searchText: string;
 };
-

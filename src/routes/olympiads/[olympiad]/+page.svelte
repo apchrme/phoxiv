@@ -83,9 +83,9 @@
 </a>
 
 <header class="flex flex-col gap-3 pt-3 md:pt-5">
-	<h1 class="text-3xl font-bold leading-tight tracking-tight sm:text-4xl">{olympiad.name}</h1>
+	<h1 class="text-3xl leading-tight font-bold tracking-tight sm:text-4xl">{olympiad.name}</h1>
 	{#if olympiad?.descriptionHtml}
-		<div class="mb-4 max-w-none prose">
+		<div class="prose mb-4 max-w-none">
 			{@html olympiad.descriptionHtml}
 		</div>
 	{/if}
@@ -98,7 +98,7 @@
 				{#if hasProblemMatches()}
 					<label class="flex cursor-pointer items-center gap-2">
 						<Switch bind:checked={showFullYear} />
-						<span class="text-sm text-muted-foreground text-nowrap">Show full year</span>
+						<span class="text-sm text-nowrap text-muted-foreground">Show full year</span>
 					</label>
 				{/if}
 			{/snippet}
@@ -108,7 +108,10 @@
 	{#if filtered().length > 0}
 		<div class="flex flex-col gap-4">
 			{#each filtered() as year (year.year)}
-				<div class="overflow-hidden rounded-2xl border border-border bg-card" id={String(year.year)}>
+				<div
+					class="overflow-hidden rounded-2xl border border-border bg-card"
+					id={String(year.year)}
+				>
 					<div class="flex items-center border-b border-border bg-muted/60 px-4 py-2.5">
 						<span class="font-mono text-lg font-semibold text-foreground tabular-nums">
 							{year.year}
