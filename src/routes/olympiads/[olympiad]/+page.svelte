@@ -10,7 +10,7 @@
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
-	import { ChevronLeft } from '@lucide/svelte';
+	import { ChevronLeft, ArrowUpRight } from '@lucide/svelte';
 
 	// olympiad will definitely be found, as the page.ts will throw a 404 if it isn't.
 	let olympiad = $derived(olympiads.find((i) => i.id == params.olympiad));
@@ -125,6 +125,13 @@
 							</Badge>
 						{/snippet}
 
+						{#snippet ExtraFileLink(url: string, label: string)}
+							<Badge variant="outline" href={url} target="_blank" class="px-2.5 py-2.5 text-sm">
+								<ArrowUpRight />
+								{label}
+							</Badge>
+						{/snippet}
+
 						{#if showYearLevel(year) && hasYearLevelContent(year)}
 							<div class="flex flex-col gap-2">
 								{#each year.notes as note (note)}
@@ -133,7 +140,7 @@
 								{#if year.extraLinks.length > 0 || Object.keys(year.yearFiles).length > 0}
 									<div class="flex flex-wrap gap-2">
 										{#each year.extraLinks as link (link.label)}
-											{@render FileLink(link.url, link.label)}
+											{@render ExtraFileLink(link.url, link.label)}
 										{/each}
 										{#each yearFTEntries as [key, ft] (key)}
 											{#if year.yearFiles[key]}

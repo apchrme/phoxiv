@@ -1,6 +1,5 @@
 name: Asian Physics Olympiad
 summary: The Asian version of IPhO, often used by countries to select their IPhO teams.
-icon: 🌏
 tag: Regional
 order: 3
 extraFileTypes:

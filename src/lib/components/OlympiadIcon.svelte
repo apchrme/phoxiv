@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getFlagCountryCode } from '$lib/utils/flag.js';
+	import { CircleAlert } from '@lucide/svelte';
 
 	let {
 		icon = '',
@@ -53,35 +54,12 @@
 
 <!--
 	Priority order:
-	  0. Blank icon            → neutral placeholder
 	  1. Local override image  (/src/lib/assets/icons/olympiads/<id>.*)
 	  2. Flagpedia CDN SVG     (flag emoji detected)
 	  3. Raw emoji <span>      (everything else, or CDN error)
+	  4. Blank
 -->
-{#if !icon}
-	<span
-		class={className}
-		aria-hidden="true"
-		title="No icon set"
-		style="display:inline;align-items:center;justify-content:center;background:var(--muted);border-radius:0.375rem;color:var(--muted-foreground);" // hi claude why is this not a tailwind class i hate you
-	>
-		<svg
-			xmlns="http://www.w3.org/2000/svg"
-			width="60%"
-			height="60%"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			stroke-width="2"
-			stroke-linecap="round"
-			stroke-linejoin="round"
-		>
-			<circle cx="12" cy="12" r="10" />
-			<line x1="12" y1="8" x2="12" y2="12" />
-			<line x1="12" y1="16" x2="12.01" y2="16" />
-		</svg>
-	</span>
-{:else if overrideUrl}
+{#if overrideUrl}
 	<img src={overrideUrl} alt={icon} class={className} />
 {:else if countryCode && !imageError}
 	<img
@@ -90,6 +68,14 @@
 		class="rounded-md {className}"
 		onerror={() => (imageError = true)}
 	/>
-{:else}
+{:else if icon}
 	<span class={className} aria-hidden="true">{icon}</span>
+{:else}
+	<span
+		class="{className}"
+		aria-hidden="true"
+		title="No icon set"
+	>
+		<CircleAlert class="size-9" />	
+	</span>
 {/if}
