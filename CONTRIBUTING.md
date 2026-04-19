@@ -4,7 +4,7 @@ To contribute, fork the repository, make your own changes on a separate branch, 
 
 ## Quickstart
 
-Install [bun](https://bun.com)
+Install [bun](https://bun.com). Then, in your local repository folder, run
 
 ```sh
 # Install dependencies
@@ -65,7 +65,7 @@ name: The Physics Olympiad
 # summary appears on the list of olympiads
 summary: One of the physics olympiads of all time
 
-# This is one of the locations you can add icons. If you use a flag emoji, it looks ugly on Windows (unless you use Firefox), so this is handled by a CDN in OlympiadIcon. If you want to add a custom icon, put it in src/lib/assets/icons/olympiads/<contest.id>.<file extension>
+# (Optional) You can use a flag emoji, and it will not look ugly on Windows (Chromium) because the flags will be replaced by SVGs from Flagpedia. If you want to add a custom icon that is not an emoji, put it in src/lib/assets/icons/olympiads/<olympiad ID>.<file extension>
 icon: ⚛️
 
 # tag can be International, Regional, National or Open
