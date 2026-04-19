@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import SvelteSeo from 'svelte-seo';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { Calendar, Tag, User, ArrowRight} from '@lucide/svelte';
+	import { Calendar, Tag, User, ArrowRight } from '@lucide/svelte';
 	import Title from '$lib/components/Title.svelte';
 	import { Separator } from '$lib/components/ui/separator/index';
 
@@ -17,13 +17,13 @@
 	}
 </script>
 
-<SvelteSeo
-	title="Blog - phoXiv"
-	description="Updates, articles and anything related to phoXiv."
-/>
+<SvelteSeo title="Blog - phoXiv" description="Updates, articles and anything related to phoXiv." />
 
 <!-- Header -->
-<Title title="Blog" description="A collection of updates and articles closely or distantly related to physics olympiads."/>
+<Title
+	title="Blog"
+	description="A collection of updates and articles closely or distantly related to physics olympiads."
+/>
 
 <!-- Post list -->
 {#if data.posts.length === 0}
@@ -41,21 +41,18 @@
 					class="flex flex-col items-center gap-3 rounded-lg px-1 py-5 transition-colors hover:bg-muted/40 sm:flex-row sm:gap-6"
 				>
 					<!-- Date column -->
-					<div class="flex shrink-0 px-4 items-center gap-1.5">
+					<div class="flex shrink-0 items-center gap-1.5 px-4">
 						<Calendar class="size-3.5 shrink-0 text-muted-foreground" />
-						<time
-							datetime={post.date}
-							class="font-mono text-xs text-muted-foreground"
-						>
+						<time datetime={post.date} class="font-mono text-xs text-muted-foreground">
 							{formatDate(post.date)}
 						</time>
 					</div>
 
 					<!-- Content column -->
-					<div class="flex min-w-0 w-full px-5 flex-1 flex-col gap-2">
+					<div class="flex w-full min-w-0 flex-1 flex-col gap-2 px-5">
 						<div class="flex items-center gap-2">
 							<h2
-								class="m-0 text-base font-semibold leading-snug text-foreground transition-colors group-hover:text-primary sm:text-lg"
+								class="m-0 text-base leading-snug font-semibold text-foreground transition-colors group-hover:text-primary sm:text-lg"
 							>
 								{post.title}
 							</h2>
@@ -78,7 +75,9 @@
 								</span>
 							{/if}
 							{#if post.tags && post.tags.length > 0}
-								<span class="flex items-center gap-1 text-muted-foreground" aria-hidden="true">·</span>
+								<span class="flex items-center gap-1 text-muted-foreground" aria-hidden="true"
+									>·</span
+								>
 								{#each post.tags as tag (tag)}
 									<Badge variant="secondary" class="gap-1 px-2 py-0.5 text-xs font-normal">
 										<Tag class="size-2.5" />

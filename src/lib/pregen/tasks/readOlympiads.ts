@@ -47,7 +47,9 @@ export function readOlympiads(): InternalOlympiad[] {
 		});
 	}
 
-	olympiads.sort((a, b) => (a._order !== b._order ? a._order - b._order : a.id.localeCompare(b.id)));
+	olympiads.sort((a, b) =>
+		a._order !== b._order ? a._order - b._order : a.id.localeCompare(b.id)
+	);
 
 	return olympiads;
 }

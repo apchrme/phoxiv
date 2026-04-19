@@ -1,84 +1,84 @@
 /* Prose overrides to match Catppuccin theme */
 
 @utility prose {
-    --tw-prose-body: var(--foreground);
-    --tw-prose-headings: var(--foreground);
-    --tw-prose-lead: var(--muted-foreground);
-    --tw-prose-links: var(--foreground);
-    --tw-prose-bold: var(--foreground);
-    --tw-prose-counters: var(--muted-foreground);
-    --tw-prose-bullets: var(--muted-foreground);
-    --tw-prose-hr: var(--border);
-    --tw-prose-quotes: var(--foreground);
-    --tw-prose-quote-borders: var(--primary);
-    --tw-prose-captions: var(--muted-foreground);
-    --tw-prose-code: var(--foreground);
-    --tw-prose-pre-code: var(--foreground);
-    --tw-prose-pre-bg: var(--card);
-    --tw-prose-th-borders: var(--border);
-    --tw-prose-td-borders: var(--border);
+	--tw-prose-body: var(--foreground);
+	--tw-prose-headings: var(--foreground);
+	--tw-prose-lead: var(--muted-foreground);
+	--tw-prose-links: var(--foreground);
+	--tw-prose-bold: var(--foreground);
+	--tw-prose-counters: var(--muted-foreground);
+	--tw-prose-bullets: var(--muted-foreground);
+	--tw-prose-hr: var(--border);
+	--tw-prose-quotes: var(--foreground);
+	--tw-prose-quote-borders: var(--primary);
+	--tw-prose-captions: var(--muted-foreground);
+	--tw-prose-code: var(--foreground);
+	--tw-prose-pre-code: var(--foreground);
+	--tw-prose-pre-bg: var(--card);
+	--tw-prose-th-borders: var(--border);
+	--tw-prose-td-borders: var(--border);
 
-    font-family: var(--font-sans);
-    font-size: 1rem;
-    line-height: 1.75;
+	font-family: var(--font-sans);
+	font-size: 1rem;
+	line-height: 1.75;
 }
 
 .prose code {
-    font-family: var(--font-mono);
-    font-size: 0.875em;
-    background-color: var(--muted);
-    padding: 0.125em 0.375em;
-    border-radius: 0.25rem;
-    font-weight: 400;
+	font-family: var(--font-mono);
+	font-size: 0.875em;
+	background-color: var(--muted);
+	padding: 0.125em 0.375em;
+	border-radius: 0.25rem;
+	font-weight: 400;
 }
 
 .prose code::before,
 .prose code::after {
-    content: none;
+	content: none;
 }
 
 .prose pre {
-    background-color: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+	background-color: var(--card);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
 }
 
 .prose pre code {
-    background-color: transparent;
-    padding: 0;
+	background-color: transparent;
+	padding: 0;
 }
 
 .prose blockquote {
-    border-left-color: var(--primary);
-    color: var(--muted-foreground);
-    font-style: normal;
+	border-left-color: var(--primary);
+	color: var(--muted-foreground);
+	font-style: normal;
 }
 
 .prose h1 {
-    font-weight: 700;
+	font-weight: 700;
 }
 
 .prose a {
-    transition: color 150ms;
+	transition: color 150ms;
 }
 
 .prose a:hover {
-    color: var(--primary);
+	color: var(--primary);
 }
 
 .prose hr {
-    border-color: var(--border);
+	border-color: var(--border);
 }
 
 .prose table {
-    font-size: 0.9em;
+	font-size: 0.9em;
 }
 
 .prose thead {
-    border-bottom-color: var(--border);
+	border-bottom-color: var(--border);
 }
 
 .prose thead th {
-    color: var(--foreground);
-    font-weight: 600;
+	color: var(--foreground);
+	font-weight: 600;
 }

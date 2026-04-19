@@ -3,8 +3,11 @@ import type { FilesJson, SearchIndexItem, SearchIndex } from '../types.js';
 import { OUT } from '../utils.js';
 import type { InternalOlympiad } from './readOlympiads.js';
 
-export function genSearchIndex(internalOlympiads: InternalOlympiad[], filesOutput: FilesJson): void {
-	const olympiadMeta: SearchIndex["olympiadMeta"] = {};
+export function genSearchIndex(
+	internalOlympiads: InternalOlympiad[],
+	filesOutput: FilesJson
+): void {
+	const olympiadMeta: SearchIndex['olympiadMeta'] = {};
 
 	for (const olympiad of internalOlympiads) {
 		olympiadMeta[olympiad.id] = {

@@ -32,7 +32,10 @@
 </script>
 
 <section id="olympiads" class="mb-4">
-	<Title title="Olympiads" description="Click any card to explore problems, solutions &amp; marking schemes." />
+	<Title
+		title="Olympiads"
+		description="Click any card to explore problems, solutions &amp; marking schemes."
+	/>
 
 	<!-- Search + filter toolbar -->
 	<div class="mb-5">
@@ -74,7 +77,11 @@
 									  • Other emojis  → plain <span>, sized by text-4xl
 									Both cases get leading-none to match the original layout.
 								-->
-								<OlympiadIcon icon={olympiad.icon} id={olympiad.id} class="h-9 w-auto text-4xl leading-none" />
+								<OlympiadIcon
+									icon={olympiad.icon}
+									id={olympiad.id}
+									class="h-9 w-auto text-4xl leading-none"
+								/>
 								<Badge variant="outline">{olympiad.tag}</Badge>
 							</div>
 

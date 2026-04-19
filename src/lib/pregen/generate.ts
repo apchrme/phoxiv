@@ -63,6 +63,7 @@ if (runStats) {
 }
 
 if (runSearch) {
-	if (!internalOlympiads || !filesOutput) throw new Error('--search requires olympiad and file data');
+	if (!internalOlympiads || !filesOutput)
+		throw new Error('--search requires olympiad and file data');
 	genSearchIndex(internalOlympiads, filesOutput);
 }

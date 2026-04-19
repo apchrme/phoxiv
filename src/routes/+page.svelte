@@ -49,16 +49,14 @@
 	<div class="hero-text relative z-10 flex min-w-0 flex-1 flex-col justify-center gap-7">
 		<!-- Title -->
 		<div class="flex flex-col gap-1">
-			<h1
-				class="mb-2 text-[clamp(4rem,10vw,7rem)] leading-none font-bold tracking-[-0.03em]"
-			>
+			<h1 class="mb-2 text-[clamp(4rem,10vw,7rem)] leading-none font-bold tracking-[-0.03em]">
 				phoXiv
 			</h1>
 			<span class="font-mono text-sm tracking-[0.02em] text-muted-foreground">/ foʊkaɪv /</span>
 		</div>
 
 		<!-- Description -->
-		<p class="m-0 max-w-[44ch] prose text-foreground/70">
+		<p class="m-0 prose max-w-[44ch] text-foreground/70">
 			A comprehensive archive of physics olympiads, from the well-known IPhO and EuPhO to hidden
 			gems like the Eötvös competition. Includes marking schemes and answer sheets you rarely find
 			elsewhere, all in a mobile-friendly interface.

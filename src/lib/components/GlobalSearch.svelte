@@ -18,7 +18,6 @@
 	// Search index — lifted from pregenerated searchIndex.json
 	// ---------------------------------------------------------------------------
 
-
 	const index: SearchItem[] = searchIndex.items.map((item) => {
 		const meta = (searchIndex as unknown as SearchIndex).olympiadMeta[item.olympiadId];
 		return {
@@ -123,22 +122,27 @@
 <!--
 	bits-ui Dialog.Root manages open state and provides scroll locking + focus
 	trapping via Dialog.Content. Escape to close is also handled automatically.
-	onOpenChange fires when the primitive closes the dialog (e.g. Escape or
-	clicking the overlay), so we keep our internal state in sync.
 -->
 <Dialog.Root bind:open>
 	<Dialog.Portal>
 		<!-- Backdrop -->
 		<Dialog.Overlay
-			class="fixed inset-0 z-50 bg-black/50 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 data-closed:duration-150 data-open:duration-150"
+			class="fixed inset-0 z-50 bg-black/50 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:duration-150 data-open:fade-in-0 data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0"
 		/>
 
 		<!-- Centering wrapper (not the dialog itself, so it doesn't interfere with a11y) -->
-		<div class="pointer-events-none fixed inset-0 z-50 flex items-start justify-center px-4 pt-[15vh]">
+		<div
+			class="pointer-events-none fixed inset-0 z-50 flex items-start justify-center px-4 pt-[15vh]"
+		>
 			<Dialog.Content
-				class="pointer-events-auto flex h-[min(600px,72vh)] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.96] data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-[0.96] data-closed:duration-150 data-open:duration-150"
-				onOpenAutoFocus={(e) => { e.preventDefault(); inputEl?.focus(); }}
-				onCloseAutoFocus={(e) => { e.preventDefault(); }}
+				class="pointer-events-auto flex h-[min(600px,72vh)] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl data-open:animate-in data-open:duration-150 data-open:fade-in-0 data-open:zoom-in-[0.96] data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0 data-closed:zoom-out-[0.96]"
+				onOpenAutoFocus={(e) => {
+					e.preventDefault();
+					inputEl?.focus();
+				}}
+				onCloseAutoFocus={(e) => {
+					e.preventDefault();
+				}}
 			>
 				<!--
 					Dialog.Title is required by ARIA for dialog elements.
@@ -171,7 +175,9 @@
 							Type to search for problems across all olympiads...
 						</p>
 					{:else if results.length === 0}
-						<p class="flex flex-1 items-center justify-center text-sm text-muted-foreground">No results found.</p>
+						<p class="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+							No results found.
+						</p>
 					{:else}
 						<ul>
 							{#each results as item, i (item.olympiadId + item.year + item.problem.number)}
@@ -196,7 +202,11 @@
 												two-letter rendering bug on Windows/Chromium for flag emojis.
 												h-4 w-auto matches the surrounding text-sm line height.
 											-->
-											<OlympiadIcon icon={item.olympiadIcon} id={item.olympiadId} class="h-4 w-auto shrink-0 text-base" />
+											<OlympiadIcon
+												icon={item.olympiadIcon}
+												id={item.olympiadId}
+												class="h-4 w-auto shrink-0 text-base"
+											/>
 											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 											<span>{@html highlight(item.olympiadName, query)}</span>
 											<span aria-hidden="true">·</span>
@@ -250,7 +260,7 @@
 
 				<!-- Footer hints -->
 				<div
-					class="hidden md:flex items-center gap-4 border-t border-border px-4 py-2 text-xs text-muted-foreground"
+					class="hidden items-center gap-4 border-t border-border px-4 py-2 text-xs text-muted-foreground md:flex"
 				>
 					<span><Kbd.Root>↑↓</Kbd.Root> navigate</span>
 					<span><Kbd.Root>↵</Kbd.Root> go to year</span>

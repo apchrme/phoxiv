@@ -18,10 +18,7 @@
 	}
 </script>
 
-<SvelteSeo
-	title="{metadata.title} - phoXiv Blog"
-	description={metadata.description}
-/>
+<SvelteSeo title="{metadata.title} - phoXiv Blog" description={metadata.description} />
 
 <article class="pb-10">
 	<!-- Back link -->
@@ -34,9 +31,8 @@
 	</a>
 
 	<!-- Post header -->
-	<header class="py-3 md:py-5 flex flex-col gap-3">
-
-		<h1 class="text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
+	<header class="flex flex-col gap-3 py-3 md:py-5">
+		<h1 class="text-3xl leading-tight font-bold tracking-tight sm:text-4xl">
 			{metadata.title}
 		</h1>
 

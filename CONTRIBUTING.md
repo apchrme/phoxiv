@@ -2,7 +2,6 @@
 
 To contribute, fork the repository, make your own changes on a separate branch, then open a pull request. See the [GitHub docs](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project) for more information. You may also want to look at the [Open Source Guide](https://opensource.guide/how-to-contribute/)
 
-
 ## Quickstart
 
 Install [bun](https://bun.com)

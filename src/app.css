@@ -154,7 +154,6 @@
 	--radius-4xl: calc(var(--radius) * 2.6);
 }
 
-
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
@@ -165,7 +164,6 @@
 	html {
 		@apply font-sans;
 	}
-
 }
 
 @custom-variant data-open {
