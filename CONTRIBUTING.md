@@ -134,9 +134,9 @@ extraLinks:
 
 ### Pregeneration
 
-You may have noticed that after modifying or adding files in `static/`, the changes don't show up on the local development server (i.e. when you use `bun run dev`) .
+You may have noticed that after modifying or adding files in `static/`, the changes don't show up on the local development server (i.e. when you use `bun run dev`) . To fix this, run `bun run pregen`.
 
-This is because the site generates hyperlinks and other data based on the `.json` files in `src/lib/pregen/output/`, and does not read the files in `static/`. The files in static are converted to the json files by the pregeneration script, which can be run with `bun run pregen`:
+This is because the site generates hyperlinks and other data based on the `.json` files in `src/lib/pregen/output/`, and does not read the files in `static/`. The files in static are converted to the json files by the pregeneration script [generate.ts](src/lib/pregen/generate.ts), which can be run with the command above. The available flags are listed here:
 
 ```sh
 bun run pregen
