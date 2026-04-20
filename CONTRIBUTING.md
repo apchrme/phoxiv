@@ -130,7 +130,7 @@ extraLinks:
 
 ### Pregeneration
 
-You may have noticed that after modifying or adding files in `static/`, the changes don't show up on the local development server (i.e. when you use `bun run dev`) . To fix this, run the command `bun run pregen` to generate an index for the website to list the files.
+After modifying/adding any files in `static/`, run the command `bun run pregen` to update your local development server.
 
 If you're wondering why you have to do this, it is because the site generates hyperlinks and other data based on the `.json` files in `src/lib/pregen/output/`, and does not read the files in `static/`. The files in static are converted to the json files by the pregeneration script [generate.ts](src/lib/pregen/generate.ts), which can be run with the command above. This is for the sake of performance, but also because the filesystem is not accessible in Cloudflare Workers. The available flags are listed here:
 
