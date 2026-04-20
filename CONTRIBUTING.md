@@ -21,15 +21,11 @@ This project is built with:
 - Database (not functional yet): Drizzle ORM
 - UI Library: shadcn-svelte
 
-## Structure
-
-The structure of this website is as follows: competitions are known as "olympiads". Each olympiad is split into "years", and within a year, there are multiple "problems".
-
 ## Adding content
 
 ### Directory structure
 
-The types of files and how to structure the config files will be explained below.
+**The hierarchy is olympiad -> year -> problem.** The types of files and how to structure the config files will be explained below.
 
 ```
 static
@@ -99,7 +95,7 @@ There are different **file types**, such as problems and solutions. You can indi
 
 There are two "levels" of files you can add:
 
-1. Year-level files: these are the files that apply to all problems within that year.
+1. Year-level files: these are the files that apply to all problems within that year. For example, the USAPhO 2025 problem pdf contains all problems, so it is a year-level file.
 2. Problem-level files: files that only apply to a specific problem, like T1, T1 solutions, etc. The allowed problem numbers are in the pregeneration file [generate.ts](/src/lib/pregen/generate.ts).
 
 The syntax and file location of these files can be found in the directory structure above.
@@ -134,9 +130,9 @@ extraLinks:
 
 ### Pregeneration
 
-You may have noticed that after modifying or adding files in `static/`, the changes don't show up on the local development server (i.e. when you use `bun run dev`) . To fix this, run `bun run pregen`.
+You may have noticed that after modifying or adding files in `static/`, the changes don't show up on the local development server (i.e. when you use `bun run dev`) . To fix this, run the command `bun run pregen` to generate an index for the website to list the files.
 
-This is because the site generates hyperlinks and other data based on the `.json` files in `src/lib/pregen/output/`, and does not read the files in `static/`. The files in static are converted to the json files by the pregeneration script [generate.ts](src/lib/pregen/generate.ts), which can be run with the command above. The available flags are listed here:
+If you're wondering why you have to do this, it is because the site generates hyperlinks and other data based on the `.json` files in `src/lib/pregen/output/`, and does not read the files in `static/`. The files in static are converted to the json files by the pregeneration script [generate.ts](src/lib/pregen/generate.ts), which can be run with the command above. This is for the sake of performance, but also because the filesystem is not accessible in Cloudflare Workers. The available flags are listed here:
 
 ```sh
 bun run pregen
@@ -146,8 +142,6 @@ bun run pregen
   --search
 
 ```
-
-tl;dr after modifying anything in `static/`, run `bun run pregen` to ensure your changes are reflected on the development server.
 
 ## TODO
 
