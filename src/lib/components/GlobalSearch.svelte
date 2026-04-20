@@ -1,7 +1,7 @@
 <script lang="ts">
 	import uFuzzy from '@leeoniya/ufuzzy';
 	import searchIndex from '$lib/pregen/output/searchIndex.json';
-	import type { ProblemEntry, SearchIndex, SearchItem } from '$lib/pregen/types.js';
+	import type { SearchItem } from '$lib/pregen/types.js';
 	import { Search } from '@lucide/svelte';
 	import XIcon from '@lucide/svelte/icons/x';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
@@ -17,18 +17,7 @@
 	// ---------------------------------------------------------------------------
 	// Search index — lifted from pregenerated searchIndex.json
 	// ---------------------------------------------------------------------------
-
-	const index: SearchItem[] = searchIndex.items.map((item) => {
-		const meta = (searchIndex as unknown as SearchIndex).olympiadMeta[item.olympiadId];
-		return {
-			...item,
-			problem: item.problem as ProblemEntry,
-			olympiadName: meta.name,
-			olympiadIcon: meta.icon,
-			probFTEntries: meta.probFTEntries
-		};
-	});
-
+	const index: SearchItem[] = searchIndex as unknown as SearchItem[];
 	const haystack = index.map((i) => i.searchText);
 
 	// intraIns: 1 allows one inserted character per term (catches single typos).
