@@ -68,28 +68,6 @@ export type YearEntry = {
 /** Shape of files.json */
 export type FilesJson = Record<string, YearEntry[]>;
 
-/** One problem entry in the pregenerated search index. */
-export type SearchIndexItem = {
-	olympiadId: string;
-	year: number;
-	problem: ProblemEntry;
-	/** Pre-lowercased concatenation of all searchable fields, in match-priority order. */
-	searchText: string;
-};
-
-/** Shape of the metadata of the olympiads in the search index */
-export type OlympiadSearchIndexEntry = {
-	name: string;
-	icon: string;
-	probFTEntries: [string, FileTypeLabel][];
-};
-
-/** Shape of the search index used in global search */
-export type SearchIndex = {
-	olympiadMeta: Record<string, OlympiadSearchIndexEntry>;
-	items: SearchIndexItem[];
-};
-
 /** A problem entry with the extra properties needed for the UI in GlobalSearch.svelte */
 export type SearchItem = {
 	olympiadId: string;
