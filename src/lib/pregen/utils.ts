@@ -37,6 +37,12 @@ export const OUT = {
 	searchIndex: path.resolve('src/lib/pregen/output/searchIndex.json')
 };
 
+/**
+ * Base URL for served files. Set FILES_BASE_URL in .env to point to R2.
+ * Defaults to empty string so URLs remain root-relative if unset.
+ */
+export const FILES_BASE_URL = (process.env.FILES_BASE_URL ?? '').replace(/\/$/, '');
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 export function readYaml<T>(filePath: string): T | null {

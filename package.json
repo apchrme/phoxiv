@@ -64,7 +64,9 @@
 		"db:migrate-remote": "wrangler d1 migrations apply DB --remote",
 		"db:studio": "drizzle-kit studio",
 		"cf-typegen": "wrangler types ./src/worker-configuration.d.ts",
-		"pregen": "bun run ./src/lib/pregen/generate.ts"
+		"pregen": "bun run ./src/lib/pregen/generate.ts",
+		"sync:pull": "rclone sync r2:phoxiv-files/olympiads/ files/olympiads/ --progress",
+		"sync:push": "rclone sync files/olympiads/ r2:phoxiv-files/olympiads/ --progress"
 	},
 	"type": "module"
 }
