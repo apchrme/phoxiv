@@ -51,7 +51,7 @@ Use git-filter-repo.
 pip install git-filter-repo
 
 # Remove all olympiad files, including legacy paths
-git filter-repo --path 'static/olympiads/' --path 'static/contests/' --path 'static/apho/' --path 'static/eupho/' --path 'static/inpho/' --path 'static/ipho/' --path 'static/sjpo/' --path 'static/spho/' --path 'static/spot/' --path 'static/usapho/' --path 'static/usatst/'  --invert-paths
+git filter-repo --path 'static/olympiads/' --path 'static/contests/' --path 'static/apho/' --path 'static/eotvos/' --path 'static/eupho/' --path 'static/inpho/' --path 'static/ipho/' --path 'static/sjpo/' --path 'static/spho/' --path 'static/spot/' --path 'static/usapho/' --path 'static/usatst/'  --invert-paths
 ```
 
 Then force-push.
