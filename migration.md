@@ -86,7 +86,7 @@ bun run dev
 ```
 
 When a contributor **adds new files**:
-1. Drop them into `static/olympiads/<id>/<year>/` locally
+1. Drop them into `files/olympiads/<olympiad ID>/<year>/` locally
 2. Run `bun run pregen` to update the JSON
 3. Commit
 4. Run `bun run sync:push` to upload the new files to R2
