@@ -88,7 +88,7 @@ bun run dev
 When a contributor **adds new files**:
 1. Drop them into `static/olympiads/<id>/<year>/` locally
 2. Run `bun run pregen` to update the JSON
-3. Commit only the YAML and JSON changes — Git will ignore the binary files
+3. Commit
 4. Run `bun run sync:push` to upload the new files to R2
 5. Open a PR with just the metadata changes
 
