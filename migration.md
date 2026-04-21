@@ -1,11 +1,13 @@
 ## Pre-setup
 
-Move all files from `static/olympiads` to `files/olympiads`. Then modify [utils.ts](src/lib/pregen/utils.ts) to 
+Move all files from `static/olympiads` and `static/original` to `files/olympiads` and `files/original` respectively. Then modify [utils.ts](src/lib/pregen/utils.ts) to 
 
 ```ts
 export const STATIC_DIR = path.resolve('files/olympiads');
 // export const STATIC_DIR = path.resolve('static/olympiads');
 ```
+
+Also, update the link in `/resources` to point to the new original problems.
 
 ---
 
@@ -51,7 +53,7 @@ Use git-filter-repo.
 pip install git-filter-repo
 
 # Remove all olympiad files, including legacy paths
-git filter-repo --path 'static/olympiads/' --path 'static/contests/' --path 'static/apho/' --path 'static/eotvos/' --path 'static/eupho/' --path 'static/inpho/' --path 'static/ipho/' --path 'static/sjpo/' --path 'static/spho/' --path 'static/spot/' --path 'static/usapho/' --path 'static/usatst/'  --invert-paths
+git filter-repo --path 'static/olympiads/' --path 'static/original/' --path 'static/contests/' --path 'static/apho/' --path 'static/eotvos/' --path 'static/eupho/' --path 'static/inpho/' --path 'static/ipho/' --path 'static/sjpo/' --path 'static/spho/' --path 'static/spot/' --path 'static/usapho/' --path 'static/usatst/'  --invert-paths
 ```
 
 Then force-push.
@@ -71,7 +73,7 @@ All urls ending with a .pdf or .xlsx or whatever (see the list) should then be r
 
 The `CONTRIBUTING.md` quickstart section should be updated to reflect the new step:
 
-```md
+```sh
 # Install dependencies
 bun install
 
