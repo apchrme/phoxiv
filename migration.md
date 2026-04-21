@@ -62,6 +62,9 @@ git push origin --force --all
 
 After that, anyone who has cloned the repo needs to re-clone — their history will have diverged and can't be cleanly reconciled with a pull.
 
+## Extra: redirect old urls
+All urls ending with a .pdf or .xlsx or whatever (see the list) should then be redirected to the same link with a `cdn.` in front
+
 ---
 
 ## Contributor workflow
