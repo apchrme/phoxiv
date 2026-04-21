@@ -2,6 +2,8 @@
 
 To contribute, fork the repository, make your own changes on a separate branch, then open a pull request. See the [GitHub docs](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project) for more information. You may also want to look at the [Open Source Guide](https://opensource.guide/how-to-contribute/)
 
+# Note 21-04-2026: I am currently migrating all of the olympiad files in static to a CDN. Do not open any PRs now, for they may be invalidated by a force push. See [migration.md](/migration.md)
+
 ## Quickstart
 
 Install [bun](https://bun.com). Then, in your local repository folder, run

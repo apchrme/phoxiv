@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { FilesJson, YearEntry, YearIndexYaml, ProblemEntry } from '../types.js';
-import { STATIC_DIR, PROBLEM_NUMS, OUT, readYaml, resolveLinks } from '../utils.js';
+import { STATIC_DIR, PROBLEM_NUMS, OUT, readYaml, resolveLinks, FILES_BASE_URL } from '../utils.js';
 import type { InternalOlympiad } from './readOlympiads.js';
 
 export function genFiles(internalOlympiads: InternalOlympiad[]): FilesJson {
@@ -33,7 +33,7 @@ export function genFiles(internalOlympiads: InternalOlympiad[]): FilesJson {
 				olympiadEntries,
 				String(year),
 				olympiad._yearTypes,
-				'/olympiads/' + olympiad.id
+				FILES_BASE_URL + '/olympiads/' + olympiad.id // base URL links to the CDN
 			);
 
 			const problems: ProblemEntry[] = [];
@@ -42,7 +42,7 @@ export function genFiles(internalOlympiads: InternalOlympiad[]): FilesJson {
 					yearEntries,
 					num,
 					olympiad._problemTypes,
-					'/olympiads/' + olympiad.id + '/' + year
+					FILES_BASE_URL + '/olympiads/' + olympiad.id + '/' + year // base URL links to the CDN
 				);
 				const title = meta.problems?.[num]?.title;
 				if (Object.keys(files).length === 0 && !title) continue;
