@@ -165,7 +165,7 @@
 								Type to search for problems across all olympiads...
 							</p>
 							<p class="text-sm text-muted-foreground text-center">
-								Use the order: olympiad name/abbreviation, year, problem title/number
+								Use the order: olympiad name/acronym, year, problem title/number
 							</p>
 						</div>
 					{:else if results.length === 0}

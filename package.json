@@ -65,8 +65,8 @@
 		"db:studio": "drizzle-kit studio",
 		"cf-typegen": "wrangler types ./src/worker-configuration.d.ts",
 		"pregen": "bun run ./src/lib/pregen/generate.ts",
-		"sync:pull": "rclone sync r2:phoxiv-files/olympiads/ files/olympiads/ --progress",
-		"sync:push": "rclone sync files/olympiads/ r2:phoxiv-files/olympiads/ --progress"
+		"sync:pull": "rclone sync r2:phoxiv-files/ files/ --progress",
+		"sync:push": "rclone sync files/ r2:phoxiv-files/ --progress"
 	},
 	"type": "module"
 }
