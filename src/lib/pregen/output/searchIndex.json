@@ -8215,7 +8215,8 @@
       "files": {
         "problem": "/olympiads/apho/2025/E1.pdf",
         "solution": "/olympiads/apho/2025/E1_S.pdf",
-        "answerSheet": "/olympiads/apho/2025/E1_A.pdf"
+        "answerSheet": "/olympiads/apho/2025/E1_A.pdf",
+        "markingScheme": "/olympiads/apho/2025/E1_M.pdf"
       }
     },
     "probFTEntries": [
