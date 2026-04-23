@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { PageData } from './$types';
+	import type { PageProps } from './$types';
 	import SvelteSeo from 'svelte-seo';
 	import { Calendar, User, Tag, ChevronLeft } from '@lucide/svelte';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 
-	let { data }: { data: PageData } = $props();
+	let { data }: PageProps = $props();
 
-	const { content: PostContent, metadata } = data;
+	const { content: PostContent, metadata } = $derived(data);
 
 	function formatDate(dateStr: string): string {
 		return new Date(dateStr).toLocaleDateString('en-GB', {
