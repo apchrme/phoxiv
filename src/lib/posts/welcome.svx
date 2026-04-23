@@ -4,7 +4,7 @@ title: Welcome!
 date: 2025-04-18
 description: Welcome to phoXiv! Enjoy your stay.
 tags: [meta, introduction]
-author: apochrome
+author: Teo Kai Wen
 ---
 
 <script lang="ts">
@@ -30,7 +30,7 @@ I eventually found [Kevin Zhou's handouts](https://knzhou.github.io/#physics-oly
 
 ## Who?
 
-The vast majority of this website, from collating files to writing the backend and frontend code, is done solely by me (apochrome). However, I have thankfully found a few people who are interested in adding on to this website (and a couple interested in maintaining it too!). You can see the full list of contributors on [GitHub](https://github.com/apchrme/phoxiv). As a quick thanks to their work:
+The vast majority of this website, from collating files to writing the backend and frontend code, is done solely by me. However, I have thankfully found a few people who are interested in adding on to this website (and a couple interested in maintaining it too!). You can see the full list of contributors on [GitHub](https://github.com/apchrme/phoxiv). As a quick thanks to their work:
 
 - Megabrains44: added olympiads (russian tsts, bpho, aupho)
 - Geonwoo Kim: added kphe
