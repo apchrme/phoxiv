@@ -411,3 +411,140 @@ Then update the empty-state block in the template to handle the loading state:
 
 The index is fetched once on the first open and then reused for the lifetime of the page — `indexFetched` acts as a module-level cache flag so navigating away and back doesn't trigger another fetch.
 
+## Olympiad list and stats
+Next up are the two remaining pages: the olympiads list and the home page stats.
+
+**Create** `src/routes/olympiads/+page.server.ts`:
+
+```ts
+import type { PageServerLoad } from './$types';
+import { drizzle } from 'drizzle-orm/d1';
+import { asc } from 'drizzle-orm';
+import { olympiads } from '$lib/server/db/schema.js';
+import type { OlympiadEntry } from '$lib/pregen/types.js';
+
+export const load: PageServerLoad = async ({ platform }) => {
+	const d1 = platform?.env.DB;
+	if (!d1) return { olympiads: [] as OlympiadEntry[] };
+
+	const db = drizzle(d1);
+
+	const rows = await db
+		.select()
+		.from(olympiads)
+		.orderBy(asc(olympiads.displayOrder), asc(olympiads.id))
+		.all();
+
+	return {
+		olympiads: rows.map((o) => ({
+			id: o.id,
+			name: o.name,
+			summary: o.summary,
+			icon: o.icon,
+			tag: o.tag,
+			descriptionHtml: o.descriptionHtml,
+			yearFileTypes: JSON.parse(o.yearFileTypes) as OlympiadEntry['yearFileTypes'],
+			problemFileTypes: JSON.parse(o.problemFileTypes) as OlympiadEntry['problemFileTypes']
+		}))
+	};
+};
+```
+
+**Update** the script block of `src/routes/olympiads/+page.svelte`:
+
+```ts
+import type { PageData } from './$types';
+import type { OlympiadTag, OlympiadEntry } from '$lib/pregen/types.js';
+import * as Card from '$lib/components/ui/card/index';
+import { Badge } from '$lib/components/ui/badge/index';
+import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
+import SearchBar from '$lib/components/SearchBar.svelte';
+import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
+import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
+import { ArrowRight } from '@lucide/svelte';
+import { cn } from '$lib/utils.js';
+import Title from '$lib/components/Title.svelte';
+
+let { data }: { data: PageData } = $props();
+
+const ALL_TAGS: OlympiadTag[] = ['International', 'Regional', 'National', 'Open'];
+
+let query = $state('');
+let activeTag = $state<OlympiadTag | null>(null);
+
+const filtered = $derived(() => {
+	const q = query.trim().toLowerCase();
+	return (data.olympiads as OlympiadEntry[]).filter((c) => {
+		const matchesTag = activeTag === null || c.tag === activeTag;
+		const matchesQuery =
+			!q ||
+			c.name.toLowerCase().includes(q) ||
+			c.summary.toLowerCase().includes(q) ||
+			c.id.toLowerCase().includes(q);
+		return matchesTag && matchesQuery;
+	});
+});
+```
+
+**Create** `src/routes/+page.server.ts`:
+
+```ts
+import type { PageServerLoad } from './$types';
+import { drizzle } from 'drizzle-orm/d1';
+import { count } from 'drizzle-orm';
+import { olympiads, years, problemFiles, yearFiles } from '$lib/server/db/schema.js';
+
+export const load: PageServerLoad = async ({ platform }) => {
+	const d1 = platform?.env.DB;
+	if (!d1) return { stats: { olympiads: 0, years: 0, files: 0 } };
+
+	const db = drizzle(d1);
+
+	const [[olympiadCount], [yearCount], [yearFileCount], [problemFileCount]] = await Promise.all([
+		db.select({ value: count() }).from(olympiads),
+		db.select({ value: count() }).from(years),
+		db.select({ value: count() }).from(yearFiles),
+		db.select({ value: count() }).from(problemFiles)
+	]);
+
+	return {
+		stats: {
+			olympiads: olympiadCount.value,
+			years: yearCount.value,
+			files: yearFileCount.value + problemFileCount.value
+		}
+	};
+};
+```
+
+**Update** the script block of `src/routes/+page.svelte`:
+
+```ts
+import type { PageData } from './$types';
+import SvelteSeo from 'svelte-seo';
+import { buttonVariants } from '$lib/components/ui/button/index.js';
+import { cn } from '$lib/utils.js';
+import logo from '$lib/assets/branding/logo.svg';
+
+let { data }: { data: PageData } = $props();
+
+let rotX = $state(12);
+let rotY = $state(-18);
+
+function handleMouseMove(e: MouseEvent) {
+	const cx = window.innerWidth / 2;
+	const cy = window.innerHeight / 2;
+	rotY = ((e.clientX - cx) / cx) * 25;
+	rotX = -((e.clientY - cy) / cy) * 18;
+}
+
+const statItems = [
+	{ value: data.stats.olympiads, label: 'Olympiads' },
+	{ value: data.stats.years, label: 'Years' },
+	{ value: data.stats.files, label: 'Files' }
+];
+```
+
+After these changes the pregeneration output files (`olympiads.json`, `files.json`, `stats.json`, `searchIndex.json`) are no longer imported anywhere in the application. You can delete `src/lib/pregen/output/` and the `pregen` script from `package.json` (since we should not be normally using it now), keeping only the migration scripts for future use.
+
+
