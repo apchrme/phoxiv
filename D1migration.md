@@ -72,10 +72,10 @@ bunx wrangler d1 migrations apply DB
 bun run migrate:d1
 bunx wrangler d1 execute DB --file=seed.sql
 ```
-## +page.server.ts
-The root fix is replacing the IN clauses with joins filtered by `olympiad_id`, so the number of SQL variables stays constant regardless of how many problems exist. Using Drizzle's join API makes this natural.
+## Olympiad detail loading
 
 ```ts
+// src/routes/olympiads/[olympiad]/+page.server.ts
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import type { YearEntry } from '$lib/pregen/types.js';
@@ -208,4 +208,205 @@ export const load: PageServerLoad = async ({ params, platform }) => {
 };
 ```
 
-The key change is that both queries filter with a single `WHERE years.olympiad_id = ?` rather than `WHERE id IN (?, ?, ?, ...)`, so the number of bound parameters never grows with the size of the dataset. The two queries also run in parallel via `Promise.all`, so the round-trip count stays the same as before.
+## Global search
+
+Two files need to be created or modified.
+
+**Create** `src/routes/api/search/+server.ts`:
+
+```ts
+import { json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
+import { drizzle } from 'drizzle-orm/d1';
+import { eq } from 'drizzle-orm';
+import { olympiads, years, problems, problemFiles } from '$lib/server/db/schema.js';
+import type { SearchItem } from '$lib/pregen/types.js';
+
+export const GET: RequestHandler = async ({ platform }) => {
+	const d1 = platform?.env.DB;
+	if (!d1) return json([], { status: 500 });
+
+	const db = drizzle(d1);
+
+	const rows = await db
+		.select()
+		.from(problems)
+		.innerJoin(years, eq(years.id, problems.yearId))
+		.innerJoin(olympiads, eq(olympiads.id, years.olympiadId))
+		.leftJoin(problemFiles, eq(problemFiles.problemId, problems.id))
+		.all();
+
+	const problemMap = new Map<number, SearchItem>();
+
+	for (const row of rows) {
+		const p = row.problems;
+		const y = row.years;
+		const o = row.olympiads;
+
+		if (!problemMap.has(p.id)) {
+			const probFTEntries = Object.entries(
+				JSON.parse(o.problemFileTypes) as Record<string, { label: string }>
+			);
+
+			problemMap.set(p.id, {
+				olympiadId: o.id,
+				olympiadName: o.name,
+				olympiadIcon: o.icon,
+				year: y.year,
+				searchText: [o.name, o.id, String(y.year), p.number, p.title ?? ''].join(' '),
+				problem: {
+					number: p.number,
+					...(p.title ? { title: p.title } : {}),
+					files: {}
+				},
+				probFTEntries
+			});
+		}
+
+		if (row.problemFiles) {
+			problemMap.get(p.id)!.problem.files[row.problemFiles.fileType] = row.problemFiles.url;
+		}
+	}
+
+	return json([...problemMap.values()]);
+};
+```
+
+**Update** the script block of `src/lib/components/GlobalSearch.svelte` — the template is unchanged:
+
+```ts
+import uFuzzy from '@leeoniya/ufuzzy';
+import type { SearchItem } from '$lib/pregen/types.js';
+import { Search } from '@lucide/svelte';
+import XIcon from '@lucide/svelte/icons/x';
+import { buttonVariants } from '$lib/components/ui/button/index.js';
+import Badge from '$lib/components/ui/badge/badge.svelte';
+import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
+import { cn } from '$lib/utils.js';
+import { goto } from '$app/navigation';
+import { Dialog } from 'bits-ui';
+import * as Kbd from '$lib/components/ui/kbd/index.js';
+
+let { open = $bindable(false) }: { open?: boolean } = $props();
+
+const uf = new uFuzzy({ intraMode: 1, intraIns: 1 });
+
+// ---------------------------------------------------------------------------
+// Index — fetched once on first open, then cached for the session
+// ---------------------------------------------------------------------------
+
+let index = $state<SearchItem[]>([]);
+let indexLoading = $state(false);
+let indexFetched = false;
+
+async function fetchIndex() {
+	if (indexFetched) return;
+	indexLoading = true;
+	try {
+		const res = await fetch('/api/search');
+		index = await res.json();
+		indexFetched = true;
+	} finally {
+		indexLoading = false;
+	}
+}
+
+$effect(() => {
+	if (open) fetchIndex();
+});
+
+const haystack = $derived(index.map((i) => i.searchText));
+
+const MAX_RESULTS = 50;
+
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+
+let query = $state('');
+let focusedIndex = $state(0);
+let inputEl: HTMLInputElement | undefined = $state();
+let resultsEl: HTMLDivElement | undefined = $state();
+
+const results = $derived.by(() => {
+	const q = query.trim();
+	if (!q || indexLoading) return [];
+	const [idxs, , order] = uf.search(haystack, q.toLowerCase());
+	if (!idxs?.length || !order?.length) return [];
+	return order.slice(0, MAX_RESULTS).map((oi) => index[idxs[oi]]);
+});
+
+$effect(() => {
+	query;
+	focusedIndex = 0;
+});
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function openSearch() {
+	open = true;
+	query = '';
+	focusedIndex = 0;
+}
+
+function closeSearch() {
+	open = false;
+	query = '';
+}
+
+function navigateTo(item: SearchItem) {
+	goto(`/olympiads/${item.olympiadId}#${item.year}`);
+	closeSearch();
+}
+
+// ---------------------------------------------------------------------------
+// Keyboard handling
+// ---------------------------------------------------------------------------
+
+function onWindowKeydown(e: KeyboardEvent) {
+	if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+		e.preventDefault();
+		open ? closeSearch() : openSearch();
+		return;
+	}
+	if (!open) return;
+	if (e.key === 'ArrowDown') {
+		e.preventDefault();
+		focusedIndex = Math.min(focusedIndex + 1, results.length - 1);
+		resultsEl?.querySelectorAll('li')[focusedIndex].scrollIntoView({ block: 'nearest' });
+	}
+	if (e.key === 'ArrowUp') {
+		e.preventDefault();
+		focusedIndex = Math.max(focusedIndex - 1, 0);
+		resultsEl?.querySelectorAll('li')[focusedIndex].scrollIntoView({ block: 'nearest' });
+	}
+	if (e.key === 'Enter' && results[focusedIndex]) {
+		navigateTo(results[focusedIndex]);
+	}
+}
+```
+
+Then update the empty-state block in the template to handle the loading state:
+
+```svelte
+{#if indexLoading}
+	<div class="m-auto">
+		<p class="text-sm text-muted-foreground text-center">Loading search index…</p>
+	</div>
+{:else if !query.trim()}
+	<div class="m-auto px-5">
+		<p class="mb-5 text-sm text-muted-foreground text-center">
+			Type to search for problems across all olympiads...
+		</p>
+		<p class="text-sm text-muted-foreground text-center">
+			Use the order: olympiad name/acronym, year, problem title/number
+		</p>
+	</div>
+{:else if results.length === 0}
+	<!-- rest unchanged -->
+```
+
+The index is fetched once on the first open and then reused for the lifetime of the page — `indexFetched` acts as a module-level cache flag so navigating away and back doesn't trigger another fetch.
+
