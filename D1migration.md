@@ -123,6 +123,7 @@ export const load: PageServerLoad = async ({ params, platform }) => {
 			.leftJoin(problemFiles, eq(problemFiles.problemId, problems.id))
 			.innerJoin(years, eq(years.id, problems.yearId))
 			.where(eq(years.olympiadId, params.olympiad))
+			.orderBy(problems.id)
 			.all()
 	]);
 
@@ -253,7 +254,7 @@ export const GET: RequestHandler = async ({ platform }) => {
 				olympiadName: o.name,
 				olympiadIcon: o.icon,
 				year: y.year,
-				searchText: [o.name, o.id, String(y.year), p.number, p.title ?? ''].join(' '),
+				searchText: [o.id, o.name, String(y.year), p.number, p.title ?? ''].join(' ').toLowerCase(),
 				problem: {
 					number: p.number,
 					...(p.title ? { title: p.title } : {}),
