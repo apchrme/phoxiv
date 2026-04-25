@@ -318,17 +318,17 @@ $effect(() => {
 
 const haystack = $derived(index.map((i) => i.searchText));
 
-        // ---------------------------------------------------------------------------
-        // Highlighting — applied per display field so marks appear in the right place
-        // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Highlighting — applied per display field so marks appear in the right place
+// ---------------------------------------------------------------------------
 
-        /** Wraps fuzzy-matched characters in <mark> for a single display field. */
-        function highlight(text: string, q: string): string {
-                if (!text || !q) return text;
-                const [idxs, info, order] = uf.search([text.toLowerCase()], q.toLowerCase());
-                if (!idxs?.length || !order?.length) return text;
-                return uFuzzy.highlight(text, info.ranges[order[0]]);
-        }
+/** Wraps fuzzy-matched characters in <mark> for a single display field. */
+function highlight(text: string, q: string): string {
+  if (!text || !q) return text;
+  const [idxs, info, order] = uf.search([text.toLowerCase()], q.toLowerCase());
+  if (!idxs?.length || !order?.length) return text;
+  return uFuzzy.highlight(text, info.ranges[order[0]]);
+}
 
 const MAX_RESULTS = 50;
 
