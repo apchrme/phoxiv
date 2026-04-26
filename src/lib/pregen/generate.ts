@@ -1,5 +1,5 @@
 /**
- * generate.ts — phoXiv pregeneration script
+ * generate.ts — phoXiv pregeneration script. It has been replaced by a different system.
  *
  * Reads static/olympiads/ and produces JSON files consumed by the app at build time.
  *

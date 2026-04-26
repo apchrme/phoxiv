@@ -33,3 +33,6 @@ vite.config.ts.timestamp-*
 
 # Local R2 copy. Move all files from /static/olympiads to /files/olympiads once R2 setup is complete, then update $lib/pregen/utils.ts to indicate new STATIC_DIR.
 files
+
+# Pregen output (not needed anyway)
+src/lib/pregen/output/

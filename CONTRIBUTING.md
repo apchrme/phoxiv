@@ -2,7 +2,7 @@
 
 To contribute, fork the repository, make your own changes on a separate branch, then open a pull request. See the [GitHub docs](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project) for more information. You may also want to look at the [Open Source Guide](https://opensource.guide/how-to-contribute/)
 
-# Note 21-04-2026: I am currently migrating all of the olympiad files in static to a CDN, and the documentation here will be replaced. Do not open any PRs now, for they may be invalidated by a force push. You may also have to re-clone the repository. See [migration.md](/migration.md)
+# Note 26-04-2026: The previous system has been completely replaced. Now, you only need to work on the GitHub repository if you want to change the website's code. If you just want to add new content (be it olympiads or problems), it will be done within the website itself. I am still working on a UI for that.
 
 ## Quickstart
 
