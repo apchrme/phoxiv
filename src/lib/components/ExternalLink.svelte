@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	const { url, label = url.substring(1) } = $props();
 </script>
 
-<a href={url} target="_blank">
+<a href={resolve(url)} target="_blank">
 	{label}
 </a>

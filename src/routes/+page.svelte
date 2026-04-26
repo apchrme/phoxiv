@@ -1,9 +1,12 @@
 <script lang="ts">
+	import type { PageData } from './$types';
+	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
-	import stats from '$lib/pregen/output/stats.json';
 	import { cn } from '$lib/utils.js';
 	import logo from '$lib/assets/branding/logo.svg';
+
+	let { data }: { data: PageData } = $props();
 
 	let rotX = $state(12);
 	let rotY = $state(-18);
@@ -15,11 +18,11 @@
 		rotX = -((e.clientY - cy) / cy) * 18;
 	}
 
-	const statItems = [
-		{ value: stats.olympiads, label: 'Olympiads' },
-		{ value: stats.years, label: 'Years' },
-		{ value: stats.files, label: 'Files' }
-	];
+	const statItems = $derived([
+		{ value: data.stats.olympiads, label: 'Olympiads' },
+		{ value: data.stats.years, label: 'Years' },
+		{ value: data.stats.files, label: 'Files' }
+	]);
 </script>
 
 <SvelteSeo
@@ -41,7 +44,7 @@
 		<img
 			src={logo}
 			alt=""
-			class="h-[28rem] w-[28rem] mask-[radial-gradient(ellipse_at_center,black,transparent_100%)] opacity-20 select-none"
+			class="h-112 w-md mask-[radial-gradient(ellipse_at_center,black,transparent_100%)] opacity-20 select-none"
 		/>
 	</div>
 
@@ -64,7 +67,7 @@
 
 		<!-- CTAs -->
 		<div class="flex flex-wrap gap-3">
-			<a href="/olympiads" class={cn(buttonVariants({ variant: 'default' }))}>Browse olympiads</a>
+			<a href={resolve("/olympiads")} class={cn(buttonVariants({ variant: 'default' }))}>Browse olympiads</a>
 			<a
 				href="https://github.com/apchrme/phoxiv"
 				class={cn(buttonVariants({ variant: 'outline' }))}
@@ -80,7 +83,7 @@
 					<span class="font-mono text-[1.75rem] leading-none font-bold text-foreground"
 						>{value}</span
 					>
-					<span class="font-mono text-[0.65rem] tracking-[0.1em] text-muted-foreground uppercase"
+					<span class="font-mono text-[0.65rem] tracking-widest text-muted-foreground uppercase"
 						>{label}</span
 					>
 				</div>

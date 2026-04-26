@@ -1,5 +1,5 @@
 import fs from 'fs';
-import type { OlympiadEntry, FilesJson } from '../types.js';
+import type { OlympiadEntry, FilesJson } from '../../types.js';
 import { OUT } from '../utils.js';
 
 export function genStats(olympiadsJson: OlympiadEntry[], filesOutput: FilesJson): void {
