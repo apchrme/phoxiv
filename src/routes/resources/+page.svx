@@ -16,6 +16,6 @@
 
 - [My notes](https://apochrome.notion.site/Physics-3e6457db399143cd82f125b8e62a00f7?source=copy_link) - I do not recommend it for learning physics, but you may find some interesting things in here.
 
-- I have also modified some classic IPhO/APhO problems to showcase interesting things: [IPhO 1992 T1](https://cdn.phoxiv.org/original/IPhO_1992_T1.pdf) ([Solution](https://cdn.phoxiv.org/original/IPhO_1992_T1_S.pdf)) and [APhO 2005 T2B](original/APhO_2005_T2B.pdf) ([Solution](original/APhO_2005_T2B_S.pdf))
+- I have also modified some classic IPhO/APhO problems to showcase interesting things: [IPhO 1992 T1](https://cdn.phoxiv.org/original/IPhO_1992_T1.pdf) ([Solution](https://cdn.phoxiv.org/original/IPhO_1992_T1_S.pdf)) and [APhO 2005 T2B](https://cdn.phoxiv.org/original/APhO_2005_T2B.pdf) ([Solution](https://cdn.phoxiv.org/original/APhO_2005_T2B_S.pdf))
 
 </div>
