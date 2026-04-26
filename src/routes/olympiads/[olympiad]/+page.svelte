@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import type { YearEntry } from '$lib/pregen/types.js';
+	import type { YearEntry } from '$lib/types.js';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';

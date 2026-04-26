@@ -24,7 +24,7 @@
 		{
 			"binding": "DB",
 			"database_name": "phoxiv",
-			"database_id": "5e7e03d7-377c-4962-abdc-92af4c49b4cb",
+			"database_id": "3d506364-c7cb-4e64-a252-d0934437a5c2",
 			"migrations_dir": "./src/lib/server/db/migrations"
 		}
 	]

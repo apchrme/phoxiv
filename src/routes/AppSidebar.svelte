@@ -35,7 +35,7 @@
 				<img src={logo} alt="" class="h-8 w-8 opacity-75" aria-hidden="true" />
 				<div class="flex flex-col leading-tight">
 					<span class="font-bold text-sidebar-foreground">phoXiv</span>
-					<span class="font-mono text-[0.65rem] text-sidebar-foreground/50 tracking-[0.02em]"
+					<span class="font-mono text-[0.65rem] tracking-[0.02em] text-sidebar-foreground/50"
 						>/ foʊkaɪv /</span
 					>
 				</div>

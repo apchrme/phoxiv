@@ -1,5 +1,5 @@
 import fs from 'fs';
-import type { OlympiadEntry } from '../types.js';
+import type { OlympiadEntry } from '../../types.js';
 import { OUT } from '../utils.js';
 import type { InternalOlympiad } from './readOlympiads.js';
 

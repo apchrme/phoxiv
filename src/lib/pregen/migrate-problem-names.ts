@@ -14,7 +14,7 @@ import fs from 'fs';
 import path from 'path';
 import { parse } from 'csv-parse/sync';
 import yaml from 'js-yaml';
-import type { YearIndexYaml } from './types.js';
+import type { YearIndexYaml } from '../types.js';
 
 const CSV_PATH = path.resolve('src/lib/pregen/problemTitles.csv');
 const STATIC_DIR = path.resolve('static/olympiads');

@@ -1,6 +1,6 @@
 ## Pre-setup
 
-Move all files from `static/olympiads` and `static/original` to `files/olympiads` and `files/original` respectively. Then modify [utils.ts](src/lib/pregen/utils.ts) to 
+Move all files from `static/olympiads` and `static/original` to `files/olympiads` and `files/original` respectively. Then modify [utils.ts](src/lib/pregen/utils.ts) to
 
 ```ts
 export const STATIC_DIR = path.resolve('files/olympiads');
@@ -14,6 +14,7 @@ Also, update the link in `/resources` to point to the new original problems.
 ## Infrastructure setup
 
 **1. Create the bucket:**
+
 ```sh
 wrangler r2 bucket create phoxiv-files
 ```
@@ -36,6 +37,7 @@ The files in R2 will be at keys like `olympiads/ipho/2025/T1.pdf`, making the pu
 ## Configuration and workflow
 
 **`.env`** (already gitignored):
+
 ```sh
 FILES_BASE_URL=https://cdn.phoxiv.org
 ```
@@ -65,6 +67,7 @@ git push origin --force --all
 After that, anyone who has cloned the repo needs to re-clone — their history will have diverged and can't be cleanly reconciled with a pull.
 
 ## Extra: redirect old urls
+
 All urls ending with a .pdf or .xlsx or whatever (see the list) should then be redirected to the same link with a `cdn.` in front
 
 ---
@@ -91,6 +94,7 @@ bun run dev
 ```
 
 When a contributor **adds new files**:
+
 1. Drop them into `files/olympiads/<olympiad ID>/<year>/` locally
 2. Run `bun run pregen` to update the JSON
 3. Commit the updated files in `src/lib/pregen/output/`
