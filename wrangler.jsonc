@@ -31,7 +31,8 @@
 	"r2_buckets": [
 		{
 			"bucket_name": "phoxiv-files",
-			"binding": "files"
+			"binding": "files",
+			"remote": true
 		}
 	]
 	/**
