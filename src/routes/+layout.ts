@@ -27,7 +27,7 @@ export function load({ url }) {
 		redirect(308, url.pathname.replace('contests', 'olympiads'));
 	}
 
-	if (fileExtensions.find((i) => i == url.pathname.slice(-3))) {
+	if (fileExtensions.find((i) => '.' + i == url.pathname.slice(-4))) {
 		redirect(308, 'https://cdn.phoxiv.org'+ url.pathname);
 	}
 }
