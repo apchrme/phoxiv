@@ -5,14 +5,13 @@ import { drizzle, type DrizzleD1Database } from 'drizzle-orm/d1';
 
 declare global {
 	namespace App {
-		// interface Error {}
 		interface Locals {
 			db: DrizzleD1Database;
 		}
-		// interface PageData {}
-		// interface PageState {}
 		interface Platform {
-			env: Env;
+			env: Env & {
+				FILES: R2Bucket;
+			};
 			cf: CfProperties;
 			ctx: ExecutionContext;
 		}

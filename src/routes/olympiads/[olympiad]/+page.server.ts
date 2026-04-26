@@ -1,10 +1,9 @@
 import { error } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
 import type { YearEntry } from '$lib/types.js';
 import { eq, desc } from 'drizzle-orm';
 import { olympiads, years, yearFiles, problems, problemFiles } from '$lib/server/db/schema.js';
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load = async ({ params, locals }) => {
 	const db = locals.db;
 
 	const olympiadRow = await db

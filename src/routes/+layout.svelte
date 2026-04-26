@@ -2,7 +2,7 @@
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths'
+	import { resolve } from '$app/paths';
 	import { toast } from 'svelte-sonner';
 	let { children } = $props();
 

@@ -156,7 +156,6 @@ D1: After running the pregeneration script, run `bun run migrate:d1` to seed the
 
 - add a "hide solutions" button
 
-
 ### Low priority
 
 - include eupho statutes

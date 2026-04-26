@@ -1,14 +1,10 @@
 import type { PageServerLoad } from './$types';
-import { drizzle } from 'drizzle-orm/d1';
 import { asc } from 'drizzle-orm';
 import { olympiads } from '$lib/server/db/schema.js';
 import type { OlympiadEntry } from '$lib/types.js';
 
-export const load: PageServerLoad = async ({ platform }) => {
-	const d1 = platform?.env.DB;
-	if (!d1) return { olympiads: [] as OlympiadEntry[] };
-
-	const db = drizzle(d1);
+export const load: PageServerLoad = async ({ locals }) => {
+	const db = locals.db;
 
 	const rows = await db
 		.select()

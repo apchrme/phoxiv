@@ -67,7 +67,9 @@
 
 		<!-- CTAs -->
 		<div class="flex flex-wrap gap-3">
-			<a href={resolve("/olympiads")} class={cn(buttonVariants({ variant: 'default' }))}>Browse olympiads</a>
+			<a href={resolve('/olympiads')} class={cn(buttonVariants({ variant: 'default' }))}
+				>Browse olympiads</a
+			>
 			<a
 				href="https://github.com/apchrme/phoxiv"
 				class={cn(buttonVariants({ variant: 'outline' }))}
