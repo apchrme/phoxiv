@@ -71,11 +71,7 @@
 {:else if icon}
 	<span class={className} aria-hidden="true">{icon}</span>
 {:else}
-	<span
-		class="{className}"
-		aria-hidden="true"
-		title="No icon set"
-	>
-		<CircleAlert class="size-9" />	
+	<span class={className} aria-hidden="true" title="No icon set">
+		<CircleAlert class="size-9" />
 	</span>
 {/if}

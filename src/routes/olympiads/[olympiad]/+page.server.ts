@@ -1,133 +1,133 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import type { YearEntry } from '$lib/pregen/types.js';
+import type { YearEntry } from '$lib/types.js';
+import { eq, desc } from 'drizzle-orm';
+import { olympiads, years, yearFiles, problems, problemFiles } from '$lib/server/db/schema.js';
 
-type OlympiadRow = {
-	id: string;
-	name: string;
-	summary: string;
-	icon: string;
-	tag: string;
-	description_html: string | null;
-	year_file_types: string;
-	problem_file_types: string;
-};
+export const load: PageServerLoad = async ({ params, locals }) => {
+	const db = locals.db;
 
-type YearRow = {
-	id: number;
-	year: number;
-	notes: string;
-	extra_links: string;
-};
+	const olympiadRow = await db
+		.select()
+		.from(olympiads)
+		.where(eq(olympiads.id, params.olympiad))
+		.get();
 
-type YearFileRow = {
-	year_id: number;
-	file_type: string;
-	url: string;
-};
-
-type ProblemRow = {
-	id: number;
-	year_id: number;
-	number: string;
-	title: string | null;
-};
-
-type ProblemFileRow = {
-	problem_id: number;
-	file_type: string;
-	url: string;
-};
-
-export const load: PageServerLoad = async ({ params, platform }) => {
-	const db = platform?.env.DB;
-	if (!db) error(500, { message: 'Database unavailable' });
-
-	const row = await db
-		.prepare('SELECT * FROM olympiads WHERE id = ?')
-		.bind(params.olympiad)
-		.first<OlympiadRow>();
-
-	if (!row) error(404, { message: 'Not found' });
+	if (!olympiadRow) error(404, { message: 'Not found' });
 
 	const olympiad = {
-		id: row.id,
-		name: row.name,
-		summary: row.summary,
-		icon: row.icon,
-		tag: row.tag,
-		descriptionHtml: row.description_html,
-		yearFileTypes: JSON.parse(row.year_file_types) as Record<string, { label: string }>,
-		problemFileTypes: JSON.parse(row.problem_file_types) as Record<string, { label: string }>
+		id: olympiadRow.id,
+		name: olympiadRow.name,
+		summary: olympiadRow.summary,
+		icon: olympiadRow.icon,
+		tag: olympiadRow.tag,
+		descriptionHtml: olympiadRow.descriptionHtml,
+		yearFileTypes: JSON.parse(olympiadRow.yearFileTypes) as Record<string, { label: string }>,
+		problemFileTypes: JSON.parse(olympiadRow.problemFileTypes) as Record<string, { label: string }>
 	};
 
-	const { results: yearRows } = await db
-		.prepare('SELECT * FROM years WHERE olympiad_id = ? ORDER BY year DESC')
-		.bind(params.olympiad)
-		.all<YearRow>();
-
-	if (yearRows.length === 0) {
-		return { olympiad, olympiadFiles: [] as YearEntry[] };
-	}
-
-	const yearIds = yearRows.map((y) => y.id);
-	const yp = yearIds.map(() => '?').join(',');
-
-	const [{ results: yearFileRows }, { results: problemRows }] = await Promise.all([
+	// Two queries with joins instead of IN clauses — variable count is always 1 (the olympiad id)
+	const [yearRows, problemRows] = await Promise.all([
 		db
-			.prepare(`SELECT year_id, file_type, url FROM year_files WHERE year_id IN (${yp})`)
-			.bind(...yearIds)
-			.all<YearFileRow>(),
+			.select()
+			.from(years)
+			.leftJoin(yearFiles, eq(yearFiles.yearId, years.id))
+			.where(eq(years.olympiadId, params.olympiad))
+			.orderBy(desc(years.year))
+			.all(),
 		db
-			.prepare(`SELECT * FROM problems WHERE year_id IN (${yp}) ORDER BY number`)
-			.bind(...yearIds)
-			.all<ProblemRow>()
+			.select()
+			.from(problems)
+			.leftJoin(problemFiles, eq(problemFiles.problemId, problems.id))
+			.innerJoin(years, eq(years.id, problems.yearId))
+			.where(eq(years.olympiadId, params.olympiad))
+			.orderBy(problems.id)
+			.all()
 	]);
 
-	let problemFileRows: ProblemFileRow[] = [];
-	if (problemRows.length > 0) {
-		const problemIds = problemRows.map((p) => p.id);
-		const pp = problemIds.map(() => '?').join(',');
-		const { results } = await db
-			.prepare(`SELECT problem_id, file_type, url FROM problem_files WHERE problem_id IN (${pp})`)
-			.bind(...problemIds)
-			.all<ProblemFileRow>();
-		problemFileRows = results;
+	// Merge year file rows into a map keyed by year id
+	const yearMap = new Map<
+		number,
+		{
+			year: number;
+			notes: string;
+			extraLinks: string;
+			yearFiles: Record<string, string>;
+		}
+	>();
+
+	for (const row of yearRows) {
+		const y = row.years;
+		if (!yearMap.has(y.id)) {
+			yearMap.set(y.id, {
+				year: y.year,
+				notes: y.notes,
+				extraLinks: y.extraLinks,
+				yearFiles: {}
+			});
+		}
+		if (row.year_files) {
+			yearMap.get(y.id)!.yearFiles[row.year_files.fileType] = row.year_files.url;
+		}
 	}
 
-	// Build lookup maps
-	const yearFilesMap = new Map<number, Record<string, string>>();
-	for (const yf of yearFileRows) {
-		const entry = yearFilesMap.get(yf.year_id) ?? {};
-		entry[yf.file_type] = yf.url;
-		yearFilesMap.set(yf.year_id, entry);
+	// Merge problem file rows into a map keyed by problem id
+	const problemMap = new Map<
+		number,
+		{
+			yearId: number;
+			number: string;
+			title: string | null;
+			files: Record<string, string>;
+		}
+	>();
+
+	for (const row of problemRows) {
+		const p = row.problems;
+		if (!problemMap.has(p.id)) {
+			problemMap.set(p.id, {
+				yearId: p.yearId,
+				number: p.number,
+				title: p.title,
+				files: {}
+			});
+		}
+		if (row.problem_files) {
+			problemMap.get(p.id)!.files[row.problem_files.fileType] = row.problem_files.url;
+		}
 	}
 
-	const problemFilesMap = new Map<number, Record<string, string>>();
-	for (const pf of problemFileRows) {
-		const entry = problemFilesMap.get(pf.problem_id) ?? {};
-		entry[pf.file_type] = pf.url;
-		problemFilesMap.set(pf.problem_id, entry);
-	}
-
+	// Group problems by year id
 	const problemsByYear = new Map<number, YearEntry['problems']>();
-	for (const p of problemRows) {
-		const list = problemsByYear.get(p.year_id) ?? [];
+	for (const p of problemMap.values()) {
+		const list = problemsByYear.get(p.yearId) ?? [];
 		list.push({
 			number: p.number,
 			...(p.title ? { title: p.title } : {}),
-			files: problemFilesMap.get(p.id) ?? {}
+			files: p.files
 		});
-		problemsByYear.set(p.year_id, list);
+		problemsByYear.set(p.yearId, list);
 	}
 
-	const olympiadFiles: YearEntry[] = yearRows.map((y) => ({
-		year: y.year,
-		notes: JSON.parse(y.notes) as string[],
-		extraLinks: JSON.parse(y.extra_links) as YearEntry['extraLinks'],
-		yearFiles: yearFilesMap.get(y.id) ?? {},
-		problems: problemsByYear.get(y.id) ?? []
-	}));
+	// Build the final array, deduplicating years that appear multiple times
+	// due to the leftJoin expanding one year into multiple rows
+	const seen = new Set<number>();
+	const olympiadFiles: YearEntry[] = [];
+
+	for (const row of yearRows) {
+		const y = row.years;
+		if (seen.has(y.id)) continue;
+		seen.add(y.id);
+
+		const entry = yearMap.get(y.id)!;
+		olympiadFiles.push({
+			year: entry.year,
+			notes: JSON.parse(entry.notes) as string[],
+			extraLinks: JSON.parse(entry.extraLinks) as YearEntry['extraLinks'],
+			yearFiles: entry.yearFiles,
+			problems: problemsByYear.get(y.id) ?? []
+		});
+	}
 
 	return { olympiad, olympiadFiles };
 };

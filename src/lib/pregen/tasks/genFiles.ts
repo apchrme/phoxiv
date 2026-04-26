@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import type { FilesJson, YearEntry, YearIndexYaml, ProblemEntry } from '../types.js';
+import type { FilesJson, YearEntry, YearIndexYaml, ProblemEntry } from '../../types.js';
 import { STATIC_DIR, PROBLEM_NUMS, OUT, readYaml, resolveLinks, FILES_BASE_URL } from '../utils.js';
 import type { InternalOlympiad } from './readOlympiads.js';
 

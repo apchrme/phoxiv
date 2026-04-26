@@ -2,6 +2,7 @@
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths'
 	import { toast } from 'svelte-sonner';
 	let { children } = $props();
 
@@ -59,7 +60,7 @@
 					description: latestPost.title,
 					action: {
 						label: 'Read',
-						onClick: () => goto(`/blog/${latestPost.slug}`)
+						onClick: () => goto(resolve(`/blog/${latestPost.slug}`))
 					},
 					duration: 8000
 				});

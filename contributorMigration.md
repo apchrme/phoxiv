@@ -1,6 +1,7 @@
 This is a significant amount of code across several files, so let me lay out the full structure before writing each one.
 
 **Files involved:**
+
 1. `wrangler.jsonc` — add R2 binding
 2. `src/app.d.ts` — type the FILES binding
 3. `src/routes/contribute/+page.server.ts` — select/create olympiad and year
@@ -96,7 +97,10 @@ export const actions: Actions = {
 		if (!d1) return fail(500, { error: 'Database unavailable' });
 		const db = drizzle(d1);
 		const data = await request.formData();
-		const id = String(data.get('id') ?? '').trim().toLowerCase().replace(/\s+/g, '-');
+		const id = String(data.get('id') ?? '')
+			.trim()
+			.toLowerCase()
+			.replace(/\s+/g, '-');
 		const name = String(data.get('name') ?? '').trim();
 		const summary = String(data.get('summary') ?? '').trim();
 		const icon = String(data.get('icon') ?? '').trim();
@@ -139,10 +143,7 @@ export const actions: Actions = {
 		} catch {
 			return fail(400, { createError: `An olympiad with the ID "${id}" already exists` });
 		}
-		await db
-			.insert(years)
-			.values({ olympiadId: id, year, notes: '[]', extraLinks: '[]' })
-			.run();
+		await db.insert(years).values({ olympiadId: id, year, notes: '[]', extraLinks: '[]' }).run();
 		redirect(303, `/contribute/${id}/${year}`);
 	}
 };
@@ -173,7 +174,9 @@ export const actions: Actions = {
 	<ToggleGroup.Root
 		type="single"
 		value={mode}
-		onValueChange={(v) => { if (v) mode = v as 'existing' | 'new'; }}
+		onValueChange={(v) => {
+			if (v) mode = v as 'existing' | 'new';
+		}}
 	>
 		<ToggleGroup.Item value="existing">Existing olympiad</ToggleGroup.Item>
 		<ToggleGroup.Item value="new">New olympiad</ToggleGroup.Item>
@@ -234,7 +237,9 @@ export const actions: Actions = {
 				<form method="POST" action="?/createOlympiad" use:enhance class="flex flex-col gap-4">
 					<div class="grid grid-cols-2 gap-4">
 						<div class="flex flex-col gap-1.5">
-							<label for="id" class="text-sm font-medium">ID <span class="text-muted-foreground">(slug)</span></label>
+							<label for="id" class="text-sm font-medium"
+								>ID <span class="text-muted-foreground">(slug)</span></label
+							>
 							<input
 								id="id"
 								name="id"
@@ -245,7 +250,9 @@ export const actions: Actions = {
 							/>
 						</div>
 						<div class="flex flex-col gap-1.5">
-							<label for="icon" class="text-sm font-medium">Icon <span class="text-muted-foreground">(emoji)</span></label>
+							<label for="icon" class="text-sm font-medium"
+								>Icon <span class="text-muted-foreground">(emoji)</span></label
+							>
 							<input
 								id="icon"
 								name="icon"
@@ -607,4 +614,5 @@ export const actions: Actions = {
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
-	import { ChevronLeft, Plus, Trash2, ExternalLink 
+	import { ChevronLeft, Plus, Trash2, ExternalLink
+```

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import uFuzzy from '@leeoniya/ufuzzy';
-	import searchIndex from '$lib/pregen/output/searchIndex.json';
-	import type { SearchItem } from '$lib/pregen/types.js';
+	import type { SearchItem } from '$lib/types.js';
 	import { Search } from '@lucide/svelte';
 	import XIcon from '@lucide/svelte/icons/x';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
@@ -14,14 +13,33 @@
 
 	let { open = $bindable(false) }: { open?: boolean } = $props();
 
-	// ---------------------------------------------------------------------------
-	// Search index — lifted from pregenerated searchIndex.json
-	// ---------------------------------------------------------------------------
-	const index: SearchItem[] = searchIndex as unknown as SearchItem[];
-	const haystack = index.map((i) => i.searchText);
-
-	// intraIns: 1 allows one inserted character per term (catches single typos).
 	const uf = new uFuzzy({ intraMode: 1, intraIns: 1 });
+
+	// ---------------------------------------------------------------------------
+	// Index — fetched once on first open, then cached for the session
+	// ---------------------------------------------------------------------------
+
+	let index = $state<SearchItem[]>([]);
+	let indexLoading = $state(false);
+	let indexFetched = false;
+
+	async function fetchIndex() {
+		if (indexFetched) return;
+		indexLoading = true;
+		try {
+			const res = await fetch('/api/search');
+			index = await res.json();
+			indexFetched = true;
+		} finally {
+			indexLoading = false;
+		}
+	}
+
+	$effect(() => {
+		if (open) fetchIndex();
+	});
+
+	const haystack = $derived(index.map((i) => i.searchText));
 
 	// ---------------------------------------------------------------------------
 	// Highlighting — applied per display field so marks appear in the right place
@@ -48,7 +66,7 @@
 
 	const results = $derived.by(() => {
 		const q = query.trim();
-		if (!q) return [];
+		if (!q || indexLoading) return [];
 		const [idxs, , order] = uf.search(haystack, q.toLowerCase());
 		if (!idxs?.length || !order?.length) return [];
 		return order.slice(0, MAX_RESULTS).map((oi) => index[idxs[oi]]);
@@ -159,12 +177,16 @@
 
 				<!-- Results -->
 				<div bind:this={resultsEl} class="flex min-h-0 flex-1 flex-col overflow-y-auto">
-					{#if !query.trim()}
+					{#if indexLoading}
+						<div class="m-auto">
+							<p class="text-center text-sm text-muted-foreground">Loading search index…</p>
+						</div>
+					{:else if !query.trim()}
 						<div class="m-auto px-5">
-							<p class="mb-5 text-sm text-muted-foreground text-center">
+							<p class="mb-5 text-center text-sm text-muted-foreground">
 								Type to search for problems across all olympiads...
 							</p>
-							<p class="text-sm text-muted-foreground text-center">
+							<p class="text-center text-sm text-muted-foreground">
 								Use the order: olympiad name/acronym, year, problem title/number
 							</p>
 						</div>

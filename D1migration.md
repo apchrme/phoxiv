@@ -3,65 +3,84 @@
 Configure `wrangler.jsonc` to point to the new binding
 
 ## Using Drizzle ORM
+
 ### Using drizzle-kit schema
+
 ```ts
 // src/lib/server/db/schema.ts
 import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const olympiads = sqliteTable('olympiads', {
-	id:                 text('id').primaryKey(),
-	name:               text('name').notNull(),
-	summary:            text('summary').notNull(),
-	icon:               text('icon').notNull().default(''),
-	tag:                text('tag', { enum: ['International', 'Regional', 'National', 'Open'] }).notNull(),
-	displayOrder:       integer('display_order').notNull().default(9999),
-	descriptionMd:      text('description_md'),
-	descriptionHtml:    text('description_html'),
-	yearFileTypes:      text('year_file_types').notNull().default('{}'),
-	problemFileTypes:   text('problem_file_types').notNull().default('{}')
+	id: text('id').primaryKey(),
+	name: text('name').notNull(),
+	summary: text('summary').notNull(),
+	icon: text('icon').notNull().default(''),
+	tag: text('tag', { enum: ['International', 'Regional', 'National', 'Open'] }).notNull(),
+	displayOrder: integer('display_order').notNull().default(9999),
+	descriptionMd: text('description_md'),
+	descriptionHtml: text('description_html'),
+	yearFileTypes: text('year_file_types').notNull().default('{}'),
+	problemFileTypes: text('problem_file_types').notNull().default('{}')
 });
 
-export const years = sqliteTable('years', {
-	id:         integer('id').primaryKey({ autoIncrement: true }),
-	olympiadId: text('olympiad_id').notNull().references(() => olympiads.id, { onDelete: 'cascade' }),
-	year:       integer('year').notNull(),
-	notes:      text('notes').notNull().default('[]'),
-	extraLinks: text('extra_links').notNull().default('[]')
-}, (t) => [
-	uniqueIndex('years_olympiad_year_idx').on(t.olympiadId, t.year)
-]);
+export const years = sqliteTable(
+	'years',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		olympiadId: text('olympiad_id')
+			.notNull()
+			.references(() => olympiads.id, { onDelete: 'cascade' }),
+		year: integer('year').notNull(),
+		notes: text('notes').notNull().default('[]'),
+		extraLinks: text('extra_links').notNull().default('[]')
+	},
+	(t) => [uniqueIndex('years_olympiad_year_idx').on(t.olympiadId, t.year)]
+);
 
-export const yearFiles = sqliteTable('year_files', {
-	id:       integer('id').primaryKey({ autoIncrement: true }),
-	yearId:   integer('year_id').notNull().references(() => years.id, { onDelete: 'cascade' }),
-	fileType: text('file_type').notNull(),
-	url:      text('url').notNull()
-}, (t) => [
-	uniqueIndex('year_files_year_type_idx').on(t.yearId, t.fileType)
-]);
+export const yearFiles = sqliteTable(
+	'year_files',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		yearId: integer('year_id')
+			.notNull()
+			.references(() => years.id, { onDelete: 'cascade' }),
+		fileType: text('file_type').notNull(),
+		url: text('url').notNull()
+	},
+	(t) => [uniqueIndex('year_files_year_type_idx').on(t.yearId, t.fileType)]
+);
 
-export const problems = sqliteTable('problems', {
-	id:     integer('id').primaryKey({ autoIncrement: true }),
-	yearId: integer('year_id').notNull().references(() => years.id, { onDelete: 'cascade' }),
-	number: text('number').notNull(),
-	title:  text('title')
-}, (t) => [
-	uniqueIndex('problems_year_number_idx').on(t.yearId, t.number)
-]);
+export const problems = sqliteTable(
+	'problems',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		yearId: integer('year_id')
+			.notNull()
+			.references(() => years.id, { onDelete: 'cascade' }),
+		number: text('number').notNull(),
+		title: text('title')
+	},
+	(t) => [uniqueIndex('problems_year_number_idx').on(t.yearId, t.number)]
+);
 
-export const problemFiles = sqliteTable('problem_files', {
-	id:        integer('id').primaryKey({ autoIncrement: true }),
-	problemId: integer('problem_id').notNull().references(() => problems.id, { onDelete: 'cascade' }),
-	fileType:  text('file_type').notNull(),
-	url:       text('url').notNull()
-}, (t) => [
-	uniqueIndex('problem_files_problem_type_idx').on(t.problemId, t.fileType)
-]);
+export const problemFiles = sqliteTable(
+	'problem_files',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		problemId: integer('problem_id')
+			.notNull()
+			.references(() => problems.id, { onDelete: 'cascade' }),
+		fileType: text('file_type').notNull(),
+		url: text('url').notNull()
+	},
+	(t) => [uniqueIndex('problem_files_problem_type_idx').on(t.problemId, t.fileType)]
+);
 ```
 
 After running `drizzle-kit generate`, verify that the generated SQL matches the schema we designed — particularly that the `ON DELETE CASCADE` clauses and unique indexes are present, as these are easy to silently lose in ORM-generated migrations. Then apply it:
 
 ### Applying SQL migrations and seeding
+
 Add a `--remote` flag to the wrangler commands to apply to remote.
 
 ```sh
@@ -72,6 +91,7 @@ bunx wrangler d1 migrations apply DB
 bun run migrate:d1
 bunx wrangler d1 execute DB --file=seed.sql
 ```
+
 ## Olympiad detail loading
 
 ```ts
@@ -128,12 +148,15 @@ export const load: PageServerLoad = async ({ params, platform }) => {
 	]);
 
 	// Merge year file rows into a map keyed by year id
-	const yearMap = new Map<number, {
-		year: number;
-		notes: string;
-		extraLinks: string;
-		yearFiles: Record<string, string>;
-	}>();
+	const yearMap = new Map<
+		number,
+		{
+			year: number;
+			notes: string;
+			extraLinks: string;
+			yearFiles: Record<string, string>;
+		}
+	>();
 
 	for (const row of yearRows) {
 		const y = row.years;
@@ -151,12 +174,15 @@ export const load: PageServerLoad = async ({ params, platform }) => {
 	}
 
 	// Merge problem file rows into a map keyed by problem id
-	const problemMap = new Map<number, {
-		yearId: number;
-		number: string;
-		title: string | null;
-		files: Record<string, string>;
-	}>();
+	const problemMap = new Map<
+		number,
+		{
+			yearId: number;
+			number: string;
+			title: string | null;
+			files: Record<string, string>;
+		}
+	>();
 
 	for (const row of problemRows) {
 		const p = row.problems;
@@ -324,10 +350,10 @@ const haystack = $derived(index.map((i) => i.searchText));
 
 /** Wraps fuzzy-matched characters in <mark> for a single display field. */
 function highlight(text: string, q: string): string {
-    if (!text || !q) return text;
-    const [idxs, info, order] = uf.search([text.toLowerCase()], q.toLowerCase());
-    if (!idxs?.length || !order?.length) return text;
-    return uFuzzy.highlight(text, info.ranges[order[0]]);
+	if (!text || !q) return text;
+	const [idxs, info, order] = uf.search([text.toLowerCase()], q.toLowerCase());
+	if (!idxs?.length || !order?.length) return text;
+	return uFuzzy.highlight(text, info.ranges[order[0]]);
 }
 
 const MAX_RESULTS = 50;
@@ -424,6 +450,7 @@ Then update the empty-state block in the template to handle the loading state:
 The index is fetched once on the first open and then reused for the lifetime of the page — `indexFetched` acts as a module-level cache flag so navigating away and back doesn't trigger another fetch.
 
 ## Olympiad list and stats
+
 Next up are the two remaining pages: the olympiads list and the home page stats.
 
 **Create** `src/routes/olympiads/+page.server.ts`:
@@ -558,5 +585,3 @@ const statItems = [
 ```
 
 After these changes the pregeneration output files (`olympiads.json`, `files.json`, `stats.json`, `searchIndex.json`) are no longer imported anywhere in the application. You can delete `src/lib/pregen/output/` and the `pregen` script from `package.json` (since we should not be normally using it now), keeping only the migration scripts for future use.
-
-

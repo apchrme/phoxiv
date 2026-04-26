@@ -1,6 +1,7 @@
 <script lang="ts">
-	import olympiads from '$lib/pregen/output/olympiads.json';
-	import type { OlympiadTag } from '$lib/pregen/types.js';
+	import type { PageData } from './$types';
+	import { resolve } from '$app/paths';
+	import type { OlympiadTag, OlympiadEntry } from '$lib/types.js';
 	import * as Card from '$lib/components/ui/card/index';
 	import { Badge } from '$lib/components/ui/badge/index';
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
@@ -11,7 +12,8 @@
 	import { cn } from '$lib/utils.js';
 	import Title from '$lib/components/Title.svelte';
 
-	// this seems redundant. I should remove this
+	let { data }: { data: PageData } = $props();
+
 	const ALL_TAGS: OlympiadTag[] = ['International', 'Regional', 'National', 'Open'];
 
 	let query = $state('');
@@ -19,7 +21,7 @@
 
 	const filtered = $derived(() => {
 		const q = query.trim().toLowerCase();
-		return olympiads.filter((c) => {
+		return (data.olympiads as OlympiadEntry[]).filter((c) => {
 			const matchesTag = activeTag === null || c.tag === activeTag;
 			const matchesQuery =
 				!q ||
@@ -60,7 +62,7 @@
 	{#if filtered().length > 0}
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">
 			{#each filtered() as olympiad (olympiad.id)}
-				<a href="/olympiads/{olympiad.id}" class="group block">
+				<a href={resolve(`/olympiads/${olympiad.id}`)} class="group block">
 					<Card.Root
 						class={cn(
 							'h-full cursor-pointer py-4! transition-all duration-200',
