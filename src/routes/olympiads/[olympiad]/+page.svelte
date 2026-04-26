@@ -1,26 +1,20 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	let { params }: PageProps = $props();
-	import olympiads from '$lib/pregen/output/olympiads.json';
-	import SvelteSeo from 'svelte-seo';
-
-	import files from '$lib/pregen/output/files.json';
 	import type { YearEntry } from '$lib/pregen/types.js';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { ChevronLeft, ArrowUpRight } from '@lucide/svelte';
+	import SvelteSeo from 'svelte-seo';
 
-	// olympiad will definitely be found, as the page.ts will throw a 404 if it isn't.
-	let olympiad = $derived(olympiads.find((i) => i.id == params.olympiad));
-	const olympiadFiles: YearEntry[] = $derived(
-		(files as unknown as Record<string, YearEntry[]>)[olympiad.id] ?? []
-	);
+	let { data }: PageProps = $props();
 
-	// Merged file type labels for this specific olympiad
-	const yearFTEntries = $derived(Object.entries(olympiad?.yearFileTypes ?? {}));
-	const probFTEntries = $derived(Object.entries(olympiad?.problemFileTypes ?? {}));
+	let olympiad = $derived(data.olympiad);
+	let olympiadFiles = $derived(data.olympiadFiles as YearEntry[]);
+
+	const yearFTEntries = $derived(Object.entries(olympiad.yearFileTypes));
+	const probFTEntries = $derived(Object.entries(olympiad.problemFileTypes));
 
 	let query = $state('');
 	let showFullYear = $state(false);
