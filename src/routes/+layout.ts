@@ -13,6 +13,10 @@ const olympiads = [
 	'usatst'
 ];
 
+const fileExtensions = [
+	'pdf', 'xlsx', 'zip', 'htm', 'html', 'doc', 'docx'
+]
+
 export function load({ url }) {
 	// redirect legacy urls
 	if (olympiads.find((i) => i == url.pathname.split('/')[1])) {
@@ -21,5 +25,9 @@ export function load({ url }) {
 
 	if (url.pathname.split('/')[1] == 'contests') {
 		redirect(308, url.pathname.replace('contests', 'olympiads'));
+	}
+
+	if (fileExtensions.find((i) => i == url.pathname.slice(-3))) {
+		redirect(308, 'https://cdn.phoxiv.org'+ url.pathname);
 	}
 }

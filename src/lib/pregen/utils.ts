@@ -6,7 +6,7 @@ import type { FileTypeLabel } from '../types.js';
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-export const STATIC_DIR = path.resolve('static/olympiads');
+export const STATIC_DIR = path.resolve('files/olympiads');
 export const EXTENSIONS = ['pdf', 'xlsx', 'zip', 'htm', 'html', 'doc', 'docx'];
 export const PROBLEM_NUMS = [
 	'T1',

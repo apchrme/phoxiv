@@ -27,6 +27,12 @@
 			"database_id": "3d506364-c7cb-4e64-a252-d0934437a5c2",
 			"migrations_dir": "./src/lib/server/db/migrations"
 		}
+	],
+	"r2_buckets": [
+		{
+			"bucket_name": "phoxiv-files",
+			"binding": "files"
+		}
 	]
 	/**
 	 * Smart Placement
