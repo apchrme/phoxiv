@@ -4,6 +4,11 @@ import { eq, desc } from 'drizzle-orm';
 import { olympiads, years, yearFiles, problems, problemFiles } from '$lib/server/db/schema.js';
 
 export const load = async ({ params, locals }) => {
+	// Cache the response for 1 hour (3600 seconds)
+	setHeaders({
+		'cache-control': 'public, max-age=3600',
+	});
+	
 	const db = locals.db;
 
 	const olympiadRow = await db
