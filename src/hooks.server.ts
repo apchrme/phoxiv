@@ -12,7 +12,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	
 	// Apply caching to all successful GET requests
 	if (event.request.method === 'GET' && response.status === 200) {
-    	response.headers.set('cache-control', 'public, max-age=3600');
+    	response.headers.set('cache-control', 'max-age=60, s-maxage=86400, stale-while-revalidate=60');
 	}
 	
 	return response;
