@@ -11,16 +11,12 @@ This is a significant amount of code across several files, so let me lay out the
 
 ```ts
 import { redirect, fail } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
-import { drizzle } from 'drizzle-orm/d1';
 import { asc } from 'drizzle-orm';
 import { olympiads, years } from '$lib/server/db/schema.js';
 import { marked } from 'marked';
 
-export const load: PageServerLoad = async ({ platform }) => {
-	const d1 = platform?.env.DB;
-	if (!d1) return { olympiads: [] };
-	const db = drizzle(d1);
+export const load = async ({ platform, locals }) => {
+	const db = locals.db;
 	const rows = await db
 		.select({ id: olympiads.id, name: olympiads.name })
 		.from(olympiads)
@@ -29,7 +25,7 @@ export const load: PageServerLoad = async ({ platform }) => {
 	return { olympiads: rows };
 };
 
-export const actions: Actions = {
+export const actions = {
 	// Navigate to an existing olympiad+year, creating the year record if it doesn't exist yet
 	selectYear: async ({ request, platform }) => {
 		const d1 = platform?.env.DB;
@@ -428,8 +424,7 @@ export const actions: Actions = {
 
 	uploadFile: async ({ request, params, platform, locals }) => {
 		const db = locals.db;
-		// Bug 2 fix: binding is 'files' (lowercase), not 'FILES'
-		const r2 = platform?.env.files;
+		const r2 = platform?.env.FILES;
 		if (!r2) return fail(500, { error: 'Storage unavailable' });
 		const yearNum = parseInt(params.year, 10);
 		const data = await request.formData();
@@ -494,8 +489,7 @@ export const actions: Actions = {
 
 	deleteFile: async ({ request, params, platform, locals }) => {
 		const db = locals.db;
-		// Bug 2 fix: binding is 'files' (lowercase), not 'FILES'
-		const r2 = platform?.env.files;
+		const r2 = platform?.env.FILES;
 		if (!r2) return fail(500, { error: 'Storage unavailable' });
 		const yearNum = parseInt(params.year, 10);
 		const data = await request.formData();
