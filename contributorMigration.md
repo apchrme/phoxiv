@@ -14,6 +14,7 @@ import { redirect, fail } from '@sveltejs/kit';
 import { asc } from 'drizzle-orm';
 import { olympiads, years } from '$lib/server/db/schema.js';
 import { marked } from 'marked';
+import sanitizeHtml from 'sanitize-html';
 
 export const load = async ({ platform, locals }) => {
 	const db = locals.db;
@@ -63,7 +64,17 @@ export const actions = {
 		}
 		const validTags = ['International', 'Regional', 'National', 'Open'];
 		if (!validTags.includes(tag)) return fail(400, { createError: 'Invalid tag' });
-		const descriptionHtml = descriptionMd ? (marked.parse(descriptionMd) as string) : null;
+		const descriptionHtml = descriptionMd
+			? sanitizeHtml(marked.parse(descriptionMd), {
+				allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
+				allowedAttributes: {
+					...sanitizeHtml.defaults.allowedAttributes,
+					img: ['src', 'alt', 'class'],
+					a: ['href', 'target', 'rel'],
+					'*': ['class']
+				}
+			})
+			: null;
 		// Minimal default file types — can be expanded later via a future settings page
 		const defaultYearFileTypes = JSON.stringify({
 			problems: { label: 'Problems' },
