@@ -5,10 +5,6 @@ import { olympiads, years, problems, problemFiles } from '$lib/server/db/schema.
 import type { SearchItem } from '$lib/types.js';
 
 export const GET: RequestHandler = async ({ locals }) => {
-	// Cache the response for 1 hour (3600 seconds)
-	setHeaders({
-		'cache-control': 'public, max-age=3600',
-	});
 	
 	const db = locals.db;
 
