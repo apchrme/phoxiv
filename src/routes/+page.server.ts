@@ -2,7 +2,11 @@ import { count } from 'drizzle-orm';
 import { olympiads, years, problemFiles, yearFiles } from '$lib/server/db/schema.js';
 
 export const load = async ({ locals }) => {
-
+	// Cache the response for 1 hour (3600 seconds)
+	setHeaders({
+		'cache-control': 'public, max-age=3600',
+	});
+	
 	const db = locals.db;
 
 	const [[olympiadCount], [yearCount], [yearFileCount], [problemFileCount]] = await Promise.all([
