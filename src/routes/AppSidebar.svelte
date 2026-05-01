@@ -6,6 +6,7 @@
 	import TrophyIcon from '@lucide/svelte/icons/trophy';
 	import LibraryIcon from '@lucide/svelte/icons/library';
 	import FileTextIcon from '@lucide/svelte/icons/file-text';
+	import { HandHelping } from '@lucide/svelte';
 	import logo from '$lib/assets/branding/logo.svg';
 
 	// navLinks is passed as a prop from +layout.svelte, which gets it from the same array defined there.
@@ -18,7 +19,8 @@
 		'/': HouseIcon,
 		'/olympiads': TrophyIcon,
 		'/resources': LibraryIcon,
-		'/blog': FileTextIcon
+		'/blog': FileTextIcon,
+		'/contribute': HandHelping
 	};
 
 	function isActive(url: string): boolean {

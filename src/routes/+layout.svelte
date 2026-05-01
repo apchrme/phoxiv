@@ -25,7 +25,7 @@
 		{ url: '/olympiads', label: 'olympiads' },
 		{ url: '/resources', label: 'resources' },
 		{ url: '/blog', label: 'blog' },
-		{ url: '/contribute', label: 'contribute'}
+		{ url: '/contribute', label: 'contribute' }
 	];
 
 	let searchOpen = $state(false);
@@ -83,7 +83,7 @@
 	<div
 		class="flex min-h-screen w-full flex-col items-center bg-background px-8 py-3 sm:px-10 sm:py-6"
 	>
-		<div class="w-full md:w-5/6 xl:w-2/3">
+		<div class="w-full lg:w-5/6 xl:w-2/3">
 			<!-- Mobile nav -->
 			<nav class="grid grid-cols-3 items-center md:hidden">
 				<Sidebar.Trigger />

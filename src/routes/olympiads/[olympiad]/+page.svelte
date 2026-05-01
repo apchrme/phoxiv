@@ -5,7 +5,7 @@
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
-	import { ChevronLeft, ArrowUpRight } from '@lucide/svelte';
+	import { ChevronLeft, ExternalLink } from '@lucide/svelte';
 	import SvelteSeo from 'svelte-seo';
 
 	let { data }: PageProps = $props();
@@ -121,7 +121,7 @@
 
 						{#snippet ExtraFileLink(url: string, label: string)}
 							<Badge variant="outline" href={url} target="_blank" class="px-2.5 py-2.5 text-sm">
-								<ArrowUpRight />
+								<ExternalLink />
 								{label}
 							</Badge>
 						{/snippet}

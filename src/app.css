@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
-@import '@catppuccin/tailwindcss/mocha.css';
 @import './styles/base.css';
 @import './styles/fonts.css';
 @import './styles/prose.css';

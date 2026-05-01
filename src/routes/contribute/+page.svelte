@@ -4,26 +4,21 @@
 	import Title from '$lib/components/Title.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
+	import * as Tabs from '$lib/components/ui/tabs/index.js';
 
+	let initialTab = $state('existing');
 	let { data, form }: PageProps = $props();
-
-	let mode = $state<'existing' | 'new'>('existing');
 </script>
 
 <Title title="Contribute" description="Add or edit olympiad content." />
 
-<div class="mx-auto max-w-xl space-y-6">
-	<ToggleGroup.Root
-		type="single"
-		value={mode}
-		onValueChange={(v) => { if (v) mode = v as 'existing' | 'new'; }}
-	>
-		<ToggleGroup.Item value="existing">Existing olympiad</ToggleGroup.Item>
-		<ToggleGroup.Item value="new">New olympiad</ToggleGroup.Item>
-	</ToggleGroup.Root>
+<Tabs.Root class="mx-auto max-w-xl gap-5" bind:value={initialTab}>
+	<Tabs.List variant="default">
+		<Tabs.Trigger value="existing">Existing olympiad</Tabs.Trigger>
+		<Tabs.Trigger value="new">New olympiad</Tabs.Trigger>
+	</Tabs.List>
 
-	{#if mode === 'existing'}
+	<Tabs.Content value="existing">
 		<Card.Root>
 			<Card.Header>
 				<Card.Title>Go to a year</Card.Title>
@@ -66,7 +61,8 @@
 				</form>
 			</Card.Content>
 		</Card.Root>
-	{:else}
+	</Tabs.Content>
+	<Tabs.Content value="new">
 		<Card.Root>
 			<Card.Header>
 				<Card.Title>New olympiad</Card.Title>
@@ -78,7 +74,9 @@
 				<form method="POST" action="?/createOlympiad" use:enhance class="flex flex-col gap-4">
 					<div class="grid grid-cols-2 gap-4">
 						<div class="flex flex-col gap-1.5">
-							<label for="id" class="text-sm font-medium">ID <span class="text-muted-foreground">(slug)</span></label>
+							<label for="id" class="text-sm font-medium"
+								>ID <span class="text-muted-foreground">(slug)</span></label
+							>
 							<input
 								id="id"
 								name="id"
@@ -89,7 +87,9 @@
 							/>
 						</div>
 						<div class="flex flex-col gap-1.5">
-							<label for="icon" class="text-sm font-medium">Icon <span class="text-muted-foreground">(emoji)</span></label>
+							<label for="icon" class="text-sm font-medium"
+								>Icon <span class="text-muted-foreground">(emoji)</span></label
+							>
 							<input
 								id="icon"
 								name="icon"
@@ -169,5 +169,5 @@
 				</form>
 			</Card.Content>
 		</Card.Root>
-	{/if}
-</div>
+	</Tabs.Content>
+</Tabs.Root>

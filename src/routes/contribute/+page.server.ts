@@ -36,7 +36,10 @@ export const actions = {
 	createOlympiad: async ({ request, locals }) => {
 		const db = locals.db;
 		const data = await request.formData();
-		const id = String(data.get('id') ?? '').trim().toLowerCase().replace(/\s+/g, '-');
+		const id = String(data.get('id') ?? '')
+			.trim()
+			.toLowerCase()
+			.replace(/\s+/g, '-');
 		const name = String(data.get('name') ?? '').trim();
 		const summary = String(data.get('summary') ?? '').trim();
 		const icon = String(data.get('icon') ?? '').trim();
@@ -49,15 +52,15 @@ export const actions = {
 		const validTags = ['International', 'Regional', 'National', 'Open'];
 		if (!validTags.includes(tag)) return fail(400, { createError: 'Invalid tag' });
 		const descriptionHtml = descriptionMd
-			? sanitizeHtml(marked.parse(descriptionMd), {
-				allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
-				allowedAttributes: {
-					...sanitizeHtml.defaults.allowedAttributes,
-					img: ['src', 'alt', 'class'],
-					a: ['href', 'target', 'rel'],
-					'*': ['class']
-				}
-			})
+			? sanitizeHtml(await marked.parse(descriptionMd), {
+					allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
+					allowedAttributes: {
+						...sanitizeHtml.defaults.allowedAttributes,
+						img: ['src', 'alt', 'class'],
+						a: ['href', 'target', 'rel'],
+						'*': ['class']
+					}
+				})
 			: null;
 		// Minimal default file types — can be expanded later via a future settings page
 		const defaultYearFileTypes = JSON.stringify({
@@ -68,7 +71,7 @@ export const actions = {
 		const defaultProblemFileTypes = JSON.stringify({
 			problem: { label: 'Problem' },
 			solution: { label: 'Solution' },
-			answerSheet: { label: 'Answer Sheet'},
+			answerSheet: { label: 'Answer Sheet' },
 			markingScheme: { label: 'Marking Scheme' }
 		});
 		try {
@@ -89,10 +92,7 @@ export const actions = {
 		} catch {
 			return fail(400, { createError: `An olympiad with the ID "${id}" already exists` });
 		}
-		await db
-			.insert(years)
-			.values({ olympiadId: id, year, notes: '[]', extraLinks: '[]' })
-			.run();
+		await db.insert(years).values({ olympiadId: id, year, notes: '[]', extraLinks: '[]' }).run();
 		redirect(303, `/contribute/${id}/${year}`);
 	}
 };

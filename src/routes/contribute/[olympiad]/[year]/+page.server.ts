@@ -54,7 +54,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			id: olympiadRow.id,
 			name: olympiadRow.name,
 			yearFileTypes: JSON.parse(olympiadRow.yearFileTypes) as Record<string, { label: string }>,
-			problemFileTypes: JSON.parse(olympiadRow.problemFileTypes) as Record<string, { label: string }>
+			problemFileTypes: JSON.parse(olympiadRow.problemFileTypes) as Record<
+				string,
+				{ label: string }
+			>
 		},
 		year: {
 			id: yearRow.id,
@@ -62,7 +65,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			notes: JSON.parse(yearRow.notes) as string[],
 			extraLinks: JSON.parse(yearRow.extraLinks) as { label: string; url: string }[]
 		},
-		yearFiles: Object.fromEntries(yearFileRows.map((f) => [f.fileType, f.url])) as Record<string, string>,
+		yearFiles: Object.fromEntries(yearFileRows.map((f) => [f.fileType, f.url])) as Record<
+			string,
+			string
+		>,
 		problems: [...problemMap.values()]
 	};
 };
@@ -142,7 +148,8 @@ export const actions: Actions = {
 
 		if (!file || file.size === 0) return fail(400, { error: 'No file provided' });
 		if (!fileType || !scope) return fail(400, { error: 'Missing required fields' });
-		if (scope === 'problem' && !problemNumber) return fail(400, { error: 'Problem number required' });
+		if (scope === 'problem' && !problemNumber)
+			return fail(400, { error: 'Problem number required' });
 
 		const ext = file.name.split('.').pop()?.toLowerCase() ?? 'pdf';
 		const key =
@@ -150,7 +157,7 @@ export const actions: Actions = {
 				? `olympiads/${params.olympiad}/${params.year}/${fileType}.${ext}`
 				: `olympiads/${params.olympiad}/${params.year}/${problemNumber}_${fileType}.${ext}`;
 
-        // bug in miniflare https://github.com/cloudflare/workers-sdk/issues/4373
+		// bug in miniflare https://github.com/cloudflare/workers-sdk/issues/4373
 		await r2.put(key, file.stream(), {
 			httpMetadata: { contentType: file.type || 'application/pdf' }
 		});
@@ -231,9 +238,7 @@ export const actions: Actions = {
 			if (problem) {
 				await db
 					.delete(problemFiles)
-					.where(
-						and(eq(problemFiles.problemId, problem.id), eq(problemFiles.fileType, fileType))
-					)
+					.where(and(eq(problemFiles.problemId, problem.id), eq(problemFiles.fileType, fileType)))
 					.run();
 			}
 		}

@@ -5,7 +5,6 @@ import { olympiads, years, problems, problemFiles } from '$lib/server/db/schema.
 import type { SearchItem } from '$lib/types.js';
 
 export const GET: RequestHandler = async ({ locals }) => {
-	
 	const db = locals.db;
 
 	const rows = await db
