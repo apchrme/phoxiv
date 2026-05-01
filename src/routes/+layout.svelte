@@ -24,7 +24,8 @@
 		{ url: '/', label: 'home' },
 		{ url: '/olympiads', label: 'olympiads' },
 		{ url: '/resources', label: 'resources' },
-		{ url: '/blog', label: 'blog' }
+		{ url: '/blog', label: 'blog' },
+		{ url: '/contribute', label: 'contribute'}
 	];
 
 	let searchOpen = $state(false);
