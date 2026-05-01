@@ -183,8 +183,7 @@
 				<Card.Header class="border-b">
 					<Card.Title>Problems</Card.Title>
 					<Card.Description>
-						Define the problems for this year. Removing a problem will delete all its associated
-						file records.
+						Define the problems for this year. Removing a problem or changing the problem number will delete all its associated file records. 
 					</Card.Description>
 				</Card.Header>
 				<Card.Content class="flex flex-col gap-3">

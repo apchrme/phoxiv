@@ -5,12 +5,15 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import { ArrowRight } from '@lucide/svelte';
 
 	let initialTab = $state('existing');
 	let { data, form }: PageProps = $props();
 </script>
 
-<Title title="Contribute" description="Add or edit olympiad content." />
+<Title title="Contribute" description="This is Houston. Right here, you can edit almost every piece of content on the olympiads page." />
 
 <Tabs.Root class="mx-auto max-w-xl gap-5" bind:value={initialTab}>
 	<Tabs.List variant="default">
@@ -57,7 +60,7 @@
 					{#if form?.selectError}
 						<p class="text-sm text-destructive">{form.selectError}</p>
 					{/if}
-					<Button type="submit" class="self-start">Go →</Button>
+					<Button type="submit" class="self-start">Go <ArrowRight /></Button>
 				</form>
 			</Card.Content>
 		</Card.Root>
@@ -72,56 +75,52 @@
 			</Card.Header>
 			<Card.Content>
 				<form method="POST" action="?/createOlympiad" use:enhance class="flex flex-col gap-4">
-					<div class="grid grid-cols-2 gap-4">
+					<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<div class="flex flex-col gap-1.5">
 							<label for="id" class="text-sm font-medium"
-								>ID <span class="text-muted-foreground">(slug)</span></label
+								>ID <span class="text-sm text-muted-foreground">(unique acronym)</span></label
 							>
-							<input
+							<Input
 								id="id"
 								name="id"
 								type="text"
 								required
 								placeholder="e.g. ipho"
-								class="h-9 w-full rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
 							/>
 						</div>
 						<div class="flex flex-col gap-1.5">
 							<label for="icon" class="text-sm font-medium"
-								>Icon <span class="text-muted-foreground">(emoji)</span></label
+								>Icon <span class="text-sm text-muted-foreground">(optional, emoji)</span></label
 							>
-							<input
+							<Input
 								id="icon"
 								name="icon"
 								type="text"
 								placeholder="e.g. 🌍"
-								class="h-9 w-full rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
 							/>
 						</div>
 					</div>
 					<div class="flex flex-col gap-1.5">
 						<label for="name" class="text-sm font-medium">Full name</label>
-						<input
+						<Input
 							id="name"
 							name="name"
 							type="text"
 							required
 							placeholder="e.g. International Physics Olympiad"
-							class="h-9 w-full rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
 						/>
 					</div>
 					<div class="flex flex-col gap-1.5">
 						<label for="summary" class="text-sm font-medium">Summary</label>
-						<input
+						<Input
 							id="summary"
 							name="summary"
 							type="text"
 							required
 							placeholder="One sentence description"
-							class="h-9 w-full rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
 						/>
 					</div>
-					<div class="grid grid-cols-2 gap-4">
+					<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<div class="flex flex-col gap-1.5">
 							<label for="tag" class="text-sm font-medium">Tag</label>
 							<select
@@ -138,7 +137,7 @@
 						</div>
 						<div class="flex flex-col gap-1.5">
 							<label for="year" class="text-sm font-medium">First year</label>
-							<input
+							<Input
 								id="year"
 								name="year"
 								type="number"
@@ -146,26 +145,24 @@
 								min="1900"
 								max="2100"
 								placeholder="e.g. 2025"
-								class="h-9 w-full rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
 							/>
 						</div>
 					</div>
 					<div class="flex flex-col gap-1.5">
 						<label for="description" class="text-sm font-medium">
-							Description <span class="text-muted-foreground">(optional, Markdown)</span>
+							Description <span class="text-sm text-muted-foreground">(optional, Markdown)</span>
 						</label>
-						<textarea
+						<Textarea
 							id="description"
 							name="description"
 							rows="3"
 							placeholder="Longer description shown on the olympiad page..."
-							class="w-full rounded-xl border border-input bg-input/30 px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-						></textarea>
+						></Textarea>
 					</div>
 					{#if form?.createError}
 						<p class="text-sm text-destructive">{form.createError}</p>
 					{/if}
-					<Button type="submit" class="self-start">Create olympiad →</Button>
+					<Button type="submit" class="self-start">Create olympiad <ArrowRight /></Button>
 				</form>
 			</Card.Content>
 		</Card.Root>
