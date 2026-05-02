@@ -5,13 +5,22 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
+	import * as Combobox from '$lib/components/ui/combobox/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { ArrowRight } from '@lucide/svelte';
 	import SvelteSeo from 'svelte-seo';
+	import type { OlympiadTag } from '$lib/types';
 
 	let initialTab = $state('existing');
 	let { data, form }: PageProps = $props();
+
+	let tag = $state<OlympiadTag | null>(null);
+	let olympiadId = $state<string | undefined>();
+	let searchOlympiad = $state<string>("");
+
+	const filtered = $derived(searchOlympiad === "" ? data.olympiads : data.olympiads.filter((olympiad) => olympiad.name.toLowerCase().includes(searchOlympiad.toLowerCase()) || olympiad.id.toLowerCase().includes(searchOlympiad.toLowerCase())));
 </script>
 
 <SvelteSeo title="Contribute" description="Edit anything" />
@@ -36,20 +45,18 @@
 				<form method="POST" action="?/selectYear" use:enhance class="flex flex-col gap-4">
 					<div class="flex flex-col gap-1.5">
 						<label for="olympiadId" class="text-sm font-medium">Olympiad</label>
-						<select
-							id="olympiadId"
-							name="olympiadId"
-							required
-							class="h-9 w-full rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-						>
-							{#each data.olympiads as o (o.id)}
-								<option value={o.id}>{o.name}</option>
+						<Combobox.Root type="single" name="olympiadId" required bind:value={olympiadId}>
+							<Combobox.Input oninput={(e) => (searchOlympiad = (e.currentTarget as HTMLInputElement).value)} placeholder="Search for an olympiad..."/>
+							<Combobox.Content class="max-h-100 overflow-scroll">
+							{#each filtered as o (o.id)}
+								<Combobox.Item value={o.id} label={o.name}>{o.name}</Combobox.Item>
 							{/each}
-						</select>
+							</Combobox.Content>
+						</Combobox.Root>
 					</div>
 					<div class="flex flex-col gap-1.5">
 						<label for="year" class="text-sm font-medium">Year</label>
-						<input
+						<Input
 							id="year"
 							name="year"
 							type="number"
@@ -57,7 +64,6 @@
 							min="1900"
 							max="2100"
 							placeholder="e.g. 2025"
-							class="h-9 w-full rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
 						/>
 					</div>
 					{#if form?.selectError}
@@ -126,17 +132,21 @@
 					<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<div class="flex flex-col gap-1.5">
 							<label for="tag" class="text-sm font-medium">Tag</label>
-							<select
-								id="tag"
-								name="tag"
-								required
-								class="h-9 w-full rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-							>
-								<option value="International">International</option>
-								<option value="Regional">Regional</option>
-								<option value="National">National</option>
-								<option value="Open">Open</option>
-							</select>
+							<Select.Root type="single" required bind:value={tag}>
+								<Select.Trigger>
+									{#if tag}
+										{tag}
+									{:else}
+										<span class="text-sm text-muted-foreground">Select a tag...</span>
+									{/if}
+								</Select.Trigger>
+								<Select.Content class="overflow-scroll">
+									<Select.Item value="International">International</Select.Item>
+									<Select.Item value="Regional">Regional</Select.Item>
+									<Select.Item value="National">National</Select.Item>
+									<Select.Item value="Open">Open</Select.Item>
+								</Select.Content>
+							</Select.Root>
 						</div>
 						<div class="flex flex-col gap-1.5">
 							<label for="year" class="text-sm font-medium">First year</label>

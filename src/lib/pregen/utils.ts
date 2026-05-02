@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
 import type { FileType } from './fileTypes.js';
-import type { FileTypeLabel } from '../types.js';
+import type { FileTypeLabel } from './types_old.js';
 
 // ── Config ────────────────────────────────────────────────────────────────────
 

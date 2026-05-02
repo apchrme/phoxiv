@@ -9,6 +9,7 @@
 	import { cn } from '$lib/utils.js';
 	import { goto } from '$app/navigation';
 	import { Dialog } from 'bits-ui';
+	import { resolve } from '$app/paths';
 	import * as Kbd from '$lib/components/ui/kbd/index.js';
 
 	let { open = $bindable(false) }: { open?: boolean } = $props();
@@ -93,7 +94,7 @@
 	}
 
 	function navigateTo(item: SearchItem) {
-		goto(`/olympiads/${item.olympiadId}#${item.year}`);
+		goto(resolve(`/olympiads/${item.olympiadId}#${item.year}`));
 		closeSearch();
 	}
 
@@ -104,7 +105,7 @@
 	function onWindowKeydown(e: KeyboardEvent) {
 		if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
 			e.preventDefault();
-			open ? closeSearch() : openSearch();
+			if (open) {closeSearch()} else {openSearch()};
 			return;
 		}
 		if (!open) return;
@@ -198,9 +199,8 @@
 						<ul>
 							{#each results as item, i (item.olympiadId + item.year + item.problem.number)}
 								<li>
-									<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 									<a
-										href="/olympiads/{item.olympiadId}#{item.year}"
+										href={resolve(`/olympiads/${item.olympiadId}#${item.year}`)}
 										onclick={(e) => {
 											e.preventDefault();
 											navigateTo(item);

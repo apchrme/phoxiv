@@ -1,5 +1,5 @@
 import fs from 'fs';
-import type { FilesJson, SearchItem } from '../../types.js';
+import type { FilesJson, SearchItem } from '../types_old.js';
 import { OUT } from '../utils.js';
 import type { InternalOlympiad } from './readOlympiads.js';
 

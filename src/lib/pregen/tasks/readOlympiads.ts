@@ -3,7 +3,7 @@ import path from 'path';
 import { marked } from 'marked';
 import { yearFileTypes, problemFileTypes } from '../fileTypes.js';
 import type { FileType } from '../fileTypes.js';
-import type { OlympiadEntry, OlympiadIndexYaml, FileTypeLabel } from '../../types.js';
+import type { OlympiadEntry, OlympiadIndexYaml } from '../types_old.js';
 import { STATIC_DIR, readYaml, toLabels } from '../utils.js';
 
 export type InternalOlympiad = OlympiadEntry & {

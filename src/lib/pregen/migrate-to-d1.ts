@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import type { OlympiadEntry, FilesJson } from '../types.js';
+import type { OlympiadEntry, FilesJson } from './types_old.js';
 
 const olympiads: OlympiadEntry[] = JSON.parse(
 	fs.readFileSync(path.resolve('src/lib/pregen/output/olympiads.json'), 'utf8')
