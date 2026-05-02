@@ -4,56 +4,69 @@
 	import { ChevronLeft, Plus, Trash2, ExternalLink } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
-	import { Spinner } from "$lib/components/ui/spinner/index.js";
+	import { Spinner } from '$lib/components/ui/spinner/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { toast } from 'svelte-sonner';
 	import { resolve } from '$app/paths';
+	import SvelteSeo from "svelte-seo";
 
-	let { data, form }: PageProps = $props();
+	let { data, params, form }: PageProps = $props();
 
 	let phase = $state<'metadata' | 'files'>('metadata');
 	// Map existing data to objects with unique IDs
 	// We need to use deep state here because the page data is just used to seed the variables, and subsequent updates are by the user.
 	// svelte-ignore state_referenced_locally
-	let notes = $state(data.year.notes.map(n => ({ id: crypto.randomUUID(), value: n })));
-	
-	// svelte-ignore state_referenced_locally
-	let extraLinks = $state(data.year.extraLinks.map(l => ({ 
-		id: crypto.randomUUID(), 
-		label: l.label, 
-		url: l.url 
-	})));
+	let notes = $state(data.year.notes.map((n) => ({ id: crypto.randomUUID(), value: n })));
 
 	// svelte-ignore state_referenced_locally
-	let problemList = $state(data.problems.map(p => ({ 
-		id: crypto.randomUUID(), 
-		number: p.number, 
-		title: p.title ?? '' 
-	})));
+	let extraLinks = $state(
+		data.year.extraLinks.map((l) => ({
+			id: crypto.randomUUID(),
+			label: l.label,
+			url: l.url
+		}))
+	);
+
+	// svelte-ignore state_referenced_locally
+	let problemList = $state(
+		data.problems.map((p) => ({
+			id: crypto.randomUUID(),
+			number: p.number,
+			title: p.title ?? ''
+		}))
+	);
 
 	// Helper to add new entries with fresh IDs
 	function addNote() {
 		notes.push({ id: crypto.randomUUID(), value: '' });
 	}
-	
 	function addLink() {
 		extraLinks.push({ id: crypto.randomUUID(), label: '', url: '' });
 	}
-	
 	function addProblem() {
 		problemList.push({ id: crypto.randomUUID(), number: '', title: '' });
 	}
 	// Remove functions remain simple (can use index or ID)
-	
-	function removeNote(i: number) { notes.splice(i, 1); }
-	function removeLink(i: number) { extraLinks.splice(i, 1); }
-	function removeProblem(i: number) { problemList.splice(i, 1); }
+	function removeNote(i: number) {
+		notes.splice(i, 1);
+	}
+	function removeLink(i: number) {
+		extraLinks.splice(i, 1);
+	}
+	function removeProblem(i: number) {
+		problemList.splice(i, 1);
+	}
+
 	let savingMetadata = $state(false);
+
+	// uploading[key] tracks in-flight uploads; key = "year__label" or "problem__number__label"
 	let uploading = $state<Record<string, boolean>>({});
 
-	// Bug fix: use 'in' narrowing so TypeScript knows which variant of form we have
+	// newFileLabel tracks the label input for each "add file" form
+	// key = "year" or problem number
+	let newFileLabel = $state<Record<string, string>>({});
+
 	$effect(() => {
 		if (!form) return;
 		if ('success' in form && form.success) {
@@ -66,13 +79,12 @@
 		}
 	});
 
-	const yearFTEntries = $derived(Object.entries(data.olympiad.yearFileTypes));
-	const probFTEntries = $derived(Object.entries(data.olympiad.problemFileTypes));
-
-	function uploadKey(scope: 'year' | 'problem', fileType: string, problemNumber?: string) {
-		return scope === 'year' ? `year__${fileType}` : `${problemNumber}__${fileType}`;
+	function uploadKey(scope: 'year' | 'problem', label: string, problemNumber?: string) {
+		return scope === 'year' ? `${label}` : `${problemNumber}/${label}`;
 	}
 </script>
+
+<SvelteSeo title="{params.olympiad} {params.year}" description="Modify {params.olympiad} {params.year}"/>
 
 <a
 	href={resolve('/contribute')}
@@ -101,27 +113,25 @@
 	</Tabs.List>
 
 	<Tabs.Content value="metadata">
-			<form 
-				method="POST" 
-				action="?/saveMetadata" 
-				use:enhance={() => {
-					savingMetadata = true;
-					return async ({ update }) => {
-						// update() normally invalidates data and resets the form. 
-						// We pass { reset: false } to keep the user's input intact.
-						savingMetadata = false;
-						await update({ reset: false });
-					};
-				}} 
-				class="flex flex-col gap-5"
-			>
+		<form
+			method="POST"
+			action="?/saveMetadata"
+			use:enhance={() => {
+				savingMetadata = true;
+				return async ({ update }) => {
+					// update() normally invalidates data and resets the form. 
+					// We pass { reset: false } to keep the user's input intact.
+					savingMetadata = false;
+					await update({ reset: false });
+				};
+			}}
+			class="flex flex-col gap-5"
+		>
 			<!-- Notes -->
 			<Card.Root>
 				<Card.Header class="border-b">
 					<Card.Title>Notes</Card.Title>
-					<Card.Description>
-						Short notices shown above the file links for this year.
-					</Card.Description>
+					<Card.Description>Short notices shown above the file links for this year.</Card.Description>
 				</Card.Header>
 				<Card.Content class="flex flex-col gap-3">
 					{#each notes as note, i (note.id)}
@@ -183,7 +193,7 @@
 				<Card.Header class="border-b">
 					<Card.Title>Problems</Card.Title>
 					<Card.Description>
-						Define the problems for this year. Removing a problem or changing the problem number will delete all its associated file records. 
+						Define the problems for this year. Removing a problem <span class="font-bold text-sm">or changing the problem number</span> will delete all its associated file records.
 					</Card.Description>
 				</Card.Header>
 				<Card.Content class="flex flex-col gap-3">
@@ -215,91 +225,121 @@
 			</Card.Root>
 
 			<div class="flex flex-row items-center gap-2">
-			<Button type="submit" class="disabled:bg-primary/60" disabled={savingMetadata}>
-				Save metadata
-			</Button>
-			{#if savingMetadata}
-      			<Spinner class="size-5"/>
-			{/if}
-
+				<Button type="submit" class="disabled:bg-primary/60" disabled={savingMetadata}>
+					Save metadata
+				</Button>
+				{#if savingMetadata}
+					<Spinner class="size-5" />
+				{/if}
 			</div>
-
 		</form>
 	</Tabs.Content>
 
 	<Tabs.Content value="files">
 		<div class="flex flex-col gap-5">
-			{#snippet fileTypeList(scope: "year"|"problem", fileTypeEntries: [string, {label: string}][], files: Record<string, string>,  problemNumber?: string)}
-				<div class="flex flex-col gap-4">
-					{#each fileTypeEntries as [fileType, ft], i (fileType)}
-						{@const key = uploadKey(scope, fileType, problemNumber)}
-						{@const existing = files[fileType]}
+			{#snippet fileSection(
+				scope: 'year' | 'problem',
+				existingFiles: { label: string; url: string }[],
+				problemNumber?: string
+			)}
+				<div class="flex flex-col gap-3">
+					<!-- Existing files -->
+					{#if existingFiles.length > 0}
 						<div class="flex flex-col gap-2">
-							<div class="flex items-center justify-between">
-								<span class="text-sm font-medium">{ft.label}</span>
-								{#if existing}
-									<Badge
-										variant="outline"
-										href={existing}
+							{#each existingFiles as file (file.label)}
+								{@const key = uploadKey(scope, file.label, problemNumber)}
+								<div class="flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-3 py-2">
+									<span class="flex-1 text-sm font-medium">{file.label}</span>
+									<a
+										href={file.url}
 										target="_blank"
-										class="p-2.5 text-sm"
+										class="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
 									>
-										<ExternalLink class="size-3" /> View current
-									</Badge>
-								{/if}
-							</div>
-							<div class="flex items-end gap-2">
-								<form
-									method="POST"
-									action="?/uploadFile"
-									enctype="multipart/form-data"
-									use:enhance={() => {
-										uploading[key] = true;
-										return async ({ update }) => {
-											uploading[key] = false;
-											await update();
-										};
-									}}
-									class="flex flex-col md:flex-row flex-1 gap-2"
-								>
-									<input type="hidden" name="scope" value={scope} />
-									<input type="hidden" name="fileType" value={fileType} />
-									{#if problemNumber}
-										<input type="hidden" name="problemNumber" value={problemNumber} />
-									{/if}
-									<input
-										type="file"
-										name="file"
-										accept=".pdf,.xlsx,.zip,.doc,.docx,.htm,.html"
-										required
-										class="flex-1 text-sm text-muted-foreground file:mr-3 file:rounded-4xl file:border file:border-border file:bg-card file:px-3 file:py-1 file:text-sm file:font-medium file:text-foreground"
-									/>
-									<Button type="submit" disabled={uploading[key]}>
-										{uploading[key] ? 'Uploading…' : existing ? 'Replace' : 'Upload'}
-									</Button>
-								</form>
-								{#if existing}
+										<ExternalLink class="size-3" /> View
+									</a>
 									<form
 										method="POST"
 										action="?/deleteFile"
+										use:enhance={() => {
+											return async ({ update }) => {
+												await update();
+											};
+										}}
 									>
 										<input type="hidden" name="scope" value={scope} />
-										<input type="hidden" name="fileType" value={fileType} />
+										<input type="hidden" name="label" value={file.label} />
 										{#if problemNumber}
 											<input type="hidden" name="problemNumber" value={problemNumber} />
 										{/if}
-										<input type="hidden" name="url" value={existing} />
-										<Button type="submit" variant="destructive" size="icon">
-											<Trash2 class="size-4" />
+										<input type="hidden" name="url" value={file.url} />
+										<Button type="submit" variant="ghost" size="icon-sm">
+											<Trash2 class="size-3.5 text-destructive" />
 										</Button>
 									</form>
-								{/if}
-							</div>
+								</div>
+							{/each}
 						</div>
-						{#if i < fileTypeEntries.length-1}
-							<Separator />
+						<Separator />
+					{/if}
+
+					<!-- Add new file form -->
+					<form
+						method="POST"
+						action="?/uploadFile"
+						enctype="multipart/form-data"
+						use:enhance={() => {
+							const labelKey = problemNumber ?? 'year';
+							const label = newFileLabel[labelKey] ?? '';
+							const key = uploadKey(scope, label, problemNumber);
+							uploading[key] = true;
+							return async ({ update }) => {
+								uploading[key] = false;
+								newFileLabel[labelKey] = '';
+								await update();
+							};
+						}}
+						class="flex flex-col gap-2 sm:flex-row sm:items-end"
+					>
+						<input type="hidden" name="scope" value={scope} />
+						{#if problemNumber}
+							<input type="hidden" name="problemNumber" value={problemNumber} />
 						{/if}
-					{/each}
+						<div class="flex flex-1 flex-col gap-1.5">
+							<label class="text-xs font-medium text-muted-foreground">Label</label>
+							<input
+								name="label"
+								type="text"
+								bind:value={newFileLabel[problemNumber ?? 'year']}
+								placeholder="e.g. Problems, Solutions, Marking Scheme…"
+								required
+								pattern="[^\/]*" // don't allow forward slashes to prevent conflicts
+								class="h-9 w-full rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+							/>
+						</div>
+						<div class="flex flex-1 flex-col gap-1.5">
+							<label class="text-xs font-medium text-muted-foreground">File</label>
+							<input
+								type="file"
+								name="file"
+								accept=".pdf,.xlsx,.zip,.doc,.docx,.htm,.html"
+								required
+								class="text-sm text-muted-foreground file:mr-3 file:rounded-4xl file:border file:border-border file:bg-card file:px-3 file:py-1 file:text-sm file:font-medium file:text-foreground"
+							/>
+						</div>
+						<Button
+							type="submit"
+							disabled={uploading[
+								uploadKey(scope, newFileLabel[problemNumber ?? 'year'] ?? '', problemNumber)
+							]}
+							class="shrink-0"
+						>
+							{#if uploading[uploadKey(scope, newFileLabel[problemNumber ?? 'year'] ?? '', problemNumber)]}
+								Uploading…
+							{:else}
+								Upload
+							{/if}
+						</Button>
+					</form>
 				</div>
 			{/snippet}
 
@@ -311,9 +351,8 @@
 						>Files that cover the whole year rather than a single problem.</Card.Description
 					>
 				</Card.Header>
-
 				<Card.Content>
-					{@render fileTypeList("year", yearFTEntries, data.yearFiles)}
+					{@render fileSection('year', data.yearFiles)}
 				</Card.Content>
 			</Card.Root>
 
@@ -333,10 +372,8 @@
 								{/if}
 							</Card.Title>
 						</Card.Header>
-
 						<Card.Content>
-
-							{@render fileTypeList("problem", probFTEntries, problem.files, problem.number)}
+							{@render fileSection('problem', problem.files, problem.number)}
 						</Card.Content>
 					</Card.Root>
 				{/each}

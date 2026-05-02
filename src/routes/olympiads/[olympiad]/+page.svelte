@@ -13,9 +13,6 @@
 	let olympiad = $derived(data.olympiad);
 	let olympiadFiles = $derived(data.olympiadFiles as YearEntry[]);
 
-	const yearFTEntries = $derived(Object.entries(olympiad.yearFileTypes));
-	const probFTEntries = $derived(Object.entries(olympiad.problemFileTypes));
-
 	let query = $state('');
 	let showFullYear = $state(false);
 
@@ -57,7 +54,7 @@
 
 	function hasYearLevelContent(year: YearEntry) {
 		return (
-			Object.keys(year.yearFiles).length > 0 || year.notes.length > 0 || year.extraLinks.length > 0
+			year.yearFiles.length > 0 || year.notes.length > 0 || year.extraLinks.length > 0
 		);
 	}
 </script>
@@ -131,15 +128,13 @@
 								{#each year.notes as note (note)}
 									<p class="m-0 text-sm text-muted-foreground">{note}</p>
 								{/each}
-								{#if year.extraLinks.length > 0 || Object.keys(year.yearFiles).length > 0}
+								{#if year.extraLinks.length > 0 || year.yearFiles.length > 0}
 									<div class="flex flex-wrap gap-2">
 										{#each year.extraLinks as link (link.label)}
 											{@render ExtraFileLink(link.url, link.label)}
 										{/each}
-										{#each yearFTEntries as [key, ft] (key)}
-											{#if year.yearFiles[key]}
-												{@render FileLink(year.yearFiles[key], ft.label)}
-											{/if}
+										{#each year.yearFiles as file (file.label)}
+											{@render FileLink(file.url, file.label)}
 										{/each}
 									</div>
 								{/if}
@@ -161,10 +156,8 @@
 											{/if}
 										</div>
 										<div class="flex flex-wrap gap-2">
-											{#each probFTEntries as [key, ft] (key)}
-												{#if problem.files[key]}
-													{@render FileLink(problem.files[key], ft.label)}
-												{/if}
+											{#each problem.files as file (file.label)}
+												{@render FileLink(file.url, file.label)}
 											{/each}
 										</div>
 									</div>

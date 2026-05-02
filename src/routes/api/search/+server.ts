@@ -23,10 +23,6 @@ export const GET: RequestHandler = async ({ locals }) => {
 		const o = row.olympiads;
 
 		if (!problemMap.has(p.id)) {
-			const probFTEntries = Object.entries(
-				JSON.parse(o.problemFileTypes) as Record<string, { label: string }>
-			);
-
 			problemMap.set(p.id, {
 				olympiadId: o.id,
 				olympiadName: o.name,
@@ -36,14 +32,16 @@ export const GET: RequestHandler = async ({ locals }) => {
 				problem: {
 					number: p.number,
 					...(p.title ? { title: p.title } : {}),
-					files: {}
-				},
-				probFTEntries
+					files: []
+				}
 			});
 		}
 
 		if (row.problem_files) {
-			problemMap.get(p.id)!.problem.files[row.problem_files.fileType] = row.problem_files.url;
+			problemMap.get(p.id)!.problem.files.push({
+				label: row.problem_files.label,
+				url: row.problem_files.url
+			});
 		}
 	}
 

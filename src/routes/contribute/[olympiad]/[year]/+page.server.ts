@@ -37,27 +37,24 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	const problemMap = new Map<
 		number,
-		{ id: number; number: string; title: string | null; files: Record<string, string> }
+		{ id: number; number: string; title: string | null; files: { label: string; url: string }[] }
 	>();
 	for (const row of problemRows) {
 		const p = row.problems;
 		if (!problemMap.has(p.id)) {
-			problemMap.set(p.id, { id: p.id, number: p.number, title: p.title, files: {} });
+			problemMap.set(p.id, { id: p.id, number: p.number, title: p.title, files: [] });
 		}
 		if (row.problem_files) {
-			problemMap.get(p.id)!.files[row.problem_files.fileType] = row.problem_files.url;
+			problemMap
+				.get(p.id)!
+				.files.push({ label: row.problem_files.label, url: row.problem_files.url });
 		}
 	}
 
 	return {
 		olympiad: {
 			id: olympiadRow.id,
-			name: olympiadRow.name,
-			yearFileTypes: JSON.parse(olympiadRow.yearFileTypes) as Record<string, { label: string }>,
-			problemFileTypes: JSON.parse(olympiadRow.problemFileTypes) as Record<
-				string,
-				{ label: string }
-			>
+			name: olympiadRow.name
 		},
 		year: {
 			id: yearRow.id,
@@ -65,10 +62,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			notes: JSON.parse(yearRow.notes) as string[],
 			extraLinks: JSON.parse(yearRow.extraLinks) as { label: string; url: string }[]
 		},
-		yearFiles: Object.fromEntries(yearFileRows.map((f) => [f.fileType, f.url])) as Record<
-			string,
-			string
-		>,
+		yearFiles: yearFileRows.map((f) => ({ label: f.label, url: f.url })),
 		problems: [...problemMap.values()]
 	};
 };
@@ -141,28 +135,26 @@ export const actions: Actions = {
 		const yearNum = parseInt(params.year, 10);
 		const data = await request.formData();
 
-		const fileType = String(data.get('fileType') ?? '').trim();
+		const label = String(data.get('label') ?? '').trim();
 		const scope = String(data.get('scope') ?? '').trim();
 		const problemNumber = String(data.get('problemNumber') ?? '').trim();
 		const file = data.get('file') as File | null;
 
 		if (!file || file.size === 0) return fail(400, { error: 'No file provided' });
-		if (!fileType || !scope) return fail(400, { error: 'Missing required fields' });
-		if (scope === 'problem' && !problemNumber)
-			return fail(400, { error: 'Problem number required' });
+		if (!label) return fail(400, { error: 'Label is required' });
+		if (!scope) return fail(400, { error: 'Scope is required' });
+		if (scope === 'problem' && !problemNumber) return fail(400, { error: 'Problem number required' });
+		if (label.includes('/')) return fail(400, { error: 'Label cannot include /' })
 
 		const ext = file.name.split('.').pop()?.toLowerCase() ?? 'pdf';
+		const slugLabel = label
+			.toLowerCase()
+			.replace(/\s+/g, '_')
+			.replace(/[^a-z0-9_]/g, '');
 		const key =
 			scope === 'year'
-				? `olympiads/${params.olympiad}/${params.year}/${fileType}.${ext}`
-				: `olympiads/${params.olympiad}/${params.year}/${problemNumber}_${fileType}.${ext}`;
-
-		// bug in miniflare https://github.com/cloudflare/workers-sdk/issues/4373
-		await r2.put(key, file.stream(), {
-			httpMetadata: { contentType: file.type || 'application/pdf' }
-		});
-
-		const url = `${CDN_BASE_URL}/${key}`;
+				? `olympiads/${params.olympiad}/${params.year}/${slugLabel}.${ext}`
+				: `olympiads/${params.olympiad}/${params.year}/${problemNumber}/${slugLabel}.${ext}`;
 
 		const yearRow = await db
 			.select()
@@ -171,28 +163,59 @@ export const actions: Actions = {
 			.get();
 		if (!yearRow) return fail(404, { error: 'Year not found' });
 
-		if (scope === 'year') {
-			await db
-				.insert(yearFiles)
-				.values({ yearId: yearRow.id, fileType, url })
-				.onConflictDoUpdate({
-					target: [yearFiles.yearId, yearFiles.fileType],
-					set: { url }
-				})
-				.run();
-		} else {
-			const problem = await db
+		let problemRow: (typeof problems.$inferSelect) | undefined;
+
+		if (scope === 'problem') {
+			problemRow = await db
 				.select()
 				.from(problems)
 				.where(and(eq(problems.yearId, yearRow.id), eq(problems.number, problemNumber)))
 				.get();
-			if (!problem)
+			if (!problemRow)
 				return fail(404, { error: `Problem ${problemNumber} not found — save metadata first` });
+
+			// Delete old R2 file if replacing
+			const existing = await db
+				.select({ url: problemFiles.url })
+				.from(problemFiles)
+				.where(and(eq(problemFiles.problemId, problemRow.id), eq(problemFiles.label, label)))
+				.get();
+			if (existing?.url.startsWith(CDN_BASE_URL + '/')) {
+				await r2.delete(existing.url.slice(CDN_BASE_URL.length + 1));
+			}
+		} else {
+			// Delete old R2 file if replacing
+			const existing = await db
+				.select({ url: yearFiles.url })
+				.from(yearFiles)
+				.where(and(eq(yearFiles.yearId, yearRow.id), eq(yearFiles.label, label)))
+				.get();
+			if (existing?.url.startsWith(CDN_BASE_URL + '/')) {
+				await r2.delete(existing.url.slice(CDN_BASE_URL.length + 1));
+			}
+		}
+
+		await r2.put(key, file.stream(), {
+			httpMetadata: { contentType: file.type || 'application/pdf' }
+		});
+
+		const url = `${CDN_BASE_URL}/${key}`;
+
+		if (scope === 'year') {
+			await db
+				.insert(yearFiles)
+				.values({ yearId: yearRow.id, label, url })
+				.onConflictDoUpdate({
+					target: [yearFiles.yearId, yearFiles.label],
+					set: { url }
+				})
+				.run();
+		} else {
 			await db
 				.insert(problemFiles)
-				.values({ problemId: problem.id, fileType, url })
+				.values({ problemId: problemRow!.id, label, url })
 				.onConflictDoUpdate({
-					target: [problemFiles.problemId, problemFiles.fileType],
+					target: [problemFiles.problemId, problemFiles.label],
 					set: { url }
 				})
 				.run();
@@ -208,7 +231,7 @@ export const actions: Actions = {
 		const yearNum = parseInt(params.year, 10);
 		const data = await request.formData();
 
-		const fileType = String(data.get('fileType') ?? '').trim();
+		const label = String(data.get('label') ?? '').trim();
 		const scope = String(data.get('scope') ?? '').trim();
 		const problemNumber = String(data.get('problemNumber') ?? '').trim();
 		const url = String(data.get('url') ?? '').trim();
@@ -227,7 +250,7 @@ export const actions: Actions = {
 		if (scope === 'year') {
 			await db
 				.delete(yearFiles)
-				.where(and(eq(yearFiles.yearId, yearRow.id), eq(yearFiles.fileType, fileType)))
+				.where(and(eq(yearFiles.yearId, yearRow.id), eq(yearFiles.label, label)))
 				.run();
 		} else {
 			const problem = await db
@@ -238,7 +261,7 @@ export const actions: Actions = {
 			if (problem) {
 				await db
 					.delete(problemFiles)
-					.where(and(eq(problemFiles.problemId, problem.id), eq(problemFiles.fileType, fileType)))
+					.where(and(eq(problemFiles.problemId, problem.id), eq(problemFiles.label, label)))
 					.run();
 			}
 		}

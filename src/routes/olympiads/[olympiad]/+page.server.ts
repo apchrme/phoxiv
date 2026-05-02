@@ -20,12 +20,9 @@ export const load = async ({ params, locals }) => {
 		summary: olympiadRow.summary,
 		icon: olympiadRow.icon,
 		tag: olympiadRow.tag,
-		descriptionHtml: olympiadRow.descriptionHtml,
-		yearFileTypes: JSON.parse(olympiadRow.yearFileTypes) as Record<string, { label: string }>,
-		problemFileTypes: JSON.parse(olympiadRow.problemFileTypes) as Record<string, { label: string }>
+		descriptionHtml: olympiadRow.descriptionHtml
 	};
 
-	// Two queries with joins instead of IN clauses — variable count is always 1 (the olympiad id)
 	const [yearRows, problemRows] = await Promise.all([
 		db
 			.select()
@@ -51,7 +48,7 @@ export const load = async ({ params, locals }) => {
 			year: number;
 			notes: string;
 			extraLinks: string;
-			yearFiles: Record<string, string>;
+			yearFiles: { label: string; url: string }[];
 		}
 	>();
 
@@ -62,11 +59,11 @@ export const load = async ({ params, locals }) => {
 				year: y.year,
 				notes: y.notes,
 				extraLinks: y.extraLinks,
-				yearFiles: {}
+				yearFiles: []
 			});
 		}
 		if (row.year_files) {
-			yearMap.get(y.id)!.yearFiles[row.year_files.fileType] = row.year_files.url;
+			yearMap.get(y.id)!.yearFiles.push({ label: row.year_files.label, url: row.year_files.url });
 		}
 	}
 
@@ -77,7 +74,7 @@ export const load = async ({ params, locals }) => {
 			yearId: number;
 			number: string;
 			title: string | null;
-			files: Record<string, string>;
+			files: { label: string; url: string }[];
 		}
 	>();
 
@@ -88,11 +85,11 @@ export const load = async ({ params, locals }) => {
 				yearId: p.yearId,
 				number: p.number,
 				title: p.title,
-				files: {}
+				files: []
 			});
 		}
 		if (row.problem_files) {
-			problemMap.get(p.id)!.files[row.problem_files.fileType] = row.problem_files.url;
+			problemMap.get(p.id)!.files.push({ label: row.problem_files.label, url: row.problem_files.url });
 		}
 	}
 
@@ -108,8 +105,7 @@ export const load = async ({ params, locals }) => {
 		problemsByYear.set(p.yearId, list);
 	}
 
-	// Build the final array, deduplicating years that appear multiple times
-	// due to the leftJoin expanding one year into multiple rows
+	// Build the final array, deduplicating years
 	const seen = new Set<number>();
 	const olympiadFiles: YearEntry[] = [];
 

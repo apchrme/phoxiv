@@ -62,18 +62,6 @@ export const actions = {
 					}
 				})
 			: null;
-		// Minimal default file types — can be expanded later via a future settings page
-		const defaultYearFileTypes = JSON.stringify({
-			problems: { label: 'Problems' },
-			solutions: { label: 'Solutions' },
-			results: { label: 'Results' }
-		});
-		const defaultProblemFileTypes = JSON.stringify({
-			problem: { label: 'Problem' },
-			solution: { label: 'Solution' },
-			answerSheet: { label: 'Answer Sheet' },
-			markingScheme: { label: 'Marking Scheme' }
-		});
 		try {
 			await db
 				.insert(olympiads)
@@ -84,9 +72,7 @@ export const actions = {
 					icon,
 					tag: tag as 'International' | 'Regional' | 'National' | 'Open',
 					descriptionMd,
-					descriptionHtml,
-					yearFileTypes: defaultYearFileTypes,
-					problemFileTypes: defaultProblemFileTypes
+					descriptionHtml
 				})
 				.run();
 		} catch {

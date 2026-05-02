@@ -8,10 +8,13 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { ArrowRight } from '@lucide/svelte';
+	import SvelteSeo from 'svelte-seo';
 
 	let initialTab = $state('existing');
 	let { data, form }: PageProps = $props();
 </script>
+
+<SvelteSeo title="Contribute" description="Edit anything" />
 
 <Title title="Contribute" description="This is Houston. Right here, you can edit almost every piece of content on the olympiads page." />
 

@@ -8,9 +8,7 @@ export const olympiads = sqliteTable('olympiads', {
 	tag: text('tag', { enum: ['International', 'Regional', 'National', 'Open'] }).notNull(),
 	displayOrder: integer('display_order').notNull().default(9999),
 	descriptionMd: text('description_md'),
-	descriptionHtml: text('description_html'),
-	yearFileTypes: text('year_file_types').notNull().default('{}'),
-	problemFileTypes: text('problem_file_types').notNull().default('{}')
+	descriptionHtml: text('description_html')
 });
 
 export const years = sqliteTable(
@@ -34,10 +32,10 @@ export const yearFiles = sqliteTable(
 		yearId: integer('year_id')
 			.notNull()
 			.references(() => years.id, { onDelete: 'cascade' }),
-		fileType: text('file_type').notNull(),
+		label: text('label').notNull(),
 		url: text('url').notNull()
 	},
-	(t) => [uniqueIndex('year_files_year_type_idx').on(t.yearId, t.fileType)]
+	(t) => [uniqueIndex('year_files_year_label_idx').on(t.yearId, t.label)]
 );
 
 export const problems = sqliteTable(
@@ -60,8 +58,8 @@ export const problemFiles = sqliteTable(
 		problemId: integer('problem_id')
 			.notNull()
 			.references(() => problems.id, { onDelete: 'cascade' }),
-		fileType: text('file_type').notNull(),
+		label: text('label').notNull(),
 		url: text('url').notNull()
 	},
-	(t) => [uniqueIndex('problem_files_problem_type_idx').on(t.problemId, t.fileType)]
+	(t) => [uniqueIndex('problem_files_problem_label_idx').on(t.problemId, t.label)]
 );

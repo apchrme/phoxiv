@@ -82,7 +82,7 @@ for (const o of olympiads) {
 }
 
 const sql = lines.join('\n');
-const outPath = path.resolve('seed.sql');
+const outPath = path.resolve('src/lib/server/db/seed.sql');
 fs.writeFileSync(outPath, sql);
 console.log(
 	`Wrote ${outPath} (${lines.length} statements, ${yearId - 1} years, ${problemId - 1} problems)`

@@ -245,20 +245,18 @@
 										</div>
 
 										<!-- File badges -->
-										{#if item.probFTEntries.some(([key]) => item.problem.files[key])}
+										{#if item.problem.files.length > 0}
 											<div class="flex flex-wrap gap-1.5">
-												{#each item.probFTEntries as [key, ft] (key)}
-													{#if item.problem.files[key]}
-														<Badge
-															variant="outline"
-															href={item.problem.files[key]}
-															target="_blank"
-															class="px-2 py-1 text-sm"
-															onclick={(e: MouseEvent) => e.stopPropagation()}
-														>
-															{ft.label}
-														</Badge>
-													{/if}
+												{#each item.problem.files as file (file.label)}
+													<Badge
+														variant="outline"
+														href={file.url}
+														target="_blank"
+														class="px-2 py-1 text-sm"
+														onclick={(e: MouseEvent) => e.stopPropagation()}
+													>
+														{file.label}
+													</Badge>
 												{/each}
 											</div>
 										{/if}
