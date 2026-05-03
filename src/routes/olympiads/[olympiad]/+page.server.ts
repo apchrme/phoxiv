@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { YearEntry } from '$lib/types.js';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, asc } from 'drizzle-orm';
 import { olympiads, years, yearFiles, problems, problemFiles } from '$lib/server/db/schema.js';
 
 export const load = async ({ params, locals }) => {
@@ -29,7 +29,7 @@ export const load = async ({ params, locals }) => {
 			.from(years)
 			.leftJoin(yearFiles, eq(yearFiles.yearId, years.id))
 			.where(eq(years.olympiadId, params.olympiad))
-			.orderBy(desc(years.year))
+			.orderBy(desc(years.year), asc(yearFiles.id))
 			.all(),
 		db
 			.select()
@@ -37,7 +37,7 @@ export const load = async ({ params, locals }) => {
 			.leftJoin(problemFiles, eq(problemFiles.problemId, problems.id))
 			.innerJoin(years, eq(years.id, problems.yearId))
 			.where(eq(years.olympiadId, params.olympiad))
-			.orderBy(problems.id)
+			.orderBy(problems.id, asc(problemFiles.id))
 			.all()
 	]);
 
