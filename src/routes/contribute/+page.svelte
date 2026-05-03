@@ -25,7 +25,7 @@
 
 <SvelteSeo title="Contribute" description="Edit anything" />
 
-<Title title="Contribute" description="This is Houston. Right here, you can edit almost every piece of content on the olympiads page." />
+<Title title="Contribute" description="This is Houston. Right here, you can edit almost every piece of content on the olympiads page. Note that due to caching, you may not see your changes on the corresponding olympiad pages immediately. Perform a hard reload with Ctrl+F5 to fix it." />
 
 <Tabs.Root class="mx-auto max-w-xl gap-5" bind:value={initialTab}>
 	<Tabs.List variant="default">

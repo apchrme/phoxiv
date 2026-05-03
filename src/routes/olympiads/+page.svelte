@@ -134,9 +134,9 @@
 		</p>
 		<a
 			href="mailto:apochrome@proton.me"
-			class="shrink-0 rounded-lg bg-primary-foreground px-4 py-2 text-sm font-semibold text-primary transition-opacity hover:opacity-90"
+			class="shrink-0 rounded-lg flex flex-row items-center gap-1 bg-primary-foreground px-3 py-2 text-sm font-semibold text-primary transition-opacity hover:opacity-90"
 		>
-			Get in touch →
+			Get in touch <ArrowRight class="size-4"/>
 		</a>
 	</div>
 </section>

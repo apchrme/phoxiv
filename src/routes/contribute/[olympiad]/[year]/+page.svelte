@@ -7,6 +7,7 @@
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 	import { toast } from 'svelte-sonner';
 	import { resolve } from '$app/paths';
 	import SvelteSeo from "svelte-seo";
@@ -136,12 +137,11 @@
 				<Card.Content class="flex flex-col gap-3">
 					{#each notes as note, i (note.id)}
 						<div class="flex gap-2">
-							<input
+							<Input
 								name="note"
 								type="text"
 								bind:value={note.value}
 								placeholder="e.g. Solutions are unofficial"
-								class="h-9 flex-1 rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
 							/>
 							<Button type="button" variant="ghost" size="icon-sm" onclick={() => removeNote(i)}>
 								<Trash2 class="size-4" />
@@ -163,19 +163,18 @@
 				<Card.Content class="flex flex-col gap-3">
 					{#each extraLinks as extraLink, i (extraLink.id)}
 						<div class="flex gap-2">
-							<input
+							<Input
 								name="linkLabel"
 								type="text"
 								bind:value={extraLink.label}
 								placeholder="Label"
-								class="h-9 w-32 shrink-0 rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+								class="w-20"
 							/>
-							<input
+							<Input
 								name="linkUrl"
 								type="url"
 								bind:value={extraLink.url}
 								placeholder="https://..."
-								class="h-9 flex-1 rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
 							/>
 							<Button type="button" variant="ghost" size="icon-sm" onclick={() => removeLink(i)}>
 								<Trash2 class="size-4" />
@@ -199,19 +198,18 @@
 				<Card.Content class="flex flex-col gap-3">
 					{#each problemList as problem, i (problem.id)}
 						<div class="flex gap-2">
-							<input
+							<Input
 								name="problemNumber"
 								type="text"
 								bind:value={problem.number}
 								placeholder="T1"
-								class="h-9 w-20 shrink-0 rounded-4xl border border-input bg-input/30 px-3 py-1 font-mono text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+								class="w-15"
 							/>
-							<input
+							<Input
 								name="problemTitle"
 								type="text"
 								bind:value={problem.title}
 								placeholder="Problem title (optional)"
-								class="h-9 flex-1 rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
 							/>
 							<Button type="button" variant="ghost" size="icon" onclick={() => removeProblem(i)}>
 								<Trash2 class="size-4" />
@@ -247,12 +245,13 @@
 					{#if existingFiles.length > 0}
 						<div class="flex flex-col gap-2">
 							{#each existingFiles as file (file.label)}
-								<div class="flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-3 py-2">
+								<div class="flex flex-col sm:flex-row items-center gap-2 rounded-xl border border-border bg-muted/30 p-3">
 									<span class="flex-1 text-sm font-medium">{file.label}</span>
+									<div class="flex flex-row">
 									<a
 										href={file.url}
 										target="_blank"
-										class="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary"
+										class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
 									>
 										<ExternalLink class="size-3" /> View
 									</a>
@@ -271,6 +270,7 @@
 											<Trash2 class="size-3.5 text-destructive" />
 										</Button>
 									</form>
+									</div>
 								</div>
 							{/each}
 						</div>
