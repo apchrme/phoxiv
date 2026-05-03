@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { eq } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 import { olympiads, years, problems, problemFiles } from '$lib/server/db/schema.js';
 import type { SearchItem } from '$lib/types.js';
 
@@ -13,6 +13,7 @@ export const GET: RequestHandler = async ({ locals }) => {
 		.innerJoin(years, eq(years.id, problems.yearId))
 		.innerJoin(olympiads, eq(olympiads.id, years.olympiadId))
 		.leftJoin(problemFiles, eq(problemFiles.problemId, problems.id))
+		.orderBy(asc(problemFiles.id))
 		.all();
 
 	const problemMap = new Map<number, SearchItem>();
