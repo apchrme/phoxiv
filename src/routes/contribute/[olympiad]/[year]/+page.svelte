@@ -247,7 +247,6 @@
 					{#if existingFiles.length > 0}
 						<div class="flex flex-col gap-2">
 							{#each existingFiles as file (file.label)}
-								{@const key = uploadKey(scope, file.label, problemNumber)}
 								<div class="flex items-center gap-2 rounded-xl border border-border bg-muted/30 px-3 py-2">
 									<span class="flex-1 text-sm font-medium">{file.label}</span>
 									<a
@@ -260,11 +259,7 @@
 									<form
 										method="POST"
 										action="?/deleteFile"
-										use:enhance={() => {
-											return async ({ update }) => {
-												await update();
-											};
-										}}
+										use:enhance
 									>
 										<input type="hidden" name="scope" value={scope} />
 										<input type="hidden" name="label" value={file.label} />
@@ -305,8 +300,9 @@
 							<input type="hidden" name="problemNumber" value={problemNumber} />
 						{/if}
 						<div class="flex flex-1 flex-col gap-1.5">
-							<label class="text-xs font-medium text-muted-foreground">Label</label>
+							<label for="label" class="text-xs font-medium text-muted-foreground">Label</label>
 							<input
+								id="label"
 								name="label"
 								type="text"
 								bind:value={newFileLabel[problemNumber ?? 'year']}
@@ -317,8 +313,9 @@
 							/>
 						</div>
 						<div class="flex flex-1 flex-col gap-1.5">
-							<label class="text-xs font-medium text-muted-foreground">File</label>
+							<label for="file" class="text-xs font-medium text-muted-foreground">File</label>
 							<input
+								id="file"
 								type="file"
 								name="file"
 								accept=".pdf,.xlsx,.zip,.doc,.docx,.htm,.html"

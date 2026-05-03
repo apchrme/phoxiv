@@ -1,21 +1,21 @@
 <script lang="ts">
-	import { cn, type WithElementRef } from "$lib/utils.js";
-	import type { HTMLAttributes } from "svelte/elements";
-    import { Combobox } from "bits-ui";
+	import { cn } from "$lib/utils.js";
+	import { Combobox } from "bits-ui";
+	import type { WithoutChild } from "$lib/utils.js";
 
 	let {
 		ref = $bindable(null),
 		class: className,
-		children,
 		...restProps
-	}: WithElementRef<HTMLAttributes<HTMLDivElement>> & {} = $props();
+	}: WithoutChild<Combobox.InputProps> = $props();
 </script>
 
 <Combobox.Input
 	bind:ref
-	class='h-9 w-full min-w-0 rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm transition-colors outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/20 md:text-sm dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40'
 	data-slot="combobox-input"
+	class={cn(
+		'h-9 w-full min-w-0 rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/20 md:text-sm dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
+		className
+	)}
 	{...restProps}
->
-	{@render children?.()}
-</Combobox.Input>
+/>

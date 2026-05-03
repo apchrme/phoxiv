@@ -16,7 +16,7 @@
 	let initialTab = $state('existing');
 	let { data, form }: PageProps = $props();
 
-	let tag = $state<OlympiadTag | null>(null);
+	let tag = $state<OlympiadTag | undefined>();
 	let olympiadId = $state<string | undefined>();
 	let searchOlympiad = $state<string>("");
 
