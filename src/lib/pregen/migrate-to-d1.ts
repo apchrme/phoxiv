@@ -10,14 +10,7 @@ const files: FilesJson = JSON.parse(
 );
 
 // R2 CDN base — must match your actual CDN URL
-const CDN_BASE = process.env.FILES_BASE_URL?.replace(/\/$/, '') ?? '';
-
-if (!CDN_BASE) {
-	console.error(
-		'FILES_BASE_URL is not set. Run with FILES_BASE_URL=https://cdn.phoxiv.org bun run src/lib/pregen/migrate-to-d1.ts'
-	);
-	process.exit(1);
-}
+const CDN_BASE = "https://cdn.phoxiv.org/";
 
 const lines: string[] = ['PRAGMA foreign_keys = ON;'];
 
