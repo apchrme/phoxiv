@@ -81,11 +81,11 @@
 <Sidebar.Provider>
 	<AppSidebar {navLinks} />
 	<div
-		class="flex min-h-screen w-full flex-col items-center bg-background px-8 py-3 sm:px-10 sm:py-6"
+		class="flex min-h-screen w-full flex-col items-center bg-background px-5 pb-3 pt-2"
 	>
 		<div class="w-full lg:w-5/6 xl:w-2/3">
 			<!-- Mobile nav -->
-			<nav class="grid grid-cols-3 items-center md:hidden">
+			<nav class="grid grid-cols-3 items-center md:hidden sticky p-1 top-2 bg-muted/50 backdrop-blur-sm rounded-full">
 				<Sidebar.Trigger />
 				<a
 					href="/"
@@ -103,7 +103,7 @@
 			</nav>
 
 			<!-- Desktop nav -->
-			<nav class="hidden flex-row flex-wrap items-center justify-between gap-2 md:flex">
+			<nav class="hidden flex-row flex-wrap items-center justify-between gap-2 md:flex sticky p-1 top-2 bg-muted/50 backdrop-blur-sm rounded-full">
 				<NavigationMenu.Root>
 					<NavigationMenu.List class="gap-2 sm:gap-3">
 						{#each navLinks as navLink (navLink.url)}
@@ -128,7 +128,6 @@
 				</div>
 			</nav>
 
-			<Separator class="mt-3" />
 			<main>
 				{@render children?.()}
 			</main>

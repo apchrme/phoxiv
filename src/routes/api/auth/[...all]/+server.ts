@@ -1,14 +1,10 @@
 import type { RequestHandler } from './$types';
 
-export const GET: RequestHandler = async (event) => {
+const handler: RequestHandler = async (event) => {
  return event.locals.auth.handler(event.request);
 };
-export const POST: RequestHandler = async (event) => {
- return event.locals.auth.handler(event.request);
-};
-export const PUT: RequestHandler = async (event) => {
- return event.locals.auth.handler(event.request);
-};
-export const DELETE: RequestHandler = async (event) => {
- return event.locals.auth.handler(event.request);
-};
+
+export const GET = handler;
+export const POST = handler;
+export const PUT = handler;
+export const DELETE = handler;
