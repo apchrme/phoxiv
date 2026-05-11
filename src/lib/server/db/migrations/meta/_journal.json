@@ -15,6 +15,13 @@
       "when": 1777682146492,
       "tag": "0001_material_supernaut",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1778477810710,
+      "tag": "0002_curvy_the_hunter",
+      "breakpoints": true
     }
   ]
 }

@@ -132,7 +132,8 @@
 					<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<div class="flex flex-col gap-1.5">
 							<label for="tag" class="text-sm font-medium">Tag</label>
-							<Select.Root type="single" required bind:value={tag}>
+							<input id="tag" type="hidden" value={tag} />
+							<Select.Root type="single" bind:value={tag}>
 								<Select.Trigger>
 									{#if tag}
 										{tag}
