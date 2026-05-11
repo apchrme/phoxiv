@@ -11,6 +11,7 @@ type AuthEnv = {
 
 export function createAuth(db: DrizzleD1Database, env: AuthEnv) {
 	return betterAuth({
+		trustedOrigins: env.TRUSTED_ORIGINS?.split(',') ?? [],
 		secret: env.BETTER_AUTH_SECRET,
 		database: drizzleAdapter(db, {
 			provider: 'sqlite',
