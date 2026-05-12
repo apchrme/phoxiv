@@ -1,20 +1,15 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import * as schema from './db/schema';
 import { admin } from "better-auth/plugins";
+import { env as cfenv } from 'cloudflare:workers';
 
-type AuthEnv = {
-	GITHUB_CLIENT_ID: string;
-	GITHUB_CLIENT_SECRET: string;
-	BETTER_AUTH_SECRET: string;
-};
+const env = process.env;
 
-export function createAuth(db: DrizzleD1Database, env: AuthEnv) {
-	return betterAuth({
+export const auth = betterAuth({
 		trustedOrigins: env.TRUSTED_ORIGINS?.split(',') ?? [],
 		secret: env.BETTER_AUTH_SECRET,
-		database: drizzleAdapter(db, {
+		database: drizzleAdapter(cfenv.DB, {
 			provider: 'sqlite',
 			schema: {
 				user: schema.user,
@@ -31,4 +26,3 @@ export function createAuth(db: DrizzleD1Database, env: AuthEnv) {
 		},
 		plugins: [admin()]
 	});
-}

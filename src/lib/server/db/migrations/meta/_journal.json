@@ -22,6 +22,13 @@
       "when": 1778477810710,
       "tag": "0002_curvy_the_hunter",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1778569637700,
+      "tag": "0003_living_zombie",
+      "breakpoints": true
     }
   ]
 }

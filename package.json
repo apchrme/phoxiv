@@ -69,10 +69,8 @@
 		"db:migrate-remote": "wrangler d1 migrations apply DB --remote",
 		"db:studio": "drizzle-kit studio",
 		"cf-typegen": "wrangler types ./src/worker-configuration.d.ts",
-		"pregen": "bun run ./src/lib/pregen/generate.ts",
-		"sync:pull": "rclone sync r2:phoxiv-files/ files/ --progress",
-		"sync:push": "rclone sync files/ r2:phoxiv-files/ --progress",
-		"migrate:d1": "FILES_BASE_URL=https://cdn.phoxiv.org bun run src/lib/pregen/migrate-to-d1.ts"
+		"db:generate-auth": "bun x auth@latest generate --config src/lib/server/auth-cli.ts"
+
 	},
 	"type": "module"
 }
