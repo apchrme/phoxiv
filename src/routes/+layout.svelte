@@ -7,7 +7,6 @@
 	let { children, data } = $props();
 
 	import NavLink from './NavLink.svelte';
-	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { ModeWatcher } from 'mode-watcher';
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';

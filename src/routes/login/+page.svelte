@@ -2,7 +2,8 @@
 	import { authClient } from '$lib/auth-client';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { Github, Zap } from '@lucide/svelte';
+	import { Zap } from '@lucide/svelte';
+	import Github from '$lib/assets/icons/Github.svelte';
 	import SvelteSeo from 'svelte-seo';
 
 	let loading = $state(false);
@@ -37,7 +38,7 @@
 			<div class="flex flex-col items-center gap-1 text-center">
 				<h1 class="text-2xl font-bold tracking-tight">Welcome back</h1>
 				<p class="text-sm text-muted-foreground">
-					Sign in to contribute to the phoXiv archive
+					Sign in for upcoming features
 				</p>
 			</div>
 		</div>
@@ -56,7 +57,7 @@
 						<span class="size-4 animate-spin rounded-full border-2 border-background/30 border-t-background"></span>
 						Redirecting…
 					{:else}
-						<Github class="size-4" />
+						<Github invert />
 						Continue with GitHub
 					{/if}
 				</button>
@@ -69,12 +70,5 @@
 				</p>
 			</div>
 		</div>
-
-		<!-- Back link -->
-		<p class="mt-6 text-center text-sm text-muted-foreground">
-			<a href={resolve('/')} class="underline-offset-4 hover:text-foreground hover:underline">
-				← Back to phoXiv
-			</a>
-		</p>
 	</div>
 </div>

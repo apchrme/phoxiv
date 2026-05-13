@@ -3,11 +3,10 @@
 	import { authClient } from '$lib/auth-client';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import { Separator } from '$lib/components/ui/separator/index.js';
 	import SvelteSeo from 'svelte-seo';
-	import { LogOut, User, Mail, Github, Shield, ArrowRight } from '@lucide/svelte';
+	import { LogOut, User, Mail, Shield, ArrowRight } from '@lucide/svelte';
+	import Github from '$lib/assets/icons/Github.svelte';
 	import Title from '$lib/components/Title.svelte';
 
 	let { data }: PageProps = $props();
@@ -103,29 +102,10 @@
 					<span class="text-sm font-medium">{formatDate(user?.createdAt ?? new Date())}</span>
 				</div>
 			</div>
-		</Card.Content>
-	</Card.Root>
-
-	<!-- Actions card -->
-	<Card.Root>
-		<Card.Content class="flex flex-col gap-3 py-4">
-			<a
-				href={resolve('/contribute')}
-				class="flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-muted"
-			>
-				<div class="flex flex-1 flex-col gap-0.5">
-					<span class="text-sm font-medium">Contribute to phoXiv</span>
-					<span class="text-xs text-muted-foreground">Add or edit olympiad problems and files</span>
-				</div>
-				<ArrowRight class="size-4 text-muted-foreground" />
-			</a>
-
-			<Separator />
-
 			<button
 				onclick={signOut}
 				disabled={signingOut}
-				class="flex w-full items-center gap-3 rounded-xl p-3 text-left text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
+				class="flex w-full items-center gap-3 rounded-xl py-3 text-left text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
 			>
 				<LogOut class="size-4 shrink-0" />
 				<span class="text-sm font-medium">{signingOut ? 'Signing out…' : 'Sign out'}</span>
