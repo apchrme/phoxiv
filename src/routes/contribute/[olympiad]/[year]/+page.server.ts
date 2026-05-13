@@ -2,6 +2,7 @@ import { error, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { eq, and } from 'drizzle-orm';
 import { olympiads, years, yearFiles, problems, problemFiles } from '$lib/server/db/schema.js';
+import { requireAdmin } from '$lib/server/guard';
 
 const CDN_BASE_URL = 'https://cdn.phoxiv.org';
 
@@ -69,6 +70,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 export const actions: Actions = {
 	saveMetadata: async ({ request, params, locals }) => {
+		requireAdmin(locals);
 		const db = locals.db;
 		const yearNum = parseInt(params.year, 10);
 		const data = await request.formData();
@@ -129,6 +131,7 @@ export const actions: Actions = {
 	},
 
 	uploadFile: async ({ request, params, platform, locals }) => {
+		requireAdmin(locals);
 		const db = locals.db;
 		const r2 = platform?.env.FILES;
 		if (!r2) return fail(500, { error: 'Storage unavailable' });
@@ -225,6 +228,7 @@ export const actions: Actions = {
 	},
 
 	deleteFile: async ({ request, params, platform, locals }) => {
+		requireAdmin(locals);
 		const db = locals.db;
 		const r2 = platform?.env.FILES;
 		if (!r2) return fail(500, { error: 'Storage unavailable' });

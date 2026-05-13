@@ -17,7 +17,7 @@
 	}
 </script>
 
-<SvelteSeo title="Blog - phoXiv" description="Updates, articles and anything related to phoXiv." />
+<SvelteSeo title="Blog — phoXiv" description="Updates, articles and anything related to phoXiv." />
 
 <!-- Header -->
 <Title

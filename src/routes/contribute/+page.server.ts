@@ -3,6 +3,7 @@ import { asc } from 'drizzle-orm';
 import { olympiads, years } from '$lib/server/db/schema.js';
 import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
+import { requireAdmin } from '$lib/server/guard';
 
 export const load = async ({ locals }) => {
 	const db = locals.db;
@@ -17,6 +18,7 @@ export const load = async ({ locals }) => {
 export const actions = {
 	// Navigate to an existing olympiad+year, creating the year record if it doesn't exist yet
 	selectYear: async ({ request, locals }) => {
+		requireAdmin(locals);
 		const db = locals.db;
 		const data = await request.formData();
 		const olympiadId = String(data.get('olympiadId') ?? '').trim();
@@ -34,6 +36,7 @@ export const actions = {
 
 	// Create a brand new olympiad, then go straight to editing its first year
 	createOlympiad: async ({ request, locals }) => {
+		requireAdmin(locals);
 		const db = locals.db;
 		const data = await request.formData();
 		const id = String(data.get('id') ?? '')

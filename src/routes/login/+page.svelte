@@ -2,14 +2,14 @@
 	import { authClient } from '$lib/auth-client';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { Zap } from '@lucide/svelte';
+	import logo from '$lib/assets/branding/logo.svg';
 	import Github from '$lib/assets/icons/Github.svelte';
 	import SvelteSeo from 'svelte-seo';
 
 	let loading = $state(false);
 
 	// Read ?redirect= from the URL so we can forward after sign-in
-	const redirectTo = $derived(page.url.searchParams.get('redirect') ?? resolve('/contribute'));
+	const redirectTo = $derived(page.url.searchParams.get('redirect') ?? resolve('/'));
 
 	async function signInWithGitHub() {
 		loading = true;
@@ -24,7 +24,7 @@
 	}
 </script>
 
-<SvelteSeo title="Sign in - phoXiv" description="Sign in to contribute to phoXiv." />
+<SvelteSeo title="Sign in — phoXiv" description="Sign in to phoXiv." />
 
 <div class="flex min-h-[calc(100svh-10rem)] flex-col items-center justify-center py-12">
 	<div class="w-full max-w-sm">
@@ -33,12 +33,12 @@
 			<div
 				class="flex size-14 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/20"
 			>
-				<Zap class="size-7 text-primary" />
+				<img src={logo} class="size-7" alt="phoXiv logo" />
 			</div>
 			<div class="flex flex-col items-center gap-1 text-center">
-				<h1 class="text-2xl font-bold tracking-tight">Welcome back</h1>
+				<h1 class="text-2xl font-bold tracking-tight">Sign in/Sign up</h1>
 				<p class="text-sm text-muted-foreground">
-					Sign in for upcoming features
+					Watch out for upcoming features!
 				</p>
 			</div>
 		</div>

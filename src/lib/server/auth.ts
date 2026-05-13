@@ -8,6 +8,7 @@ type AuthEnv = {
 	GITHUB_CLIENT_ID: string;
 	GITHUB_CLIENT_SECRET: string;
 	BETTER_AUTH_SECRET: string;
+	TRUSTED_ORIGINS: string;
 };
 
 export function createAuth(db: DrizzleD1Database, env: AuthEnv) {

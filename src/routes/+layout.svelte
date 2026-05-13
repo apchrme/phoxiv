@@ -15,7 +15,8 @@
 	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
 	import GlobalSearch from '$lib/components/GlobalSearch.svelte';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
-	import { Search, User } from '@lucide/svelte';
+	import { Search } from '@lucide/svelte';
+	import LogIn from '$lib/components/buttons/LogIn.svelte';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Kbd from '$lib/components/ui/kbd/index.js';
 	import { cn } from '$lib/utils.js';
@@ -80,7 +81,7 @@
 
 <Sidebar.Provider>
 	<AppSidebar {navLinks} user={data.user} />
-	<div class="flex min-h-screen w-full flex-col items-center bg-background px-5 pb-3 pt-2">
+	<div class="flex min-h-screen w-full flex-col items-center bg-background px-5 pb-3 pt-4">
 		<div class="w-full lg:w-5/6 xl:w-2/3">
 			<!-- Mobile nav -->
 			<nav
@@ -126,39 +127,9 @@
 						<Kbd.Root class="hidden lg:inline-flex">⌘</Kbd.Root>
 						<Kbd.Root class="hidden lg:inline-flex">K</Kbd.Root>
 					</button>
-
-					<!-- Profile avatar / sign-in button -->
-					{#if data.user}
-						<a
-							href={resolve('/profile')}
-							class={cn(
-								buttonVariants({ variant: 'ghost', size: 'icon' }),
-								'relative overflow-hidden rounded-full p-0 ring-2 ring-border transition-all hover:ring-primary/50'
-							)}
-							aria-label="Your profile"
-							title={data.user.name}
-						>
-							{#if data.user.image}
-								<img
-									src={data.user.image}
-									alt={data.user.name}
-									class="size-full object-cover"
-								/>
-							{:else}
-								<User class="size-4" />
-							{/if}
-						</a>
-					{:else}
-						<a
-							href={resolve('/login')}
-							class={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
-						>
-							<User class="size-3.5" />
-							Sign in
-						</a>
-					{/if}
-
 					<NavButtons />
+					<!-- Profile avatar / sign-in button -->
+					<LogIn />
 				</div>
 			</nav>
 
