@@ -129,7 +129,7 @@
 					</button>
 					<NavButtons />
 					<!-- Profile avatar / sign-in button -->
-					<LogIn />
+					<LogIn user={data.user}/>
 				</div>
 			</nav>
 
