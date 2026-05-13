@@ -6,11 +6,16 @@
 	import TrophyIcon from '@lucide/svelte/icons/trophy';
 	import LibraryIcon from '@lucide/svelte/icons/library';
 	import FileTextIcon from '@lucide/svelte/icons/file-text';
-	import { HandHelping } from '@lucide/svelte';
+	import { HandHelping, User, LogOut } from '@lucide/svelte';
 	import logo from '$lib/assets/branding/logo.svg';
+	import { authClient } from '$lib/auth-client';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
-	// navLinks is passed as a prop from +layout.svelte, which gets it from the same array defined there.
-	const { navLinks } = $props();
+	const { navLinks, user } = $props<{
+		navLinks: { url: string; label: string }[];
+		user: { name: string; email: string; image?: string | null } | null;
+	}>();
 
 	const sidebar = Sidebar.useSidebar();
 
@@ -27,21 +32,62 @@
 		if (url === '/') return page.url.pathname === '/';
 		return page.url.pathname === url || page.url.pathname.startsWith(url + '/');
 	}
+
+	let signingOut = $state(false);
+
+	async function signOut() {
+		signingOut = true;
+		try {
+			await authClient.signOut();
+			goto(resolve('/'));
+			sidebar.setOpenMobile(false);
+		} finally {
+			signingOut = false;
+		}
+	}
 </script>
 
 <div class="md:hidden">
 	<Sidebar.Root>
-		<!-- Branded header -->
+		<!-- Header: user profile when logged in, phoXiv branding when logged out -->
 		<Sidebar.Header>
-			<div class="flex items-center gap-3 px-2 py-1">
-				<img src={logo} alt="" class="h-8 w-8 opacity-75" aria-hidden="true" />
-				<div class="flex flex-col leading-tight">
-					<span class="font-bold text-sidebar-foreground">phoXiv</span>
-					<span class="font-mono text-[0.65rem] tracking-[0.02em] text-sidebar-foreground/50"
-						>/ foʊkaɪv /</span
-					>
+			{#if user}
+				<!-- Logged-in: profile info -->
+				<a
+					href={resolve('/profile')}
+					class="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-sidebar-accent"
+					onclick={() => sidebar.setOpenMobile(false)}
+				>
+					{#if user.image}
+						<img
+							src={user.image}
+							alt={user.name}
+							class="size-9 shrink-0 rounded-full ring-2 ring-sidebar-border"
+						/>
+					{:else}
+						<div
+							class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 ring-2 ring-sidebar-border"
+						>
+							<User class="size-4 text-primary" />
+						</div>
+					{/if}
+					<div class="flex min-w-0 flex-1 flex-col leading-tight">
+						<span class="truncate text-sm font-semibold text-sidebar-foreground">{user.name}</span>
+						<span class="truncate text-xs text-sidebar-foreground/50">{user.email}</span>
+					</div>
+				</a>
+			{:else}
+				<!-- Logged-out: phoXiv branding -->
+				<div class="flex items-center gap-3 px-2 py-1">
+					<img src={logo} alt="" class="h-8 w-8 opacity-75" aria-hidden="true" />
+					<div class="flex flex-col leading-tight">
+						<span class="font-bold text-sidebar-foreground">phoXiv</span>
+						<span class="font-mono text-[0.65rem] tracking-[0.02em] text-sidebar-foreground/50"
+							>/ foʊkaɪv /</span
+						>
+					</div>
 				</div>
-			</div>
+			{/if}
 		</Sidebar.Header>
 
 		<Sidebar.Separator />
@@ -72,8 +118,19 @@
 
 		<Sidebar.Footer class="gap-0 p-0">
 			<Sidebar.Separator />
-			<div class="flex items-center justify-center py-4">
+			<div class="flex items-center justify-between px-3 py-3">
 				<NavButtons />
+				{#if user}
+					<button
+						onclick={signOut}
+						disabled={signingOut}
+						class="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-destructive disabled:opacity-50"
+						aria-label="Sign out"
+					>
+						<LogOut class="size-3.5" />
+						{signingOut ? '…' : 'Sign out'}
+					</button>
+				{/if}
 			</div>
 		</Sidebar.Footer>
 	</Sidebar.Root>

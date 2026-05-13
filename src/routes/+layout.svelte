@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { toast } from 'svelte-sonner';
-	let { children } = $props();
+	let { children, data } = $props();
 
 	import NavLink from './NavLink.svelte';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
@@ -16,9 +16,10 @@
 	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
 	import GlobalSearch from '$lib/components/GlobalSearch.svelte';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
-	import { Search } from '@lucide/svelte';
+	import { Search, User } from '@lucide/svelte';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Kbd from '$lib/components/ui/kbd/index.js';
+	import { cn } from '$lib/utils.js';
 
 	const navLinks = [
 		{ url: '/', label: 'home' },
@@ -79,13 +80,13 @@
 <Toaster richColors closeButton position="top-center" />
 
 <Sidebar.Provider>
-	<AppSidebar {navLinks} />
-	<div
-		class="flex min-h-screen w-full flex-col items-center bg-background px-5 pb-3 pt-2"
-	>
+	<AppSidebar {navLinks} user={data.user} />
+	<div class="flex min-h-screen w-full flex-col items-center bg-background px-5 pb-3 pt-2">
 		<div class="w-full lg:w-5/6 xl:w-2/3">
 			<!-- Mobile nav -->
-			<nav class="grid grid-cols-3 items-center md:hidden sticky p-1 top-2 bg-muted/50 backdrop-blur-sm rounded-full">
+			<nav
+				class="grid grid-cols-3 items-center md:hidden sticky p-1 top-2 bg-muted/50 backdrop-blur-sm rounded-full"
+			>
 				<Sidebar.Trigger />
 				<a
 					href="/"
@@ -103,7 +104,9 @@
 			</nav>
 
 			<!-- Desktop nav -->
-			<nav class="hidden flex-row flex-wrap items-center justify-between gap-2 md:flex sticky p-1 top-2 bg-muted/50 backdrop-blur-sm rounded-full">
+			<nav
+				class="hidden flex-row flex-wrap items-center justify-between gap-2 md:flex sticky p-1 top-2 bg-muted/50 backdrop-blur-sm rounded-full"
+			>
 				<NavigationMenu.Root>
 					<NavigationMenu.List class="gap-2 sm:gap-3">
 						{#each navLinks as navLink (navLink.url)}
@@ -124,6 +127,38 @@
 						<Kbd.Root class="hidden lg:inline-flex">⌘</Kbd.Root>
 						<Kbd.Root class="hidden lg:inline-flex">K</Kbd.Root>
 					</button>
+
+					<!-- Profile avatar / sign-in button -->
+					{#if data.user}
+						<a
+							href={resolve('/profile')}
+							class={cn(
+								buttonVariants({ variant: 'ghost', size: 'icon' }),
+								'relative overflow-hidden rounded-full p-0 ring-2 ring-border transition-all hover:ring-primary/50'
+							)}
+							aria-label="Your profile"
+							title={data.user.name}
+						>
+							{#if data.user.image}
+								<img
+									src={data.user.image}
+									alt={data.user.name}
+									class="size-full object-cover"
+								/>
+							{:else}
+								<User class="size-4" />
+							{/if}
+						</a>
+					{:else}
+						<a
+							href={resolve('/login')}
+							class={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-1.5')}
+						>
+							<User class="size-3.5" />
+							Sign in
+						</a>
+					{/if}
+
 					<NavButtons />
 				</div>
 			</nav>
