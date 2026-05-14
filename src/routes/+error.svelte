@@ -4,7 +4,7 @@
 
 	const descriptions: Record<number, string> = {
 		404: "A page link doesn't exist here. Did you type the URL correctly?",
-		403: "You do not have authorisation to view this page. You may need to apply to be a contributor. In the future, a form on this website will allow you to apply."
+		403: "You do not have authorisation to view this page. You may need to apply to be a contributor. A form will be added to the future, so you can apply then!"
 	}
 </script>
 

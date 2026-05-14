@@ -5,7 +5,7 @@
 	import { resolve } from '$app/paths';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import SvelteSeo from 'svelte-seo';
-	import { LogOut, User, Mail, Shield, ArrowRight } from '@lucide/svelte';
+	import { LogOut, User, Mail, Shield } from '@lucide/svelte';
 	import Github from '$lib/assets/icons/Github.svelte';
 	import Title from '$lib/components/Title.svelte';
 

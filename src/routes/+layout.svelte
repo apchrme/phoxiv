@@ -19,7 +19,6 @@
 	import LogIn from '$lib/components/buttons/LogIn.svelte';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Kbd from '$lib/components/ui/kbd/index.js';
-	import { cn } from '$lib/utils.js';
 
 	const navLinks = [
 		{ url: '/', label: 'home' },
@@ -124,8 +123,8 @@
 					>
 						<Search class="size-4" />
 						<span class="hidden lg:block">search…</span>
-						<Kbd.Root class="hidden lg:inline-flex">⌘</Kbd.Root>
-						<Kbd.Root class="hidden lg:inline-flex">K</Kbd.Root>
+						<!-- <Kbd.Root class="hidden lg:inline-flex">⌘</Kbd.Root> -->
+						<!-- <Kbd.Root class="hidden lg:inline-flex">K</Kbd.Root> -->
 					</button>
 					<NavButtons />
 					<!-- Profile avatar / sign-in button -->

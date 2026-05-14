@@ -1,7 +1,9 @@
 import { count } from 'drizzle-orm';
+import { json } from '@sveltejs/kit';
 import { olympiads, years, problemFiles, yearFiles } from '$lib/server/db/schema.js';
 
-export const load = async ({ locals, setHeaders }) => {
+
+export const GET = async ({ locals, setHeaders }) => {
 	const db = locals.db;
 
 	const [[olympiadCount], [yearCount], [yearFileCount], [problemFileCount]] = await Promise.all([
@@ -18,11 +20,9 @@ export const load = async ({ locals, setHeaders }) => {
 		'cache-control': 'max-age=0, s-maxage=86400, stale-while-revalidate=604800'
 	});
 
-	return {
-		stats: {
+	return json({
 			olympiads: olympiadCount.value,
 			years: yearCount.value,
 			files: yearFileCount.value + problemFileCount.value
-		}
-	};
+		});
 };

@@ -5,8 +5,8 @@
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import { cn } from '$lib/utils.js';
 	import logo from '$lib/assets/branding/logo.svg';
+	import { onMount } from 'svelte';
 
-	let { data }: { data: PageData } = $props();
 
 	let rotX = $state(12);
 	let rotY = $state(-18);
@@ -18,10 +18,16 @@
 		rotX = -((e.clientY - cy) / cy) * 18;
 	}
 
+	let stats:Record<string, number>= $state({"olympiads":0,"years":0,"files":0});
+
+	onMount(async () => {
+		stats = await(await fetch("/api/stats")).json();
+	})
+
 	const statItems = $derived([
-		{ value: data.stats.olympiads, label: 'Olympiads' },
-		{ value: data.stats.years, label: 'Years' },
-		{ value: data.stats.files, label: 'Files' }
+		{ value: stats.olympiads, label: 'Olympiads' },
+		{ value: stats.years, label: 'Years' },
+		{ value: stats.files, label: 'Files' }
 	]);
 </script>
 
