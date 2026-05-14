@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
@@ -77,7 +76,7 @@
 				>Browse olympiads</a
 			>
 			<a
-				href="https://github.com/apchrme/phoxiv"
+				href="/contribute"
 				class={cn(buttonVariants({ variant: 'outline' }))}
 			>
 				Contribute
