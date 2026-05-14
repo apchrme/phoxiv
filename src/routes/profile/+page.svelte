@@ -19,7 +19,7 @@
 		signingOut = true;
 		try {
 			await authClient.signOut();
-			goto(resolve('/'));
+			goto(resolve('/'), {invalidateAll: true});
 		} finally {
 			signingOut = false;
 		}

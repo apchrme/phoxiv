@@ -6,10 +6,7 @@
 	import TrophyIcon from '@lucide/svelte/icons/trophy';
 	import LibraryIcon from '@lucide/svelte/icons/library';
 	import FileTextIcon from '@lucide/svelte/icons/file-text';
-	import { HandHelping, User, LogOut } from '@lucide/svelte';
-	import logo from '$lib/assets/branding/logo.svg';
-	import { authClient } from '$lib/auth-client';
-	import { goto } from '$app/navigation';
+	import { HandHelping, User, LogIn } from '@lucide/svelte';
 	import { resolve } from '$app/paths';
 
 	const { navLinks, user } = $props<{
@@ -33,24 +30,12 @@
 		return page.url.pathname === url || page.url.pathname.startsWith(url + '/');
 	}
 
-	let signingOut = $state(false);
-
-	async function signOut() {
-		signingOut = true;
-		try {
-			await authClient.signOut();
-			goto(resolve('/'));
-			sidebar.setOpenMobile(false);
-		} finally {
-			signingOut = false;
-		}
-	}
 </script>
 
 <div class="md:hidden">
 	<Sidebar.Root>
 		<!-- Header: user profile when logged in, phoXiv branding when logged out -->
-		<Sidebar.Header>
+		<Sidebar.Header class="bg-muted/40">
 			{#if user}
 				<!-- Logged-in: profile info -->
 				<a
@@ -78,15 +63,18 @@
 				</a>
 			{:else}
 				<!-- Logged-out: phoXiv branding -->
-				<div class="flex items-center gap-3 px-2 py-1">
-					<img src={logo} alt="" class="h-8 w-8 opacity-75" aria-hidden="true" />
-					<div class="flex flex-col leading-tight">
-						<span class="font-bold text-sidebar-foreground">phoXiv</span>
-						<span class="font-mono text-[0.65rem] tracking-[0.02em] text-sidebar-foreground/50"
-							>/ foʊkaɪv /</span
-						>
-					</div>
-				</div>
+				<Sidebar.Menu>
+					<Sidebar.MenuItem>
+						<Sidebar.MenuButton>
+						{#snippet child({ props })}
+							<a href={resolve("/login")} {...props} onclick={() => sidebar.toggle()}>
+								<LogIn />
+								<span>Log in</span>
+							</a>
+						{/snippet}
+						</Sidebar.MenuButton>
+					</Sidebar.MenuItem>
+				</Sidebar.Menu> 
 			{/if}
 		</Sidebar.Header>
 
@@ -118,19 +106,8 @@
 
 		<Sidebar.Footer class="gap-0 p-0">
 			<Sidebar.Separator />
-			<div class="flex items-center justify-between px-3 py-3">
+			<div class="flex items-center justify-center px-3 py-3">
 				<NavButtons />
-				{#if user}
-					<button
-						onclick={signOut}
-						disabled={signingOut}
-						class="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-destructive disabled:opacity-50"
-						aria-label="Sign out"
-					>
-						<LogOut class="size-3.5" />
-						{signingOut ? '…' : 'Sign out'}
-					</button>
-				{/if}
 			</div>
 		</Sidebar.Footer>
 	</Sidebar.Root>

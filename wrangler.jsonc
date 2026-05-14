@@ -8,6 +8,9 @@
 	"main": ".svelte-kit/cloudflare/_worker.js",
 	"workers_dev": true,
 	"preview_urls": true,
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
 	"compatibility_date": "2026-04-24",
 	"assets": {
 		"binding": "ASSETS",
@@ -33,7 +36,10 @@
 			"bucket_name": "phoxiv-files",
 			"binding": "FILES"
 		}
-	]
+	],
+	"vars": {
+		"BETTER_AUTH_URL": "https://phoxiv.org/"
+	}
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
