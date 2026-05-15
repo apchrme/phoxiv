@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { PageData } from './$types';
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
@@ -6,6 +7,7 @@
 	import logo from '$lib/assets/branding/logo.svg';
 	import { onMount } from 'svelte';
 
+	let { data }: { data: PageData } = $props();
 
 	let rotX = $state(12);
 	let rotY = $state(-18);
@@ -39,9 +41,9 @@
 <svelte:window onmousemove={handleMouseMove} />
 
 <div
-	class="relative flex min-h-[calc(100svh-10rem)] flex-col items-center justify-center gap-8 py-12 md:flex-row md:items-center md:justify-between"
+	class="relative flex min-h-[calc(100svh-10rem)] flex-col items-center justify-center gap-10 py-12 md:flex-row md:items-center md:justify-between"
 >
-	<!-- Mobile: static logo in background -->
+	<!-- Mobile: blurred logo watermark -->
 	<div
 		class="pointer-events-none absolute inset-0 flex items-center justify-around overflow-hidden md:hidden"
 		aria-hidden="true"
@@ -49,7 +51,8 @@
 		<img
 			src={logo}
 			alt=""
-			class="h-112 w-md mask-[radial-gradient(ellipse_at_center,black,transparent_100%)] opacity-20 select-none"
+			class="h-112 w-md opacity-10 select-none"
+			style="filter: blur(2px);"
 		/>
 	</div>
 
@@ -60,11 +63,13 @@
 			<h1 class="mb-2 text-[clamp(4rem,10vw,7rem)] leading-none font-bold tracking-[-0.03em]">
 				phoXiv
 			</h1>
-			<span class="font-mono text-sm tracking-[0.02em] text-muted-foreground">/ foʊkaɪv /</span>
+			<span class="font-mono text-sm tracking-[0.02em] text-muted-foreground"
+				>/ foʊkaɪv /</span
+			>
 		</div>
 
 		<!-- Description -->
-		<p class="m-0 prose max-w-[44ch] text-foreground/70">
+		<p class="m-0 prose max-w-[44ch] text-foreground/75">
 			A comprehensive archive of physics olympiads, from the well-known IPhO and EuPhO to hidden
 			gems like the Eötvös competition. Includes marking schemes and answer sheets you rarely find
 			elsewhere, all in a mobile-friendly interface.
@@ -72,30 +77,50 @@
 
 		<!-- CTAs -->
 		<div class="flex flex-wrap gap-3">
-			<a href={resolve('/olympiads')} class={cn(buttonVariants({ variant: 'default' }))}
-				>Browse olympiads</a
-			>
 			<a
-				href="/contribute"
-				class={cn(buttonVariants({ variant: 'outline' }))}
+				href={resolve('/olympiads')}
+				class={cn(
+					buttonVariants({ variant: 'default' }),
+					'shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-shadow'
+				)}
+			>
+				Browse olympiads
+			</a>
+			<a
+				href="https://github.com/apchrme/phoxiv"
+				class={cn(
+					buttonVariants({ variant: 'outline' }),
+					'bg-white/40 dark:bg-white/5 border-white/60 dark:border-white/15 backdrop-blur-sm hover:bg-white/60 dark:hover:bg-white/10'
+				)}
 			>
 				Contribute
 			</a>
 		</div>
 
-		<!-- Stats -->
-		<div class="flex flex-wrap items-center gap-6">
+		<!-- Stats — glass pill row -->
+		<div
+			class="inline-flex flex-wrap items-center gap-0 self-start
+			       rounded-2xl
+			       bg-white/50 dark:bg-white/5
+			       border border-white/70 dark:border-white/10
+			       backdrop-blur-md
+			       shadow-md shadow-black/5 dark:shadow-black/30
+			       ring-1 ring-inset ring-white/60 dark:ring-white/5
+			       overflow-hidden"
+		>
 			{#each statItems as { value, label }, i (label)}
-				<div class="flex flex-col gap-0.5">
+				<div class="flex flex-col items-center gap-0.5 px-6 py-4">
 					<span class="font-mono text-[1.75rem] leading-none font-bold text-foreground"
 						>{value}</span
 					>
-					<span class="font-mono text-[0.65rem] tracking-widest text-muted-foreground uppercase"
-						>{label}</span
+					<span
+						class="font-mono text-[0.6rem] tracking-widest text-muted-foreground uppercase"
 					>
+						{label}
+					</span>
 				</div>
 				{#if i < statItems.length - 1}
-					<div class="block h-8 w-px bg-border" aria-hidden="true"></div>
+					<div class="self-stretch w-px bg-border/60" aria-hidden="true"></div>
 				{/if}
 			{/each}
 		</div>
@@ -109,14 +134,15 @@
 		>
 			<!-- Glow ring behind logo -->
 			<div
-				class="absolute inset-0 transform-[translateZ(-20px)] rounded-full [background:radial-gradient(circle_at_center,color-mix(in_oklab,var(--primary)_40%,transparent),transparent_50%)]"
+				class="absolute inset-0 transform-[translateZ(-20px)] rounded-full
+				       [background:radial-gradient(circle_at_center,color-mix(in_oklab,var(--primary)_35%,transparent),transparent_55%)]"
 			></div>
 
 			<!-- Logo -->
 			<img
 				src={logo}
 				alt=""
-				class="pointer-events-none h-full w-full transform-[translateZ(30px)] object-contain opacity-80 select-none dark:opacity-60"
+				class="pointer-events-none h-full w-full transform-[translateZ(30px)] object-contain opacity-85 dark:opacity-65 select-none"
 			/>
 		</div>
 	</div>
@@ -124,30 +150,15 @@
 
 <style>
 	@keyframes fade-up {
-		from {
-			opacity: 0;
-			translate: 0 1.25rem;
-		}
-		to {
-			opacity: 1;
-			translate: 0 0;
-		}
+		from { opacity: 0; translate: 0 1.25rem; }
+		to   { opacity: 1; translate: 0 0; }
 	}
 
 	@keyframes fade-in {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
+		from { opacity: 0; }
+		to   { opacity: 1; }
 	}
 
-	.hero-text {
-		animation: fade-up 600ms ease-in-out both;
-	}
-
-	.hero-logo {
-		animation: fade-in 800ms ease-in-out 300ms both;
-	}
+	.hero-text { animation: fade-up 600ms ease-in-out both; }
+	.hero-logo { animation: fade-in 800ms ease-in-out 300ms both; }
 </style>

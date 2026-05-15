@@ -2,14 +2,13 @@
 	import type { PageData } from './$types';
 	import { resolve } from '$app/paths';
 	import type { OlympiadTag, OlympiadEntry } from '$lib/types.js';
-	import * as Card from '$lib/components/ui/card/index';
 	import { Badge } from '$lib/components/ui/badge/index';
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
 	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
 	import { ArrowRight } from '@lucide/svelte';
-	import { cn } from '$lib/utils.js';
+	import * as Card from '$lib/components/ui/card';
 	import Title from '$lib/components/Title.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -40,7 +39,7 @@
 	/>
 
 	<!-- Search + filter toolbar -->
-	<div class="mb-5">
+	<div class="mb-6">
 		<SearchBar placeholder="Search olympiads…" bind:value={query}>
 			{#snippet filters()}
 				<ToggleGroup.Root
@@ -58,20 +57,20 @@
 		</SearchBar>
 	</div>
 
-	<!-- Olympiad grid -->
+	<!-- Olympiad grid — glass cards -->
 	{#if filtered().length > 0}
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">
 			{#each filtered() as olympiad (olympiad.id)}
-				<a href={resolve(`/olympiads/${olympiad.id}`)} class="group block">
+				<a href={resolve(`/olympiads/${olympiad.id}`)} class="group block z-10">
 					<Card.Root
-						class={cn(
-							'h-full cursor-pointer py-4! transition-all duration-200',
-							'ring-border hover:shadow-md hover:ring-2 hover:ring-primary/40'
-						)}
+						class="h-full cursor-pointer rounded-2xl p-5 flex flex-col gap-3 transition-all duration-300
+						       hover:bg-white/70 dark:hover:bg-white/10
+						       hover:shadow-xl hover:shadow-primary/10 dark:hover:shadow-primary/10
+						       hover:border-primary/30 dark:hover:border-primary/25
+						       hover:-translate-y-0.5"
 					>
-						<Card.Content class="flex h-full flex-col gap-3 px-5">
-							<!-- Top row: icon + badge -->
-							<div class="flex items-start justify-between">
+						<!-- Top row: icon + badge -->
+						<div class="flex items-start justify-between">
 								<!--
 									OlympiadIcon replaces the raw emoji <span> to fix the
 									two-letter rendering bug on Windows/Chromium for flag emojis.
@@ -79,34 +78,38 @@
 									  • Other emojis  → plain <span>, sized by text-4xl
 									Both cases get leading-none to match the original layout.
 								-->
-								<OlympiadIcon
-									icon={olympiad.icon}
-									id={olympiad.id}
-									class="h-9 w-auto text-4xl leading-none"
-								/>
-								<Badge variant="outline">{olympiad.tag}</Badge>
-							</div>
-
-							<!-- Body -->
-							<div class="flex flex-1 flex-col gap-1">
-								<h3
-									class="py-0 text-base leading-snug font-semibold text-card-foreground transition-colors duration-150 group-hover:text-primary"
-								>
-									{olympiad.name}
-								</h3>
-								<span class="text-sm leading-relaxed text-muted-foreground">
-									{olympiad.summary}
-								</span>
-							</div>
-
-							<!-- Footer arrow -->
-							<div
-								class="flex items-center gap-1 text-xs font-medium text-muted-foreground transition-all duration-150 group-hover:gap-2 group-hover:text-primary"
+							<OlympiadIcon
+								icon={olympiad.icon}
+								id={olympiad.id}
+								class="h-9 w-auto text-4xl leading-none"
+							/>
+							<Badge
+								variant="outline"
+								class="bg-white/50 dark:bg-white/5 border-white/60 dark:border-white/10 backdrop-blur-sm"
 							>
-								View archive
-								<ArrowRight class="size-4" />
-							</div>
-						</Card.Content>
+								{olympiad.tag}
+							</Badge>
+						</div>
+
+						<!-- Body -->
+						<div class="flex flex-1 flex-col gap-1">
+							<h3
+								class="py-0 text-base leading-snug font-semibold text-foreground transition-colors duration-150 group-hover:text-primary"
+							>
+								{olympiad.name}
+							</h3>
+							<span class="text-sm leading-relaxed text-muted-foreground">
+								{olympiad.summary}
+							</span>
+						</div>
+
+						<!-- Footer arrow -->
+						<div
+							class="flex items-center gap-1 text-xs font-medium text-muted-foreground transition-all duration-150 group-hover:gap-2 group-hover:text-primary"
+						>
+							View archive
+							<ArrowRight class="size-4" />
+						</div>
 					</Card.Root>
 				</a>
 			{/each}
@@ -124,19 +127,26 @@
 	{/if}
 </section>
 
-<!-- Contribute CTA -->
-<section class="">
+<!-- Contribute CTA — glass tinted banner -->
+<section class="mt-2 mb-6">
 	<div
-		class="flex flex-col items-start justify-between gap-4 rounded-2xl bg-primary px-6 py-5 sm:flex-row sm:items-center"
+		class="flex flex-col items-start justify-between gap-4 rounded-2xl px-6 py-5 sm:flex-row sm:items-center
+		       bg-gradient-to-br from-primary/70 to-primary/90
+		       border border-primary/40
+		       backdrop-blur-md
+		       shadow-lg shadow-primary/20"
 	>
 		<p class="mb-0 text-sm font-medium text-primary-foreground/90">
 			Want to add problems or help maintain the site? Open a PR or reach out.
 		</p>
 		<a
 			href="mailto:apochrome@proton.me"
-			class="shrink-0 rounded-lg flex flex-row items-center gap-1 bg-primary-foreground px-3 py-2 text-sm font-semibold text-primary transition-opacity hover:opacity-90"
+			class="shrink-0 rounded-xl flex flex-row items-center gap-1.5
+			       bg-white/20 backdrop-blur-sm border border-white/30
+			       px-4 py-2 text-sm font-semibold text-primary-foreground
+			       transition-all hover:bg-white/30 hover:gap-2.5"
 		>
-			Get in touch <ArrowRight class="size-4"/>
+			Get in touch <ArrowRight class="size-4" />
 		</a>
 	</div>
 </section>

@@ -19,37 +19,42 @@
 
 <SvelteSeo title="Blog — phoXiv" description="Updates, articles and anything related to phoXiv." />
 
-<!-- Header -->
 <Title
 	title="Blog"
 	description="A collection of updates and articles closely or distantly related to physics olympiads."
 />
 
-<!-- Post list -->
 {#if data.posts.length === 0}
 	<div class="flex flex-col items-center justify-center gap-3 py-20 text-center">
 		<p class="m-0 text-muted-foreground">No posts yet — check back soon.</p>
 	</div>
 {:else}
-	<ol class="m-0 flex flex-col gap-px p-0" style="list-style:none">
+	<ol class="m-0 flex flex-col gap-3 p-0" style="list-style:none">
 		{#each data.posts as post, i (post.slug)}
 			<li class="group relative">
-				<Separator />
-
 				<a
 					href="/blog/{post.slug}"
-					class="flex flex-col items-center gap-3 rounded-lg px-1 py-5 transition-colors hover:bg-muted/40 sm:flex-row sm:gap-6"
+					class="flex flex-col items-start gap-3 rounded-2xl px-5 py-5 transition-all duration-200 sm:flex-row sm:gap-6
+					       bg-white/50 dark:bg-white/5
+					       border border-white/65 dark:border-white/10
+					       backdrop-blur-md
+					       shadow-sm shadow-black/5 dark:shadow-black/20
+					       ring-1 ring-inset ring-white/40 dark:ring-white/5
+					       hover:bg-white/65 dark:hover:bg-white/8
+					       hover:shadow-md hover:shadow-primary/8 dark:hover:shadow-primary/10
+					       hover:border-primary/25 dark:hover:border-primary/20
+					       hover:-translate-y-0.5"
 				>
 					<!-- Date column -->
-					<div class="flex shrink-0 items-center gap-1.5 px-4">
+					<div class="flex shrink-0 items-center gap-1.5 pt-0.5">
 						<Calendar class="size-3.5 shrink-0 text-muted-foreground" />
-						<time datetime={post.date} class="font-mono text-xs text-muted-foreground">
+						<time datetime={post.date} class="font-mono text-xs text-muted-foreground whitespace-nowrap">
 							{formatDate(post.date)}
 						</time>
 					</div>
 
 					<!-- Content column -->
-					<div class="flex w-full min-w-0 flex-1 flex-col gap-2 px-5">
+					<div class="flex w-full min-w-0 flex-1 flex-col gap-2">
 						<div class="flex items-center gap-2">
 							<h2
 								class="m-0 text-base leading-snug font-semibold text-foreground transition-colors group-hover:text-primary sm:text-lg"
@@ -75,9 +80,9 @@
 								</span>
 							{/if}
 							{#if post.tags && post.tags.length > 0}
-								<span class="flex items-center gap-1 text-muted-foreground" aria-hidden="true"
-									>·</span
-								>
+								{#if post.author}
+									<span class="text-muted-foreground" aria-hidden="true">·</span>
+								{/if}
 								{#each post.tags as tag (tag)}
 									<Badge variant="secondary" class="gap-1 px-2 py-0.5 text-xs font-normal">
 										<Tag class="size-2.5" />
@@ -92,4 +97,3 @@
 		{/each}
 	</ol>
 {/if}
-<Separator />

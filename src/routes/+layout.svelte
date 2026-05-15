@@ -30,7 +30,6 @@
 
 	let searchOpen = $state(false);
 
-	// Eagerly load all post metadata at build time so we can find the latest post.
 	const postModules = import.meta.glob('/src/lib/posts/*.svx', { eager: true });
 
 	onMount(() => {
@@ -55,7 +54,6 @@
 
 		if (lastSeen !== latestPost.slug) {
 			localStorage.setItem(STORAGE_KEY, latestPost.slug);
-			// Short delay so the page finishes rendering before the toast appears.
 			setTimeout(() => {
 				toast('New blog post!', {
 					description: latestPost.title,
@@ -78,18 +76,43 @@
 <GlobalSearch bind:open={searchOpen} />
 <Toaster richColors closeButton position="top-center" />
 
+<!-- Fixed background orb decorations — visible through the glass panels -->
+<div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+	<div
+		class="absolute -top-40 -left-40 h-[32rem] w-[32rem] animate-pulse rounded-full bg-violet-400/20 blur-[80px] dark:bg-violet-500/12"
+		style="animation-duration: 8s;"
+	></div>
+	<div
+		class="absolute top-1/3 -right-48 h-[28rem] w-[28rem] animate-pulse rounded-full bg-sky-400/18 blur-[80px] dark:bg-sky-500/12"
+		style="animation-duration: 11s; animation-delay: -3s;"
+	></div>
+	<div
+		class="absolute -bottom-32 left-1/4 h-[26rem] w-[26rem] animate-pulse rounded-full bg-pink-400/15 blur-[80px] dark:bg-purple-500/10"
+		style="animation-duration: 9s; animation-delay: -5s;"
+	></div>
+	<div
+		class="absolute top-2/3 left-1/2 h-[22rem] w-[22rem] animate-pulse rounded-full bg-indigo-300/15 blur-[100px] dark:bg-indigo-600/10"
+		style="animation-duration: 14s; animation-delay: -7s;"
+	></div>
+</div>
+
 <Sidebar.Provider>
 	<AppSidebar {navLinks} user={data.user} />
-	<div class="flex min-h-screen w-full flex-col items-center bg-background px-5 pb-3 pt-4">
+	<!-- Main wrapper — transparent so html gradient shows through -->
+	<div class="flex min-h-screen w-full flex-col items-center px-4 pb-3 pt-4">
 		<div class="w-full lg:w-5/6 xl:w-2/3">
-			<!-- Mobile nav -->
+			<!-- Mobile nav — glass pill -->
 			<nav
-				class="grid grid-cols-3 items-center md:hidden sticky p-1 top-2 bg-muted/50 backdrop-blur-sm rounded-full"
+				class="grid grid-cols-3 items-center md:hidden sticky p-1.5 top-2 rounded-full
+				       bg-white/50 dark:bg-white/5
+				       backdrop-blur-xl
+				       border border-white/60 dark:border-white/10
+				       shadow-lg shadow-black/5 dark:shadow-black/30"
 			>
 				<Sidebar.Trigger />
 				<a
 					href="/"
-					class="justify-self-center text-base font-medium text-foreground hover:text-primary"
+					class="justify-self-center text-base font-semibold text-foreground hover:text-primary transition-colors"
 				>
 					phoXiv
 				</a>
@@ -102,12 +125,18 @@
 				</button>
 			</nav>
 
-			<!-- Desktop nav -->
+			<!-- Desktop nav — glass pill -->
 			<nav
-				class="hidden flex-row flex-wrap items-center justify-between gap-2 md:flex sticky p-1 top-2 bg-muted/50 backdrop-blur-sm rounded-full"
+				class="hidden flex-row flex-wrap items-center justify-between gap-2 md:flex sticky p-1.5 top-2 z-99
+				       rounded-full
+				       bg-white/45 dark:bg-white/5
+				       backdrop-blur-xl
+				       border border-white/65 dark:border-white/10
+				       shadow-lg shadow-violet-500/5 dark:shadow-black/40
+				       ring-1 ring-inset ring-white/50 dark:ring-white/5"
 			>
 				<NavigationMenu.Root>
-					<NavigationMenu.List class="gap-2 sm:gap-3">
+					<NavigationMenu.List class="gap-1 sm:gap-2">
 						{#each navLinks as navLink (navLink.url)}
 							<NavLink url={navLink.url} label={navLink.label} />
 						{/each}
@@ -117,18 +146,19 @@
 					<button
 						onclick={() => (searchOpen = true)}
 						class="{buttonVariants({
-							variant: 'outline'
-						})} items-center gap-2 text-sm text-muted-foreground"
+							variant: 'ghost'
+						})} items-center gap-2 text-sm text-muted-foreground
+						       bg-white/30 dark:bg-white/5 border border-white/50 dark:border-white/10
+						       hover:bg-white/50 dark:hover:bg-white/10"
 						aria-label="Search problems"
 					>
 						<Search class="size-4" />
 						<span class="hidden lg:block">search…</span>
-						<!-- <Kbd.Root class="hidden lg:inline-flex">⌘</Kbd.Root> -->
-						<!-- <Kbd.Root class="hidden lg:inline-flex">K</Kbd.Root> -->
+						<Kbd.Root class="hidden lg:inline-flex">⌘</Kbd.Root>
+						<Kbd.Root class="hidden lg:inline-flex">K</Kbd.Root>
 					</button>
 					<NavButtons />
-					<!-- Profile avatar / sign-in button -->
-					<LogIn user={data.user}/>
+					<LogIn user={data.user} />
 				</div>
 			</nav>
 

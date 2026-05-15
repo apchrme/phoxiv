@@ -6,6 +6,8 @@
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { ChevronLeft, ExternalLink } from '@lucide/svelte';
+	import * as Card from '$lib/components/ui/card';
+	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import SvelteSeo from 'svelte-seo';
 
 	let { data }: PageProps = $props();
@@ -83,7 +85,7 @@
 </header>
 
 <section class="py-4">
-	<div class="mb-4">
+	<div class="mb-5">
 		<SearchBar placeholder="Search by year or problem…" bind:value={query}>
 			{#snippet filters()}
 				{#if hasProblemMatches()}
@@ -99,25 +101,49 @@
 	{#if filtered().length > 0}
 		<div class="flex flex-col gap-4">
 			{#each filtered() as year (year.year)}
-				<div
-					class="overflow-hidden rounded-2xl border border-border bg-card"
+				<!-- Glass year panel -->
+				<Card.Root
 					id={String(year.year)}
 				>
-					<div class="flex items-center border-b border-border bg-muted/60 px-4 py-2.5">
-						<span class="font-mono text-lg font-semibold text-foreground tabular-nums">
+					<!-- Year header -->
+					<Card.Header>
+						<Card.Title class="font-mono text-lg font-semibold text-foreground tabular-nums">
 							{year.year}
-						</span>
-					</div>
+						</Card.Title>
+					</Card.Header>
 
-					<div class="flex flex-col gap-4 p-4">
+					<Separator />
+
+					<div class="flex flex-col gap-4 px-3 sm:px-5">
 						{#snippet FileLink(url: string, label: string)}
-							<Badge variant="outline" href={url} target="_blank" class="px-2.5 py-2.5 text-sm">
+							<Badge
+								variant="outline"
+								href={url}
+								target="_blank"
+								class="px-2.5 py-2.5 text-sm
+								       bg-white/50 dark:bg-white/6
+								       border-white/70 dark:border-white/12
+								       backdrop-blur-sm
+								       hover:bg-white/70 dark:hover:bg-white/12
+								       hover:border-primary/40 dark:hover:border-primary/30
+								       transition-all"
+							>
 								{label}
 							</Badge>
 						{/snippet}
 
 						{#snippet ExtraFileLink(url: string, label: string)}
-							<Badge variant="outline" href={url} target="_blank" class="px-2.5 py-2.5 text-sm">
+							<Badge
+								variant="outline"
+								href={url}
+								target="_blank"
+								class="px-2.5 py-2.5 text-sm
+								       bg-white/50 dark:bg-white/6
+								       border-white/70 dark:border-white/12
+								       backdrop-blur-sm
+								       hover:bg-white/70 dark:hover:bg-white/12
+								       transition-all"
+							>
 								<ExternalLink />
 								{label}
 							</Badge>
@@ -144,7 +170,14 @@
 						{#if year.matchedProblems.length > 0}
 							<div class="grid grid-cols-1 gap-3 xs:grid-cols-2 lg:grid-cols-3">
 								{#each year.matchedProblems as problem (problem.number)}
-									<div class="flex flex-col gap-3 rounded-xl bg-background p-4">
+									<!-- Individual problem glass card -->
+									<div
+										class="flex flex-col gap-3 rounded-xl p-4
+										       bg-white/40 dark:bg-white/5
+										       border border-white/60 dark:border-white/8
+										       backdrop-blur-sm
+										       shadow-sm shadow-black/5 dark:shadow-black/15"
+									>
 										<div class="flex flex-col gap-0.5">
 											<span class="font-mono text-base font-semibold text-primary">
 												{problem.number}
@@ -165,16 +198,14 @@
 							</div>
 						{/if}
 					</div>
-				</div>
+				</Card.Root>
 			{/each}
 		</div>
 	{:else}
 		<SearchEmptyState
 			message="No results found"
 			hint="Try a different year or problem name."
-			onClear={() => {
-				query = '';
-			}}
+			onClear={() => { query = ''; }}
 		/>
 	{/if}
 </section>

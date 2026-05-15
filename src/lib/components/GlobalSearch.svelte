@@ -105,7 +105,7 @@
 	function onWindowKeydown(e: KeyboardEvent) {
 		if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
 			e.preventDefault();
-			if (open) {closeSearch()} else {openSearch()};
+			if (open) { closeSearch(); } else { openSearch(); }
 			return;
 		}
 		if (!open) return;
@@ -127,49 +127,45 @@
 
 <svelte:window onkeydown={onWindowKeydown} />
 
-<!--
-	bits-ui Dialog.Root manages open state and provides scroll locking + focus
-	trapping via Dialog.Content. Escape to close is also handled automatically.
--->
 <Dialog.Root bind:open>
 	<Dialog.Portal>
 		<!-- Backdrop -->
 		<Dialog.Overlay
-			class="fixed inset-0 z-50 bg-black/50 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:duration-150 data-open:fade-in-0 data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0"
+			class="fixed inset-0 z-50 bg-black/30 dark:bg-black/50
+			       supports-backdrop-filter:backdrop-blur-sm
+			       data-open:animate-in data-open:duration-150 data-open:fade-in-0
+			       data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0"
 		/>
 
-		<!-- Centering wrapper (not the dialog itself, so it doesn't interfere with a11y) -->
-		<div
-			class="pointer-events-none fixed inset-0 z-50 flex items-start justify-center px-4 pt-[15vh]"
-		>
+		<div class="pointer-events-none fixed inset-0 z-50 flex items-start justify-center px-4 pt-[12vh]">
 			<Dialog.Content
-				class="pointer-events-auto flex h-[min(600px,72vh)] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl data-open:animate-in data-open:duration-150 data-open:fade-in-0 data-open:zoom-in-[0.96] data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0 data-closed:zoom-out-[0.96]"
-				onOpenAutoFocus={(e) => {
-					e.preventDefault();
-					inputEl?.focus();
-				}}
-				onCloseAutoFocus={(e) => {
-					e.preventDefault();
-				}}
+				class="pointer-events-auto flex h-[min(600px,72vh)] w-full max-w-xl flex-col overflow-hidden rounded-2xl
+					bg-white/55 dark:bg-white/6
+					border border-white/70 dark:border-white/10
+					backdrop-blur-lg
+					shadow-md shadow-black/5 dark:shadow-black/20
+					ring-1 ring-inset ring-white/50 dark:ring-white/5
+				       data-open:animate-in data-open:duration-200 data-open:fade-in-0 data-open:zoom-in-[0.97]
+				       data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0 data-closed:zoom-out-[0.97]"
+				onOpenAutoFocus={(e) => { e.preventDefault(); inputEl?.focus(); }}
+				onCloseAutoFocus={(e) => { e.preventDefault(); }}
 			>
-				<!--
-					Dialog.Title is required by ARIA for dialog elements.
-					sr-only hides it visually without removing it from the a11y tree.
-				-->
 				<Dialog.Title class="sr-only">Search problems</Dialog.Title>
 
 				<!-- Input row -->
-				<div class="flex items-center gap-2 border-b border-border px-4 py-3">
+				<div class="flex items-center gap-3 border-b border-white/50 dark:border-white/10 px-4 py-3">
 					<Search class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 					<input
 						bind:this={inputEl}
 						bind:value={query}
 						type="search"
-						placeholder="Search for problems... (fuzzy search)"
+						placeholder="Search for problems… (fuzzy)"
 						class="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
 					/>
 					<Dialog.Close
-						class={cn(buttonVariants({ variant: 'ghost', size: 'icon' }))}
+						class={cn(buttonVariants({ variant: 'ghost', size: 'icon' }),
+							'bg-white/30 dark:bg-white/5 border border-white/50 dark:border-white/10 hover:bg-white/50'
+						)}
 						aria-label="Close search"
 					>
 						<XIcon class="size-4" />
@@ -183,12 +179,12 @@
 							<p class="text-center text-sm text-muted-foreground">Loading search index…</p>
 						</div>
 					{:else if !query.trim()}
-						<div class="m-auto px-5">
-							<p class="mb-5 text-center text-sm text-muted-foreground">
-								Type to search for problems across all olympiads...
-							</p>
+						<div class="m-auto px-5 flex flex-col gap-2">
 							<p class="text-center text-sm text-muted-foreground">
-								Use the order: olympiad name/acronym, year, problem title/number
+								Type to search for problems across all olympiads…
+							</p>
+							<p class="text-center text-xs text-muted-foreground/70">
+								Tip: search by olympiad name, year, or problem title
 							</p>
 						</div>
 					{:else if results.length === 0}
@@ -201,23 +197,17 @@
 								<li>
 									<a
 										href={resolve(`/olympiads/${item.olympiadId}#${item.year}`)}
-										onclick={(e) => {
-											e.preventDefault();
-											navigateTo(item);
-										}}
+										onclick={(e) => { e.preventDefault(); navigateTo(item); }}
 										onmousemove={() => (focusedIndex = i)}
 										class={cn(
-											'flex flex-col gap-1.5 border-b border-border/50 px-4 py-3 transition-colors last:border-0 hover:bg-muted/60',
-											i === focusedIndex && 'bg-muted/60'
+											'flex flex-col gap-1.5 border-b border-white/40 dark:border-white/8 px-4 py-3 transition-all duration-150 last:border-0',
+											i === focusedIndex
+												? 'bg-white/50 dark:bg-white/8'
+												: 'hover:bg-white/35 dark:hover:bg-white/5'
 										)}
 									>
 										<!-- Olympiad + year -->
 										<div class="flex items-center gap-1.5 text-muted-foreground">
-											<!--
-												OlympiadIcon replaces the raw emoji span to fix the
-												two-letter rendering bug on Windows/Chromium for flag emojis.
-												h-4 w-auto matches the surrounding text-sm line height.
-											-->
 											<OlympiadIcon
 												icon={item.olympiadIcon}
 												id={item.olympiadId}
@@ -244,7 +234,6 @@
 											{/if}
 										</div>
 
-										<!-- File badges -->
 										{#if item.problem.files.length > 0}
 											<div class="flex flex-wrap gap-1.5">
 												{#each item.problem.files as file (file.label)}
@@ -252,7 +241,10 @@
 														variant="outline"
 														href={file.url}
 														target="_blank"
-														class="px-2 py-1 text-sm"
+														class="px-2 py-1 text-xs
+														       bg-white/50 dark:bg-white/8
+														       border-white/70 dark:border-white/12
+														       backdrop-blur-sm"
 														onclick={(e: MouseEvent) => e.stopPropagation()}
 													>
 														{file.label}
@@ -274,12 +266,13 @@
 
 				<!-- Footer hints -->
 				<div
-					class="hidden items-center gap-4 border-t border-border px-4 py-2 text-xs text-muted-foreground md:flex"
+					class="hidden items-center gap-4 border-t border-white/50 dark:border-white/10 px-4 py-2.5 text-xs text-muted-foreground md:flex
+					       bg-white/20 dark:bg-white/3"
 				>
 					<span><Kbd.Root>↑↓</Kbd.Root> navigate</span>
 					<span><Kbd.Root>↵</Kbd.Root> go to year</span>
 					<span><Kbd.Root>Esc</Kbd.Root> close</span>
-					<span class="ml-auto">
+					<span class="ml-auto flex gap-1">
 						<Kbd.Root>⌘</Kbd.Root>
 						<Kbd.Root>K</Kbd.Root>
 					</span>
