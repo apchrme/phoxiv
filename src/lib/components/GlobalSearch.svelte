@@ -132,7 +132,7 @@
 		<!-- Backdrop -->
 		<Dialog.Overlay
 			class="fixed inset-0 z-50 bg-white/30 dark:bg-black/30
-			       supports-backdrop-filter:backdrop-blur-sm
+			       backdrop-blur-sm
 			       data-open:animate-in data-open:duration-150 data-open:fade-in-0
 			       data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0"
 		/>
@@ -243,8 +243,7 @@
 														target="_blank"
 														class="px-2 py-1 text-xs
 														       bg-white/50 dark:bg-white/8
-														       border-white/70 dark:border-white/12
-														       backdrop-blur-sm"
+														       border-white/70 dark:border-white/12"
 														onclick={(e: MouseEvent) => e.stopPropagation()}
 													>
 														{file.label}
