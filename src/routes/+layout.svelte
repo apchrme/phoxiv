@@ -105,8 +105,7 @@
 			<!-- Mobile nav — glass pill -->
 			<nav
 				class="flex justify-between items-center md:hidden sticky p-1.5 top-2 rounded-full z-40
-				       bg-white/50 dark:bg-white/5
-				       backdrop-blur-xl
+				       bg-white/50 dark:bg-background/90
 				       border border-white/60 dark:border-white/10
 				       shadow-lg shadow-black/5 dark:shadow-black/30"
 			>
@@ -128,7 +127,7 @@
 				class="hidden flex-row flex-wrap items-center justify-between gap-2 md:flex sticky p-1.5 top-2 z-40
 				       rounded-full
 				       bg-white/45 dark:bg-white/5
-				       backdrop-blur-xl
+				       backdrop-blur-none md:backdrop-blur-xl
 				       border border-white/65 dark:border-white/10
 				       shadow-lg shadow-violet-500/5 dark:shadow-black/40
 				       ring-1 ring-inset ring-white/50 dark:ring-white/5"
