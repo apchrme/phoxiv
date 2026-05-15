@@ -6,7 +6,7 @@
 	import brand from '$lib/assets/branding/brand.svg';
 	import logo from '$lib/assets/branding/logo.svg';
 	import { onMount } from 'svelte';
-
+	const { data } = $props();
 
 	let rotX = $state(12);
 	let rotY = $state(-18);
@@ -82,8 +82,9 @@
 			>
 				Browse olympiads
 			</a>
+			{#if data.user}
 			<a
-				href="https://github.com/apchrme/phoxiv"
+				href="/contribute"
 				class={cn(
 					buttonVariants({ variant: 'outline' }),
 					'bg-white/40 dark:bg-white/5 border-white/60 dark:border-white/15 backdrop-blur-sm hover:bg-white/60 dark:hover:bg-white/10'
@@ -91,6 +92,17 @@
 			>
 				Contribute
 			</a>
+			{:else}
+			<a
+				href="/login"
+				class={cn(
+					buttonVariants({ variant: 'outline' }),
+					'bg-white/40 dark:bg-white/5 border-white/60 dark:border-white/15 backdrop-blur-sm hover:bg-white/60 dark:hover:bg-white/10'
+				)}
+			>
+				Login (new!)
+			</a>
+			{/if}
 		</div>
 
 		<!-- Stats — glass pill row -->
