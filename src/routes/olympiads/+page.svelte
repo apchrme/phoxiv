@@ -88,7 +88,7 @@
 							/>
 							<Badge
 								variant="outline"
-								class="bg-white/50 dark:bg-white/5 border-white/60 dark:border-white/10 backdrop-blur-sm"
+								class="bg-white/50 dark:bg-white/5 border-white/60 dark:border-white/10"
 							>
 								{olympiad.tag}
 							</Badge>

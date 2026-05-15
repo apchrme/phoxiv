@@ -123,7 +123,6 @@
 								class="px-2.5 py-2.5 text-sm
 								       bg-white/50 dark:bg-white/6
 								       border-white/70 dark:border-white/12
-								       md:backdrop-blur-sm
 								       hover:bg-white/70 dark:hover:bg-white/12
 								       hover:border-primary/40 dark:hover:border-primary/30
 								       transition-all"
@@ -140,7 +139,6 @@
 								class="px-2.5 py-2.5 text-sm
 								       bg-white/50 dark:bg-white/6
 								       border-white/70 dark:border-white/12
-								       md:backdrop-blur-sm
 								       hover:bg-white/70 dark:hover:bg-white/12
 								       transition-all"
 							>

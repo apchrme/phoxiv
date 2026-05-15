@@ -18,7 +18,7 @@
 		onclick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
 		class="{buttonVariants({
 			variant: 'outline',
-			size: 'icon'
+			size: 'icon-lg'
 		})} fixed right-6 bottom-6 z-50 bg-input/50 shadow-md hover:bg-input/100"
 		aria-label="Return to top"
 	>
