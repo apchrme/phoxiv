@@ -123,7 +123,7 @@
 								class="px-2.5 py-2.5 text-sm
 								       bg-white/50 dark:bg-white/6
 								       border-white/70 dark:border-white/12
-								       backdrop-blur-sm
+								       md:backdrop-blur-sm
 								       hover:bg-white/70 dark:hover:bg-white/12
 								       hover:border-primary/40 dark:hover:border-primary/30
 								       transition-all"
@@ -140,7 +140,7 @@
 								class="px-2.5 py-2.5 text-sm
 								       bg-white/50 dark:bg-white/6
 								       border-white/70 dark:border-white/12
-								       backdrop-blur-sm
+								       md:backdrop-blur-sm
 								       hover:bg-white/70 dark:hover:bg-white/12
 								       transition-all"
 							>
@@ -175,7 +175,7 @@
 										class="flex flex-col gap-3 rounded-xl p-4
 										       bg-white/40 dark:bg-white/5
 										       border border-white/60 dark:border-white/8
-										       backdrop-blur-sm
+										       md:backdrop-blur-sm
 										       shadow-sm shadow-black/5 dark:shadow-black/15"
 									>
 										<div class="flex flex-col gap-0.5">

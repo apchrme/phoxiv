@@ -10,6 +10,7 @@
 	import { ArrowRight } from '@lucide/svelte';
 	import * as Card from '$lib/components/ui/card';
 	import Title from '$lib/components/Title.svelte';
+	import SvelteSeo from 'svelte-seo';
 
 	let { data }: { data: PageData } = $props();
 
@@ -31,6 +32,8 @@
 		});
 	});
 </script>
+
+<SvelteSeo title="Olympiads — phoXiv" description="Explore olympiads" />
 
 <section id="olympiads" class="mb-4">
 	<Title

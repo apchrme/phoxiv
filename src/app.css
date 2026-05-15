@@ -10,103 +10,110 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ================================================
-   Catppuccin Latte — shadcn/ui (oklch)
+   Frosted Glass — Light (Catppuccin Latte base)
    ================================================ */
 :root {
-	--radius: 0.625rem;
+	--radius: 0.75rem;
 
+	/* Core background is now handled by the html gradient */
 	--background: oklch(96.13% 0.009 247.88); /* Base      #eff1f5 */
-	--foreground: oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
+	--foreground: oklch(35% 0.02 264);
 
-	--card: oklch(93.74% 0.01 249.13); /* Mantle    #e6e9ef */
-	--card-foreground: oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
+	/* Glass panels — semi-transparent with blur */
+	--card: oklch(99% 0.004 250 / 0.72);
+	--card-foreground: oklch(35% 0.02 264);
 
-	--popover: oklch(91.36% 0.011 250.38); /* Crust     #dce0e8 */
-	--popover-foreground: oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
+	--popover: oklch(99% 0.005 250 / 0.95);
+	--popover-foreground: oklch(35% 0.02 264);
 
-	--primary: oklch(51.05% 0.231 292.72); /* Mauve     #8839ef */
-	--primary-foreground: oklch(96.13% 0.009 247.88); /* Base      #eff1f5 */
+	--primary: oklch(51.05% 0.231 292.72);
+	--primary-foreground: oklch(98% 0.004 250);
 
-	--secondary: oklch(84.7% 0.013 252.63); /* Surface 0 #ccd0da */
-	--secondary-foreground: oklch(37.99% 0.018 264.19); /* Text     #4c4f69 */
+	--secondary: oklch(91% 0.01 255 / 0.7);
+	--secondary-foreground: oklch(35% 0.02 264);
 
-	--muted: oklch(84.7% 0.013 252.63); /* Surface 0 #ccd0da */
-	--muted-foreground: oklch(54.26% 0.019 263.95); /* Subtext 0 #6c6f85 */
+	--muted: oklch(88% 0.012 255 / 0.6);
+	--muted-foreground: oklch(52% 0.02 264);
 
-	--accent: oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
-	--accent-foreground: oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
+	--accent: oklch(85% 0.015 258 / 0.65);
+	--accent-foreground: oklch(35% 0.02 264);
 
-	--destructive: oklch(44.49% 0.196 18.61); /* Red       #d20f39 */
-	--destructive-foreground: oklch(96.13% 0.009 247.88); /* Base   #eff1f5 */
+	--destructive: oklch(44.49% 0.196 18.61);
+	--destructive-foreground: oklch(97% 0.006 250);
 
-	--border: oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
-	--input: oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
-	--ring: oklch(51.05% 0.231 292.72); /* Mauve     #8839ef */
+	/* Glass borders — translucent white */
+	--border: oklch(85% 0.01 258 / 0.55);
+	--input: oklch(82% 0.012 256 / 0.65);
+	--ring: oklch(51.05% 0.231 292.72);
 
-	--chart-1: oklch(68.64% 0.173 40.63); /* Peach     #fe640b */
-	--chart-2: oklch(59.66% 0.173 136.67); /* Green     #40a02b */
-	--chart-3: oklch(50.74% 0.238 264.37); /* Blue      #1e66f5 */
-	--chart-4: oklch(66.54% 0.148 68.5); /* Yellow    #df8e1d */
-	--chart-5: oklch(54.89% 0.121 195.61); /* Teal      #179299 */
+	--chart-1: oklch(68.64% 0.173 40.63);
+	--chart-2: oklch(59.66% 0.173 136.67);
+	--chart-3: oklch(50.74% 0.238 264.37);
+	--chart-4: oklch(66.54% 0.148 68.5);
+	--chart-5: oklch(54.89% 0.121 195.61);
 
-	--sidebar: oklch(91.36% 0.011 250.38); /* Crust     #dce0e8 */
-	--sidebar-foreground: oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
-	--sidebar-primary: oklch(51.05% 0.231 292.72); /* Mauve     #8839ef */
-	--sidebar-primary-foreground: oklch(96.13% 0.009 247.88); /* Base #eff1f5 */
-	--sidebar-accent: oklch(84.7% 0.013 252.63); /* Surface 0 #ccd0da */
-	--sidebar-accent-foreground: oklch(37.99% 0.018 264.19); /* Text #4c4f69 */
-	--sidebar-border: oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
-	--sidebar-ring: oklch(51.05% 0.231 292.72); /* Mauve     #8839ef */
+	/* Sidebar — glass panel */
+	--sidebar: oklch(99% 0.005 248 / 0.78);
+	--sidebar-foreground: oklch(35% 0.02 264);
+	--sidebar-primary: oklch(51.05% 0.231 292.72);
+	--sidebar-primary-foreground: oklch(98% 0.004 250);
+	--sidebar-accent: oklch(88% 0.013 254 / 0.7);
+	--sidebar-accent-foreground: oklch(35% 0.02 264);
+	--sidebar-border: oklch(85% 0.01 258 / 0.4);
+	--sidebar-ring: oklch(51.05% 0.231 292.72);
 }
 
 /* ================================================
-   Catppuccin Mocha — shadcn/ui (oklch)
+   Frosted Glass — Dark (Catppuccin Mocha base)
    ================================================ */
 .dark {
-	--radius: 0.625rem;
+	--radius: 0.75rem;
 
 	--background: oklch(19.85% 0.014 285.75); /* Base      #1e1e2e */
-	--foreground: oklch(87.99% 0.03 256.8); /* Text      #cdd6f4 */
+	--foreground: oklch(87% 0.03 257);
 
-	--card: oklch(26.57% 0.015 277.06); /* Surface 0 #313244 */
-	--card-foreground: oklch(87.99% 0.03 256.8); /* Text      #cdd6f4 */
+	/* Dark glass panels */
+	--card: oklch(21% 0.016 278 / 0.55);
+	--card-foreground: oklch(87% 0.03 257);
 
-	--popover: oklch(26.57% 0.015 277.06); /* Surface 0 #313244 */
-	--popover-foreground: oklch(87.99% 0.03 256.8); /* Text      #cdd6f4 */
+	--popover: oklch(17% 0.018 280 / 0.92);
+	--popover-foreground: oklch(87% 0.03 257);
 
-	--primary: oklch(74.19% 0.146 303.9); /* Mauve     #cba6f7 */
-	--primary-foreground: oklch(19.85% 0.014 285.75); /* Base      #1e1e2e */
+	--primary: oklch(74.19% 0.146 303.9);
+	--primary-foreground: oklch(19% 0.014 286);
 
-	--secondary: oklch(26.57% 0.015 277.06); /* Surface 0 #313244 */
-	--secondary-foreground: oklch(87.99% 0.03 256.8); /* Text     #cdd6f4 */
+	--secondary: oklch(25% 0.015 278 / 0.65);
+	--secondary-foreground: oklch(87% 0.03 257);
 
-	--muted: oklch(31.61% 0.016 274.03); /* Surface 1 #45475a */
-	--muted-foreground: oklch(72.08% 0.022 258.72); /* Subtext 0 #a6adc8 */
+	--muted: oklch(28% 0.014 275 / 0.6);
+	--muted-foreground: oklch(68% 0.02 259);
 
-	--accent: oklch(31.61% 0.016 274.03); /* Surface 1 #45475a */
-	--accent-foreground: oklch(87.99% 0.03 256.8); /* Text      #cdd6f4 */
+	--accent: oklch(28% 0.014 275 / 0.65);
+	--accent-foreground: oklch(87% 0.03 257);
 
-	--destructive: oklch(75.16% 0.122 11.9); /* Red       #f38ba8 */
-	--destructive-foreground: oklch(19.85% 0.014 285.75); /* Base   #1e1e2e */
+	--destructive: oklch(75.16% 0.122 11.9);
+	--destructive-foreground: oklch(19% 0.014 286);
 
-	--border: oklch(31.61% 0.016 274.03); /* Surface 1 #45475a */
-	--input: oklch(31.61% 0.016 274.03); /* Surface 1 #45475a */
-	--ring: oklch(74.19% 0.146 303.9); /* Mauve     #cba6f7 */
+	/* Glass borders — subtle luminous white */
+	--border: oklch(60% 0.01 270 / 0.15);
+	--input: oklch(55% 0.012 272 / 0.22);
+	--ring: oklch(74.19% 0.146 303.9);
 
-	--chart-1: oklch(79.38% 0.102 42.47); /* Peach     #fab387 */
-	--chart-2: oklch(86.73% 0.098 163.23); /* Green     #a6e3a1 */
-	--chart-3: oklch(76.72% 0.097 233.59); /* Blue      #89b4fa */
-	--chart-4: oklch(92.36% 0.09 93.39); /* Yellow    #f9e2af */
-	--chart-5: oklch(86.63% 0.078 186.6); /* Teal      #94e2d5 */
+	--chart-1: oklch(79.38% 0.102 42.47);
+	--chart-2: oklch(86.73% 0.098 163.23);
+	--chart-3: oklch(76.72% 0.097 233.59);
+	--chart-4: oklch(92.36% 0.09 93.39);
+	--chart-5: oklch(86.63% 0.078 186.6);
 
-	--sidebar: oklch(12.89% 0.014 285.75); /* Crust     #11111b */
-	--sidebar-foreground: oklch(87.99% 0.03 256.8); /* Text      #cdd6f4 */
-	--sidebar-primary: oklch(74.19% 0.146 303.9); /* Mauve     #cba6f7 */
-	--sidebar-primary-foreground: oklch(19.85% 0.014 285.75); /* Base #1e1e2e */
-	--sidebar-accent: oklch(26.57% 0.015 277.06); /* Surface 0 #313244 */
-	--sidebar-accent-foreground: oklch(87.99% 0.03 256.8); /* Text #cdd6f4 */
-	--sidebar-border: oklch(31.61% 0.016 274.03); /* Surface 1 #45475a */
-	--sidebar-ring: oklch(74.19% 0.146 303.9); /* Mauve     #cba6f7 */
+	/* Sidebar — dark glass */
+	--sidebar: oklch(13% 0.016 284 / 0.82);
+	--sidebar-foreground: oklch(87% 0.03 257);
+	--sidebar-primary: oklch(74.19% 0.146 303.9);
+	--sidebar-primary-foreground: oklch(19% 0.014 286);
+	--sidebar-accent: oklch(25% 0.015 278 / 0.7);
+	--sidebar-accent-foreground: oklch(87% 0.03 257);
+	--sidebar-border: oklch(60% 0.01 270 / 0.12);
+	--sidebar-ring: oklch(74.19% 0.146 303.9);
 }
 
 @theme inline {
@@ -153,25 +160,17 @@
 }
 
 /* ================================================
-   HTML background gradient (the "scene behind the glass")
+   HTML base colour — the gradient lives in a fixed <div> in the layout.
+   background-attachment:fixed bypasses GPU-accelerated scrolling on mobile
+   (iOS Safari repaints it in software every frame), so we avoid it entirely.
    ================================================ */
 html {
-	background:
-		radial-gradient(ellipse 70% 55% at 10% 20%, oklch(82% 0.13 308 / 0.38) 0%, transparent 55%),
-		radial-gradient(ellipse 65% 55% at 90% 80%, oklch(76% 0.12 242 / 0.38) 0%, transparent 55%),
-		radial-gradient(ellipse 80% 70% at 60% 40%, oklch(88% 0.07 275 / 0.25) 0%, transparent 60%),
-		oklch(95% 0.008 258);
-	background-attachment: fixed;
+	background: oklch(95% 0.008 258);
 	min-height: 100%;
 }
 
 html.dark {
-	background:
-		radial-gradient(ellipse 70% 55% at 18% 18%, oklch(30% 0.13 298 / 0.55) 0%, transparent 52%),
-		radial-gradient(ellipse 65% 55% at 82% 82%, oklch(24% 0.09 258 / 0.55) 0%, transparent 52%),
-		radial-gradient(ellipse 60% 50% at 55% 45%, oklch(26% 0.08 278 / 0.3) 0%, transparent 55%),
-		oklch(10.5% 0.018 280);
-	background-attachment: fixed;
+	background: oklch(10.5% 0.018 280);
 	min-height: 100%;
 }
 
@@ -179,11 +178,9 @@ html.dark {
    Global glass effects — backdrop-filter on panels
    ================================================ */
 
-/* Cards */
-[data-slot="card"] {
-	backdrop-filter: blur(16px) saturate(160%);
-	-webkit-backdrop-filter: blur(16px) saturate(160%);
-}
+/* Cards intentionally have NO backdrop-filter — they live in the scroll flow
+   and blurring them forces GPU re-compositing every scroll frame on mobile.
+   The semi-transparent bg-card colour provides the glass look without the cost. */
 
 /* Dropdowns & popovers */
 [data-slot="dropdown-menu-content"],
@@ -201,11 +198,8 @@ html.dark {
 	-webkit-backdrop-filter: blur(24px) saturate(180%);
 }
 
-/* Sidebar inner panel */
-[data-sidebar="sidebar"] {
-	backdrop-filter: blur(20px) saturate(160%);
-	-webkit-backdrop-filter: blur(20px) saturate(160%);
-}
+/* Sidebar inner panel — blur kept only on the Sheet overlay (position:fixed),
+   not on the desktop sidebar which sits in the document flow. */
 
 @layer base {
 	* {
@@ -219,8 +213,17 @@ html.dark {
 		@apply font-sans;
 	}
 }
+
+@utility no-scrollbar {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
 /* ================================================
-   Custom data-state variants
+   Custom data-state variants (unchanged)
    ================================================ */
 
 @custom-variant data-open {

@@ -34,7 +34,7 @@
 	}
 </script>
 
-<SvelteSeo title="Profile - phoXiv" description="Your phoXiv profile." />
+<SvelteSeo title="Profile — phoXiv" description="Your phoXiv profile." />
 
 <Title title="Profile" description="Your account details and settings." />
 
