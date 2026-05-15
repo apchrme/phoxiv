@@ -1,6 +1,9 @@
 <script lang="ts">
     import Title from '$lib/components/Title.svelte';
+    import SvelteSeo from 'svelte-seo';
 </script>
+
+<SvelteSeo title="Resources — phoXiv" description="A short collection of physics olympiad resources."/>
 
 <Title title="Resources" description="A collection of resources I find to be the most useful."/>
 

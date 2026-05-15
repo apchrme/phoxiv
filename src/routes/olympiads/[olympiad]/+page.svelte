@@ -173,7 +173,6 @@
 										class="flex flex-col gap-3 rounded-xl p-4
 										       bg-white/40 dark:bg-white/5
 										       border border-white/60 dark:border-white/8
-										       md:backdrop-blur-sm
 										       shadow-sm shadow-black/5 dark:shadow-black/15"
 									>
 										<div class="flex flex-col gap-0.5">
