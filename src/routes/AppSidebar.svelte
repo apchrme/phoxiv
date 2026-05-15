@@ -87,7 +87,7 @@
 						{#each navLinks as navLink (navLink.url)}
 							{@const Icon = iconMap[navLink.url]}
 							<Sidebar.MenuItem>
-								<Sidebar.MenuButton isActive={isActive(navLink.url)} size="lg">
+								<Sidebar.MenuButton isActive={isActive(navLink.url)} size="lg" class="data-[active=true]:dark:bg-white/20 data-[active=true]:bg-black/20 hover:bg-black/10 hover:dark:bg-white/10">
 									{#snippet child({ props })}
 										<a href={navLink.url} {...props} onclick={() => sidebar.toggle()}>
 											{#if Icon}
