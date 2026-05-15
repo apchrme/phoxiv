@@ -1,17 +1,17 @@
 <script lang="ts">
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import NavButtons from './NavButtons.svelte';
 	import { page } from '$app/state';
 	import HouseIcon from '@lucide/svelte/icons/house';
 	import TrophyIcon from '@lucide/svelte/icons/trophy';
 	import LibraryIcon from '@lucide/svelte/icons/library';
 	import FileTextIcon from '@lucide/svelte/icons/file-text';
-	import { HandHelping, User, LogIn } from '@lucide/svelte';
+	import { HandHelping, User, LogIn, Shield } from '@lucide/svelte';
 	import { resolve } from '$app/paths';
+	import DarkModeButton from '$lib/components/buttons/DarkModeButton.svelte';
 
 	const { navLinks, user } = $props<{
 		navLinks: { url: string; label: string }[];
-		user: { name: string; email: string; image?: string | null } | null;
+		user: { name: string; email: string; image?: string | null; role?: string | null } | null;
 	}>();
 
 	const sidebar = Sidebar.useSidebar();
@@ -87,7 +87,7 @@
 						{#each navLinks as navLink (navLink.url)}
 							{@const Icon = iconMap[navLink.url]}
 							<Sidebar.MenuItem>
-								<Sidebar.MenuButton isActive={isActive(navLink.url)} size="lg">
+								<Sidebar.MenuButton isActive={isActive(navLink.url)} size="lg" class="data-[active=true]:dark:bg-white/20 data-[active=true]:bg-black/20 hover:bg-black/10 hover:dark:bg-white/10">
 									{#snippet child({ props })}
 										<a href={navLink.url} {...props} onclick={() => sidebar.toggle()}>
 											{#if Icon}
@@ -99,6 +99,18 @@
 								</Sidebar.MenuButton>
 							</Sidebar.MenuItem>
 						{/each}
+						{#if user?.role == "admin"}
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton isActive={isActive("/admin")} size="lg" class="data-[active=true]:dark:bg-white/20 data-[active=true]:bg-black/20 hover:bg-black/10 hover:dark:bg-white/10">
+									{#snippet child({ props })}
+										<a href={resolve("/admin")} {...props} onclick={() => sidebar.toggle()}>
+											<Shield />
+											<span>admin</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
+						{/if}
 					</Sidebar.Menu>
 				</Sidebar.GroupContent>
 			</Sidebar.Group>
@@ -107,7 +119,7 @@
 		<Sidebar.Footer class="gap-0 p-0">
 			<Sidebar.Separator />
 			<div class="flex items-center justify-center px-3 py-3">
-				<NavButtons />
+				<DarkModeButton />
 			</div>
 		</Sidebar.Footer>
 	</Sidebar.Root>

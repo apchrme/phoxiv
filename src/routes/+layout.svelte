@@ -11,7 +11,6 @@
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import AppSidebar from './AppSidebar.svelte';
-	import NavButtons from './NavButtons.svelte';
 	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
 	import GlobalSearch from '$lib/components/GlobalSearch.svelte';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
@@ -21,6 +20,7 @@
 	import brand from '$lib/assets/branding/brand.svg';
 	import * as Kbd from '$lib/components/ui/kbd/index.js';
 	import { cn } from '$lib/utils.js';
+	import DarkModeButton from '$lib/components/buttons/DarkModeButton.svelte';
 
 	const navLinks = [
 		{ url: '/', label: 'home' },
@@ -130,6 +130,9 @@
 						{#each navLinks as navLink (navLink.url)}
 							<NavLink url={navLink.url} label={navLink.label} />
 						{/each}
+						{#if data?.user?.role == "admin"}
+							<NavLink url={resolve("/admin")} label="admin" />
+						{/if}
 					</NavigationMenu.List>
 				</NavigationMenu.Root>
 				<div class="flex items-center gap-2">
@@ -147,7 +150,7 @@
 						<!-- <Kbd.Root class="hidden lg:inline-flex">⌘</Kbd.Root> -->
 						<!-- <Kbd.Root class="hidden lg:inline-flex">K</Kbd.Root> -->
 					</button>
-					<NavButtons />
+					<DarkModeButton />
 					<LogIn user={data.user} />
 				</div>
 			</nav>

@@ -6,6 +6,8 @@
 	import brand from '$lib/assets/branding/brand.svg';
 	import logo from '$lib/assets/branding/logo.svg';
 	import { onMount } from 'svelte';
+	import GitHubButton from '$lib/components/buttons/GitHubButton.svelte';
+	import DiscordButton from '$lib/components/buttons/DiscordButton.svelte';
 	const { data } = $props();
 
 	let rotX = $state(12);
@@ -103,6 +105,8 @@
 				Login (new!)
 			</a>
 			{/if}
+			<GitHubButton />
+			<DiscordButton />
 		</div>
 
 		<!-- Stats — glass pill row -->
@@ -132,6 +136,7 @@
 				{/if}
 			{/each}
 		</div>
+
 	</div>
 
 	<!-- Right: interactive 3-D logo (desktop only) -->

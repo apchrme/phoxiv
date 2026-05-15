@@ -7,11 +7,11 @@
 </script>
 
 {#if mode.current == 'dark'}
-	<Button variant="ghost" size="icon" href="https://github.com/apchrme/phoxiv" target="_blank"
+	<Button variant="outline" size="icon-lg" href="https://github.com/apchrme/phoxiv" target="_blank"
 		><img alt="GitHub" src={GitHubWhite} class="scale-60 opacity-75" /></Button
 	>
 {:else}
-	<Button variant="ghost" size="icon" href="https://github.com/apchrme/phoxiv" target="_blank"
+	<Button variant="outline" size="icon-lg" href="https://github.com/apchrme/phoxiv" target="_blank"
 		><img alt="GitHub" src={GitHubBlack} class="scale-60 opacity-75" /></Button
 	>
 {/if}
