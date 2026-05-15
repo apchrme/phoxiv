@@ -226,53 +226,8 @@ html.dark {
 		@apply font-sans;
 	}
 }
-
 /* ================================================
-   Glass utility classes
-   ================================================ */
-
-@utility glass {
-	background: oklch(99% 0.004 250 / 0.65);
-	backdrop-filter: blur(16px) saturate(160%);
-	-webkit-backdrop-filter: blur(16px) saturate(160%);
-	border: 2px solid oklch(85% 0.01 258 / 0.5);
-	box-shadow: 0 4px 24px oklch(50% 0.05 270 / 0.08), inset 0 1px 0 oklch(100% 0 0 / 0.4);
-}
-
-@utility glass-dark {
-	background: oklch(22% 0.016 278 / 0.5);
-	backdrop-filter: blur(16px) saturate(160%);
-	-webkit-backdrop-filter: blur(16px) saturate(160%);
-	border: 2px solid oklch(60% 0.01 270 / 0.15);
-	box-shadow: 0 4px 24px oklch(0% 0 0 / 0.25), inset 0 1px 0 oklch(100% 0 0 / 0.06);
-}
-
-@utility glass-nav {
-	background: oklch(99% 0.004 250 / 0.55);
-	backdrop-filter: blur(20px) saturate(180%);
-	-webkit-backdrop-filter: blur(20px) saturate(180%);
-	border: 1px solid oklch(88% 0.01 255 / 0.6);
-	box-shadow: 0 4px 24px oklch(50% 0.05 270 / 0.08), inset 0 1px 0 oklch(100% 0 0 / 0.4);
-}
-
-@utility glass-nav-dark {
-	background: oklch(18% 0.018 280 / 0.6);
-	backdrop-filter: blur(20px) saturate(180%);
-	-webkit-backdrop-filter: blur(20px) saturate(180%);
-	border: 1px solid oklch(60% 0.01 270 / 0.15);
-	box-shadow: 0 4px 24px oklch(0% 0 0 / 0.25), inset 0 1px 0 oklch(100% 0 0 / 0.06);
-}
-
-@utility no-scrollbar {
-	-ms-overflow-style: none;
-	scrollbar-width: none;
-	&::-webkit-scrollbar {
-		display: none;
-	}
-}
-
-/* ================================================
-   Custom data-state variants (unchanged)
+   Custom data-state variants
    ================================================ */
 
 @custom-variant data-open {
