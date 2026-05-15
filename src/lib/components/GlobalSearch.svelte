@@ -131,7 +131,7 @@
 	<Dialog.Portal>
 		<!-- Backdrop -->
 		<Dialog.Overlay
-			class="fixed inset-0 z-50 bg-black/30 dark:bg-black/50
+			class="fixed inset-0 z-50 bg-white/30 dark:bg-black/30
 			       supports-backdrop-filter:backdrop-blur-sm
 			       data-open:animate-in data-open:duration-150 data-open:fade-in-0
 			       data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0"
@@ -183,8 +183,8 @@
 							<p class="text-center text-sm text-muted-foreground">
 								Type to search for problems across all olympiads…
 							</p>
-							<p class="text-center text-xs text-muted-foreground/70">
-								Tip: search by olympiad name, year, or problem title
+							<p class="text-center text-sm text-muted-foreground">
+								Search in the order: olympiad name, year, and problem title
 							</p>
 						</div>
 					{:else if results.length === 0}

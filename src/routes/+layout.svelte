@@ -152,8 +152,8 @@
 					>
 						<Search class="size-4" />
 						<span class="hidden lg:block">search…</span>
-						<Kbd.Root class="hidden lg:inline-flex">⌘</Kbd.Root>
-						<Kbd.Root class="hidden lg:inline-flex">K</Kbd.Root>
+						<!-- <Kbd.Root class="hidden lg:inline-flex">⌘</Kbd.Root> -->
+						<!-- <Kbd.Root class="hidden lg:inline-flex">K</Kbd.Root> -->
 					</button>
 					<NavButtons />
 					<LogIn user={data.user} />
