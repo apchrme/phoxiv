@@ -105,7 +105,7 @@
 			<!-- Mobile nav — glass pill -->
 			<nav
 				class="flex justify-between items-center md:hidden sticky p-1.5 top-2 rounded-full z-40
-				       bg-white/50 dark:bg-background/90
+				     bg-background/80
 				       border border-white/60 dark:border-white/10
 				       shadow-lg shadow-black/5 dark:shadow-black/30"
 			>
