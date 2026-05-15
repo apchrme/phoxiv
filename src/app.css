@@ -235,14 +235,16 @@ html.dark {
 	background: oklch(99% 0.004 250 / 0.65);
 	backdrop-filter: blur(16px) saturate(160%);
 	-webkit-backdrop-filter: blur(16px) saturate(160%);
-	border: 1px solid oklch(85% 0.01 258 / 0.5);
+	border: 2px solid oklch(85% 0.01 258 / 0.5);
+	box-shadow: 0 4px 24px oklch(50% 0.05 270 / 0.08), inset 0 1px 0 oklch(100% 0 0 / 0.4);
 }
 
 @utility glass-dark {
 	background: oklch(22% 0.016 278 / 0.5);
 	backdrop-filter: blur(16px) saturate(160%);
 	-webkit-backdrop-filter: blur(16px) saturate(160%);
-	border: 1px solid oklch(60% 0.01 270 / 0.15);
+	border: 2px solid oklch(60% 0.01 270 / 0.15);
+	box-shadow: 0 4px 24px oklch(0% 0 0 / 0.25), inset 0 1px 0 oklch(100% 0 0 / 0.06);
 }
 
 @utility glass-nav {

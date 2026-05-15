@@ -137,7 +137,7 @@
 			       data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0"
 		/>
 
-		<div class="pointer-events-none fixed inset-0 z-50 flex items-start justify-center px-4 pt-[12vh]">
+		<div class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4">
 			<Dialog.Content
 				class="pointer-events-auto flex h-[min(600px,72vh)] w-full max-w-xl flex-col overflow-hidden rounded-2xl
 					bg-white/55 dark:bg-white/6

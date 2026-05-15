@@ -67,7 +67,7 @@
 						       hover:bg-white/70 dark:hover:bg-white/10
 						       hover:shadow-xl hover:shadow-primary/10 dark:hover:shadow-primary/10
 						       hover:border-primary/30 dark:hover:border-primary/25
-						       hover:-translate-y-0.5"
+						       hover:-translate-y-2"
 					>
 						<!-- Top row: icon + badge -->
 						<div class="flex items-start justify-between">
@@ -137,7 +137,7 @@
 		       shadow-lg shadow-primary/20"
 	>
 		<p class="mb-0 text-sm font-medium text-primary-foreground/90">
-			Want to add problems or help maintain the site? Open a PR or reach out.
+			Want to add problems or new olympiads? Drop me an email!
 		</p>
 		<a
 			href="mailto:apochrome@proton.me"

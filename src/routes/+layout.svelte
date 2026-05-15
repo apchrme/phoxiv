@@ -18,6 +18,7 @@
 	import { Search } from '@lucide/svelte';
 	import LogIn from '$lib/components/buttons/LogIn.svelte';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
+	import brand from '$lib/assets/branding/brand.svg';
 	import * as Kbd from '$lib/components/ui/kbd/index.js';
 
 	const navLinks = [
@@ -103,18 +104,15 @@
 		<div class="w-full lg:w-5/6 xl:w-2/3">
 			<!-- Mobile nav — glass pill -->
 			<nav
-				class="grid grid-cols-3 items-center md:hidden sticky p-1.5 top-2 rounded-full
+				class="flex justify-between items-center md:hidden sticky p-1.5 top-2 rounded-full z-40
 				       bg-white/50 dark:bg-white/5
 				       backdrop-blur-xl
 				       border border-white/60 dark:border-white/10
 				       shadow-lg shadow-black/5 dark:shadow-black/30"
 			>
 				<Sidebar.Trigger />
-				<a
-					href="/"
-					class="justify-self-center text-base font-semibold text-foreground hover:text-primary transition-colors"
-				>
-					phoXiv
+				<a href={resolve("/")}>
+					<img src={brand} alt="phoXiv" class="h-6 opacity-80"/>	
 				</a>
 				<button
 					onclick={() => (searchOpen = true)}
@@ -127,7 +125,7 @@
 
 			<!-- Desktop nav — glass pill -->
 			<nav
-				class="hidden flex-row flex-wrap items-center justify-between gap-2 md:flex sticky p-1.5 top-2 z-99
+				class="hidden flex-row flex-wrap items-center justify-between gap-2 md:flex sticky p-1.5 top-2 z-40
 				       rounded-full
 				       bg-white/45 dark:bg-white/5
 				       backdrop-blur-xl

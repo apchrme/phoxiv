@@ -1,13 +1,12 @@
 <script lang="ts">
-	import type { PageData } from './$types';
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import { cn } from '$lib/utils.js';
+	import brand from '$lib/assets/branding/brand.svg';
 	import logo from '$lib/assets/branding/logo.svg';
 	import { onMount } from 'svelte';
 
-	let { data }: { data: PageData } = $props();
 
 	let rotX = $state(12);
 	let rotY = $state(-18);
@@ -60,9 +59,7 @@
 	<div class="hero-text relative z-10 flex min-w-0 flex-1 flex-col justify-center gap-7">
 		<!-- Title -->
 		<div class="flex flex-col gap-1">
-			<h1 class="mb-2 text-[clamp(4rem,10vw,7rem)] leading-none font-bold tracking-[-0.03em]">
-				phoXiv
-			</h1>
+			<img src={brand} alt="phoXiv" class="w-3/4"/>
 			<span class="font-mono text-sm tracking-[0.02em] text-muted-foreground"
 				>/ foʊkaɪv /</span
 			>
@@ -80,8 +77,7 @@
 			<a
 				href={resolve('/olympiads')}
 				class={cn(
-					buttonVariants({ variant: 'default' }),
-					'shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-shadow'
+					buttonVariants({ variant: 'default' })
 				)}
 			>
 				Browse olympiads
