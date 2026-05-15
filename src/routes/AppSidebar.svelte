@@ -65,7 +65,7 @@
 				<!-- Logged-out: phoXiv branding -->
 				<Sidebar.Menu>
 					<Sidebar.MenuItem>
-						<Sidebar.MenuButton>
+						<Sidebar.MenuButton class="data-[active=true]:dark:bg-white/20 data-[active=true]:bg-black/20 hover:bg-black/10 hover:dark:bg-white/10">
 						{#snippet child({ props })}
 							<a href={resolve("/login")} {...props} onclick={() => sidebar.toggle()}>
 								<LogIn />
