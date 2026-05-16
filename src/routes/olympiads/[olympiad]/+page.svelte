@@ -120,12 +120,7 @@
 								variant="outline"
 								href={url}
 								target="_blank"
-								class="px-2.5 py-2.5 text-sm
-								       bg-white/50 dark:bg-white/6
-								       border-white/70 dark:border-white/12
-								       hover:bg-white/70 dark:hover:bg-white/12
-								       hover:border-primary/40 dark:hover:border-primary/30
-								       transition-all"
+								class="px-2.5 py-2.5 text-sm hover:border-primary/40 dark:hover:border-primary/30"
 							>
 								{label}
 							</Badge>
@@ -136,11 +131,7 @@
 								variant="outline"
 								href={url}
 								target="_blank"
-								class="px-2.5 py-2.5 text-sm
-								       bg-white/50 dark:bg-white/6
-								       border-white/70 dark:border-white/12
-								       hover:bg-white/70 dark:hover:bg-white/12
-								       transition-all"
+								class="px-2.5 py-2.5 text-sm"
 							>
 								<ExternalLink />
 								{label}
@@ -168,13 +159,7 @@
 						{#if year.matchedProblems.length > 0}
 							<div class="grid grid-cols-1 gap-3 xs:grid-cols-2 lg:grid-cols-3">
 								{#each year.matchedProblems as problem (problem.number)}
-									<!-- Individual problem glass card -->
-									<div
-										class="flex flex-col gap-3 rounded-xl p-4
-										       bg-white/40 dark:bg-white/5
-										       border border-white/60 dark:border-white/8
-										       shadow-sm shadow-black/5 dark:shadow-black/15"
-									>
+									<div class="glass-inner-card">
 										<div class="flex flex-col gap-0.5">
 											<span class="font-mono text-base font-semibold text-primary">
 												{problem.number}

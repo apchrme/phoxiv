@@ -15,7 +15,6 @@
 :root {
 	--radius: 0.75rem;
 
-	/* Core background is now handled by the html gradient */
 	--background: oklch(96.13% 0.009 247.88); /* Base      #eff1f5 */
 	--foreground: oklch(35% 0.02 264);
 
@@ -161,8 +160,6 @@
 
 /* ================================================
    HTML base colour — the gradient lives in a fixed <div> in the layout.
-   background-attachment:fixed bypasses GPU-accelerated scrolling on mobile
-   (iOS Safari repaints it in software every frame), so we avoid it entirely.
    ================================================ */
 html {
 	background: oklch(95% 0.008 258);
@@ -178,11 +175,6 @@ html.dark {
    Global glass effects — backdrop-filter on panels
    ================================================ */
 
-/* Cards intentionally have NO backdrop-filter — they live in the scroll flow
-   and blurring them forces GPU re-compositing every scroll frame on mobile.
-   The semi-transparent bg-card colour provides the glass look without the cost. */
-
-/* Dropdowns & popovers */
 [data-slot="dropdown-menu-content"],
 [data-slot="select-content"],
 [data-slot="combobox-content"],
@@ -192,14 +184,10 @@ html.dark {
 	-webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
-/* Sheet/modal sidebar */
 [data-slot="sheet-content"] {
 	backdrop-filter: blur(24px) saturate(180%);
 	-webkit-backdrop-filter: blur(24px) saturate(180%);
 }
-
-/* Sidebar inner panel — blur kept only on the Sheet overlay (position:fixed),
-   not on the desktop sidebar which sits in the document flow. */
 
 @layer base {
 	* {
@@ -207,7 +195,6 @@ html.dark {
 	}
 	body {
 		@apply text-foreground;
-		/* bg is set on html — body stays transparent */
 	}
 	html {
 		@apply font-sans;
@@ -223,7 +210,51 @@ html.dark {
 }
 
 /* ================================================
-   Custom data-state variants (unchanged)
+   Glass utility classes
+   ================================================ */
+
+/* Base glass panel — bg, border, shadow, ring (no blur; add per-element) */
+@utility glass-panel {
+	@apply bg-white/55 dark:bg-white/6
+		border border-white/70 dark:border-white/10
+		shadow-md shadow-black/5 dark:shadow-black/20
+		ring-1 ring-inset ring-white/50 dark:ring-white/5;
+}
+
+/* Interactive card — adds cursor, transition, hover lift + tint */
+@utility glass-card-hoverable {
+	@apply cursor-pointer transition-all duration-300
+		hover:bg-white/70 dark:hover:bg-white/10
+		hover:shadow-xl hover:shadow-primary/10 dark:hover:shadow-primary/10
+		hover:border-primary/30 dark:hover:border-primary/25
+		hover:-translate-y-2;
+}
+
+/* Small inner panel — problem tiles, sub-cards */
+@utility glass-inner-card {
+	@apply flex flex-col gap-3 rounded-xl p-4
+		bg-white/40 dark:bg-white/5
+		border border-white/60 dark:border-white/8
+		shadow-sm shadow-black/5 dark:shadow-black/15;
+}
+
+/* Blog post link card */
+@utility glass-post-link {
+	@apply rounded-2xl
+		bg-white/50 dark:bg-white/5
+		border border-white/65 dark:border-white/10
+		backdrop-blur-md
+		shadow-sm shadow-black/5 dark:shadow-black/20
+		ring-1 ring-inset ring-white/40 dark:ring-white/5
+		transition-all duration-200
+		hover:bg-white/65 dark:hover:bg-white/8
+		hover:shadow-md hover:shadow-primary/8 dark:hover:shadow-primary/10
+		hover:border-primary/25 dark:hover:border-primary/20
+		hover:-translate-y-0.5;
+}
+
+/* ================================================
+   Custom data-state variants
    ================================================ */
 
 @custom-variant data-open {

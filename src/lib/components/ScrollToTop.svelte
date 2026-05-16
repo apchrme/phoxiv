@@ -19,7 +19,7 @@
 		class="{buttonVariants({
 			variant: 'outline',
 			size: 'icon-lg'
-		})} fixed right-6 bottom-6 z-40 bg-input/80 backdrop-blur-sm hover:bg-foreground/30!"
+		})} fixed right-6 bottom-6 z-40 bg-input/80 md:backdrop-blur-sm hover:bg-foreground/30!"
 		aria-label="Return to top"
 	>
 		<ArrowUpIcon />

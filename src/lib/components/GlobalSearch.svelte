@@ -132,7 +132,7 @@
 		<!-- Backdrop -->
 		<Dialog.Overlay
 			class="fixed inset-0 z-50 bg-white/30 dark:bg-black/30
-			       backdrop-blur-sm
+			       backdrop-blur-md
 			       data-open:animate-in data-open:duration-150 data-open:fade-in-0
 			       data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0"
 		/>
@@ -140,11 +140,7 @@
 		<div class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4">
 			<Dialog.Content
 				class="pointer-events-auto flex h-[min(600px,72vh)] w-full max-w-xl flex-col overflow-hidden rounded-2xl
-					bg-white/55 dark:bg-white/6
-					border border-white/70 dark:border-white/10
-					md:backdrop-blur-lg
-					shadow-md shadow-black/5 dark:shadow-black/20
-					ring-1 ring-inset ring-white/50 dark:ring-white/5
+					glass-panel md:backdrop-blur-lg
 				       data-open:animate-in data-open:duration-200 data-open:fade-in-0 data-open:zoom-in-[0.97]
 				       data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0 data-closed:zoom-out-[0.97]"
 				onOpenAutoFocus={(e) => { e.preventDefault(); inputEl?.focus(); }}
@@ -241,9 +237,7 @@
 														variant="outline"
 														href={file.url}
 														target="_blank"
-														class="px-2 py-1 text-xs
-														       bg-white/50 dark:bg-white/8
-														       border-white/70 dark:border-white/12"
+														class="px-2 py-1 text-xs"
 														onclick={(e: MouseEvent) => e.stopPropagation()}
 													>
 														{file.label}

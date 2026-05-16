@@ -34,16 +34,7 @@
 			<li class="group relative">
 				<a
 					href="/blog/{post.slug}"
-					class="flex flex-col items-start gap-3 rounded-2xl px-5 py-5 transition-all duration-200 sm:flex-row sm:gap-6
-					       bg-white/50 dark:bg-white/5
-					       border border-white/65 dark:border-white/10
-					       backdrop-blur-md
-					       shadow-sm shadow-black/5 dark:shadow-black/20
-					       ring-1 ring-inset ring-white/40 dark:ring-white/5
-					       hover:bg-white/65 dark:hover:bg-white/8
-					       hover:shadow-md hover:shadow-primary/8 dark:hover:shadow-primary/10
-					       hover:border-primary/25 dark:hover:border-primary/20
-					       hover:-translate-y-0.5"
+					class="glass-post-link flex flex-col items-start gap-3 px-5 py-5 sm:flex-row sm:gap-6"
 				>
 					<!-- Date column -->
 					<div class="flex shrink-0 items-center gap-1.5 pt-0.5">
