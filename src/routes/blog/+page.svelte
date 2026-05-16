@@ -34,12 +34,15 @@
 			<li class="group relative">
 				<a
 					href="/blog/{post.slug}"
-					class="glass-post-link flex flex-col items-start gap-3 px-5 py-5 sm:flex-row sm:gap-6"
+					class="flex glass-post-link flex-col items-start gap-3 px-5 py-5 sm:flex-row sm:gap-6"
 				>
 					<!-- Date column -->
 					<div class="flex shrink-0 items-center gap-1.5 pt-0.5">
 						<Calendar class="size-3.5 shrink-0 text-muted-foreground" />
-						<time datetime={post.date} class="font-mono text-xs text-muted-foreground whitespace-nowrap">
+						<time
+							datetime={post.date}
+							class="font-mono text-xs whitespace-nowrap text-muted-foreground"
+						>
 							{formatDate(post.date)}
 						</time>
 					</div>

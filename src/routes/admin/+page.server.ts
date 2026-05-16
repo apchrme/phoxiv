@@ -41,12 +41,16 @@ export const actions: Actions = {
 			return fail(400, { error: 'You cannot change your own role' });
 		}
 
-        // prevent modifying superadmin
-        const superadminEmail = platform?.env.SUPERADMIN_EMAIL;
-        const target = await db.select({ email: user.email }).from(user).where(eq(user.id, userId)).get();
-        if (superadminEmail && target?.email === superadminEmail) {
-            return fail(403, { error: 'This account cannot be modified' });
-        }
+		// prevent modifying superadmin
+		const superadminEmail = platform?.env.SUPERADMIN_EMAIL;
+		const target = await db
+			.select({ email: user.email })
+			.from(user)
+			.where(eq(user.id, userId))
+			.get();
+		if (superadminEmail && target?.email === superadminEmail) {
+			return fail(403, { error: 'This account cannot be modified' });
+		}
 
 		const validRoles = ['admin', 'user', ''];
 		if (!validRoles.includes(role)) return fail(400, { error: 'Invalid role' });
@@ -60,7 +64,7 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
-	banUser: async ({ request, locals, platform}) => {
+	banUser: async ({ request, locals, platform }) => {
 		requireAdmin(locals);
 		const db = locals.db;
 		const data = await request.formData();
@@ -70,18 +74,18 @@ export const actions: Actions = {
 		if (!userId) return fail(400, { error: 'User ID required' });
 		if (userId === locals.user!.id) return fail(400, { error: 'You cannot ban yourself' });
 
-        // prevent modifying superadmin
-        const superadminEmail = platform?.env.SUPERADMIN_EMAIL;
-        const target = await db.select({ email: user.email }).from(user).where(eq(user.id, userId)).get();
-        if (superadminEmail && target?.email === superadminEmail) {
-            return fail(403, { error: 'This account cannot be modified' });
-        }
-
-		await db
-			.update(user)
-			.set({ banned: true, banReason: reason })
+		// prevent modifying superadmin
+		const superadminEmail = platform?.env.SUPERADMIN_EMAIL;
+		const target = await db
+			.select({ email: user.email })
+			.from(user)
 			.where(eq(user.id, userId))
-			.run();
+			.get();
+		if (superadminEmail && target?.email === superadminEmail) {
+			return fail(403, { error: 'This account cannot be modified' });
+		}
+
+		await db.update(user).set({ banned: true, banReason: reason }).where(eq(user.id, userId)).run();
 
 		return { success: true };
 	},
@@ -94,11 +98,7 @@ export const actions: Actions = {
 
 		if (!userId) return fail(400, { error: 'User ID required' });
 
-		await db
-			.update(user)
-			.set({ banned: false, banReason: null })
-			.where(eq(user.id, userId))
-			.run();
+		await db.update(user).set({ banned: false, banReason: null }).where(eq(user.id, userId)).run();
 
 		return { success: true };
 	}

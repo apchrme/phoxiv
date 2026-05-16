@@ -29,7 +29,6 @@
 		if (url === '/') return page.url.pathname === '/';
 		return page.url.pathname === url || page.url.pathname.startsWith(url + '/');
 	}
-
 </script>
 
 <div class="md:hidden">
@@ -65,16 +64,18 @@
 				<!-- Logged-out: Log in button -->
 				<Sidebar.Menu>
 					<Sidebar.MenuItem>
-						<Sidebar.MenuButton class="data-[active=true]:dark:bg-white/20 data-[active=true]:bg-black/20 hover:bg-black/10 hover:dark:bg-white/10">
-						{#snippet child({ props })}
-							<a href={resolve("/login")} {...props} onclick={() => sidebar.toggle()}>
-								<LogIn />
-								<span>Log in</span>
-							</a>
-						{/snippet}
+						<Sidebar.MenuButton
+							class="hover:bg-black/10 data-[active=true]:bg-black/20 hover:dark:bg-white/10 data-[active=true]:dark:bg-white/20"
+						>
+							{#snippet child({ props })}
+								<a href={resolve('/login')} {...props} onclick={() => sidebar.toggle()}>
+									<LogIn />
+									<span>Log in</span>
+								</a>
+							{/snippet}
 						</Sidebar.MenuButton>
 					</Sidebar.MenuItem>
-				</Sidebar.Menu> 
+				</Sidebar.Menu>
 			{/if}
 		</Sidebar.Header>
 
@@ -87,7 +88,11 @@
 						{#each navLinks as navLink (navLink.url)}
 							{@const Icon = iconMap[navLink.url]}
 							<Sidebar.MenuItem>
-								<Sidebar.MenuButton isActive={isActive(navLink.url)} size="lg" class="data-[active=true]:dark:bg-white/20 data-[active=true]:bg-black/20 hover:bg-black/10 hover:dark:bg-white/10">
+								<Sidebar.MenuButton
+									isActive={isActive(navLink.url)}
+									size="lg"
+									class="hover:bg-black/10 data-[active=true]:bg-black/20 hover:dark:bg-white/10 data-[active=true]:dark:bg-white/20"
+								>
 									{#snippet child({ props })}
 										<a href={navLink.url} {...props} onclick={() => sidebar.toggle()}>
 											{#if Icon}
@@ -99,11 +104,15 @@
 								</Sidebar.MenuButton>
 							</Sidebar.MenuItem>
 						{/each}
-						{#if user?.role == "admin"}
+						{#if user?.role == 'admin'}
 							<Sidebar.MenuItem>
-								<Sidebar.MenuButton isActive={isActive("/admin")} size="lg" class="data-[active=true]:dark:bg-white/20 data-[active=true]:bg-black/20 hover:bg-black/10 hover:dark:bg-white/10">
+								<Sidebar.MenuButton
+									isActive={isActive('/admin')}
+									size="lg"
+									class="hover:bg-black/10 data-[active=true]:bg-black/20 hover:dark:bg-white/10 data-[active=true]:dark:bg-white/20"
+								>
 									{#snippet child({ props })}
-										<a href={resolve("/admin")} {...props} onclick={() => sidebar.toggle()}>
+										<a href={resolve('/admin')} {...props} onclick={() => sidebar.toggle()}>
 											<Shield />
 											<span>admin</span>
 										</a>

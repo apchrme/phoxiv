@@ -37,16 +37,12 @@
 			</div>
 			<div class="flex flex-col items-center gap-1 text-center">
 				<h1 class="text-2xl font-bold tracking-tight">Sign in/Sign up</h1>
-				<p class="text-sm text-muted-foreground">
-					Watch out for upcoming features!
-				</p>
+				<p class="text-sm text-muted-foreground">Watch out for upcoming features!</p>
 			</div>
 		</div>
 
 		<!-- Sign in card -->
-		<div
-			class="overflow-hidden rounded-2xl border border-border bg-card ring-1 ring-foreground/5"
-		>
+		<div class="overflow-hidden rounded-2xl border border-border bg-card ring-1 ring-foreground/5">
 			<div class="flex flex-col gap-4 p-6">
 				<button
 					onclick={signInWithGitHub}
@@ -54,7 +50,9 @@
 					class="flex w-full items-center justify-center gap-2.5 rounded-xl border border-border bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
 				>
 					{#if loading}
-						<span class="size-4 animate-spin rounded-full border-2 border-background/30 border-t-background"></span>
+						<span
+							class="size-4 animate-spin rounded-full border-2 border-background/30 border-t-background"
+						></span>
 						Redirecting…
 					{:else}
 						<Github invert />

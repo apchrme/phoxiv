@@ -22,10 +22,10 @@
 	let olympiadsLoading = $state(true);
 
 	onMount(async () => {
-		olympiads = await(await fetch('/api/olympiads')).json();
+		olympiads = await (await fetch('/api/olympiads')).json();
 		// await new Promise((f) => setTimeout(f, 1000));
 		olympiadsLoading = false;
-	})
+	});
 
 	const filtered = $derived(() => {
 		const q = query.trim().toLowerCase();
@@ -69,24 +69,24 @@
 	</div>
 
 	<!-- Olympiad grid — glass cards -->
-	
+
 	{#if olympiadsLoading}
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">
-		<Skeleton class="w-full h-50" />
-		<Skeleton class="w-full h-50" />
-		<Skeleton class="w-full h-50" />
-		<Skeleton class="w-full h-50" />
-		<Skeleton class="w-full h-50" />
-		<Skeleton class="w-full h-50" />
+			<Skeleton class="h-50 w-full" />
+			<Skeleton class="h-50 w-full" />
+			<Skeleton class="h-50 w-full" />
+			<Skeleton class="h-50 w-full" />
+			<Skeleton class="h-50 w-full" />
+			<Skeleton class="h-50 w-full" />
 		</div>
 	{:else if filtered().length > 0}
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">
 			{#each filtered() as olympiad (olympiad.id)}
-				<a href={resolve(`/olympiads/${olympiad.id}`)} class="group block z-10">
+				<a href={resolve(`/olympiads/${olympiad.id}`)} class="group z-10 block">
 					<Card.Root class="h-full glass-card-hoverable p-5">
 						<!-- Top row: icon + badge -->
 						<div class="flex items-start justify-between">
-								<!--
+							<!--
 									OlympiadIcon replaces the raw emoji <span> to fix the
 									two-letter rendering bug on Windows/Chromium for flag emojis.
 									  • Flag emojis   → Flagpedia SVG, sized to h-9 w-auto
@@ -142,21 +142,21 @@
 <!-- Contribute CTA — glass tinted banner -->
 <section class="mt-2 mb-6">
 	<div
-		class="flex flex-col items-start justify-between gap-4 rounded-2xl px-6 py-5 sm:flex-row sm:items-center
-		       bg-gradient-to-br from-primary/70 to-primary/90
-		       border border-primary/40
-		       md:backdrop-blur-md
-		       shadow-lg shadow-primary/20"
+		class="flex flex-col items-start justify-between gap-4 rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/70
+		       to-primary/90 px-6 py-5
+		       shadow-lg shadow-primary/20
+		       sm:flex-row
+		       sm:items-center md:backdrop-blur-md"
 	>
 		<p class="mb-0 text-sm font-medium text-primary-foreground/90">
 			Want to add problems or new olympiads? Drop me an email!
 		</p>
 		<a
 			href="mailto:apochrome@proton.me"
-			class="shrink-0 rounded-xl flex flex-row items-center gap-1.5
-			       bg-white/20 md:backdrop-blur-sm border border-white/30
-			       px-4 py-2 text-sm font-semibold text-primary-foreground
-			       transition-all hover:bg-white/30 hover:gap-2.5"
+			class="flex shrink-0 flex-row items-center gap-1.5 rounded-xl
+			       border border-white/30 bg-white/20 px-4
+			       py-2 text-sm font-semibold text-primary-foreground transition-all
+			       hover:gap-2.5 hover:bg-white/30 md:backdrop-blur-sm"
 		>
 			Get in touch <ArrowRight class="size-4" />
 		</a>

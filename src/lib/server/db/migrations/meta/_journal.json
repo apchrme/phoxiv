@@ -1,34 +1,34 @@
 {
-  "version": "7",
-  "dialect": "sqlite",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "6",
-      "when": 1777176538004,
-      "tag": "0000_noisy_edwin_jarvis",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1777682146492,
-      "tag": "0001_material_supernaut",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1778477810710,
-      "tag": "0002_curvy_the_hunter",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1778569637700,
-      "tag": "0003_living_zombie",
-      "breakpoints": true
-    }
-  ]
+	"version": "7",
+	"dialect": "sqlite",
+	"entries": [
+		{
+			"idx": 0,
+			"version": "6",
+			"when": 1777176538004,
+			"tag": "0000_noisy_edwin_jarvis",
+			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "6",
+			"when": 1777682146492,
+			"tag": "0001_material_supernaut",
+			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "6",
+			"when": 1778477810710,
+			"tag": "0002_curvy_the_hunter",
+			"breakpoints": true
+		},
+		{
+			"idx": 3,
+			"version": "6",
+			"when": 1778569637700,
+			"tag": "0003_living_zombie",
+			"breakpoints": true
+		}
+	]
 }

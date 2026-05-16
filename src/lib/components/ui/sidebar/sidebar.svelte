@@ -42,7 +42,7 @@
 			data-mobile="true"
 			class={cn(
 				'w-(--sidebar-width)! max-w-none! bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden',
-				'bg-muted/30 border border-white/70 dark:border-white/10 backdrop-blur-md shadow-md shadow-black/5 dark:shadow-black/20 ring-1 ring-inset ring-white/50 dark:ring-white/5',
+				'border border-white/70 bg-muted/30 shadow-md ring-1 shadow-black/5 ring-white/50 backdrop-blur-md ring-inset dark:border-white/10 dark:shadow-black/20 dark:ring-white/5',
 				className
 			)}
 			style="--sidebar-width: {SIDEBAR_WIDTH_MOBILE};"

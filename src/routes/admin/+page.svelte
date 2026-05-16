@@ -55,7 +55,11 @@
 				<!-- Avatar + info -->
 				<div class="flex min-w-0 flex-1 items-center gap-3">
 					{#if u.image}
-						<img src={u.image} alt={u.name} class="size-10 shrink-0 rounded-full ring-2 ring-border" />
+						<img
+							src={u.image}
+							alt={u.name}
+							class="size-10 shrink-0 rounded-full ring-2 ring-border"
+						/>
 					{:else}
 						<div
 							class="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted ring-2 ring-border"

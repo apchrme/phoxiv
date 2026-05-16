@@ -10,6 +10,7 @@
 		href={url}
 		aria-current={page.url.pathname == url}
 		data-active={page.url.pathname == url}
-		class="rounded-full py-2 text-base font-medium text-foreground hover:text-primary ">{label}</NavigationMenu.Link
+		class="rounded-full py-2 text-base font-medium text-foreground hover:text-primary "
+		>{label}</NavigationMenu.Link
 	>
 </NavigationMenu.Item>

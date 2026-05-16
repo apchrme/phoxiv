@@ -146,8 +146,9 @@ export const actions: Actions = {
 		if (!file || file.size === 0) return fail(400, { error: 'No file provided' });
 		if (!label) return fail(400, { error: 'Label is required' });
 		if (!scope) return fail(400, { error: 'Scope is required' });
-		if (scope === 'problem' && !problemNumber) return fail(400, { error: 'Problem number required' });
-		if (label.includes('/')) return fail(400, { error: 'Label cannot include /' })
+		if (scope === 'problem' && !problemNumber)
+			return fail(400, { error: 'Problem number required' });
+		if (label.includes('/')) return fail(400, { error: 'Label cannot include /' });
 
 		const ext = file.name.split('.').pop()?.toLowerCase() ?? 'pdf';
 		const slugLabel = label
@@ -166,7 +167,7 @@ export const actions: Actions = {
 			.get();
 		if (!yearRow) return fail(404, { error: 'Year not found' });
 
-		let problemRow: (typeof problems.$inferSelect) | undefined;
+		let problemRow: typeof problems.$inferSelect | undefined;
 
 		if (scope === 'problem') {
 			problemRow = await db

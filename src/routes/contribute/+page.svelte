@@ -18,14 +18,25 @@
 
 	let tag = $state<OlympiadTag | undefined>();
 	let olympiadId = $state<string | undefined>();
-	let searchOlympiad = $state<string>("");
+	let searchOlympiad = $state<string>('');
 
-	const filtered = $derived(searchOlympiad === "" ? data.olympiads : data.olympiads.filter((olympiad) => olympiad.name.toLowerCase().includes(searchOlympiad.toLowerCase()) || olympiad.id.toLowerCase().includes(searchOlympiad.toLowerCase())));
+	const filtered = $derived(
+		searchOlympiad === ''
+			? data.olympiads
+			: data.olympiads.filter(
+					(olympiad) =>
+						olympiad.name.toLowerCase().includes(searchOlympiad.toLowerCase()) ||
+						olympiad.id.toLowerCase().includes(searchOlympiad.toLowerCase())
+				)
+	);
 </script>
 
 <SvelteSeo title="Contribute" description="Edit anything" />
 
-<Title title="Contribute" description="This is Houston. Right here, you can edit almost every piece of content on the olympiads page. Note that due to caching, you may not see your changes on the corresponding olympiad pages immediately. Perform a hard reload with Ctrl+F5 to fix it." />
+<Title
+	title="Contribute"
+	description="This is Houston. Right here, you can edit almost every piece of content on the olympiads page. Note that due to caching, you may not see your changes on the corresponding olympiad pages immediately. Perform a hard reload with Ctrl+F5 to fix it."
+/>
 
 <Tabs.Root class="mx-auto max-w-xl gap-5" bind:value={initialTab}>
 	<Tabs.List variant="default">
@@ -46,11 +57,14 @@
 					<div class="flex flex-col gap-1.5">
 						<label for="olympiadId" class="text-sm font-medium">Olympiad</label>
 						<Combobox.Root type="single" name="olympiadId" required bind:value={olympiadId}>
-							<Combobox.Input oninput={(e) => (searchOlympiad = (e.currentTarget as HTMLInputElement).value)} placeholder="Search for an olympiad..."/>
+							<Combobox.Input
+								oninput={(e) => (searchOlympiad = (e.currentTarget as HTMLInputElement).value)}
+								placeholder="Search for an olympiad..."
+							/>
 							<Combobox.Content class="max-h-100 overflow-scroll">
-							{#each filtered as o (o.id)}
-								<Combobox.Item value={o.id} label={o.name}>{o.name}</Combobox.Item>
-							{/each}
+								{#each filtered as o (o.id)}
+									<Combobox.Item value={o.id} label={o.name}>{o.name}</Combobox.Item>
+								{/each}
 							</Combobox.Content>
 						</Combobox.Root>
 					</div>
@@ -84,29 +98,18 @@
 			</Card.Header>
 			<Card.Content>
 				<form method="POST" action="?/createOlympiad" use:enhance class="flex flex-col gap-4">
-					<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						<div class="flex flex-col gap-1.5">
 							<label for="id" class="text-sm font-medium"
 								>ID <span class="text-sm text-muted-foreground">(unique acronym)</span></label
 							>
-							<Input
-								id="id"
-								name="id"
-								type="text"
-								required
-								placeholder="e.g. ipho"
-							/>
+							<Input id="id" name="id" type="text" required placeholder="e.g. ipho" />
 						</div>
 						<div class="flex flex-col gap-1.5">
 							<label for="icon" class="text-sm font-medium"
 								>Icon <span class="text-sm text-muted-foreground">(optional, emoji)</span></label
 							>
-							<Input
-								id="icon"
-								name="icon"
-								type="text"
-								placeholder="e.g. 🌍"
-							/>
+							<Input id="icon" name="icon" type="text" placeholder="e.g. 🌍" />
 						</div>
 					</div>
 					<div class="flex flex-col gap-1.5">
@@ -129,7 +132,7 @@
 							placeholder="One sentence description"
 						/>
 					</div>
-					<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						<div class="flex flex-col gap-1.5">
 							<!-- svelte-ignore a11y_label_has_associated_control -->
 							<label class="text-sm font-medium">Tag</label>

@@ -2,7 +2,7 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
 import * as schema from './db/schema';
-import { admin } from "better-auth/plugins";
+import { admin } from 'better-auth/plugins';
 
 type AuthEnv = {
 	GITHUB_CLIENT_ID: string;

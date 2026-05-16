@@ -20,11 +20,11 @@
 		rotX = -((e.clientY - cy) / cy) * 18;
 	}
 
-	let stats:Record<string, number>= $state({"olympiads":0,"years":0,"files":0});
+	let stats: Record<string, number> = $state({ olympiads: 0, years: 0, files: 0 });
 
 	onMount(async () => {
-		stats = await(await fetch("/api/stats")).json();
-	})
+		stats = await (await fetch('/api/stats')).json();
+	});
 
 	const statItems = $derived([
 		{ value: stats.olympiads, label: 'Olympiads' },
@@ -49,22 +49,15 @@
 		class="pointer-events-none absolute inset-0 flex items-center justify-around overflow-hidden md:hidden"
 		aria-hidden="true"
 	>
-		<img
-			src={logo}
-			alt=""
-			class="h-112 w-md opacity-10 select-none"
-			style="filter: blur(2px);"
-		/>
+		<img src={logo} alt="" class="h-112 w-md opacity-10 select-none" style="filter: blur(2px);" />
 	</div>
 
 	<!-- Left: text content -->
 	<div class="hero-text relative z-10 flex min-w-0 flex-1 flex-col justify-center gap-7">
 		<!-- Title -->
 		<div class="flex flex-col gap-1">
-			<img src={brand} alt="phoXiv" class="w-3/4 brightness-85 dark:brightness-100"/>
-			<span class="font-mono text-sm tracking-[0.02em] text-muted-foreground"
-				>/ foʊkaɪv /</span
-			>
+			<img src={brand} alt="phoXiv" class="w-3/4 brightness-85 dark:brightness-100" />
+			<span class="font-mono text-sm tracking-[0.02em] text-muted-foreground">/ foʊkaɪv /</span>
 		</div>
 
 		<!-- Description -->
@@ -76,34 +69,29 @@
 
 		<!-- CTAs -->
 		<div class="flex flex-wrap gap-3">
-			<a
-				href={resolve('/olympiads')}
-				class={cn(
-					buttonVariants({ variant: 'default' })
-				)}
-			>
+			<a href={resolve('/olympiads')} class={cn(buttonVariants({ variant: 'default' }))}>
 				Browse olympiads
 			</a>
 			{#if data.user}
-			<a
-				href="/contribute"
-				class={cn(
-					buttonVariants({ variant: 'outline' }),
-					'bg-white/40 dark:bg-white/5 border-white/60 dark:border-white/15 backdrop-blur-sm hover:bg-white/60 dark:hover:bg-white/10'
-				)}
-			>
-				Contribute
-			</a>
+				<a
+					href="/contribute"
+					class={cn(
+						buttonVariants({ variant: 'outline' }),
+						'border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10'
+					)}
+				>
+					Contribute
+				</a>
 			{:else}
-			<a
-				href="/login"
-				class={cn(
-					buttonVariants({ variant: 'outline' }),
-					'bg-white/40 dark:bg-white/5 border-white/60 dark:border-white/15 backdrop-blur-sm hover:bg-white/60 dark:hover:bg-white/10'
-				)}
-			>
-				Login (new!)
-			</a>
+				<a
+					href="/login"
+					class={cn(
+						buttonVariants({ variant: 'outline' }),
+						'border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10'
+					)}
+				>
+					Login (new!)
+				</a>
 			{/if}
 			<GitHubButton />
 			<DiscordButton />
@@ -112,31 +100,28 @@
 		<!-- Stats — glass pill row -->
 		<div
 			class="inline-flex flex-wrap items-center gap-0 self-start
-			       rounded-2xl
-			       bg-white/50 dark:bg-white/5
-			       border border-white/70 dark:border-white/10
-			       backdrop-blur-md
-			       shadow-md shadow-black/5 dark:shadow-black/30
-			       ring-1 ring-inset ring-white/60 dark:ring-white/5
-			       overflow-hidden"
+			       overflow-hidden
+			       rounded-2xl border
+			       border-white/70 bg-white/50 shadow-md
+			       ring-1
+			       shadow-black/5 ring-white/60 backdrop-blur-md
+			       ring-inset dark:border-white/10 dark:bg-white/5 dark:shadow-black/30
+			       dark:ring-white/5"
 		>
 			{#each statItems as { value, label }, i (label)}
 				<div class="flex flex-col items-center gap-0.5 px-6 py-4">
 					<span class="font-mono text-[1.75rem] leading-none font-bold text-foreground"
 						>{value}</span
 					>
-					<span
-						class="font-mono text-[0.6rem] tracking-widest text-muted-foreground uppercase"
-					>
+					<span class="font-mono text-[0.6rem] tracking-widest text-muted-foreground uppercase">
 						{label}
 					</span>
 				</div>
 				{#if i < statItems.length - 1}
-					<div class="self-stretch w-px bg-border/60" aria-hidden="true"></div>
+					<div class="w-px self-stretch bg-border/60" aria-hidden="true"></div>
 				{/if}
 			{/each}
 		</div>
-
 	</div>
 
 	<!-- Right: interactive 3-D logo (desktop only) -->
@@ -149,7 +134,7 @@
 			<img
 				src={logo}
 				alt=""
-				class="pointer-events-none h-full w-full transform-[translateZ(30px)] object-contain brightness-85 dark:brightness-100 select-none"
+				class="pointer-events-none h-full w-full transform-[translateZ(30px)] object-contain brightness-85 select-none dark:brightness-100"
 			/>
 		</div>
 	</div>
@@ -157,15 +142,29 @@
 
 <style>
 	@keyframes fade-up {
-		from { opacity: 0; translate: 0 1.25rem; }
-		to   { opacity: 1; translate: 0 0; }
+		from {
+			opacity: 0;
+			translate: 0 1.25rem;
+		}
+		to {
+			opacity: 1;
+			translate: 0 0;
+		}
 	}
 
 	@keyframes fade-in {
-		from { opacity: 0; }
-		to   { opacity: 1; }
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
 	}
 
-	.hero-text { animation: fade-up 600ms ease-in-out both; }
-	.hero-logo { animation: fade-in 800ms ease-in-out 300ms both; }
+	.hero-text {
+		animation: fade-up 600ms ease-in-out both;
+	}
+	.hero-logo {
+		animation: fade-in 800ms ease-in-out 300ms both;
+	}
 </style>

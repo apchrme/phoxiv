@@ -9,11 +9,20 @@
 	import * as Card from '$lib/components/ui/card';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import SvelteSeo from 'svelte-seo';
+	import { onMount } from 'svelte';
+	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
 	let { data }: PageProps = $props();
 
 	let olympiad = $derived(data.olympiad);
-	let olympiadFiles = $derived(data.olympiadFiles as YearEntry[]);
+	let olympiadFiles: YearEntry[] | null = $state(null);
+	let olympiadFilesLoading = $state(true);
+
+	onMount(async () => {
+		olympiadFiles = await (await fetch(`/api/olympiads/${olympiad.id}`)).json();
+		// await new Promise((f) => setTimeout(f, 1000));
+		olympiadFilesLoading = false;
+	});
 
 	let query = $state('');
 	let showFullYear = $state(false);
@@ -55,9 +64,7 @@
 	}
 
 	function hasYearLevelContent(year: YearEntry) {
-		return (
-			year.yearFiles.length > 0 || year.notes.length > 0 || year.extraLinks.length > 0
-		);
+		return year.yearFiles.length > 0 || year.notes.length > 0 || year.extraLinks.length > 0;
 	}
 </script>
 
@@ -97,14 +104,18 @@
 			{/snippet}
 		</SearchBar>
 	</div>
-
-	{#if filtered().length > 0}
+	{#if olympiadFilesLoading}
+		<div class="flex flex-col gap-4">
+			<Skeleton class="h-50 w-full" />
+			<Skeleton class="h-50 w-full" />
+			<Skeleton class="h-50 w-full" />
+			<Skeleton class="h-50 w-full" />
+		</div>
+	{:else if filtered().length > 0}
 		<div class="flex flex-col gap-4">
 			{#each filtered() as year (year.year)}
 				<!-- Glass year panel -->
-				<Card.Root
-					id={String(year.year)}
-				>
+				<Card.Root id={String(year.year)}>
 					<!-- Year header -->
 					<Card.Header>
 						<Card.Title class="font-mono text-lg font-semibold text-foreground tabular-nums">
@@ -127,12 +138,7 @@
 						{/snippet}
 
 						{#snippet ExtraFileLink(url: string, label: string)}
-							<Badge
-								variant="outline"
-								href={url}
-								target="_blank"
-								class="px-2.5 py-2.5 text-sm"
-							>
+							<Badge variant="outline" href={url} target="_blank" class="px-2.5 py-2.5 text-sm">
 								<ExternalLink />
 								{label}
 							</Badge>
@@ -187,7 +193,9 @@
 		<SearchEmptyState
 			message="No results found"
 			hint="Try a different year or problem name."
-			onClear={() => { query = ''; }}
+			onClear={() => {
+				query = '';
+			}}
 		/>
 	{/if}
 </section>

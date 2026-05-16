@@ -80,7 +80,8 @@
 
 <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
 	<!-- Mesh gradient -->
-	<div class="absolute inset-0
+	<div
+		class="absolute inset-0
 		[background:radial-gradient(ellipse_70%_55%_at_10%_20%,oklch(0.8265_0.1252_63.82/0.50),transparent_100%),radial-gradient(ellipse_65%_55%_at_90%_80%,oklch(0.8443_0.0767_264.39/0.90),transparent_55%),radial-gradient(ellipse_80%_70%_at_60%_40%,oklch(0.9352_0.0417_61.46/0.25),transparent_60%)]
 		dark:[background:radial-gradient(ellipse_70%_55%_at_18%_18%,oklch(0.8265_0.1252_63.82/0.20),transparent_100%),radial-gradient(ellipse_75%_65%_at_82%_82%,oklch(0.8443_0.0767_264.39/0.20),transparent_70%),radial-gradient(ellipse_60%_50%_at_55%_45%,oklch(0.9352_0.0417_61.46/0.1),transparent_55%)]"
 	></div>
@@ -89,18 +90,18 @@
 <Sidebar.Provider>
 	<AppSidebar {navLinks} user={data.user} />
 	<!-- Main wrapper — transparent so html gradient shows through -->
-	<div class="flex min-h-screen w-full flex-col items-center px-4 pb-3 pt-4">
+	<div class="flex min-h-screen w-full flex-col items-center px-4 pt-4 pb-3">
 		<div class="w-full lg:w-5/6 xl:w-2/3">
 			<!-- Mobile nav — glass pill -->
 			<nav
-				class="flex justify-between items-center md:hidden sticky p-1.5 top-2 rounded-full z-40
-				     bg-background/50 backdrop-blur-xl
-				       border border-white/60 dark:border-white/10
-				       shadow-lg shadow-black/5 dark:shadow-black/30"
+				class="sticky top-2 z-40 flex items-center justify-between rounded-full border border-white/60
+				     bg-background/50 p-1.5
+				       shadow-lg shadow-black/5 backdrop-blur-xl
+				       md:hidden dark:border-white/10 dark:shadow-black/30"
 			>
 				<Sidebar.Trigger />
-				<a href={resolve("/")}>
-					<img src={brand} alt="phoXiv" class="h-6 brightness-85 dark:brightness-100"/>	
+				<a href={resolve('/')}>
+					<img src={brand} alt="phoXiv" class="h-6 brightness-85 dark:brightness-100" />
 				</a>
 				<button
 					onclick={() => (searchOpen = true)}
@@ -113,21 +114,21 @@
 
 			<!-- Desktop nav — glass pill -->
 			<nav
-				class="hidden flex-row flex-wrap items-center justify-between gap-2 md:flex sticky p-1.5 top-2 z-40
-				       rounded-full
-				       bg-white/45 dark:bg-white/5
-				       backdrop-blur-xl
-				       border border-white/65 dark:border-white/10
-				       shadow-lg shadow-violet-500/5 dark:shadow-black/40
-				       ring-1 ring-inset ring-white/50 dark:ring-white/5"
+				class="sticky top-2 z-40 hidden flex-row flex-wrap items-center justify-between gap-2 rounded-full border
+				       border-white/65
+				       bg-white/45 p-1.5
+				       shadow-lg
+				       ring-1 shadow-violet-500/5 ring-white/50
+				       backdrop-blur-xl ring-inset md:flex
+				       dark:border-white/10 dark:bg-white/5 dark:shadow-black/40 dark:ring-white/5"
 			>
 				<NavigationMenu.Root>
 					<NavigationMenu.List class="gap-1 sm:gap-2">
 						{#each navLinks as navLink (navLink.url)}
 							<NavLink url={navLink.url} label={navLink.label} />
 						{/each}
-						{#if data?.user?.role == "admin"}
-							<NavLink url={resolve("/admin")} label="admin" />
+						{#if data?.user?.role == 'admin'}
+							<NavLink url={resolve('/admin')} label="admin" />
 						{/if}
 					</NavigationMenu.List>
 				</NavigationMenu.Root>
@@ -136,9 +137,9 @@
 						onclick={() => (searchOpen = true)}
 						class="{buttonVariants({
 							variant: 'ghost'
-						})} items-center gap-2 text-sm text-muted-foreground
-						       bg-white/30 dark:bg-white/5 border border-white/50 dark:border-white/10
-						       hover:bg-white/50 dark:hover:bg-white/10"
+						})} items-center gap-2 border border-white/50
+						       bg-white/30 text-sm text-muted-foreground hover:bg-white/50 dark:border-white/10
+						       dark:bg-white/5 dark:hover:bg-white/10"
 						aria-label="Search problems"
 					>
 						<Search class="size-4" />

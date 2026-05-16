@@ -10,7 +10,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { toast } from 'svelte-sonner';
 	import { resolve } from '$app/paths';
-	import SvelteSeo from "svelte-seo";
+	import SvelteSeo from 'svelte-seo';
 
 	let { data, params, form }: PageProps = $props();
 
@@ -85,7 +85,10 @@
 	}
 </script>
 
-<SvelteSeo title="{params.olympiad} {params.year}" description="Modify {params.olympiad} {params.year}"/>
+<SvelteSeo
+	title="{params.olympiad} {params.year}"
+	description="Modify {params.olympiad} {params.year}"
+/>
 
 <a
 	href={resolve('/contribute')}
@@ -120,7 +123,7 @@
 			use:enhance={() => {
 				savingMetadata = true;
 				return async ({ update }) => {
-					// update() normally invalidates data and resets the form. 
+					// update() normally invalidates data and resets the form.
 					// We pass { reset: false } to keep the user's input intact.
 					savingMetadata = false;
 					await update({ reset: false });
@@ -132,7 +135,9 @@
 			<Card.Root>
 				<Card.Header class="border-b">
 					<Card.Title>Notes</Card.Title>
-					<Card.Description>Short notices shown above the file links for this year.</Card.Description>
+					<Card.Description
+						>Short notices shown above the file links for this year.</Card.Description
+					>
 				</Card.Header>
 				<Card.Content class="flex flex-col gap-3">
 					{#each notes as note, i (note.id)}
@@ -192,7 +197,9 @@
 				<Card.Header class="border-b">
 					<Card.Title>Problems</Card.Title>
 					<Card.Description>
-						Define the problems for this year. Removing a problem <span class="font-bold text-sm">or changing the problem number</span> will delete all its associated file records.
+						Define the problems for this year. Removing a problem <span class="text-sm font-bold"
+							>or changing the problem number</span
+						> will delete all its associated file records.
 					</Card.Description>
 				</Card.Header>
 				<Card.Content class="flex flex-col gap-3">
@@ -245,31 +252,29 @@
 					{#if existingFiles.length > 0}
 						<div class="flex flex-col gap-2">
 							{#each existingFiles as file (file.label)}
-								<div class="flex flex-col sm:flex-row items-center gap-2 rounded-xl border border-border bg-muted/30 p-3">
+								<div
+									class="flex flex-col items-center gap-2 rounded-xl border border-border bg-muted/30 p-3 sm:flex-row"
+								>
 									<span class="flex-1 text-sm font-medium">{file.label}</span>
 									<div class="flex flex-row">
-									<a
-										href={file.url}
-										target="_blank"
-										class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
-									>
-										<ExternalLink class="size-3" /> View
-									</a>
-									<form
-										method="POST"
-										action="?/deleteFile"
-										use:enhance
-									>
-										<input type="hidden" name="scope" value={scope} />
-										<input type="hidden" name="label" value={file.label} />
-										{#if problemNumber}
-											<input type="hidden" name="problemNumber" value={problemNumber} />
-										{/if}
-										<input type="hidden" name="url" value={file.url} />
-										<Button type="submit" variant="ghost" size="icon-sm">
-											<Trash2 class="size-3.5 text-destructive" />
-										</Button>
-									</form>
+										<a
+											href={file.url}
+											target="_blank"
+											class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+										>
+											<ExternalLink class="size-3" /> View
+										</a>
+										<form method="POST" action="?/deleteFile" use:enhance>
+											<input type="hidden" name="scope" value={scope} />
+											<input type="hidden" name="label" value={file.label} />
+											{#if problemNumber}
+												<input type="hidden" name="problemNumber" value={problemNumber} />
+											{/if}
+											<input type="hidden" name="url" value={file.url} />
+											<Button type="submit" variant="ghost" size="icon-sm">
+												<Trash2 class="size-3.5 text-destructive" />
+											</Button>
+										</form>
 									</div>
 								</div>
 							{/each}
@@ -308,7 +313,8 @@
 								bind:value={newFileLabel[problemNumber ?? 'year']}
 								placeholder="e.g. Problems, Solutions, Marking Scheme…"
 								required
-								pattern="[^\/]*" // don't allow forward slashes to prevent conflicts
+								pattern="[^\/]*"
+								// don't allow forward slashes to prevent conflicts
 								class="h-9 w-full rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
 							/>
 						</div>

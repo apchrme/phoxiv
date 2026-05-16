@@ -175,16 +175,16 @@ html.dark {
    Global glass effects — backdrop-filter on panels
    ================================================ */
 
-[data-slot="dropdown-menu-content"],
-[data-slot="select-content"],
-[data-slot="combobox-content"],
-[data-slot="tooltip-content"],
-[data-slot="navigation-menu-viewport"] {
+[data-slot='dropdown-menu-content'],
+[data-slot='select-content'],
+[data-slot='combobox-content'],
+[data-slot='tooltip-content'],
+[data-slot='navigation-menu-viewport'] {
 	backdrop-filter: blur(20px) saturate(180%);
 	-webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
-[data-slot="sheet-content"] {
+[data-slot='sheet-content'] {
 	backdrop-filter: blur(24px) saturate(180%);
 	-webkit-backdrop-filter: blur(24px) saturate(180%);
 }
@@ -215,42 +215,22 @@ html.dark {
 
 /* Base glass panel — bg, border, shadow, ring (no blur; add per-element) */
 @utility glass-panel {
-	@apply bg-white/55 dark:bg-white/6
-		border border-white/70 dark:border-white/10
-		shadow-md shadow-black/5 dark:shadow-black/20
-		ring-1 ring-inset ring-white/50 dark:ring-white/5;
+	@apply border border-white/70 bg-white/55 shadow-md ring-1 shadow-black/5 ring-white/50 ring-inset dark:border-white/10 dark:bg-white/6 dark:shadow-black/20 dark:ring-white/5;
 }
 
 /* Interactive card — adds cursor, transition, hover lift + tint */
 @utility glass-card-hoverable {
-	@apply cursor-pointer transition-all duration-300
-		hover:bg-white/70 dark:hover:bg-white/10
-		hover:shadow-xl hover:shadow-primary/10 dark:hover:shadow-primary/10
-		hover:border-primary/30 dark:hover:border-primary/25
-		hover:-translate-y-2;
+	@apply cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:border-primary/30 hover:bg-white/70 hover:shadow-xl hover:shadow-primary/10 dark:hover:border-primary/25 dark:hover:bg-white/10 dark:hover:shadow-primary/10;
 }
 
 /* Small inner panel — problem tiles, sub-cards */
 @utility glass-inner-card {
-	@apply flex flex-col gap-3 rounded-xl p-4
-		bg-white/40 dark:bg-white/5
-		border border-white/60 dark:border-white/8
-		shadow-sm shadow-black/5 dark:shadow-black/15;
+	@apply flex flex-col gap-3 rounded-xl border border-white/60 bg-white/40 p-4 shadow-sm shadow-black/5 dark:border-white/8 dark:bg-white/5 dark:shadow-black/15;
 }
 
 /* Blog post link card */
 @utility glass-post-link {
-	@apply rounded-2xl
-		bg-white/50 dark:bg-white/5
-		border border-white/65 dark:border-white/10
-		backdrop-blur-md
-		shadow-sm shadow-black/5 dark:shadow-black/20
-		ring-1 ring-inset ring-white/40 dark:ring-white/5
-		transition-all duration-200
-		hover:bg-white/65 dark:hover:bg-white/8
-		hover:shadow-md hover:shadow-primary/8 dark:hover:shadow-primary/10
-		hover:border-primary/25 dark:hover:border-primary/20
-		hover:-translate-y-0.5;
+	@apply rounded-2xl border border-white/65 bg-white/50 shadow-sm ring-1 shadow-black/5 ring-white/40 backdrop-blur-md transition-all duration-200 ring-inset hover:-translate-y-0.5 hover:border-primary/25 hover:bg-white/65 hover:shadow-md hover:shadow-primary/8 dark:border-white/10 dark:bg-white/5 dark:shadow-black/20 dark:ring-white/5 dark:hover:border-primary/20 dark:hover:bg-white/8 dark:hover:shadow-primary/10;
 }
 
 /* ================================================
@@ -259,42 +239,60 @@ html.dark {
 
 @custom-variant data-open {
 	&:where([data-state='open']),
-	&:where([data-open]:not([data-open='false'])) { @slot; }
+	&:where([data-open]:not([data-open='false'])) {
+		@slot;
+	}
 }
 
 @custom-variant data-closed {
 	&:where([data-state='closed']),
-	&:where([data-closed]:not([data-closed='false'])) { @slot; }
+	&:where([data-closed]:not([data-closed='false'])) {
+		@slot;
+	}
 }
 
 @custom-variant data-checked {
 	&:where([data-state='checked']),
-	&:where([data-checked]:not([data-checked='false'])) { @slot; }
+	&:where([data-checked]:not([data-checked='false'])) {
+		@slot;
+	}
 }
 
 @custom-variant data-unchecked {
 	&:where([data-state='unchecked']),
-	&:where([data-unchecked]:not([data-unchecked='false'])) { @slot; }
+	&:where([data-unchecked]:not([data-unchecked='false'])) {
+		@slot;
+	}
 }
 
 @custom-variant data-selected {
-	&:where([data-selected]) { @slot; }
+	&:where([data-selected]) {
+		@slot;
+	}
 }
 
 @custom-variant data-disabled {
 	&:where([data-disabled='true']),
-	&:where([data-disabled]:not([data-disabled='false'])) { @slot; }
+	&:where([data-disabled]:not([data-disabled='false'])) {
+		@slot;
+	}
 }
 
 @custom-variant data-active {
 	&:where([data-state='active']),
-	&:where([data-active]:not([data-active='false'])) { @slot; }
+	&:where([data-active]:not([data-active='false'])) {
+		@slot;
+	}
 }
 
 @custom-variant data-horizontal {
-	&:where([data-orientation='horizontal']) { @slot; }
+	&:where([data-orientation='horizontal']) {
+		@slot;
+	}
 }
 
 @custom-variant data-vertical {
-	&:where([data-orientation='vertical']) { @slot; }
+	&:where([data-orientation='vertical']) {
+		@slot;
+	}
 }

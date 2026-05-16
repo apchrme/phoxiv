@@ -33,7 +33,6 @@ bunx wrangler d1 execute DB --file=src/lib/pregen/seed.sql
 
 Put `0001_..._.sql` back into the folder.
 
-
 ```sh
 # clean up file types
 bunx wrangler d1 execute DB --file=src/lib/pregen/convertFileType.sql

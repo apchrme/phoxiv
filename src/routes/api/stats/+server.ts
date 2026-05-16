@@ -2,7 +2,6 @@ import { count } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { olympiads, years, problemFiles, yearFiles } from '$lib/server/db/schema.js';
 
-
 export const GET = async ({ locals, setHeaders }) => {
 	const db = locals.db;
 
@@ -21,8 +20,8 @@ export const GET = async ({ locals, setHeaders }) => {
 	});
 
 	return json({
-			olympiads: olympiadCount.value,
-			years: yearCount.value,
-			files: yearFileCount.value + problemFileCount.value
-		});
+		olympiads: olympiadCount.value,
+		years: yearCount.value,
+		files: yearFileCount.value + problemFileCount.value
+	});
 };

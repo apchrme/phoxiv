@@ -8,9 +8,7 @@
 	"main": ".svelte-kit/cloudflare/_worker.js",
 	"workers_dev": true,
 	"preview_urls": true,
-	"compatibility_flags": [
-		"nodejs_compat"
-	],
+	"compatibility_flags": ["nodejs_compat"],
 	"compatibility_date": "2026-04-24",
 	"assets": {
 		"binding": "ASSETS",

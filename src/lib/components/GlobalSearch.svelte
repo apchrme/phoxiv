@@ -105,7 +105,11 @@
 	function onWindowKeydown(e: KeyboardEvent) {
 		if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
 			e.preventDefault();
-			if (open) { closeSearch(); } else { openSearch(); }
+			if (open) {
+				closeSearch();
+			} else {
+				openSearch();
+			}
 			return;
 		}
 		if (!open) return;
@@ -131,8 +135,8 @@
 	<Dialog.Portal>
 		<!-- Backdrop -->
 		<Dialog.Overlay
-			class="fixed inset-0 z-50 bg-white/30 dark:bg-black/30
-			       backdrop-blur-md
+			class="fixed inset-0 z-50 bg-white/30 backdrop-blur-md
+			       dark:bg-black/30
 			       data-open:animate-in data-open:duration-150 data-open:fade-in-0
 			       data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0"
 		/>
@@ -143,13 +147,20 @@
 					glass-panel md:backdrop-blur-lg
 				       data-open:animate-in data-open:duration-200 data-open:fade-in-0 data-open:zoom-in-[0.97]
 				       data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0 data-closed:zoom-out-[0.97]"
-				onOpenAutoFocus={(e) => { e.preventDefault(); inputEl?.focus(); }}
-				onCloseAutoFocus={(e) => { e.preventDefault(); }}
+				onOpenAutoFocus={(e) => {
+					e.preventDefault();
+					inputEl?.focus();
+				}}
+				onCloseAutoFocus={(e) => {
+					e.preventDefault();
+				}}
 			>
 				<Dialog.Title class="sr-only">Search problems</Dialog.Title>
 
 				<!-- Input row -->
-				<div class="flex items-center gap-3 border-b border-white/50 dark:border-white/10 px-4 py-3">
+				<div
+					class="flex items-center gap-3 border-b border-white/50 px-4 py-3 dark:border-white/10"
+				>
 					<Search class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 					<input
 						bind:this={inputEl}
@@ -159,8 +170,9 @@
 						class="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
 					/>
 					<Dialog.Close
-						class={cn(buttonVariants({ variant: 'ghost', size: 'icon' }),
-							'bg-white/30 dark:bg-white/5 border border-white/50 dark:border-white/10 hover:bg-white/50'
+						class={cn(
+							buttonVariants({ variant: 'ghost', size: 'icon' }),
+							'border border-white/50 bg-white/30 hover:bg-white/50 dark:border-white/10 dark:bg-white/5'
 						)}
 						aria-label="Close search"
 					>
@@ -175,7 +187,7 @@
 							<p class="text-center text-sm text-muted-foreground">Loading search index…</p>
 						</div>
 					{:else if !query.trim()}
-						<div class="m-auto px-5 flex flex-col gap-2">
+						<div class="m-auto flex flex-col gap-2 px-5">
 							<p class="text-center text-sm text-muted-foreground">
 								Type to search for problems across all olympiads…
 							</p>
@@ -193,10 +205,13 @@
 								<li>
 									<a
 										href={resolve(`/olympiads/${item.olympiadId}#${item.year}`)}
-										onclick={(e) => { e.preventDefault(); navigateTo(item); }}
+										onclick={(e) => {
+											e.preventDefault();
+											navigateTo(item);
+										}}
 										onmousemove={() => (focusedIndex = i)}
 										class={cn(
-											'flex flex-col gap-1.5 border-b border-white/40 dark:border-white/8 px-4 py-3 transition-all duration-150 last:border-0',
+											'flex flex-col gap-1.5 border-b border-white/40 px-4 py-3 transition-all duration-150 last:border-0 dark:border-white/8',
 											i === focusedIndex
 												? 'bg-white/50 dark:bg-white/8'
 												: 'hover:bg-white/35 dark:hover:bg-white/5'
@@ -259,8 +274,8 @@
 
 				<!-- Footer hints -->
 				<div
-					class="hidden items-center gap-4 border-t border-white/50 dark:border-white/10 px-4 py-2.5 text-xs text-muted-foreground md:flex
-					       bg-white/20 dark:bg-white/3"
+					class="hidden items-center gap-4 border-t border-white/50 bg-white/20 px-4 py-2.5 text-xs text-muted-foreground md:flex
+					       dark:border-white/10 dark:bg-white/3"
 				>
 					<span><Kbd.Root>↑↓</Kbd.Root> navigate</span>
 					<span><Kbd.Root>↵</Kbd.Root> go to year</span>

@@ -10,7 +10,7 @@ const files: FilesJson = JSON.parse(
 );
 
 // R2 CDN base — must match your actual CDN URL
-const CDN_BASE = "https://cdn.phoxiv.org/";
+const CDN_BASE = 'https://cdn.phoxiv.org/';
 
 const lines: string[] = ['PRAGMA foreign_keys = ON;'];
 
