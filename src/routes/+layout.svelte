@@ -96,7 +96,7 @@
 			<nav
 				class="sticky top-2 z-40 flex items-center justify-between rounded-full border border-white/60
 				     bg-background/50 p-1.5
-				       shadow-lg shadow-black/5 backdrop-blur-xl
+				       shadow-lg shadow-black/5
 				       md:hidden dark:border-white/10 dark:shadow-black/30"
 			>
 				<Sidebar.Trigger />
