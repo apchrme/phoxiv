@@ -61,7 +61,7 @@
 	<div class="hero-text relative z-10 flex min-w-0 flex-1 flex-col justify-center gap-7">
 		<!-- Title -->
 		<div class="flex flex-col gap-1">
-			<img src={brand} alt="phoXiv" class="w-3/4"/>
+			<img src={brand} alt="phoXiv" class="w-3/4 brightness-85 dark:brightness-100"/>
 			<span class="font-mono text-sm tracking-[0.02em] text-muted-foreground"
 				>/ foʊkaɪv /</span
 			>
@@ -145,17 +145,11 @@
 			class="relative flex h-[clamp(16rem,28vw,26rem)] w-[clamp(16rem,28vw,26rem)] items-center justify-center [transition:transform_0.08s_ease-out] transform-3d"
 			style="transform: perspective(900px) rotateX({rotX}deg) rotateY({rotY}deg);"
 		>
-			<!-- Glow ring behind logo -->
-			<div
-				class="absolute inset-0 transform-[translateZ(-20px)] rounded-full
-				       [background:radial-gradient(circle_at_center,color-mix(in_oklab,var(--primary)_35%,transparent),transparent_55%)]"
-			></div>
-
 			<!-- Logo -->
 			<img
 				src={logo}
 				alt=""
-				class="pointer-events-none h-full w-full transform-[translateZ(30px)] object-contain opacity-85 dark:opacity-65 select-none"
+				class="pointer-events-none h-full w-full transform-[translateZ(30px)] object-contain brightness-85 dark:brightness-100 select-none"
 			/>
 		</div>
 	</div>

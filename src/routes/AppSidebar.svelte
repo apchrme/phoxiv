@@ -62,7 +62,7 @@
 					</div>
 				</a>
 			{:else}
-				<!-- Logged-out: phoXiv branding -->
+				<!-- Logged-out: Log in button -->
 				<Sidebar.Menu>
 					<Sidebar.MenuItem>
 						<Sidebar.MenuButton class="data-[active=true]:dark:bg-white/20 data-[active=true]:bg-black/20 hover:bg-black/10 hover:dark:bg-white/10">

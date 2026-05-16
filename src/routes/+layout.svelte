@@ -71,7 +71,7 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href="/logo.svg?v=3" />
+	<link rel="icon" href="/logo.svg?v=4" />
 </svelte:head>
 
 <ModeWatcher />
@@ -81,13 +81,9 @@
 <div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
 	<!-- Mesh gradient -->
 	<div class="absolute inset-0
-		[background:radial-gradient(ellipse_70%_55%_at_10%_20%,oklch(82%_0.13_308_/_0.38),transparent_55%),radial-gradient(ellipse_65%_55%_at_90%_80%,oklch(76%_0.12_242_/_0.38),transparent_55%),radial-gradient(ellipse_80%_70%_at_60%_40%,oklch(88%_0.07_275_/_0.25),transparent_60%)]
-		dark:[background:radial-gradient(ellipse_70%_55%_at_18%_18%,oklch(30%_0.13_298_/_0.55),transparent_52%),radial-gradient(ellipse_65%_55%_at_82%_82%,oklch(24%_0.09_258_/_0.55),transparent_52%),radial-gradient(ellipse_60%_50%_at_55%_45%,oklch(26%_0.08_278_/_0.3),transparent_55%)]"
+		[background:radial-gradient(ellipse_70%_55%_at_10%_20%,oklch(0.8265_0.1252_63.82/0.50),transparent_100%),radial-gradient(ellipse_65%_55%_at_90%_80%,oklch(0.8443_0.0767_264.39/0.90),transparent_55%),radial-gradient(ellipse_80%_70%_at_60%_40%,oklch(0.9352_0.0417_61.46/0.25),transparent_60%)]
+		dark:[background:radial-gradient(ellipse_70%_55%_at_18%_18%,oklch(0.8265_0.1252_63.82/0.20),transparent_100%),radial-gradient(ellipse_75%_65%_at_82%_82%,oklch(0.8443_0.0767_264.39/0.20),transparent_70%),radial-gradient(ellipse_60%_50%_at_55%_45%,oklch(0.9352_0.0417_61.46/0.1),transparent_55%)]"
 	></div>
-	<!-- Static accent blobs — no animation, no repaints -->
-	<div class="absolute -top-40 -left-40 h-[32rem] w-[32rem] rounded-full bg-violet-400/20 blur-[80px] dark:bg-violet-500/12"></div>
-	<div class="absolute top-1/3 -right-48 h-[28rem] w-[28rem] rounded-full bg-sky-400/15 blur-[80px] dark:bg-sky-500/10"></div>
-	<div class="absolute -bottom-32 left-1/4 h-[26rem] w-[26rem] rounded-full bg-pink-400/12 blur-[80px] dark:bg-purple-500/8"></div>
 </div>
 
 <Sidebar.Provider>
@@ -104,7 +100,7 @@
 			>
 				<Sidebar.Trigger />
 				<a href={resolve("/")}>
-					<img src={brand} alt="phoXiv" class="h-6 opacity-80"/>	
+					<img src={brand} alt="phoXiv" class="h-6 brightness-85 dark:brightness-100"/>	
 				</a>
 				<button
 					onclick={() => (searchOpen = true)}
