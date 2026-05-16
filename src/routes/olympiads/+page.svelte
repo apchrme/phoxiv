@@ -23,7 +23,7 @@
 
 	onMount(async () => {
 		olympiads = await (await fetch('/api/olympiads')).json();
-		// await new Promise((f) => setTimeout(f, 1000));
+		// await new Promise((f) => setTimeout(f, 5000));
 		olympiadsLoading = false;
 	});
 

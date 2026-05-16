@@ -7,11 +7,11 @@
 </script>
 
 {#if mode.current == 'dark'}
-	<Button variant="outline" size="icon-lg" href="https://discord.gg/SNBDY5nsgf" target="_blank"
-		><img alt="Discord" src={DiscordWhite} class="scale-50 opacity-75" /></Button
+	<Button variant="outline" size="icon" href="https://discord.gg/SNBDY5nsgf" target="_blank"
+		><img alt="Discord" src={DiscordWhite} class="scale-60 opacity-75" /></Button
 	>
 {:else}
-	<Button variant="outline" size="icon-lg" href="https://discord.gg/SNBDY5nsgf" target="_blank"
-		><img alt="Discord" src={DiscordBlack} class="scale-50 opacity-75" /></Button
+	<Button variant="outline" size="icon" href="https://discord.gg/SNBDY5nsgf" target="_blank"
+		><img alt="Discord" src={DiscordBlack} class="scale-60 opacity-75" /></Button
 	>
 {/if}

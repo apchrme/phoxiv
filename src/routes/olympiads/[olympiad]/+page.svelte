@@ -9,7 +9,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import SvelteSeo from 'svelte-seo';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
 	let { data }: PageProps = $props();
@@ -22,6 +22,13 @@
 		olympiadFiles = await (await fetch(`/api/olympiads/${olympiad.id}`)).json();
 		// await new Promise((f) => setTimeout(f, 1000));
 		olympiadFilesLoading = false;
+
+		// Scroll to anchor after data renders
+		const hash = window.location.hash;
+		if (hash) {
+			await tick(); // wait for Svelte to render the new state
+			document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' });
+		}
 	});
 
 	let query = $state('');

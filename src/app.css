@@ -15,10 +15,9 @@
 :root {
 	--radius: 0.75rem;
 
-	--background: oklch(96.13% 0.009 247.88); /* Base      #eff1f5 */
+	--background: oklch(96.13% 0.009 247.88);
 	--foreground: oklch(35% 0.02 264);
 
-	/* Glass panels — semi-transparent with blur */
 	--card: oklch(99% 0.004 250 / 0.72);
 	--card-foreground: oklch(35% 0.02 264);
 
@@ -40,7 +39,6 @@
 	--destructive: oklch(44.49% 0.196 18.61);
 	--destructive-foreground: oklch(97% 0.006 250);
 
-	/* Glass borders — translucent white */
 	--border: oklch(85% 0.01 258 / 0.55);
 	--input: oklch(82% 0.012 256 / 0.65);
 	--ring: oklch(51.05% 0.231 292.72);
@@ -51,7 +49,6 @@
 	--chart-4: oklch(66.54% 0.148 68.5);
 	--chart-5: oklch(54.89% 0.121 195.61);
 
-	/* Sidebar — glass panel */
 	--sidebar: oklch(99% 0.005 248 / 0.78);
 	--sidebar-foreground: oklch(35% 0.02 264);
 	--sidebar-primary: oklch(51.05% 0.231 292.72);
@@ -60,6 +57,33 @@
 	--sidebar-accent-foreground: oklch(35% 0.02 264);
 	--sidebar-border: oklch(85% 0.01 258 / 0.4);
 	--sidebar-ring: oklch(51.05% 0.231 292.72);
+
+	/* ---- Glass colors ---- */
+
+	/* Panel (Card, Dialog) */
+	--glass-bg:                oklch(100% 0 0 / 0.55);
+	--glass-border:            oklch(100% 0 0 / 0.70);
+	--glass-ring:              oklch(100% 0 0 / 0.50);
+	--glass-shadow:            oklch(0% 0 0 / 0.05);
+
+	/* Inner card (problem tiles) */
+	--glass-inner-bg:          oklch(100% 0 0 / 0.40);
+	--glass-inner-border:      oklch(100% 0 0 / 0.60);
+	--glass-inner-shadow:      oklch(0% 0 0 / 0.05);
+
+	/* Blog post link */
+	--glass-post-bg:           oklch(100% 0 0 / 0.50);
+	--glass-post-border:       oklch(100% 0 0 / 0.65);
+	--glass-post-ring:         oklch(100% 0 0 / 0.40);
+	--glass-post-shadow:       oklch(0% 0 0 / 0.05);
+	--glass-post-hover-bg:     oklch(100% 0 0 / 0.65);
+	--glass-post-hover-border: color-mix(in oklch, var(--primary) 25%, transparent);
+	--glass-post-hover-shadow: color-mix(in oklch, var(--primary) 8%,  transparent);
+
+	/* Hoverable card */
+	--glass-hover-bg:          oklch(100% 0 0 / 0.70);
+	--glass-hover-border:      color-mix(in oklch, var(--primary) 30%, transparent);
+	--glass-hover-shadow:      color-mix(in oklch, var(--primary) 10%, transparent);
 }
 
 /* ================================================
@@ -68,10 +92,9 @@
 .dark {
 	--radius: 0.75rem;
 
-	--background: oklch(19.85% 0.014 285.75); /* Base      #1e1e2e */
+	--background: oklch(19.85% 0.014 285.75);
 	--foreground: oklch(87% 0.03 257);
 
-	/* Dark glass panels */
 	--card: oklch(21% 0.016 278 / 0.55);
 	--card-foreground: oklch(87% 0.03 257);
 
@@ -93,7 +116,6 @@
 	--destructive: oklch(75.16% 0.122 11.9);
 	--destructive-foreground: oklch(19% 0.014 286);
 
-	/* Glass borders — subtle luminous white */
 	--border: oklch(60% 0.01 270 / 0.15);
 	--input: oklch(55% 0.012 272 / 0.22);
 	--ring: oklch(74.19% 0.146 303.9);
@@ -104,7 +126,6 @@
 	--chart-4: oklch(92.36% 0.09 93.39);
 	--chart-5: oklch(86.63% 0.078 186.6);
 
-	/* Sidebar — dark glass */
 	--sidebar: oklch(13% 0.016 284 / 0.82);
 	--sidebar-foreground: oklch(87% 0.03 257);
 	--sidebar-primary: oklch(74.19% 0.146 303.9);
@@ -113,6 +134,29 @@
 	--sidebar-accent-foreground: oklch(87% 0.03 257);
 	--sidebar-border: oklch(60% 0.01 270 / 0.12);
 	--sidebar-ring: oklch(74.19% 0.146 303.9);
+
+	/* ---- Glass colors (dark overrides) ---- */
+
+	--glass-bg:                oklch(100% 0 0 / 0.06);
+	--glass-border:            oklch(100% 0 0 / 0.10);
+	--glass-ring:              oklch(100% 0 0 / 0.05);
+	--glass-shadow:            oklch(0% 0 0 / 0.20);
+
+	--glass-inner-bg:          oklch(100% 0 0 / 0.05);
+	--glass-inner-border:      oklch(100% 0 0 / 0.08);
+	--glass-inner-shadow:      oklch(0% 0 0 / 0.15);
+
+	--glass-post-bg:           oklch(100% 0 0 / 0.05);
+	--glass-post-border:       oklch(100% 0 0 / 0.10);
+	--glass-post-ring:         oklch(100% 0 0 / 0.05);
+	--glass-post-shadow:       oklch(0% 0 0 / 0.20);
+	--glass-post-hover-bg:     oklch(100% 0 0 / 0.08);
+	--glass-post-hover-border: color-mix(in oklch, var(--primary) 20%, transparent);
+	--glass-post-hover-shadow: color-mix(in oklch, var(--primary) 10%, transparent);
+
+	--glass-hover-bg:          oklch(100% 0 0 / 0.10);
+	--glass-hover-border:      color-mix(in oklch, var(--primary) 25%, transparent);
+	--glass-hover-shadow:      color-mix(in oklch, var(--primary) 10%, transparent);
 }
 
 @theme inline {
@@ -156,11 +200,30 @@
 	--radius-2xl: calc(var(--radius) * 1.8);
 	--radius-3xl: calc(var(--radius) * 2.2);
 	--radius-4xl: calc(var(--radius) * 2.6);
+
+	/* Glass color tokens — usable as bg-glass-*, border-glass-*, shadow-glass-*, etc. */
+	--color-glass-bg:                var(--glass-bg);
+	--color-glass-border:            var(--glass-border);
+	--color-glass-ring:              var(--glass-ring);
+	--color-glass-shadow:            var(--glass-shadow);
+
+	--color-glass-inner-bg:          var(--glass-inner-bg);
+	--color-glass-inner-border:      var(--glass-inner-border);
+	--color-glass-inner-shadow:      var(--glass-inner-shadow);
+
+	--color-glass-post-bg:           var(--glass-post-bg);
+	--color-glass-post-border:       var(--glass-post-border);
+	--color-glass-post-ring:         var(--glass-post-ring);
+	--color-glass-post-shadow:       var(--glass-post-shadow);
+	--color-glass-post-hover-bg:     var(--glass-post-hover-bg);
+	--color-glass-post-hover-border: var(--glass-post-hover-border);
+	--color-glass-post-hover-shadow: var(--glass-post-hover-shadow);
+
+	--color-glass-hover-bg:          var(--glass-hover-bg);
+	--color-glass-hover-border:      var(--glass-hover-border);
+	--color-glass-hover-shadow:      var(--glass-hover-shadow);
 }
 
-/* ================================================
-   HTML base colour — the gradient lives in a fixed <div> in the layout.
-   ================================================ */
 html {
 	background: oklch(95% 0.008 258);
 	min-height: 100%;
@@ -211,26 +274,72 @@ html.dark {
 
 /* ================================================
    Glass utility classes
+   All colors reference CSS custom properties defined
+   in :root / .dark above — edit there to restyle.
    ================================================ */
 
-/* Base glass panel — bg, border, shadow, ring (no blur; add per-element) */
+/* Base glass panel — bg, border, shadow, ring */
 @utility glass-panel {
-	@apply border border-white/70 bg-white/55 shadow-md ring-1 shadow-black/5 ring-white/50 ring-inset dark:border-white/10 dark:bg-white/6 dark:shadow-black/20 dark:ring-white/5;
+	background-color: var(--glass-bg);
+	border: 1px solid var(--glass-border);
+	box-shadow:
+		0 4px 6px -1px var(--glass-shadow),
+		0 2px 4px -2px var(--glass-shadow),
+		inset 0 0 0 1px var(--glass-ring);
 }
 
-/* Interactive card — adds cursor, transition, hover lift + tint */
+/* Hover lift added on top of glass-panel (olympiad index cards) */
 @utility glass-card-hoverable {
-	@apply cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:border-primary/30 hover:bg-white/70 hover:shadow-xl hover:shadow-primary/10 dark:hover:border-primary/25 dark:hover:bg-white/10 dark:hover:shadow-primary/10;
+	cursor: pointer;
+	transition: all 0.3s;
+
+	&:hover {
+		background-color: var(--glass-hover-bg);
+		translate: 0 -0.5rem;
+		border-color: var(--glass-hover-border);
+		box-shadow:
+			0 20px 25px -5px var(--glass-hover-shadow),
+			0 8px 10px -6px var(--glass-hover-shadow),
+			inset 0 0 0 1px var(--glass-ring);
+	}
 }
 
-/* Small inner panel — problem tiles, sub-cards */
+/* Small inner panel — problem tiles */
 @utility glass-inner-card {
-	@apply flex flex-col gap-3 rounded-xl border border-white/60 bg-white/40 p-4 shadow-sm shadow-black/5 dark:border-white/8 dark:bg-white/5 dark:shadow-black/15;
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	border-radius: var(--radius-xl);
+	padding: 1rem;
+	background-color: var(--glass-inner-bg);
+	border: 1px solid var(--glass-inner-border);
+	box-shadow:
+		0 1px 3px 0 var(--glass-inner-shadow),
+		0 1px 2px -1px var(--glass-inner-shadow);
 }
 
 /* Blog post link card */
 @utility glass-post-link {
-	@apply rounded-2xl border border-white/65 bg-white/50 shadow-sm ring-1 shadow-black/5 ring-white/40 backdrop-blur-md transition-all duration-200 ring-inset hover:-translate-y-0.5 hover:border-primary/25 hover:bg-white/65 hover:shadow-md hover:shadow-primary/8 dark:border-white/10 dark:bg-white/5 dark:shadow-black/20 dark:ring-white/5 dark:hover:border-primary/20 dark:hover:bg-white/8 dark:hover:shadow-primary/10;
+	border-radius: var(--radius-2xl);
+	background-color: var(--glass-post-bg);
+	border: 1px solid var(--glass-post-border);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	box-shadow:
+		0 1px 3px 0 var(--glass-post-shadow),
+		0 1px 2px -1px var(--glass-post-shadow),
+		inset 0 0 0 1px var(--glass-post-ring);
+	transition: all 0.2s;
+
+	&:hover {
+		background-color: var(--glass-post-hover-bg);
+		translate: 0 -0.125rem;
+		border-color: var(--glass-post-hover-border);
+		box-shadow:
+			0 4px 6px -1px var(--glass-post-hover-shadow),
+			0 2px 4px -2px var(--glass-post-hover-shadow),
+			inset 0 0 0 1px var(--glass-post-ring);
+	}
 }
 
 /* ================================================
