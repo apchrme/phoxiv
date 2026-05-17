@@ -84,6 +84,19 @@
 	--glass-hover-bg:          oklch(100% 0 0 / 0.70);
 	--glass-hover-border:      color-mix(in oklch, var(--primary) 30%, transparent);
 	--glass-hover-shadow:      color-mix(in oklch, var(--primary) 10%, transparent);
+
+	/* Tabs list container */
+	--glass-tabs-bg:            oklch(100% 0 0 / 0.45);
+	--glass-tabs-border:        oklch(100% 0 0 / 0.60);
+	--glass-tabs-shadow:        oklch(0% 0 0 / 0.04);
+
+	/* Active trigger */
+	--glass-tabs-active-bg:     oklch(100% 0 0 / 0.80);
+	--glass-tabs-active-border: transparent;
+
+	/* Input / InputGroup */
+	--glass-input-bg:           oklch(100% 0 0 / 0.35);
+	--glass-input-border:       oklch(100% 0 0 / 0.65);
 }
 
 /* ================================================
@@ -157,6 +170,19 @@
 	--glass-hover-bg:          oklch(100% 0 0 / 0.10);
 	--glass-hover-border:      color-mix(in oklch, var(--primary) 25%, transparent);
 	--glass-hover-shadow:      color-mix(in oklch, var(--primary) 10%, transparent);
+
+	/* Tabs list container */
+	--glass-tabs-bg:            oklch(100% 0 0 / 0.10);
+	--glass-tabs-border:        oklch(100% 0 0 / 0.12);
+	--glass-tabs-shadow:        oklch(0% 0 0 / 0.20);
+
+	/* Active trigger */
+	--glass-tabs-active-bg:     oklch(100% 0 0 / 0.20);
+	--glass-tabs-active-border: oklch(100% 0 0 / 0.20);
+
+	/* Input / InputGroup */
+	--glass-input-bg:           oklch(100% 0 0 / 0.08);
+	--glass-input-border:       oklch(100% 0 0 / 0.15);
 }
 
 @theme inline {
@@ -222,6 +248,17 @@
 	--color-glass-hover-bg:          var(--glass-hover-bg);
 	--color-glass-hover-border:      var(--glass-hover-border);
 	--color-glass-hover-shadow:      var(--glass-hover-shadow);
+
+	/* Tabs */
+	--color-glass-tabs-bg:            var(--glass-tabs-bg);
+	--color-glass-tabs-border:        var(--glass-tabs-border);
+	--color-glass-tabs-shadow:        var(--glass-tabs-shadow);
+	--color-glass-tabs-active-bg:     var(--glass-tabs-active-bg);
+	--color-glass-tabs-active-border: var(--glass-tabs-active-border);
+
+	/* Input */
+	--color-glass-input-bg:           var(--glass-input-bg);
+	--color-glass-input-border:       var(--glass-input-border);
 }
 
 html {
@@ -323,8 +360,6 @@ html.dark {
 	border-radius: var(--radius-2xl);
 	background-color: var(--glass-post-bg);
 	border: 1px solid var(--glass-post-border);
-	backdrop-filter: blur(12px);
-	-webkit-backdrop-filter: blur(12px);
 	box-shadow:
 		0 1px 3px 0 var(--glass-post-shadow),
 		0 1px 2px -1px var(--glass-post-shadow),

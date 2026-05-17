@@ -35,7 +35,7 @@
 
 <Title
 	title="Contribute"
-	description="This is Houston. Right here, you can edit almost every piece of content on the olympiads page. Note that due to caching, you may not see your changes on the corresponding olympiad pages immediately. Perform a hard reload with Ctrl+F5 to fix it."
+	description="This is Houston. Right here, you can edit almost every piece of content on the olympiads page. Note that due to caching, your changes may only be reflected on the corresponding olympiad pages after a day or so. If you want to see your changes immediately, perform a hard reload with Ctrl+F5."
 />
 
 <Tabs.Root class="mx-auto max-w-xl gap-5" bind:value={initialTab}>
