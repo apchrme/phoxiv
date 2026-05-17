@@ -146,7 +146,7 @@
 		       to-primary/90 px-6 py-5
 		       shadow-lg shadow-primary/20
 		       sm:flex-row
-		       sm:items-center md:backdrop-blur-md"
+		       sm:items-center"
 	>
 		<p class="mb-0 text-sm font-medium text-primary-foreground/90">
 			Want to add problems or new olympiads? Drop me an email!
@@ -156,7 +156,7 @@
 			class="flex shrink-0 flex-row items-center gap-1.5 rounded-xl
 			       border border-white/30 bg-white/20 px-4
 			       py-2 text-sm font-semibold text-primary-foreground transition-all
-			       hover:gap-2.5 hover:bg-white/30 md:backdrop-blur-sm"
+			       hover:gap-2.5 hover:bg-white/30"
 		>
 			Get in touch <ArrowRight class="size-4" />
 		</a>
