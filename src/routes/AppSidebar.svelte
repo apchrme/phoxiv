@@ -34,7 +34,7 @@
 <div class="md:hidden">
 	<Sidebar.Root>
 		<!-- Header: user profile when logged in, phoXiv branding when logged out -->
-		<Sidebar.Header class="bg-muted/40">
+		<Sidebar.Header>
 			{#if user}
 				<!-- Logged-in: profile info -->
 				<a
@@ -64,9 +64,7 @@
 				<!-- Logged-out: Log in button -->
 				<Sidebar.Menu>
 					<Sidebar.MenuItem>
-						<Sidebar.MenuButton
-							class="hover:bg-black/10 data-[active=true]:bg-black/20 hover:dark:bg-white/10 data-[active=true]:dark:bg-white/20"
-						>
+						<Sidebar.MenuButton>
 							{#snippet child({ props })}
 								<a href={resolve('/login')} {...props} onclick={() => sidebar.toggle()}>
 									<LogIn />
@@ -88,11 +86,7 @@
 						{#each navLinks as navLink (navLink.url)}
 							{@const Icon = iconMap[navLink.url]}
 							<Sidebar.MenuItem>
-								<Sidebar.MenuButton
-									isActive={isActive(navLink.url)}
-									size="lg"
-									class="hover:bg-black/10 data-[active=true]:bg-black/20 hover:dark:bg-white/10 data-[active=true]:dark:bg-white/20"
-								>
+								<Sidebar.MenuButton isActive={isActive(navLink.url)} size="lg">
 									{#snippet child({ props })}
 										<a href={navLink.url} {...props} onclick={() => sidebar.toggle()}>
 											{#if Icon}

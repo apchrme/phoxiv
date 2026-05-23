@@ -94,10 +94,13 @@
 		<div class="w-full lg:w-5/6 xl:w-2/3">
 			<!-- Mobile nav — glass pill -->
 			<nav
-				class="sticky top-2 z-40 flex items-center justify-between rounded-full border border-white/60
-				     bg-background/50 p-1.5
-				       shadow-lg shadow-black/5 backdrop-blur-xl
-				       md:hidden dark:border-white/10 dark:shadow-black/30"
+				class="sticky top-2 z-40 md:hidden flex-row flex-wrap items-center justify-between gap-2 rounded-full border
+				       border-white/65
+				       bg-white/45 p-1.5
+				       shadow-lg
+				       ring-1 shadow-violet-500/5 ring-white/50
+				       backdrop-blur-xl ring-inset flex
+				       dark:border-white/10 dark:bg-white/5 dark:shadow-black/40 dark:ring-white/5"
 			>
 				<Sidebar.Trigger />
 				<a href={resolve('/')}>

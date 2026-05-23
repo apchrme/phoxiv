@@ -18,11 +18,10 @@ Overall, the project is structured the same as a regular SvelteKit project, but 
 
 - `hooks.server.ts`: Server hooks. The connection to the D1 database occurs here, since it is so commonly used. Individual pages import the `locals.DB` object created here. The R2 connection is only necessary for contributors, so it is not connected in server hooks.
 
-
 ### `$lib` (i.e. `src/lib`)
 
 - `components/`: contains all the components that are used across the project
-    - `ui/`: contains the shadcn-svelte components
+  - `ui/`: contains the shadcn-svelte components
 - `posts/`: contains the blog posts
 - `server/db`: database information. the migrations here are generated from the schema using drizzle-kit, so the migration files should never be modified directly.
 - `utils/flag.ts`: a utility file used to render nice-looking flags in the olympiads page
@@ -31,11 +30,11 @@ Overall, the project is structured the same as a regular SvelteKit project, but 
 
 - `olympiads/`: lists all olympiads
 - `api/`: api endpoints. These are often cached to reduced DB load.
-    - `search/`: contains the search index used for the global fuzzy search
-    - `stats/`: endpoint for the statistics on the landing page.
-    - `auth/`: endpoint for authentication (see auth section below)
-    - `olympiads`: endpoint for olympiad list
-      - `[olympiad]`: endpoint for the olympiad files
+  - `search/`: contains the search index used for the global fuzzy search
+  - `stats/`: endpoint for the statistics on the landing page.
+  - `auth/`: endpoint for authentication (see auth section below)
+  - `olympiads`: endpoint for olympiad list
+    - `[olympiad]`: endpoint for the olympiad files
 - `contribute/`: page for users to contribute. Currently, only admins can use this page.
 - `login/`: login page
 - `profile/`: profile of user
