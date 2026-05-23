@@ -32,6 +32,8 @@
 
 	let searchOpen = $state(false);
 
+	// Disabled as there hasn't been any blog posts in a while
+	/*
 	const postModules = import.meta.glob('/src/lib/posts/*.svx', { eager: true });
 
 	onMount(() => {
@@ -68,6 +70,7 @@
 			}, 1200);
 		}
 	});
+	*/
 </script>
 
 <svelte:head>

@@ -98,11 +98,6 @@
 	--glass-hover-bg: oklch(100% 0 0 / 0.7);
 	--glass-hover-border: color-mix(in oklch, var(--primary) 30%, transparent);
 	--glass-hover-shadow: color-mix(in oklch, var(--primary) 10%, transparent);
-
-
-	/* Input fields — lighter bg than card to look recessed */
-	--glass-input-bg: oklch(100% 0 0 / 0.35);
-	--glass-input-border: var(--border);
 }
 
 /* ================================================
@@ -117,7 +112,7 @@
 	--card: oklch(100% 0 0 / 0.06);
 	--card-foreground: oklch(87% 0.03 257);
 
-	--popover: oklch(100% 0 0 / 0.1);
+	--popover: oklch(30% 0 0 / 0.5);
 	--popover-foreground: oklch(87% 0.03 257);
 
 	--primary: oklch(74.19% 0.146 303.9);
@@ -176,10 +171,6 @@
 	--glass-hover-bg: oklch(100% 0 0 / 0.1);
 	--glass-hover-border: color-mix(in oklch, var(--primary) 25%, transparent);
 	--glass-hover-shadow: color-mix(in oklch, var(--primary) 10%, transparent);
-
-	--glass-input-bg: oklch(100% 0 0 / 0.08);
-	--glass-input-border: var(--border);
-
 }
 
 @theme inline {
@@ -245,9 +236,6 @@
 	--color-glass-hover-bg: var(--glass-hover-bg);
 	--color-glass-hover-border: var(--glass-hover-border);
 	--color-glass-hover-shadow: var(--glass-hover-shadow);
-
-	--color-glass-input-bg: var(--glass-input-bg);
-	--color-glass-input-border: var(--glass-input-border);
 }
 
 html {

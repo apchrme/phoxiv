@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
-	import Menu from '@lucide/svelte/icons/menu';
+	import { Menu } from '@lucide/svelte';
 	import { cn } from '$lib/utils.js';
 	import type { ComponentProps } from 'svelte';
 	import { useSidebar } from './context.svelte.js';
@@ -22,7 +22,7 @@
 	data-sidebar="trigger"
 	data-slot="sidebar-trigger"
 	variant="ghost"
-	size="icon"
+	size="icon-sm"
 	class={cn('cn-sidebar-trigger', className)}
 	type="button"
 	onclick={(e) => {

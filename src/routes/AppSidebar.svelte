@@ -100,11 +100,7 @@
 						{/each}
 						{#if user?.role == 'admin'}
 							<Sidebar.MenuItem>
-								<Sidebar.MenuButton
-									isActive={isActive('/admin')}
-									size="lg"
-									class="hover:bg-black/10 data-[active=true]:bg-black/20 hover:dark:bg-white/10 data-[active=true]:dark:bg-white/20"
-								>
+								<Sidebar.MenuButton isActive={isActive('/admin')} size="lg">
 									{#snippet child({ props })}
 										<a href={resolve('/admin')} {...props} onclick={() => sidebar.toggle()}>
 											<Shield />

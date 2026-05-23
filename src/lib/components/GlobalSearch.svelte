@@ -144,7 +144,7 @@
 		<div class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4">
 			<Dialog.Content
 				class="pointer-events-auto flex h-[min(600px,72vh)] w-full max-w-xl flex-col overflow-hidden rounded-2xl
-					glass-panel md:backdrop-blur-lg
+					   bg-popover text-popover-foreground md:backdrop-blur-lg
 				       data-open:animate-in data-open:duration-200 data-open:fade-in-0 data-open:zoom-in-[0.97]
 				       data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0 data-closed:zoom-out-[0.97]"
 				onOpenAutoFocus={(e) => {

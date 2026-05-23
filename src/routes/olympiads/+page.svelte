@@ -55,6 +55,8 @@
 			{#snippet filters()}
 				<ToggleGroup.Root
 					type="single"
+					variant="outline"
+					spacing={2}
 					value={activeTag ?? ''}
 					onValueChange={(v) => (activeTag = (v as OlympiadTag) || null)}
 					class="flex-wrap justify-center sm:flex-nowrap"
