@@ -252,7 +252,7 @@ html.dark {
    Global glass effects — backdrop-filter on panels
    ================================================ */
 
-[data-slot='dropdown-menu-content'],
+/* [data-slot='dropdown-menu-content'],
 [data-slot='select-content'],
 [data-slot='combobox-content'],
 [data-slot='tooltip-content'],
@@ -264,7 +264,7 @@ html.dark {
 [data-slot='sheet-content'] {
 	backdrop-filter: blur(24px) saturate(180%);
 	-webkit-backdrop-filter: blur(24px) saturate(180%);
-}
+} */
 
 @layer base {
 	* {
