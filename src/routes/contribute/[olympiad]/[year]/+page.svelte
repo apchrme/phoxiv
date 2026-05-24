@@ -270,7 +270,6 @@
 											{#if problemNumber}
 												<input type="hidden" name="problemNumber" value={problemNumber} />
 											{/if}
-											<input type="hidden" name="url" value={file.url} />
 											<Button type="submit" variant="ghost" size="icon-sm">
 												<Trash2 class="size-3.5 text-destructive" />
 											</Button>

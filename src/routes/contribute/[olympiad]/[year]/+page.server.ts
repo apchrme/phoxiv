@@ -144,13 +144,32 @@ export const actions: Actions = {
 		const file = data.get('file') as File | null;
 
 		if (!file || file.size === 0) return fail(400, { error: 'No file provided' });
+		
+		const MAX_BYTES = 50 * 1024 * 1024; // 50 MB file size limit
+		if (file.size > MAX_BYTES) return fail(400, { error: 'File too large (max 50 MB)' });
+		
 		if (!label) return fail(400, { error: 'Label is required' });
 		if (!scope) return fail(400, { error: 'Scope is required' });
 		if (scope === 'problem' && !problemNumber)
 			return fail(400, { error: 'Problem number required' });
 		if (label.includes('/')) return fail(400, { error: 'Label cannot include /' });
 
-		const ext = file.name.split('.').pop()?.toLowerCase() ?? 'pdf';
+		const ALLOWED_EXTS = new Set(['pdf', 'xlsx', 'zip', 'doc', 'docx', 'htm', 'html']);
+		const ALLOWED_TYPES: Record<string, string> = {
+			pdf: 'application/pdf',
+			xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+			zip: 'application/zip',
+			doc: 'application/msword',
+			docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+			htm: 'text/html',
+			html: 'text/html'
+		};
+
+		const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+		if (!ALLOWED_EXTS.has(ext)) return fail(400, { error: 'File type not allowed' });
+		// Don't trust the MIME type sent by the client
+		const contentType = ALLOWED_TYPES[ext] ?? 'application/octet-stream';
+		
 		const slugLabel = label
 			.toLowerCase()
 			.replace(/\s+/g, '_')
@@ -200,7 +219,7 @@ export const actions: Actions = {
 		}
 
 		await r2.put(key, file.stream(), {
-			httpMetadata: { contentType: file.type || 'application/pdf' }
+			httpMetadata: { contentType: contentType }
 		});
 
 		const url = `${CDN_BASE_URL}/${key}`;
@@ -239,11 +258,6 @@ export const actions: Actions = {
 		const label = String(data.get('label') ?? '').trim();
 		const scope = String(data.get('scope') ?? '').trim();
 		const problemNumber = String(data.get('problemNumber') ?? '').trim();
-		const url = String(data.get('url') ?? '').trim();
-
-		if (url.startsWith(CDN_BASE_URL + '/')) {
-			await r2.delete(url.slice(CDN_BASE_URL.length + 1));
-		}
 
 		const yearRow = await db
 			.select()
@@ -251,6 +265,18 @@ export const actions: Actions = {
 			.where(and(eq(years.olympiadId, params.olympiad), eq(years.year, yearNum)))
 			.get();
 		if (!yearRow) return fail(404, { error: 'Year not found' });
+
+		const record = await db.select().from(yearFiles)
+			.where(and(eq(yearFiles.yearId, yearRow.id), eq(yearFiles.label, label)))
+			.get();
+		if (!record) return fail(404, { error: 'File not found' });
+
+		// Delete from R2 using only the DB-stored URL, not the submitted one
+		if (record.url.startsWith(CDN_BASE_URL + '/')) {
+			await r2.delete(record.url.slice(CDN_BASE_URL.length + 1));
+		}
+
+		await db.delete(yearFiles).where(eq(yearFiles.id, record.id)).run();
 
 		if (scope === 'year') {
 			await db

@@ -59,7 +59,6 @@ export const actions = {
 					allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
 					allowedAttributes: {
 						...sanitizeHtml.defaults.allowedAttributes,
-						img: ['src', 'alt', 'class'],
 						a: ['href', 'target', 'rel'],
 						'*': ['class']
 					}
