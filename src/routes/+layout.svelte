@@ -4,9 +4,9 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { toast } from 'svelte-sonner';
+	import { page } from '$app/state';
 	let { children, data } = $props();
 
-	import NavLink from './NavLink.svelte';
 	import { ModeWatcher } from 'mode-watcher';
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
@@ -25,10 +25,20 @@
 	const navLinks = [
 		{ url: '/', label: 'home' },
 		{ url: '/olympiads', label: 'olympiads' },
-		{ url: '/resources', label: 'resources' },
-		{ url: '/blog', label: 'blog' },
-		{ url: '/contribute', label: 'contribute' }
+		{ url: '/resources', label: 'resources' }
 	];
+
+	let moreNavLinks = $state([
+		{ url: '/blog', label: 'blog' },
+		{ url: '/contribute', label: 'contribute' },
+		{ url: '/privacy', label: 'privacy policy' }
+	]);
+
+	onMount(() => {
+		if (data.user.role == 'admin') {
+			moreNavLinks.push({ url: '/admin', label: 'admin' });
+		}
+	});
 
 	let searchOpen = $state(false);
 
@@ -91,7 +101,7 @@
 </div>
 
 <Sidebar.Provider>
-	<AppSidebar {navLinks} user={data.user} />
+	<AppSidebar navLinks={navLinks.concat(moreNavLinks)} user={data.user} />
 	<!-- Main wrapper — transparent so html gradient shows through -->
 	<div class="flex min-h-screen w-full flex-col items-center px-4 pt-4 pb-3">
 		<div class="w-full lg:w-5/6 xl:w-2/3">
@@ -128,14 +138,39 @@
 				       backdrop-blur-xl ring-inset md:flex
 				       dark:border-white/10 dark:bg-white/5 dark:shadow-black/40 dark:ring-white/5"
 			>
-				<NavigationMenu.Root>
+				<NavigationMenu.Root viewport={false}>
 					<NavigationMenu.List class="gap-1 sm:gap-2">
 						{#each navLinks as navLink (navLink.url)}
-							<NavLink url={navLink.url} label={navLink.label} />
+							<NavigationMenu.Item>
+								<NavigationMenu.Link
+									href={navLink.url}
+									aria-current={page.url.pathname == navLink.url}
+									data-active={page.url.pathname == navLink.url}
+									class="rounded-full py-2 text-base font-medium text-foreground hover:text-primary "
+									>{navLink.label}</NavigationMenu.Link
+								>
+							</NavigationMenu.Item>
 						{/each}
-						{#if data?.user?.role == 'admin'}
-							<NavLink url={resolve('/admin')} label="admin" />
-						{/if}
+						<NavigationMenu.Item openOnHover={false}>
+							<NavigationMenu.Trigger>
+								<p>more</p>
+							</NavigationMenu.Trigger>
+							<NavigationMenu.Content>
+								<ul>
+									{#each moreNavLinks as navLink (navLink.url)}
+										<li>
+											<NavigationMenu.Link
+												href={navLink.url}
+												aria-current={page.url.pathname == navLink.url}
+												data-active={page.url.pathname == navLink.url}
+												class="rounded-full py-2 text-base font-medium text-foreground hover:text-primary "
+												>{navLink.label}</NavigationMenu.Link
+											>
+										</li>
+									{/each}
+								</ul>
+							</NavigationMenu.Content>
+						</NavigationMenu.Item>
 					</NavigationMenu.List>
 				</NavigationMenu.Root>
 				<div class="flex items-center gap-2">
@@ -149,9 +184,9 @@
 						aria-label="Search problems"
 					>
 						<Search class="size-4" />
-						<span class="hidden lg:block">search…</span>
-						<!-- <Kbd.Root class="hidden lg:inline-flex">⌘</Kbd.Root> -->
-						<!-- <Kbd.Root class="hidden lg:inline-flex">K</Kbd.Root> -->
+						<span class="block">search…</span>
+						<Kbd.Root class="inline-flex">⌘</Kbd.Root>
+						<Kbd.Root class="inline-flex">K</Kbd.Root>
 					</button>
 					<DarkModeButton />
 					<LogIn user={data.user} />

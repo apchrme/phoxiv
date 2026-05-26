@@ -144,10 +144,10 @@ export const actions: Actions = {
 		const file = data.get('file') as File | null;
 
 		if (!file || file.size === 0) return fail(400, { error: 'No file provided' });
-		
+
 		const MAX_BYTES = 50 * 1024 * 1024; // 50 MB file size limit
 		if (file.size > MAX_BYTES) return fail(400, { error: 'File too large (max 50 MB)' });
-		
+
 		if (!label) return fail(400, { error: 'Label is required' });
 		if (!scope) return fail(400, { error: 'Scope is required' });
 		if (scope === 'problem' && !problemNumber)
@@ -169,7 +169,7 @@ export const actions: Actions = {
 		if (!ALLOWED_EXTS.has(ext)) return fail(400, { error: 'File type not allowed' });
 		// Don't trust the MIME type sent by the client
 		const contentType = ALLOWED_TYPES[ext] ?? 'application/octet-stream';
-		
+
 		const slugLabel = label
 			.toLowerCase()
 			.replace(/\s+/g, '_')
@@ -266,7 +266,9 @@ export const actions: Actions = {
 			.get();
 		if (!yearRow) return fail(404, { error: 'Year not found' });
 
-		const record = await db.select().from(yearFiles)
+		const record = await db
+			.select()
+			.from(yearFiles)
 			.where(and(eq(yearFiles.yearId, yearRow.id), eq(yearFiles.label, label)))
 			.get();
 		if (!record) return fail(404, { error: 'File not found' });

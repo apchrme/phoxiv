@@ -1,0 +1,56 @@
+---
+title: Privacy Policy
+description: "Last updated: 26 May 2026"
+seoDescription: phoXiv's Privacy Policy
+---
+
+
+This privacy policy describes how phoXiv ("we", "us") handles information when you use [phoxiv.org](https://phoxiv.org) (the "Site").
+
+## Information we collect
+
+### Anonymous analytics
+
+We use [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/) to understand how visitors use the Site. This service is privacy-focused: it does not use cookies, does not track you across sites, and does not build individual user profiles. Only aggregated, anonymous metrics (such as page views and country-level location) are collected. You can read Cloudflare's privacy policy at [cloudflare.com/privacypolicy](https://www.cloudflare.com/privacypolicy/).
+
+### Account information
+
+Creating an account is entirely optional. Browsing olympiad problems requires no sign-in. If you choose to sign in with GitHub, we receive
+
+1. TRhe information GitHub makes available by default (your GitHub username, display name and profile picture)
+2. Email address.
+
+We request **read-only access to your email address** and nothing else. We do not receive access to your repositories, followers/following, or any other GitHub data.
+
+The information stored in our database when you create an account is:
+
+- Your name and email address (as provided by GitHub)
+- Your profile picture URL (as provided by GitHub)
+- The date your phoXiv account is created
+- Your account role (default: user)
+
+## How we use your information
+
+We use your account information solely to:
+
+- Identify you when you sign in
+- Gate access to contributor features (adding or editing olympiad content)
+- Allow administrators to manage user accounts
+
+We do not sell, share, or transfer your personal information to any third party for marketing or commercial purposes.
+
+## Data retention
+
+Your account data is retained for as long as your account exists. You may request deletion of your account and associated data at any time by contacting us at [apochrome@proton.me](mailto:apochrome@proton.me).
+
+## Third-party services
+
+The Site is hosted on [Cloudflare](https://www.cloudflare.com), whose infrastructure processes all traffic to the Site. Authentication is handled via [GitHub OAuth](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps); you will be redirected to GitHub's own sign-in page and are subject to [GitHub's privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement) during that process.
+
+## Cookies
+
+We do not set any cookies ourselves. The authentication system will set a session cookie to keep you signed in. No advertising or tracking cookies are used.
+
+## Contact
+
+If you have any questions about this policy, please email [apochrome@proton.me](mailto:apochrome@proton.me).

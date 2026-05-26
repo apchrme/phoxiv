@@ -5,7 +5,7 @@
 	import TrophyIcon from '@lucide/svelte/icons/trophy';
 	import LibraryIcon from '@lucide/svelte/icons/library';
 	import FileTextIcon from '@lucide/svelte/icons/file-text';
-	import { HandHelping, User, LogIn, Shield } from '@lucide/svelte';
+	import { HandHelping, User, LogIn, Shield, LockKeyhole } from '@lucide/svelte';
 	import { resolve } from '$app/paths';
 	import DarkModeButton from '$lib/components/buttons/DarkModeButton.svelte';
 
@@ -22,7 +22,9 @@
 		'/olympiads': TrophyIcon,
 		'/resources': LibraryIcon,
 		'/blog': FileTextIcon,
-		'/contribute': HandHelping
+		'/contribute': HandHelping,
+		'/privacy': LockKeyhole,
+		'/admin': Shield
 	};
 
 	function isActive(url: string): boolean {
@@ -98,18 +100,6 @@
 								</Sidebar.MenuButton>
 							</Sidebar.MenuItem>
 						{/each}
-						{#if user?.role == 'admin'}
-							<Sidebar.MenuItem>
-								<Sidebar.MenuButton isActive={isActive('/admin')} size="lg">
-									{#snippet child({ props })}
-										<a href={resolve('/admin')} {...props} onclick={() => sidebar.toggle()}>
-											<Shield />
-											<span>admin</span>
-										</a>
-									{/snippet}
-								</Sidebar.MenuButton>
-							</Sidebar.MenuItem>
-						{/if}
 					</Sidebar.Menu>
 				</Sidebar.GroupContent>
 			</Sidebar.Group>

@@ -1,6 +1,7 @@
 import adapter from '@sveltejs/adapter-cloudflare';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { mdsvex } from 'mdsvex';
+import { join } from 'path';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -8,7 +9,8 @@ const config = {
 		vitePreprocess(),
 		mdsvex({
 			extensions: ['.svx'],
-			smartypants: true
+			smartypants: true,
+			layout: join(__dirname, './src/lib/prose.svelte')
 		})
 	],
 	kit: {

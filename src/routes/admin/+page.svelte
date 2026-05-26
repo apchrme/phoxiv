@@ -10,7 +10,15 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { FlexRender, createSvelteTable } from '$lib/components/ui/data-table/index.js';
-	import { User, Shield, Ban, CircleCheck, ChevronUp, ChevronDown, ChevronsUpDown } from '@lucide/svelte';
+	import {
+		User,
+		Shield,
+		Ban,
+		CircleCheck,
+		ChevronUp,
+		ChevronDown,
+		ChevronsUpDown
+	} from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import {
 		getCoreRowModel,
