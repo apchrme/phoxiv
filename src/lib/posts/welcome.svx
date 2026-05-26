@@ -1,15 +1,11 @@
 
 ---
 title: Welcome!
-date: 2025-04-18
+date: 2026-04-18
 description: Welcome to phoXiv! Enjoy your stay.
 tags: [meta, introduction]
 author: Teo Kai Wen
 ---
-
-<script lang="ts">
-    import iphoClowning from "$lib/assets/images/ipho-clowning.png";
-</script>
 
 Welcome to my blog. This is where I'll post major updates and changes (minor ones will be posted on the Discord server).
 
@@ -21,7 +17,7 @@ phoXiv intends to be the most comprehensive archive of the high school physics o
 
 This website was made out of pure frustration. When I was studying for IPhO, I was extremely annoyed by the fact that the documentation for physics olympiads were so terrible. It seemed impossible to find somewhere that contained all the problems I wanted. When I was doing APhO problems, I found that the commonly-used [olimpicos APhO archive](https://apho.olimpicos.net/) is both outdated and does not have experimental problems. Meanwhile, for IPhO problems, the official website has not been updated since 2019. In fact, the official website literally has Lorem ipsum on the front page.
 
-<img alt="IPhO Lorem Ipsum" src={iphoClowning} class="w-full sm:w-3/4 mx-auto" />
+<enhanced:img alt="IPhO Lorem Ipsum" src="$lib/assets/images/ipho-clowning.png" class="w-full sm:w-3/4 mx-auto" />
 
 
 <p class="text-center -translate-y-4 text-muted-foreground">wow.</p>
@@ -42,6 +38,7 @@ I have mentioned above that many physics olympiad websites have been lost to tim
 
 ## Sounds cool! How do I contribute?
 
-OH BOY AM I GLAD YOU ASKED
+I am currently in the process of making a permissions system for this website. For now, if you would like to add new problems or olympiads, [email me the files](mailto:apochrome@proton.me). If you have any feature requests or suggestions, email me, create a [GitHub](https://github.com/apchrme/phoxiv) issue, or send a message in [#phoxiv-discussion](https://discord.com/channels/1477813246051356842/1489615518544433223) on the Discord server (if you can't see that link, you haven't joined the [server](https://discord.gg/SNBDY5nsgf)).
 
-Click [this](https://github.com/apchrme/phoxiv) or [this](https://github.com/apchrme/phoxiv) or [this](https://github.com/apchrme/phoxiv)! If you're not familiar with coding, don't be intimidated; it's pretty straightforward. If you can't figure out how to make it work, feel free to just [email me the files](mailto:apochrome@proton.me), though I can't guarantee I'll add them if I'm busy. If you have any feature requests or suggestions, email me, create a GitHub issue, or send a message in [#phoxiv-discussion](https://discord.com/channels/1477813246051356842/1489615518544433223) on the Discord server (if you can't see that link, you haven't joined the [server](https://discord.gg/SNBDY5nsgf)).
+
+_Last edited: 26 May 2026_
