@@ -140,7 +140,7 @@
 	--chart-4: oklch(92.36% 0.09 93.39);
 	--chart-5: oklch(86.63% 0.078 186.6);
 
-	--sidebar: oklch(100% 0 0 / 0.06);
+	--sidebar: oklch(30% 0 0 / 0.6);
 	--sidebar-foreground: oklch(87% 0.03 257);
 	--sidebar-primary: oklch(74.19% 0.146 303.9);
 	--sidebar-primary-foreground: oklch(19% 0.014 286);
