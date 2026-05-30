@@ -21,11 +21,11 @@
 :root {
 	--radius: 0.75rem;
 
-	--background: oklch(96.13% 0.009 247.88);
+	--background: oklch(92.13% 0.009 247.88);
 	--foreground: oklch(35% 0.02 264);
 
 	/* Semi-transparent white — the core glass panel colour */
-	--card: oklch(100% 0 0 / 0.55);
+	--card: oklch(100% 0 0 / 0.3);
 	--card-foreground: oklch(35% 0.02 264);
 
 	/* Popup panels (dropdowns, tooltips) — slightly more opaque than cards */
@@ -53,7 +53,7 @@
 	/* Translucent white border — used by every bordered component */
 	--border: oklch(100% 0 0 / 0.7);
 	/* Input colour doubles as border-input and base for bg-input/N */
-	--input: oklch(100% 0 0 / 0.65);
+	--input: oklch(100% 0 0 / 0.9);
 	--ring: oklch(51.05% 0.231 292.72);
 
 	--chart-1: oklch(68.64% 0.173 40.63);
@@ -81,7 +81,7 @@
 	--glass-shadow: oklch(0% 0 0 / 0.05);
 
 	/* Inner card (problem tiles) */
-	--glass-inner-bg: oklch(100% 0 0 / 0.4);
+	--glass-inner-bg: oklch(100% 0 0 / 0.1);
 	--glass-inner-border: var(--border);
 	--glass-inner-shadow: oklch(0% 0 0 / 0.05);
 
@@ -98,6 +98,8 @@
 	--glass-hover-bg: oklch(100% 0 0 / 0.7);
 	--glass-hover-border: color-mix(in oklch, var(--primary) 30%, transparent);
 	--glass-hover-shadow: color-mix(in oklch, var(--primary) 10%, transparent);
+
+	--navbar-dropdown: oklch(100% 0 0 / 0.9)
 }
 
 /* ================================================
@@ -171,6 +173,8 @@
 	--glass-hover-bg: oklch(100% 0 0 / 0.1);
 	--glass-hover-border: color-mix(in oklch, var(--primary) 25%, transparent);
 	--glass-hover-shadow: color-mix(in oklch, var(--primary) 10%, transparent);
+
+	--navbar-dropdown: oklch(25% 0 0 / 0.85)
 }
 
 @theme inline {
@@ -207,6 +211,7 @@
 	--color-card: var(--card);
 	--color-foreground: var(--foreground);
 	--color-background: var(--background);
+	--color-navbar-dropdown: var(--navbar-dropdown);
 	--radius-sm: calc(var(--radius) * 0.6);
 	--radius-md: calc(var(--radius) * 0.8);
 	--radius-lg: var(--radius);

@@ -35,7 +35,7 @@
 	]);
 
 	onMount(() => {
-		if (data.user.role == 'admin') {
+		if (data?.user?.role == 'admin') {
 			moreNavLinks.push({ url: '/admin', label: 'admin' });
 		}
 	});
@@ -91,7 +91,7 @@
 <GlobalSearch bind:open={searchOpen} />
 <Toaster richColors closeButton position="top-center" />
 
-<div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+<div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-background" aria-hidden="true">
 	<!-- Mesh gradient -->
 	<div
 		class="absolute inset-0
@@ -189,7 +189,7 @@
 						<Kbd.Root class="inline-flex">K</Kbd.Root>
 					</button>
 					<DarkModeButton />
-					<LogIn user={data.user} />
+					<LogIn user={data?.user} />
 				</div>
 			</nav>
 

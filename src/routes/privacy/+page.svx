@@ -17,8 +17,8 @@ We use [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/) to 
 
 Creating an account is entirely optional. Browsing olympiad problems requires no sign-in. If you choose to sign in with GitHub, we receive
 
-1. TRhe information GitHub makes available by default (your GitHub username, display name and profile picture)
-2. Email address.
+1. The information GitHub makes available by default (your GitHub username, display name and profile picture)
+2. Your email address
 
 We request **read-only access to your email address** and nothing else. We do not receive access to your repositories, followers/following, or any other GitHub data.
 
@@ -45,11 +45,11 @@ Your account data is retained for as long as your account exists. You may reques
 
 ## Third-party services
 
-The Site is hosted on [Cloudflare](https://www.cloudflare.com), whose infrastructure processes all traffic to the Site. Authentication is handled via [GitHub OAuth](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps); you will be redirected to GitHub's own sign-in page and are subject to [GitHub's privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement) during that process.
+The Site is hosted on [Cloudflare](https://www.cloudflare.com), whose infrastructure processes all traffic to the Site. Authentication is handled via [GitHub OAuth](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-with-a-github-app-on-behalf-of-a-user); you will be redirected to GitHub's own sign-in page and are subject to [GitHub's privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement) during that process.
 
 ## Cookies
 
-We do not set any cookies ourselves. The authentication system will set a session cookie to keep you signed in. No advertising or tracking cookies are used.
+The only cookie we set is the session cookie [BetterAuth](https://better-auth.com) generates to keep you signed in. No advertising or tracking cookies are used.
 
 ## Contact
 

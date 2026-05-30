@@ -49,14 +49,14 @@
 		class="pointer-events-none absolute inset-0 flex items-center justify-around overflow-hidden md:hidden"
 		aria-hidden="true"
 	>
-		<img src={logo} alt="" class="h-112 w-md opacity-10 select-none" style="filter: blur(2px);" />
+		<img src={logo} alt="" class="h-112 w-md dark:opacity-10 opacity-50 select-none" style="filter: blur(2px);" />
 	</div>
 
 	<!-- Left: text content -->
 	<div class="hero-text relative z-10 flex min-w-0 flex-1 flex-col justify-center gap-7">
 		<!-- Title -->
 		<div class="flex flex-col gap-1">
-			<img src={brand} alt="phoXiv" class="w-3/4 brightness-85 dark:brightness-100" />
+			<img src={brand} alt="phoXiv" class="w-3/4" />
 			<span class="font-mono text-sm tracking-[0.02em] text-muted-foreground">/ foʊkaɪv /</span>
 		</div>
 
@@ -134,7 +134,7 @@
 			<img
 				src={logo}
 				alt=""
-				class="pointer-events-none h-full w-full transform-[translateZ(30px)] object-contain brightness-85 select-none dark:brightness-100"
+				class="pointer-events-none h-full w-full transform-[translateZ(30px)] object-contain select-none"
 			/>
 		</div>
 	</div>
