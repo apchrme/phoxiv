@@ -9,7 +9,7 @@
 	import * as Combobox from '$lib/components/ui/combobox/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
-	import { ArrowRight } from '@lucide/svelte';
+	import { ArrowRight, Pencil } from '@lucide/svelte';
 	import SvelteSeo from 'svelte-seo';
 	import type { OlympiadTag } from '$lib/types';
 
@@ -50,6 +50,7 @@
 				<Card.Title>Go to a year</Card.Title>
 				<Card.Description>
 					Select an olympiad and enter a year. The year will be created if it doesn't exist yet.
+					Leave the year blank to edit the olympiad's metadata instead.
 				</Card.Description>
 			</Card.Header>
 			<Card.Content>
@@ -69,7 +70,9 @@
 						</Combobox.Root>
 					</div>
 					<div class="flex flex-col gap-1.5">
-						<label for="year" class="text-sm font-medium">Year</label>
+						<label for="year" class="text-sm font-medium">
+							Year
+						</label>
 						<Input
 							id="year"
 							name="year"
@@ -77,13 +80,26 @@
 							required
 							min="1900"
 							max="2100"
-							placeholder="e.g. 2025"
+							placeholder="e.g. 2025 (optional)"
 						/>
 					</div>
 					{#if form?.selectError}
 						<p class="text-sm text-destructive">{form.selectError}</p>
 					{/if}
-					<Button type="submit" class="self-start">Go <ArrowRight /></Button>
+					<div class="flex flex-wrap gap-2">
+						<Button type="submit" class="self-start">
+							Go <ArrowRight />
+						</Button>
+						{#if olympiadId}
+							<a
+								href="/contribute/{olympiadId}"
+								class="inline-flex items-center gap-1.5 rounded-4xl border border-border bg-card px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+							>
+								<Pencil class="size-3.5" />
+								Edit olympiad metadata
+							</a>
+						{/if}
+					</div>
 				</form>
 			</Card.Content>
 		</Card.Root>

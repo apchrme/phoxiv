@@ -1,5 +1,7 @@
 import adapter from '@sveltejs/adapter-cloudflare';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import { mdsvex } from 'mdsvex';
 import { join } from 'path';
 
@@ -10,7 +12,7 @@ const config = {
 		mdsvex({
 			extensions: ['.svx'],
 			smartypants: true,
-			layout: join(__dirname, './src/lib/prose.svelte')
+			layout: join(dirname(fileURLToPath(import.meta.url)), './src/lib/prose.svelte')
 		})
 	],
 	kit: {

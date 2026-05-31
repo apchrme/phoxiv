@@ -64,6 +64,7 @@ export const actions = {
 					}
 				})
 			: null;
+
 		try {
 			await db
 				.insert(olympiads)
