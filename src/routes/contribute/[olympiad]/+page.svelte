@@ -117,7 +117,7 @@
 								name="icon"
 								type="text"
 								bind:value={icon}
-								placeholder="🌍"
+								placeholder="e.g. 🌍"
 								class="flex-1"
 							/>
 							{#if icon}
