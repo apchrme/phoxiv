@@ -50,7 +50,6 @@
 				<Card.Title>Go to a year</Card.Title>
 				<Card.Description>
 					Select an olympiad and enter a year. The year will be created if it doesn't exist yet.
-					Leave the year blank to edit the olympiad's metadata instead.
 				</Card.Description>
 			</Card.Header>
 			<Card.Content>
