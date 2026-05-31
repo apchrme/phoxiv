@@ -79,7 +79,7 @@
 							required
 							min="1900"
 							max="2100"
-							placeholder="e.g. 2025 (optional)"
+							placeholder="e.g. 2025"
 						/>
 					</div>
 					{#if form?.selectError}

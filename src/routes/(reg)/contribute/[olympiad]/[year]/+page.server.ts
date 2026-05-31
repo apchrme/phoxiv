@@ -26,13 +26,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	if (!yearRow) error(404, 'Year not found');
 
 	const [yearFileRows, problemRows] = await Promise.all([
-		db.select().from(yearFiles).where(eq(yearFiles.yearId, yearRow.id)).all(),
+		db.select().from(yearFiles).where(eq(yearFiles.yearId, yearRow.id)).orderBy(yearFiles.id).all(),
 		db
 			.select()
 			.from(problems)
 			.leftJoin(problemFiles, eq(problemFiles.problemId, problems.id))
 			.where(eq(problems.yearId, yearRow.id))
-			.orderBy(problems.id)
+			.orderBy(problems.id, problemFiles.id)
 			.all()
 	]);
 
