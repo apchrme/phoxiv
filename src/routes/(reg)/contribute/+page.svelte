@@ -20,6 +20,15 @@
 	let olympiadId = $state<string | undefined>();
 	let searchOlympiad = $state<string>('');
 
+	// Icon file preview for the new olympiad form
+	let iconPreviewUrl = $state<string | null>(null);
+
+	function onIconFileChange(e: Event) {
+		const file = (e.currentTarget as HTMLInputElement).files?.[0];
+		if (iconPreviewUrl) URL.revokeObjectURL(iconPreviewUrl);
+		iconPreviewUrl = file ? URL.createObjectURL(file) : null;
+	}
+
 	const filtered = $derived(
 		searchOlympiad === ''
 			? data.olympiads
@@ -50,6 +59,7 @@
 				<Card.Title>Go to a year</Card.Title>
 				<Card.Description>
 					Select an olympiad and enter a year. The year will be created if it doesn't exist yet.
+					Leave the year blank to edit the olympiad's metadata instead.
 				</Card.Description>
 			</Card.Header>
 			<Card.Content>
@@ -71,15 +81,17 @@
 					<div class="flex flex-col gap-1.5">
 						<label for="year" class="text-sm font-medium">
 							Year
+							<span class="text-xs font-normal text-muted-foreground ml-1">
+								— leave blank to edit olympiad metadata
+							</span>
 						</label>
 						<Input
 							id="year"
 							name="year"
 							type="number"
-							required
 							min="1900"
 							max="2100"
-							placeholder="e.g. 2025"
+							placeholder="e.g. 2025 (optional)"
 						/>
 					</div>
 					{#if form?.selectError}
@@ -103,6 +115,7 @@
 			</Card.Content>
 		</Card.Root>
 	</Tabs.Content>
+
 	<Tabs.Content value="new">
 		<Card.Root>
 			<Card.Header>
@@ -112,21 +125,54 @@
 				</Card.Description>
 			</Card.Header>
 			<Card.Content>
-				<form method="POST" action="?/createOlympiad" use:enhance class="flex flex-col gap-4">
+				<form
+					method="POST"
+					action="?/createOlympiad"
+					enctype="multipart/form-data"
+					use:enhance
+					class="flex flex-col gap-4"
+				>
 					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						<div class="flex flex-col gap-1.5">
-							<label for="id" class="text-sm font-medium"
-								>ID <span class="text-sm text-muted-foreground">(unique acronym)</span></label
-							>
+							<label for="id" class="text-sm font-medium">
+								ID <span class="text-sm text-muted-foreground">(unique acronym)</span>
+							</label>
 							<Input id="id" name="id" type="text" required placeholder="e.g. ipho" />
 						</div>
 						<div class="flex flex-col gap-1.5">
-							<label for="icon" class="text-sm font-medium"
-								>Icon <span class="text-sm text-muted-foreground">(optional, emoji)</span></label
-							>
+							<label for="icon" class="text-sm font-medium">
+								Emoji icon <span class="text-sm text-muted-foreground">(optional)</span>
+							</label>
 							<Input id="icon" name="icon" type="text" placeholder="e.g. 🌍" />
 						</div>
 					</div>
+
+					<!-- Icon file upload -->
+					<div class="flex flex-col gap-1.5">
+						<label for="iconFile" class="text-sm font-medium">
+							Icon image
+							<span class="text-sm text-muted-foreground">(optional — overrides emoji)</span>
+						</label>
+						<div class="flex items-center gap-3">
+							<input
+								id="iconFile"
+								name="iconFile"
+								type="file"
+								accept=".svg,.png,.jpg,.jpeg,.webp,.avif,image/svg+xml,image/png,image/jpeg,image/webp,image/avif"
+								onchange={onIconFileChange}
+								class="flex-1 text-sm text-muted-foreground file:mr-3 file:rounded-4xl file:border file:border-border file:bg-card file:px-3 file:py-1 file:text-sm file:font-medium file:text-foreground cursor-pointer"
+							/>
+							{#if iconPreviewUrl}
+								<img
+									src={iconPreviewUrl}
+									alt="Icon preview"
+									class="h-9 w-auto rounded-md border border-border object-contain"
+								/>
+							{/if}
+						</div>
+						<p class="text-xs text-muted-foreground">SVG, PNG, JPG, WebP, or AVIF · max 2 MB</p>
+					</div>
+
 					<div class="flex flex-col gap-1.5">
 						<label for="name" class="text-sm font-medium">Full name</label>
 						<Input
@@ -168,9 +214,9 @@
 							</Select.Root>
 						</div>
 						<div class="flex flex-col gap-1.5">
-							<label for="year" class="text-sm font-medium">First year</label>
+							<label for="first-year" class="text-sm font-medium">First year</label>
 							<Input
-								id="year"
+								id="first-year"
 								name="year"
 								type="number"
 								required
