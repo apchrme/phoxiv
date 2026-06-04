@@ -91,19 +91,10 @@
 <GlobalSearch bind:open={searchOpen} />
 <Toaster richColors closeButton position="top-center" />
 
-<div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-background" aria-hidden="true">
-	<!-- Mesh gradient -->
-	<div
-		class="absolute inset-0
-		[background:radial-gradient(ellipse_70%_55%_at_10%_20%,oklch(0.8265_0.1252_63.82/0.50),transparent_100%),radial-gradient(ellipse_65%_55%_at_90%_80%,oklch(0.8443_0.0767_264.39/0.90),transparent_55%),radial-gradient(ellipse_80%_70%_at_60%_40%,oklch(0.9352_0.0417_61.46/0.25),transparent_60%)]
-		dark:[background:radial-gradient(ellipse_70%_55%_at_18%_18%,oklch(0.8265_0.1252_63.82/0.20),transparent_100%),radial-gradient(ellipse_75%_65%_at_82%_82%,oklch(0.8443_0.0767_264.39/0.20),transparent_70%),radial-gradient(ellipse_60%_50%_at_55%_45%,oklch(0.9352_0.0417_61.46/0.1),transparent_55%)]"
-	></div>
-</div>
-
 <Sidebar.Provider>
 	<AppSidebar navLinks={navLinks.concat(moreNavLinks)} user={data.user} />
 	<!-- Main wrapper — transparent so html gradient shows through -->
-	<div class="flex min-h-screen w-full flex-col items-center px-4 pt-4 pb-3">
+	<div class="flex min-h-screen w-full flex-col items-center px-4 pt-4 pb-3 bg-background">
 		<div class="w-full lg:w-5/6 xl:w-2/3">
 			<!-- Mobile nav — glass pill -->
 			<nav
