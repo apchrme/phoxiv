@@ -18,18 +18,25 @@
 	let olympiadFiles: YearEntry[] | null = $state(null);
 	let olympiadFilesLoading = $state(true);
 
-	onMount(async () => {
-		olympiadFiles = await (await fetch(`/api/olympiads/${olympiad.id}`)).json();
-		// await new Promise((f) => setTimeout(f, 1000));
-		olympiadFilesLoading = false;
+	$effect(() => {
+    const id = olympiad.id; // tracked dependency
+    olympiadFiles = null;
+    olympiadFilesLoading = true;
+    query = '';
 
-		// Scroll to anchor after data renders
-		const hash = window.location.hash;
-		if (hash) {
-			await tick(); // wait for Svelte to render the new state
-			document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' });
-		}
-	});
+    fetch(`/api/olympiads/${id}`)
+        .then((r) => r.json())
+        .then(async (data) => {
+            olympiadFiles = data;
+            olympiadFilesLoading = false;
+
+            const hash = window.location.hash;
+            if (hash) {
+                await tick();
+                document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+});
 
 	let query = $state('');
 	let showFullYear = $state(false);
