@@ -83,7 +83,7 @@
 </script>
 
 <SvelteSeo
-	title={olympiad.name}
+	title="{olympiad.name} — phoXiv"
 	description="An archive of problems and solutions from the {olympiad.name}, in PDF format."
 	keywords="problems, solutions, olympiad, physics"
 />

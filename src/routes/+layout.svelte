@@ -137,24 +137,24 @@
 									href={navLink.url}
 									aria-current={page.url.pathname == navLink.url}
 									data-active={page.url.pathname == navLink.url}
-									class="rounded-full py-2 text-base font-medium text-foreground hover:text-primary "
+									class="rounded-full py-2 text-base font-medium text-foreground hover:text-primary transition-colors duration-250"
 									>{navLink.label}</NavigationMenu.Link
 								>
 							</NavigationMenu.Item>
 						{/each}
 						<NavigationMenu.Item openOnHover={false}>
-							<NavigationMenu.Trigger>
+							<NavigationMenu.Trigger class="transition-colors duration-250">
 								<p>more</p>
 							</NavigationMenu.Trigger>
 							<NavigationMenu.Content>
-								<ul>
+								<ul class="flex flex-col gap-1">
 									{#each moreNavLinks as navLink (navLink.url)}
 										<li>
 											<NavigationMenu.Link
 												href={navLink.url}
 												aria-current={page.url.pathname == navLink.url}
 												data-active={page.url.pathname == navLink.url}
-												class="rounded-full py-2 text-base font-medium text-foreground hover:text-primary "
+												class="rounded-full py-2 text-base font-medium text-foreground hover:text-primary transition-colors duration-250"
 												>{navLink.label}</NavigationMenu.Link
 											>
 										</li>
