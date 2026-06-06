@@ -9,172 +9,102 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ================================================
-   Design tokens — Light (Catppuccin Latte base)
 
-   Key philosophy: the standard shadcn tokens are
-   set to glass-appropriate values so that every
-   component using bg-card, border-border, bg-muted,
-   etc. is automatically glass — no per-component
-   overrides needed.
-   ================================================ */
 :root {
-	--radius: 0.75rem;
+	--radius: 0.625rem;
 
-	--background: oklch(92.13% 0.009 247.88);
-	--foreground: oklch(35% 0.02 264);
+	--background: oklch(96.13% 0.009 247.88); /* Base      #eff1f5 */
+	--foreground: oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
 
-	/* Semi-transparent white — the core glass panel colour */
-	--card: oklch(100% 0 0 / 0.3);
-	--card-foreground: oklch(35% 0.02 264);
+	--card: oklch(93.74% 0.01 249.13); /* Mantle    #e6e9ef */
+	--card-foreground: oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
 
-	/* Popup panels (dropdowns, tooltips) — slightly more opaque than cards */
-	--popover: oklch(100% 0 0 / 0.75);
-	--popover-foreground: oklch(35% 0.02 264);
+	--popover: oklch(91.36% 0.011 250.38); /* Crust     #dce0e8 */
+	--popover-foreground: oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
 
-	--primary: oklch(51.05% 0.231 292.72);
-	--primary-foreground: oklch(98% 0.004 250);
+	--primary: oklch(51.05% 0.231 292.72); /* Mauve     #8839ef */
+	--primary-foreground: oklch(96.13% 0.009 247.88); /* Base      #eff1f5 */
 
-	/* Ghost-style: very faint dark overlay so it works on any glass surface */
-	--secondary: oklch(0% 0 0 / 0.12);
-	--secondary-foreground: oklch(35% 0.02 264);
+	--secondary: oklch(84.7% 0.013 252.63); /* Surface 0 #ccd0da */
+	--secondary-foreground: oklch(37.99% 0.018 264.19); /* Text     #4c4f69 */
 
-	/* Hover / muted backgrounds — subtle dark overlay */
-	--muted: oklch(0% 0 0 / 0.06);
-	--muted-foreground: oklch(52% 0.02 264);
+	--muted: oklch(84.7% 0.013 252.63); /* Surface 0 #ccd0da */
+	--muted-foreground: oklch(54.26% 0.019 263.95); /* Subtext 0 #6c6f85 */
 
-	/* Focus / active item background — slightly stronger dark overlay */
-	--accent: oklch(0% 0 0 / 0.08);
-	--accent-foreground: oklch(35% 0.02 264);
+	--accent: oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
+	--accent-foreground: oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
 
-	--destructive: oklch(44.49% 0.196 18.61);
-	--destructive-foreground: oklch(97% 0.006 250);
+	--destructive: oklch(44.49% 0.196 18.61); /* Red       #d20f39 */
+	--destructive-foreground: oklch(96.13% 0.009 247.88); /* Base   #eff1f5 */
 
-	/* Translucent white border — used by every bordered component */
-	--border: oklch(100% 0 0 / 0.7);
-	/* Input colour doubles as border-input and base for bg-input/N */
-	--input: oklch(100% 0 0 / 0.9);
-	--ring: oklch(51.05% 0.231 292.72);
+	--border: oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
+	--input: oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
+	--ring: oklch(51.05% 0.231 292.72); /* Mauve     #8839ef */
 
-	--chart-1: oklch(68.64% 0.173 40.63);
-	--chart-2: oklch(59.66% 0.173 136.67);
-	--chart-3: oklch(50.74% 0.238 264.37);
-	--chart-4: oklch(66.54% 0.148 68.5);
-	--chart-5: oklch(54.89% 0.121 195.61);
+	--chart-1: oklch(68.64% 0.173 40.63); /* Peach     #fe640b */
+	--chart-2: oklch(59.66% 0.173 136.67); /* Green     #40a02b */
+	--chart-3: oklch(50.74% 0.238 264.37); /* Blue      #1e66f5 */
+	--chart-4: oklch(66.54% 0.148 68.5); /* Yellow    #df8e1d */
+	--chart-5: oklch(54.89% 0.121 195.61); /* Teal      #179299 */
 
-	/* Sidebar — matches card glass */
-	--sidebar: oklch(100% 0 0 / 0.55);
-	--sidebar-foreground: oklch(35% 0.02 264);
-	--sidebar-primary: oklch(51.05% 0.231 292.72);
-	--sidebar-primary-foreground: oklch(98% 0.004 250);
-	--sidebar-accent: oklch(0% 0 0 / 0.08);
-	--sidebar-accent-foreground: oklch(35% 0.02 264);
-	--sidebar-border: oklch(100% 0 0 / 0.5);
-	--sidebar-ring: oklch(51.05% 0.231 292.72);
-
-	/* ---- Glass-specific values (no direct standard-token equivalent) ---- */
-
-	/* Shared shadow / ring — used by the glass utilities below */
-	--glass-bg: var(--card);
-	--glass-border: var(--border);
-	--glass-ring: oklch(100% 0 0 / 0.5);
-	--glass-shadow: oklch(0% 0 0 / 0.05);
-
-	/* Inner card (problem tiles) */
-	--glass-inner-bg: oklch(100% 0 0 / 0.1);
-	--glass-inner-border: var(--border);
-	--glass-inner-shadow: oklch(0% 0 0 / 0.05);
-
-	/* Blog post link */
-	--glass-post-bg: oklch(100% 0 0 / 0.5);
-	--glass-post-border: var(--border);
-	--glass-post-ring: var(--glass-ring);
-	--glass-post-shadow: oklch(0% 0 0 / 0.05);
-	--glass-post-hover-bg: oklch(100% 0 0 / 0.65);
-	--glass-post-hover-border: color-mix(in oklch, var(--primary) 25%, transparent);
-	--glass-post-hover-shadow: color-mix(in oklch, var(--primary) 8%, transparent);
-
-	/* Hoverable card (olympiad index) */
-	--glass-hover-bg: oklch(100% 0 0 / 0.7);
-	--glass-hover-border: color-mix(in oklch, var(--primary) 30%, transparent);
-	--glass-hover-shadow: color-mix(in oklch, var(--primary) 10%, transparent);
-
-	--navbar-dropdown: oklch(100% 0 0 / 0.9)
+	--sidebar: oklch(91.36% 0.011 250.38); /* Crust     #dce0e8 */
+	--sidebar-foreground: oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
+	--sidebar-primary: oklch(51.05% 0.231 292.72); /* Mauve     #8839ef */
+	--sidebar-primary-foreground: oklch(96.13% 0.009 247.88); /* Base #eff1f5 */
+	--sidebar-accent: oklch(84.7% 0.013 252.63); /* Surface 0 #ccd0da */
+	--sidebar-accent-foreground: oklch(37.99% 0.018 264.19); /* Text #4c4f69 */
+	--sidebar-border: oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
+	--sidebar-ring: oklch(51.05% 0.231 292.72); /* Mauve     #8839ef */
 }
 
 /* ================================================
-   Design tokens — Dark (Catppuccin Mocha base)
+   Catppuccin Mocha — shadcn/ui (oklch)
    ================================================ */
 .dark {
-	--radius: 0.75rem;
+	--radius: 0.625rem;
 
-	--background: oklch(19.85% 0.014 285.75);
-	--foreground: oklch(87% 0.03 257);
+	--background: oklch(19.85% 0.014 285.75); /* Base      #1e1e2e */
+	--foreground: oklch(87.99% 0.03 256.8); /* Text      #cdd6f4 */
 
-	--card: oklch(100% 0 0 / 0.06);
-	--card-foreground: oklch(87% 0.03 257);
+	--card: oklch(26.57% 0.015 277.06); /* Surface 0 #313244 */
+	--card-foreground: oklch(87.99% 0.03 256.8); /* Text      #cdd6f4 */
 
-	--popover: oklch(30% 0 0 / 0.5);
-	--popover-foreground: oklch(87% 0.03 257);
+	--popover: oklch(26.57% 0.015 277.06); /* Surface 0 #313244 */
+	--popover-foreground: oklch(87.99% 0.03 256.8); /* Text      #cdd6f4 */
 
-	--primary: oklch(74.19% 0.146 303.9);
-	--primary-foreground: oklch(19% 0.014 286);
+	--primary: oklch(74.19% 0.146 303.9); /* Mauve     #cba6f7 */
+	--primary-foreground: oklch(19.85% 0.014 285.75); /* Base      #1e1e2e */
 
-	--secondary: oklch(100% 0 0 / 0.1);
-	--secondary-foreground: oklch(87% 0.03 257);
+	--secondary: oklch(26.57% 0.015 277.06); /* Surface 0 #313244 */
+	--secondary-foreground: oklch(87.99% 0.03 256.8); /* Text     #cdd6f4 */
 
-	--muted: oklch(100% 0 0 / 0.08);
-	--muted-foreground: oklch(68% 0.02 259);
+	--muted: oklch(31.61% 0.016 274.03); /* Surface 1 #45475a */
+	--muted-foreground: oklch(72.08% 0.022 258.72); /* Subtext 0 #a6adc8 */
 
-	--accent: oklch(100% 0 0 / 0.12);
-	--accent-foreground: oklch(87% 0.03 257);
+	--accent: oklch(31.61% 0.016 274.03); /* Surface 1 #45475a */
+	--accent-foreground: oklch(87.99% 0.03 256.8); /* Text      #cdd6f4 */
 
-	--destructive: oklch(75.16% 0.122 11.9);
-	--destructive-foreground: oklch(19% 0.014 286);
+	--destructive: oklch(75.16% 0.122 11.9); /* Red       #f38ba8 */
+	--destructive-foreground: oklch(19.85% 0.014 285.75); /* Base   #1e1e2e */
 
-	--border: oklch(100% 0 0 / 0.1);
-	--input: oklch(100% 0 0 / 0.15);
-	--ring: oklch(74.19% 0.146 303.9);
+	--border: oklch(31.61% 0.016 274.03); /* Surface 1 #45475a */
+	--input: oklch(31.61% 0.016 274.03); /* Surface 1 #45475a */
+	--ring: oklch(74.19% 0.146 303.9); /* Mauve     #cba6f7 */
 
-	--chart-1: oklch(79.38% 0.102 42.47);
-	--chart-2: oklch(86.73% 0.098 163.23);
-	--chart-3: oklch(76.72% 0.097 233.59);
-	--chart-4: oklch(92.36% 0.09 93.39);
-	--chart-5: oklch(86.63% 0.078 186.6);
+	--chart-1: oklch(79.38% 0.102 42.47); /* Peach     #fab387 */
+	--chart-2: oklch(86.73% 0.098 163.23); /* Green     #a6e3a1 */
+	--chart-3: oklch(76.72% 0.097 233.59); /* Blue      #89b4fa */
+	--chart-4: oklch(92.36% 0.09 93.39); /* Yellow    #f9e2af */
+	--chart-5: oklch(86.63% 0.078 186.6); /* Teal      #94e2d5 */
 
-	--sidebar: oklch(30% 0 0 / 0.6);
-	--sidebar-foreground: oklch(87% 0.03 257);
-	--sidebar-primary: oklch(74.19% 0.146 303.9);
-	--sidebar-primary-foreground: oklch(19% 0.014 286);
-	--sidebar-accent: oklch(100% 0 0 / 0.12);
-	--sidebar-accent-foreground: oklch(87% 0.03 257);
-	--sidebar-border: oklch(100% 0 0 / 0.1);
-	--sidebar-ring: oklch(74.19% 0.146 303.9);
-
-	/* ---- Glass-specific dark overrides ---- */
-
-	--glass-bg: var(--card);
-	--glass-border: var(--border);
-	--glass-ring: oklch(100% 0 0 / 0.05);
-	--glass-shadow: oklch(0% 0 0 / 0.2);
-
-	--glass-inner-bg: oklch(100% 0 0 / 0.05);
-	--glass-inner-border: var(--border);
-	--glass-inner-shadow: oklch(0% 0 0 / 0.15);
-
-	--glass-post-bg: oklch(100% 0 0 / 0.05);
-	--glass-post-border: var(--border);
-	--glass-post-ring: var(--glass-ring);
-	--glass-post-shadow: oklch(0% 0 0 / 0.2);
-	--glass-post-hover-bg: oklch(100% 0 0 / 0.08);
-	--glass-post-hover-border: color-mix(in oklch, var(--primary) 20%, transparent);
-	--glass-post-hover-shadow: color-mix(in oklch, var(--primary) 10%, transparent);
-
-	--glass-hover-bg: oklch(100% 0 0 / 0.1);
-	--glass-hover-border: color-mix(in oklch, var(--primary) 25%, transparent);
-	--glass-hover-shadow: color-mix(in oklch, var(--primary) 10%, transparent);
-
-	--navbar-dropdown: oklch(25% 0 0 / 0.85)
+	--sidebar: oklch(12.89% 0.014 285.75); /* Crust     #11111b */
+	--sidebar-foreground: oklch(87.99% 0.03 256.8); /* Text      #cdd6f4 */
+	--sidebar-primary: oklch(74.19% 0.146 303.9); /* Mauve     #cba6f7 */
+	--sidebar-primary-foreground: oklch(19.85% 0.014 285.75); /* Base #1e1e2e */
+	--sidebar-accent: oklch(26.57% 0.015 277.06); /* Surface 0 #313244 */
+	--sidebar-accent-foreground: oklch(87.99% 0.03 256.8); /* Text #cdd6f4 */
+	--sidebar-border: oklch(31.61% 0.016 274.03); /* Surface 1 #45475a */
+	--sidebar-ring: oklch(74.19% 0.146 303.9); /* Mauve     #cba6f7 */
 }
 
 @theme inline {
@@ -220,27 +150,6 @@
 	--radius-3xl: calc(var(--radius) * 2.2);
 	--radius-4xl: calc(var(--radius) * 2.6);
 
-	/* Glass color tokens — usable as bg-glass-*, border-glass-*, shadow-glass-*, etc. */
-	--color-glass-bg: var(--glass-bg);
-	--color-glass-border: var(--glass-border);
-	--color-glass-ring: var(--glass-ring);
-	--color-glass-shadow: var(--glass-shadow);
-
-	--color-glass-inner-bg: var(--glass-inner-bg);
-	--color-glass-inner-border: var(--glass-inner-border);
-	--color-glass-inner-shadow: var(--glass-inner-shadow);
-
-	--color-glass-post-bg: var(--glass-post-bg);
-	--color-glass-post-border: var(--glass-post-border);
-	--color-glass-post-ring: var(--glass-post-ring);
-	--color-glass-post-shadow: var(--glass-post-shadow);
-	--color-glass-post-hover-bg: var(--glass-post-hover-bg);
-	--color-glass-post-hover-border: var(--glass-post-hover-border);
-	--color-glass-post-hover-shadow: var(--glass-post-hover-shadow);
-
-	--color-glass-hover-bg: var(--glass-hover-bg);
-	--color-glass-hover-border: var(--glass-hover-border);
-	--color-glass-hover-shadow: var(--glass-hover-shadow);
 }
 
 html {
@@ -253,23 +162,6 @@ html.dark {
 	min-height: 100%;
 }
 
-/* ================================================
-   Global glass effects — backdrop-filter on panels
-   ================================================ */
-
-/* [data-slot='dropdown-menu-content'],
-[data-slot='select-content'],
-[data-slot='combobox-content'],
-[data-slot='tooltip-content'],
-[data-slot='navigation-menu-viewport'] {
-	backdrop-filter: blur(20px) saturate(180%);
-	-webkit-backdrop-filter: blur(20px) saturate(180%);
-}
-
-[data-slot='sheet-content'] {
-	backdrop-filter: blur(24px) saturate(180%);
-	-webkit-backdrop-filter: blur(24px) saturate(180%);
-} */
 
 @layer base {
 	* {
@@ -288,76 +180,6 @@ html.dark {
 	scrollbar-width: none;
 	&::-webkit-scrollbar {
 		display: none;
-	}
-}
-
-/* ================================================
-   Glass utility classes
-   All colors reference CSS custom properties defined
-   in :root / .dark above — edit there to restyle.
-   ================================================ */
-
-/* Base glass panel — bg, border, shadow, ring */
-@utility glass-panel {
-	background-color: var(--glass-bg);
-	border: 1px solid var(--glass-border);
-	box-shadow:
-		0 4px 6px -1px var(--glass-shadow),
-		0 2px 4px -2px var(--glass-shadow),
-		inset 0 0 0 1px var(--glass-ring);
-}
-
-/* Hover lift added on top of glass-panel (olympiad index cards) */
-@utility glass-card-hoverable {
-	cursor: pointer;
-	transition: all 0.3s;
-
-	&:hover {
-		background-color: var(--glass-hover-bg);
-		translate: 0 -0.5rem;
-		border-color: var(--glass-hover-border);
-		box-shadow:
-			0 20px 25px -5px var(--glass-hover-shadow),
-			0 8px 10px -6px var(--glass-hover-shadow),
-			inset 0 0 0 1px var(--glass-ring);
-	}
-}
-
-/* Small inner panel — problem tiles */
-@utility glass-inner-card {
-	display: flex;
-	flex-direction: column;
-	gap: 0.75rem;
-	border-radius: var(--radius-xl);
-	padding: 1rem;
-	background-color: var(--glass-inner-bg);
-	border: 1px solid var(--glass-inner-border);
-	box-shadow:
-		0 1px 3px 0 var(--glass-inner-shadow),
-		0 1px 2px -1px var(--glass-inner-shadow);
-}
-
-/* Blog post link card */
-@utility glass-post-link {
-	border-radius: var(--radius-2xl);
-	background-color: var(--glass-post-bg);
-	border: 1px solid var(--glass-post-border);
-	backdrop-filter: blur(12px);
-	-webkit-backdrop-filter: blur(12px);
-	box-shadow:
-		0 1px 3px 0 var(--glass-post-shadow),
-		0 1px 2px -1px var(--glass-post-shadow),
-		inset 0 0 0 1px var(--glass-post-ring);
-	transition: all 0.2s;
-
-	&:hover {
-		background-color: var(--glass-post-hover-bg);
-		translate: 0 -0.125rem;
-		border-color: var(--glass-post-hover-border);
-		box-shadow:
-			0 4px 6px -1px var(--glass-post-hover-shadow),
-			0 2px 4px -2px var(--glass-post-hover-shadow),
-			inset 0 0 0 1px var(--glass-post-ring);
 	}
 }
 

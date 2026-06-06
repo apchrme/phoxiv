@@ -179,7 +179,7 @@
 						{#if year.matchedProblems.length > 0}
 							<div class="grid grid-cols-1 gap-3 xs:grid-cols-2 lg:grid-cols-3">
 								{#each year.matchedProblems as problem (problem.number)}
-									<div class="glass-inner-card">
+									<div class="flex flex-col gap-2 p-5 rounded-xl bg-muted/50">
 										<div class="flex flex-col gap-0.5">
 											<span class="font-mono text-base font-semibold text-primary">
 												{problem.number}

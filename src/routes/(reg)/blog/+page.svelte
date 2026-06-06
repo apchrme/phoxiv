@@ -34,7 +34,7 @@
 			<li class="group relative">
 				<a
 					href="/blog/{post.slug}"
-					class="flex glass-post-link flex-col items-start gap-3 px-5 py-5 sm:flex-row sm:gap-6"
+					class="flex flex-col items-start gap-3 px-5 py-5 sm:flex-row sm:gap-6"
 				>
 					<!-- Date column -->
 					<div class="flex shrink-0 items-center gap-1.5 pt-0.5">
