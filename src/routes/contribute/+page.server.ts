@@ -38,7 +38,7 @@ export const actions = {
 
 		const year = parseInt(yearRaw, 10);
 		if (isNaN(year) || year < 1900 || year > 2100) {
-			return fail(400, { selectError: 'Please enter a valid year (1900–2100)' });
+			return fail(400, { selectError: 'Please enter a valid year (1900-2100)' });
 		}
 
 		await db

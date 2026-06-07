@@ -16,7 +16,7 @@
 
 	let phase = $state<'metadata' | 'files'>('metadata');
 	// Map existing data to objects with unique IDs
-	// We need to use deep state here because the page data is just used to seed the variables, and subsequent updates are by the user.
+	// We need to use deep state here because the page data is just used to seed the variables, and subsequent client-side updates are by the user.
 	// svelte-ignore state_referenced_locally
 	let notes = $state(data.year.notes.map((n) => ({ id: crypto.randomUUID(), value: n })));
 
