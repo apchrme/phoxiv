@@ -28,7 +28,12 @@ Overall, the project is structured the same as a regular SvelteKit project, but 
 
 ### `routes`
 
-- `olympiads/`: lists all olympiads
+- `(reg)`: regular pages that are cached in the local cache. API endpoints and the contribute page are excluded from this route group.
+  - `olympiads/`: lists all olympiads
+  - `login/`: login page
+  - `profile/`: profile of user
+  - `admin/`: admin panel for managing users
+  - `privacy/`: privacy policy
 - `api/`: api endpoints. These are often cached to reduced DB load.
   - `search/`: contains the search index used for the global fuzzy search
   - `stats/`: endpoint for the statistics on the landing page.
@@ -36,9 +41,8 @@ Overall, the project is structured the same as a regular SvelteKit project, but 
   - `olympiads`: endpoint for olympiad list
     - `[olympiad]`: endpoint for the olympiad files
 - `contribute/`: page for users to contribute. Currently, only admins can use this page.
-- `login/`: login page
-- `profile/`: profile of user
-- `admin/`: admin panel for managing users
+  - `[olympiad]`: edit olympiad metadata
+    - `[year]`: edit files and metadata of a year
 
 ## Authentication
 

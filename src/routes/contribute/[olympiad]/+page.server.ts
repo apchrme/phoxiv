@@ -109,7 +109,9 @@ export const actions: Actions = {
 
 		const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
 		if (!ALLOWED_EXTS.has(ext)) {
-			return fail(400, { uploadIconError: 'Unsupported file type. Use SVG, PNG, JPG, WebP, or AVIF.' });
+			return fail(400, {
+				uploadIconError: 'Unsupported file type. Use SVG, PNG, JPG, WebP, or AVIF.'
+			});
 		}
 		const contentType = ALLOWED_TYPES[ext] ?? 'application/octet-stream';
 
@@ -145,11 +147,7 @@ export const actions: Actions = {
 		const db = locals.db;
 
 		// Clear to empty string so the fallback (emoji/flag) takes over
-		await db
-			.update(olympiads)
-			.set({ icon: '' })
-			.where(eq(olympiads.id, params.olympiad))
-			.run();
+		await db.update(olympiads).set({ icon: '' }).where(eq(olympiads.id, params.olympiad)).run();
 
 		return { success: true, action: 'removeIcon' as const };
 	}

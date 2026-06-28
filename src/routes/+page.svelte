@@ -49,7 +49,12 @@
 		class="pointer-events-none absolute inset-0 flex items-center justify-around overflow-hidden md:hidden"
 		aria-hidden="true"
 	>
-		<img src={logo} alt="" class="h-112 w-md dark:opacity-10 opacity-50 select-none" style="filter: blur(2px);" />
+		<img
+			src={logo}
+			alt=""
+			class="h-112 w-md dark:opacity-10 opacity-50 select-none"
+			style="filter: blur(2px);"
+		/>
 	</div>
 
 	<!-- Left: text content -->

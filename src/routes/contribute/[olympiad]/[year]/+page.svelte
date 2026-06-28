@@ -19,6 +19,7 @@
 	// We need to use deep state here because the page data is just used to seed the variables, and subsequent client-side updates are by the user.
 	// svelte-ignore state_referenced_locally
 	let notes = $state(data.year.notes.map((n) => ({ id: crypto.randomUUID(), value: n })));
+	let deletingYear = $state(false);
 
 	// svelte-ignore state_referenced_locally
 	let extraLinks = $state(
@@ -129,7 +130,7 @@
 					await update({ reset: false });
 				};
 			}}
-			class="flex flex-col gap-5"
+			class="flex flex-col gap-5 pb-2"
 		>
 			<!-- Notes -->
 			<Card.Root>
@@ -237,6 +238,36 @@
 					<Spinner class="size-5" />
 				{/if}
 			</div>
+		</form>
+		<form
+			method="POST"
+			action="?/deleteYear"
+			use:enhance={({ cancel }) => {
+				if (
+					!confirm(
+						`Delete ${data.olympiad.name} ${data.year.year}? This will permanently remove the year, its problems, and all uploaded files.`
+					)
+				) {
+					cancel();
+					return;
+				}
+
+				deletingYear = true;
+				return async ({ update }) => {
+					deletingYear = false;
+					await update();
+				};
+			}}
+		>
+			<Button type="submit" variant="destructive" disabled={deletingYear}>
+				{#if deletingYear}
+					<Spinner class="size-3.5" />
+					Deleting…
+				{:else}
+					<Trash2 class="size-4" />
+					Delete this year
+				{/if}
+			</Button>
 		</form>
 	</Tabs.Content>
 

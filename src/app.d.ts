@@ -9,17 +9,12 @@ declare global {
 	namespace App {
 		interface Locals {
 			db: DrizzleD1Database;
+			auth: InferSelectModel<typeof auth> | null;
 			user: InferSelectModel<typeof user> | null;
 			session: InferSelectModel<typeof session> | null;
 		}
 		interface Platform {
-			env: Env & {
-				FILES: R2Bucket;
-				GITHUB_CLIENT_ID: string;
-				GITHUB_CLIENT_SECRET: string;
-				BETTER_AUTH_SECRET: string;
-				SUPERADMIN_EMAIL: string;
-			};
+			env: Env;
 			cf: CfProperties;
 			ctx: ExecutionContext;
 		}

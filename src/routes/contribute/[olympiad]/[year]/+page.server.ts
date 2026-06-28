@@ -1,4 +1,4 @@
-import { error, fail } from '@sveltejs/kit';
+import { redirect, error, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { eq, and } from 'drizzle-orm';
 import { olympiads, years, yearFiles, problems, problemFiles } from '$lib/server/db/schema.js';
@@ -128,6 +128,49 @@ export const actions: Actions = {
 		}
 
 		return { success: true, action: 'saveMetadata' as const };
+	},
+
+	deleteYear: async ({ params, platform, locals }) => {
+		requireAdmin(locals);
+		const db = locals.db;
+		const r2 = platform?.env.FILES;
+		if (!r2) return fail(500, { error: 'Storage unavailable' });
+		const yearNum = parseInt(params.year, 10);
+
+		const yearRow = await db
+			.select()
+			.from(years)
+			.where(and(eq(years.olympiadId, params.olympiad), eq(years.year, yearNum)))
+			.get();
+		if (!yearRow) return fail(404, { error: 'Year not found' });
+
+		// Gather every R2 object tied to this year (year-level + all problem files)
+		const [yearFileRows, problemFileRows] = await Promise.all([
+			db
+				.select({ url: yearFiles.url })
+				.from(yearFiles)
+				.where(eq(yearFiles.yearId, yearRow.id))
+				.all(),
+			db
+				.select({ url: problemFiles.url })
+				.from(problemFiles)
+				.innerJoin(problems, eq(problems.id, problemFiles.problemId))
+				.where(eq(problems.yearId, yearRow.id))
+				.all()
+		]);
+
+		const urls = [...yearFileRows.map((f) => f.url), ...problemFileRows.map((f) => f.url)];
+
+		await Promise.all(
+			urls
+				.filter((url) => url.startsWith(CDN_BASE_URL + '/'))
+				.map((url) => r2.delete(url.slice(CDN_BASE_URL.length + 1)).catch(() => {}))
+		);
+
+		// Cascades to `problems`, `yearFiles`, `problemFiles` via FK onDelete: 'cascade'
+		await db.delete(years).where(eq(years.id, yearRow.id)).run();
+
+		redirect(303, `/contribute`);
 	},
 
 	uploadFile: async ({ request, params, platform, locals }) => {

@@ -98,7 +98,9 @@ export const actions = {
 			};
 			const ext = iconFile.name.split('.').pop()?.toLowerCase() ?? '';
 			if (!ALLOWED_EXTS.has(ext)) {
-				return fail(400, { createError: 'Unsupported icon format. Use SVG, PNG, JPG, WebP, or AVIF.' });
+				return fail(400, {
+					createError: 'Unsupported icon format. Use SVG, PNG, JPG, WebP, or AVIF.'
+				});
 			}
 			const contentType = ALLOWED_TYPES[ext] ?? 'application/octet-stream';
 			const key = `icons/olympiads/${id}.${ext}`;

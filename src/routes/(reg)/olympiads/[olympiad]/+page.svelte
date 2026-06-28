@@ -19,24 +19,24 @@
 	let olympiadFilesLoading = $state(true);
 
 	$effect(() => {
-    const id = olympiad.id; // tracked dependency
-    olympiadFiles = null;
-    olympiadFilesLoading = true;
-    query = '';
+		const id = olympiad.id; // tracked dependency
+		olympiadFiles = null;
+		olympiadFilesLoading = true;
+		query = '';
 
-    fetch(`/api/olympiads/${id}`)
-        .then((r) => r.json())
-        .then(async (data) => {
-            olympiadFiles = data;
-            olympiadFilesLoading = false;
+		fetch(`/api/olympiads/${id}`)
+			.then((r) => r.json())
+			.then(async (data) => {
+				olympiadFiles = data;
+				olympiadFilesLoading = false;
 
-            const hash = window.location.hash;
-            if (hash) {
-                await tick();
-                document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' });
-            }
-        });
-});
+				const hash = window.location.hash;
+				if (hash) {
+					await tick();
+					document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' });
+				}
+			});
+	});
 
 	let query = $state('');
 	let showFullYear = $state(false);

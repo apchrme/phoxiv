@@ -9,7 +9,6 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-
 :root {
 	--radius: 0.625rem;
 
@@ -149,7 +148,6 @@
 	--radius-2xl: calc(var(--radius) * 1.8);
 	--radius-3xl: calc(var(--radius) * 2.2);
 	--radius-4xl: calc(var(--radius) * 2.6);
-
 }
 
 html {
@@ -161,7 +159,6 @@ html.dark {
 	background: oklch(10.5% 0.018 280);
 	min-height: 100%;
 }
-
 
 @layer base {
 	* {

@@ -69,7 +69,8 @@
 			}
 		}
 		if ('updateError' in form && form.updateError) toast.error(String(form.updateError));
-		if ('uploadIconError' in form && form.uploadIconError) toast.error(String(form.uploadIconError));
+		if ('uploadIconError' in form && form.uploadIconError)
+			toast.error(String(form.uploadIconError));
 	});
 
 	// Whether the current icon is an uploaded image (URL)
@@ -103,21 +104,21 @@
 </header>
 
 <div class="mx-auto max-w-xl flex flex-col gap-5">
-
 	<!-- ── Icon card ─────────────────────────────────────────────────── -->
 	<Card.Root>
 		<Card.Header class="border-b">
 			<Card.Title>Icon</Card.Title>
 			<Card.Description>
-				Upload a custom image (SVG, PNG, JPG, WebP, or AVIF, max 2 MB), or use an emoji / flag in the metadata form below.
-				Uploaded images take priority over emoji icons.
+				Upload a custom image (SVG, PNG, JPG, WebP, or AVIF, max 2 MB), or use an emoji / flag in
+				the metadata form below. Uploaded images take priority over emoji icons.
 			</Card.Description>
 		</Card.Header>
 		<Card.Content class="flex flex-col gap-4">
-
 			<!-- Current icon preview -->
 			<div class="flex items-center gap-4">
-				<div class="flex size-16 shrink-0 items-center justify-center rounded-xl border border-border bg-muted/30">
+				<div
+					class="flex size-16 shrink-0 items-center justify-center rounded-xl border border-border bg-muted/30"
+				>
 					{#if iconPreviewUrl}
 						<img src={iconPreviewUrl} alt="Icon preview" class="h-12 w-auto object-contain" />
 					{:else}
@@ -206,7 +207,13 @@
 						<p class="text-xs text-muted-foreground">
 							Remove the uploaded icon and fall back to the emoji/flag set in the metadata below.
 						</p>
-						<Button type="submit" variant="destructive" size="sm" disabled={removingIcon} class="ml-4 shrink-0">
+						<Button
+							type="submit"
+							variant="destructive"
+							size="sm"
+							disabled={removingIcon}
+							class="ml-4 shrink-0"
+						>
 							{#if removingIcon}
 								<Spinner class="size-3.5" />
 							{:else}
@@ -217,7 +224,6 @@
 					</div>
 				</form>
 			{/if}
-
 		</Card.Content>
 	</Card.Root>
 
@@ -317,7 +323,9 @@
 				<div class="flex flex-col gap-1.5">
 					<label for="displayOrder" class="text-sm font-medium">
 						Display order
-						<span class="text-xs font-normal text-muted-foreground">(lower = earlier in listing)</span>
+						<span class="text-xs font-normal text-muted-foreground"
+							>(lower = earlier in listing)</span
+						>
 					</label>
 					<Input
 						id="displayOrder"
@@ -366,7 +374,8 @@
 	<div class="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
 		<p class="mb-2 font-medium text-foreground">Manage years for this olympiad</p>
 		<p class="mb-3 text-xs">
-			To add or edit content for a specific year, go back to the contribute page and select this olympiad with a year.
+			To add or edit content for a specific year, go back to the contribute page and select this
+			olympiad with a year.
 		</p>
 		<a
 			href={resolve('/contribute')}
@@ -375,5 +384,4 @@
 			Go to contribute →
 		</a>
 	</div>
-
 </div>
