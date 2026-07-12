@@ -94,11 +94,11 @@
 <Sidebar.Provider>
 	<AppSidebar navLinks={navLinks.concat(moreNavLinks)} user={data.user} />
 	<!-- Main wrapper — transparent so html gradient shows through -->
-	<div class="flex min-h-screen w-full flex-col items-center px-4 pt-4 pb-3 bg-background">
+	<div class="flex min-h-screen w-full flex-col items-center px-4 pt-6 pb-3 bg-background">
 		<div class="w-full lg:w-5/6 xl:w-2/3">
 			<!-- Mobile nav — glass pill -->
 			<nav
-				class="sticky top-2 z-40 md:hidden flex-row flex-wrap items-center justify-between gap-2 rounded-full border
+				class="sticky top-3 z-40 md:hidden flex-row flex-wrap items-center justify-between gap-2 rounded-full border
 				       border-white/65
 				       bg-white/45 p-1.5
 				       shadow-lg
@@ -121,7 +121,7 @@
 
 			<!-- Desktop nav — glass pill -->
 			<nav
-				class="sticky top-2 z-40 hidden flex-row flex-wrap items-center justify-between gap-2 rounded-full border
+				class="sticky top-3 z-40 hidden flex-row flex-wrap items-center justify-between gap-2 rounded-full border
 				       border-white/65
 				       bg-white/45 p-1.5
 				       shadow-lg

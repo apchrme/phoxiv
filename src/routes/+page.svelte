@@ -1,24 +1,21 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
-	import { buttonVariants } from '$lib/components/ui/button/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { cn } from '$lib/utils.js';
 	import brand from '$lib/assets/branding/brand.svg';
 	import logo from '$lib/assets/branding/logo.svg';
 	import { onMount } from 'svelte';
 	import GitHubButton from '$lib/components/buttons/GitHubButton.svelte';
 	import DiscordButton from '$lib/components/buttons/DiscordButton.svelte';
+	import { gsap } from 'gsap';
+	import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
 	const { data } = $props();
 
-	let rotX = $state(12);
-	let rotY = $state(-18);
-
-	function handleMouseMove(e: MouseEvent) {
-		const cx = window.innerWidth / 2;
-		const cy = window.innerHeight / 2;
-		rotY = ((e.clientX - cx) / cx) * 25;
-		rotX = -((e.clientY - cy) / cy) * 18;
-	}
+	// ---------------------------------------------------------------------------
+	// Stats — fetched once on mount
+	// ---------------------------------------------------------------------------
 
 	let stats: Record<string, number> = $state({ olympiads: 0, years: 0, files: 0 });
 
@@ -31,6 +28,46 @@
 		{ value: stats.years, label: 'Years' },
 		{ value: stats.files, label: 'Files' }
 	]);
+
+	let pageRoot: HTMLElement | undefined = $state();
+onMount(() => {
+	if (!pageRoot) return;
+
+	gsap.registerPlugin(ScrollTrigger);
+
+	// Respect prefers-reduced-motion: keep the reveals, just make them instant.
+	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const dur = (d: number) => (reduceMotion ? 0 : d);
+
+	const ctx = gsap.context(() => {
+		// Hide everything up front (synchronously) so there's no flash of visible
+		// content before the reveal timelines run.
+		gsap.set(['.hero-brand', '.hero-phonetic', '.hero-desc', '.hero-cta', '.stat'], {
+			autoAlpha: 0,
+			y: 20
+		});
+		gsap.set('.stat-item', { autoAlpha: 0, y: 30 });
+		gsap.set(['.feature-eyebrow', '.feature-heading'], { autoAlpha: 0, y: 16 });
+		gsap.set('.feature-card', { autoAlpha: 0, y: 40 });
+
+		// Hero entrance — brand mark, phonetic spelling, description, then CTAs in a stagger
+		gsap
+			.timeline({ defaults: { ease: 'power3.out' } })
+			.to('.hero-brand', { autoAlpha: 1, y: 0, duration: dur(0.8) })
+			.to('.hero-phonetic', { autoAlpha: 1, y: 0, duration: dur(0.5) }, '-=0.5')
+			.to('.hero-desc', { autoAlpha: 1, y: 0, duration: dur(0.6) }, '-=0.35')
+			.to(
+				'.hero-cta',
+				{ autoAlpha: 1, y: 0, duration: dur(0.5), stagger: dur(0.1), ease:'power3.out' },
+				'-=0.3'
+			)
+			.to('.stat', {autoAlpha: 1, y: 0, duration: dur(0.5)}, '-=0.35')
+			.to('.stat-item', {autoAlpha: 1, y: 0, duration: dur(0.7), stagger: dur(0.12), ease: 'power3.out',},'-=0.5');
+	}, pageRoot);
+
+	return () => ctx.revert();
+});
+
 </script>
 
 <SvelteSeo
@@ -39,137 +76,93 @@
 	keywords="problems, solutions, olympiad, physics, ipho, apho, eupho, singapore, eotvos"
 />
 
-<svelte:window onmousemove={handleMouseMove} />
-
-<div
-	class="relative flex min-h-[calc(100svh-10rem)] flex-col items-center justify-center gap-10 py-12 md:flex-row md:items-center md:justify-between"
->
-	<!-- Mobile: blurred logo watermark -->
-	<div
-		class="pointer-events-none absolute inset-0 flex items-center justify-around overflow-hidden md:hidden"
-		aria-hidden="true"
+<div bind:this={pageRoot} class="flex flex-col">
+	<!-- ============================================================= -->
+	<!-- Hero section — centered title, no interactive 3-D logo        -->
+	<!-- ============================================================= -->
+	<section
+		class="relative flex min-h-[calc(100svh-10rem)] flex-col items-center justify-center gap-7 py-12 text-center"
 	>
-		<img
-			src={logo}
-			alt=""
-			class="h-112 w-md dark:opacity-10 opacity-50 select-none"
-			style="filter: blur(2px);"
-		/>
-	</div>
+		<!-- Blurred logo watermark, kept purely as atmosphere -->
+		<div
+			class="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
+			aria-hidden="true"
+		>
+			<img
+				src={logo}
+				alt=""
+				class="h-120 w-md dark:opacity-10 opacity-40 select-none"
+				style="filter: blur(2px);"
+			/>
+		</div>
 
-	<!-- Left: text content -->
-	<div class="hero-text relative z-10 flex min-w-0 flex-1 flex-col justify-center gap-7">
 		<!-- Title -->
-		<div class="flex flex-col gap-1">
-			<img src={brand} alt="phoXiv" class="w-3/4" />
-			<span class="font-mono text-sm tracking-[0.02em] text-muted-foreground">/ foʊkaɪv /</span>
+		<div class="hero-brand relative z-10 flex flex-col items-center gap-2">
+			<img src={brand} alt="phoXiv" class="w-[50vw] max-w-lg" />
+			<span class="hero-phonetic font-mono text-sm tracking-[0.02em] text-muted-foreground">
+				/ foʊkaɪv /
+			</span>
 		</div>
 
 		<!-- Description -->
-		<p class="m-0 prose max-w-[44ch] text-foreground/75">
+		<p class="hero-desc relative z-10 m-0 prose max-w-[46ch] text-foreground/75">
 			A comprehensive archive of physics olympiads, from the well-known IPhO and EuPhO to hidden
 			gems like the Eötvös competition. Includes marking schemes and answer sheets you rarely find
 			elsewhere, all in a mobile-friendly interface.
 		</p>
 
 		<!-- CTAs -->
-		<div class="flex flex-wrap gap-3">
-			<a href={resolve('/olympiads')} class={cn(buttonVariants({ variant: 'default' }))}>
+		<div class="relative z-10 flex xs:flex-row flex-col justify-center gap-3">
+			<div class="hero-cta">
+			<Button href={resolve('/olympiads')}>
 				Browse olympiads
-			</a>
+			</Button>
+
 			{#if data.user}
-				<a
+				<Button
 					href="/contribute"
-					class={cn(
-						buttonVariants({ variant: 'outline' }),
-						'border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10'
-					)}
+					variant="outline"
+					class='border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10'
 				>
 					Contribute
-				</a>
+				</Button>
 			{:else}
-				<a
+				<Button
 					href="/login"
-					class={cn(
-						buttonVariants({ variant: 'outline' }),
-						'border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10'
-					)}
+					variant="outline"
+					class='border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10'
 				>
-					Login (new!)
-				</a>
+					Login
+				</Button>
 			{/if}
-			<GitHubButton />
-			<DiscordButton />
+			</div>
+			<div class="hero-cta flex flex-row justify-center gap-2"><GitHubButton /><DiscordButton /></div>
 		</div>
 
-		<!-- Stats — glass pill row -->
 		<div
-			class="inline-flex flex-wrap items-center gap-0 self-start
-			       overflow-hidden
-			       rounded-2xl border
+			class="stat mx-auto flex w-[80vw] max-w-md overflow-hidden rounded-2xl border
 			       border-white/70 bg-white/50 shadow-md
-			       ring-1
-			       shadow-black/5 ring-white/60 backdrop-blur-md
-			       ring-inset dark:border-white/10 dark:bg-white/5 dark:shadow-black/30
-			       dark:ring-white/5"
+			       ring-1 shadow-black/5 ring-white/60
+			       backdrop-blur-md ring-inset
+			       flex-row dark:border-white/10 dark:bg-white/5 dark:shadow-black/30 dark:ring-white/5"
 		>
 			{#each statItems as { value, label }, i (label)}
-				<div class="flex flex-col items-center gap-0.5 px-6 py-4">
-					<span class="font-mono text-[1.75rem] leading-none font-bold text-foreground"
-						>{value}</span
-					>
-					<span class="font-mono text-[0.6rem] tracking-widest text-muted-foreground uppercase">
+				<div class="stat-item flex flex-1 flex-col items-center gap-1 px-4 py-4">
+					<span class="font-mono text-xl leading-none font-bold text-foreground">
+						{value}
+					</span>
+					<span class="font-mono text-xs tracking-widest text-muted-foreground uppercase">
 						{label}
 					</span>
 				</div>
 				{#if i < statItems.length - 1}
-					<div class="w-px self-stretch bg-border/60" aria-hidden="true"></div>
+					<div
+						class="self-stretch bg-border/60 h-auto w-px"
+						aria-hidden="true"
+					></div>
 				{/if}
 			{/each}
 		</div>
-	</div>
+	</section>
 
-	<!-- Right: interactive 3-D logo (desktop only) -->
-	<div class="hero-logo hidden shrink-0 items-center justify-center md:flex" aria-hidden="true">
-		<div
-			class="relative flex h-[clamp(16rem,28vw,26rem)] w-[clamp(16rem,28vw,26rem)] items-center justify-center [transition:transform_0.08s_ease-out] transform-3d"
-			style="transform: perspective(900px) rotateX({rotX}deg) rotateY({rotY}deg);"
-		>
-			<!-- Logo -->
-			<img
-				src={logo}
-				alt=""
-				class="pointer-events-none h-full w-full transform-[translateZ(30px)] object-contain select-none"
-			/>
-		</div>
-	</div>
 </div>
-
-<style>
-	@keyframes fade-up {
-		from {
-			opacity: 0;
-			translate: 0 1.25rem;
-		}
-		to {
-			opacity: 1;
-			translate: 0 0;
-		}
-	}
-
-	@keyframes fade-in {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
-	}
-
-	.hero-text {
-		animation: fade-up 600ms ease-in-out both;
-	}
-	.hero-logo {
-		animation: fade-in 800ms ease-in-out 300ms both;
-	}
-</style>
