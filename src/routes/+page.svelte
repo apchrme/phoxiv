@@ -51,16 +51,16 @@ onMount(() => {
 		// Hero entrance — brand mark, phonetic spelling, description, then CTAs in a stagger
 		gsap
 			.timeline({ defaults: { ease: 'power3.out' } })
-			.to('.hero-brand', { autoAlpha: 1, y: 0, duration: dur(0.8) })
-			.to('.hero-phonetic', { autoAlpha: 1, y: 0, duration: dur(0.5) }, '-=0.5')
-			.to('.hero-desc', { autoAlpha: 1, y: 0, duration: dur(0.6) }, '-=0.35')
+			.to('.hero-brand', { autoAlpha: 1, y: 0, duration: dur(0.6) })
+			.to('.hero-phonetic', { autoAlpha: 1, y: 0, duration: dur(0.6) }, '-=0.5')
+			.to('.hero-desc', { autoAlpha: 1, y: 0, duration: dur(0.6) }, '-=0.5')
 			.to(
 				'.hero-cta',
 				{ autoAlpha: 1, y: 0, duration: dur(0.5), stagger: dur(0.1), ease:'power3.out' },
-				'-=0.3'
+				'-=0.5'
 			)
-			.to('.stat', {autoAlpha: 1, y: 0, duration: dur(0.5)}, '-=0.35')
-			.to('.stat-item', {autoAlpha: 1, y: 0, duration: dur(0.7), stagger: dur(0.12), ease: 'power3.out',},'-=0.5');
+			.to('.stat', {autoAlpha: 1, y: 0, duration: dur(0.5)}, '-=0.5')
+			.to('.stat-item', {autoAlpha: 1, y: 0, duration: dur(0.7), stagger: dur(0.12), ease: 'power3.out',},'-=0.4');
 	}, pageRoot);
 
 	return () => ctx.revert();
