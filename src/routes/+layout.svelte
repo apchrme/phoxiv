@@ -84,7 +84,7 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href="/logo.svg?v=4" />
+	<link rel="icon" href="/favicon.ico" />
 </svelte:head>
 
 <ModeWatcher />

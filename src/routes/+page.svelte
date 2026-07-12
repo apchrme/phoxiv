@@ -47,8 +47,6 @@ onMount(() => {
 			y: 20
 		});
 		gsap.set('.stat-item', { autoAlpha: 0, y: 30 });
-		gsap.set(['.feature-eyebrow', '.feature-heading'], { autoAlpha: 0, y: 16 });
-		gsap.set('.feature-card', { autoAlpha: 0, y: 40 });
 
 		// Hero entrance — brand mark, phonetic spelling, description, then CTAs in a stagger
 		gsap
