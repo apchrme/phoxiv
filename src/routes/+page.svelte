@@ -113,7 +113,7 @@ onMount(() => {
 
 		<!-- CTAs -->
 		<div class="relative z-10 flex xs:flex-row flex-col justify-center gap-3">
-			<div class="hero-cta">
+			<div class="hero-cta flex flex-row justify-center gap-2">
 			<Button href={resolve('/olympiads')}>
 				Browse olympiads
 			</Button>
