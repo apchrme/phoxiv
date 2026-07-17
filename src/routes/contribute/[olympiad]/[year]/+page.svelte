@@ -11,6 +11,7 @@
 	import { toast } from 'svelte-sonner';
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
+	import { cn } from '$lib/utils.js';
 
 	let { data, params, form }: PageProps = $props();
 
@@ -58,6 +59,27 @@
 	}
 	function removeProblem(i: number) {
 		problemList.splice(i, 1);
+	}
+
+	// ── Duplicate problem number detection ────────────────────────────────────
+	// Tracks which problem numbers appear more than once so we can warn the user
+	// and block saving until they're unique.
+	const duplicateNumbers = $derived.by(() => {
+		const counts = new Map<string, number>();
+		for (const p of problemList) {
+			const num = p.number.trim();
+			if (!num) continue;
+			counts.set(num, (counts.get(num) ?? 0) + 1);
+		}
+		return new Set([...counts.entries()].filter(([, count]) => count > 1).map(([num]) => num));
+	});
+	const hasDuplicateNumbers = $derived(duplicateNumbers.size > 0);
+
+	// ── Duplicate file label detection ────────────────────────────────────────
+	function isDuplicateLabel(label: string, existingFiles: { label: string; url: string }[]) {
+		const trimmed = label.trim().toLowerCase();
+		if (!trimmed) return false;
+		return existingFiles.some((f) => f.label.trim().toLowerCase() === trimmed);
 	}
 
 	let savingMetadata = $state(false);
@@ -121,7 +143,12 @@
 		<form
 			method="POST"
 			action="?/saveMetadata"
-			use:enhance={() => {
+			use:enhance={({ cancel }) => {
+				if (hasDuplicateNumbers) {
+					cancel();
+					toast.error('Duplicate problem numbers found — please make them unique before saving.');
+					return;
+				}
 				savingMetadata = true;
 				return async ({ update }) => {
 					// update() normally invalidates data and resets the form.
@@ -205,6 +232,8 @@
 				</Card.Header>
 				<Card.Content class="flex flex-col gap-3">
 					{#each problemList as problem, i (problem.id)}
+						{@const isDuplicate =
+							problem.number.trim() !== '' && duplicateNumbers.has(problem.number.trim())}
 						<div class="flex gap-2">
 							<Input
 								name="problemNumber"
@@ -212,6 +241,7 @@
 								bind:value={problem.number}
 								placeholder="T1"
 								class="w-15"
+								aria-invalid={isDuplicate}
 							/>
 							<Input
 								name="problemTitle"
@@ -227,11 +257,21 @@
 					<Button type="button" variant="outline" size="sm" onclick={addProblem} class="self-start">
 						<Plus class="size-4" /> Add problem
 					</Button>
+					{#if hasDuplicateNumbers}
+						<p class="text-sm text-destructive">
+							Duplicate problem numbers: {[...duplicateNumbers].join(', ')}. Each problem number
+							must be unique.
+						</p>
+					{/if}
 				</Card.Content>
 			</Card.Root>
 
 			<div class="flex flex-row items-center gap-2">
-				<Button type="submit" class="disabled:bg-primary/60" disabled={savingMetadata}>
+				<Button
+					type="submit"
+					class="disabled:bg-primary/60"
+					disabled={savingMetadata || hasDuplicateNumbers}
+				>
 					Save metadata
 				</Button>
 				{#if savingMetadata}
@@ -278,6 +318,9 @@
 				existingFiles: { label: string; url: string }[],
 				problemNumber?: string
 			)}
+				{@const labelKey = problemNumber ?? 'year'}
+				{@const currentLabel = newFileLabel[labelKey] ?? ''}
+				{@const duplicateLabel = isDuplicateLabel(currentLabel, existingFiles)}
 				<div class="flex flex-col gap-3">
 					<!-- Existing files -->
 					{#if existingFiles.length > 0}
@@ -295,7 +338,23 @@
 										>
 											<ExternalLink class="size-3" /> View
 										</a>
-										<form method="POST" action="?/deleteFile" use:enhance>
+										<form
+											method="POST"
+											action="?/deleteFile"
+											use:enhance={({ cancel }) => {
+												if (
+													!confirm(
+														`Delete "${file.label}"? This will permanently remove the file. This cannot be undone.`
+													)
+												) {
+													cancel();
+													return;
+												}
+												return async ({ update }) => {
+													await update();
+												};
+											}}
+										>
 											<input type="hidden" name="scope" value={scope} />
 											<input type="hidden" name="label" value={file.label} />
 											{#if problemNumber}
@@ -317,10 +376,13 @@
 						method="POST"
 						action="?/uploadFile"
 						enctype="multipart/form-data"
-						use:enhance={() => {
-							const labelKey = problemNumber ?? 'year';
-							const label = newFileLabel[labelKey] ?? '';
-							const key = uploadKey(scope, label, problemNumber);
+						use:enhance={({ cancel }) => {
+							if (duplicateLabel) {
+								cancel();
+								toast.error(`A file named "${currentLabel.trim()}" already exists.`);
+								return;
+							}
+							const key = uploadKey(scope, currentLabel, problemNumber);
 							uploading[key] = true;
 							return async ({ update }) => {
 								uploading[key] = false;
@@ -340,13 +402,23 @@
 								id="label"
 								name="label"
 								type="text"
-								bind:value={newFileLabel[problemNumber ?? 'year']}
+								bind:value={newFileLabel[labelKey]}
 								placeholder="e.g. Problems, Solutions, Marking Scheme…"
 								required
 								pattern="[^\/]*"
 								// don't allow forward slashes to prevent conflicts
-								class="h-9 w-full rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+								aria-invalid={duplicateLabel}
+								class={cn(
+									'h-9 w-full rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
+									duplicateLabel && 'border-destructive focus-visible:ring-destructive/20'
+								)}
 							/>
+							{#if duplicateLabel}
+								<p class="text-xs text-destructive">
+									A file named "{currentLabel.trim()}" already exists. Delete it first or choose a
+									different name.
+								</p>
+							{/if}
 						</div>
 						<div class="flex flex-1 flex-col gap-1.5">
 							<label for="file" class="text-xs font-medium text-muted-foreground">File</label>
@@ -361,12 +433,10 @@
 						</div>
 						<Button
 							type="submit"
-							disabled={uploading[
-								uploadKey(scope, newFileLabel[problemNumber ?? 'year'] ?? '', problemNumber)
-							]}
+							disabled={uploading[uploadKey(scope, currentLabel, problemNumber)] || duplicateLabel}
 							class="shrink-0"
 						>
-							{#if uploading[uploadKey(scope, newFileLabel[problemNumber ?? 'year'] ?? '', problemNumber)]}
+							{#if uploading[uploadKey(scope, currentLabel, problemNumber)]}
 								Uploading…
 							{:else}
 								Upload

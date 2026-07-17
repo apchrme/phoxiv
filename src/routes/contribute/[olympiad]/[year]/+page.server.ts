@@ -104,6 +104,15 @@ export const actions: Actions = {
 			.map((number, i) => ({ number, title: (rawTitles[i] ?? '').trim() || null }))
 			.filter((p) => p.number);
 
+		// Reject duplicate problem numbers instead of silently upserting over each other
+		const seenNumbers = new Set<string>();
+		for (const { number } of problemPairs) {
+			if (seenNumbers.has(number)) {
+				return fail(400, { error: `Duplicate problem number: ${number}` });
+			}
+			seenNumbers.add(number);
+		}
+
 		for (const { number, title } of problemPairs) {
 			await db
 				.insert(problems)
@@ -240,24 +249,25 @@ export const actions: Actions = {
 			if (!problemRow)
 				return fail(404, { error: `Problem ${problemNumber} not found — save metadata first` });
 
-			// Delete old R2 file if replacing
+			// Reject if a file with this label already exists for this problem —
+			// the user must delete the existing file first rather than silently overwrite it.
 			const existing = await db
 				.select({ url: problemFiles.url })
 				.from(problemFiles)
 				.where(and(eq(problemFiles.problemId, problemRow.id), eq(problemFiles.label, label)))
 				.get();
-			if (existing?.url.startsWith(CDN_BASE_URL + '/')) {
-				await r2.delete(existing.url.slice(CDN_BASE_URL.length + 1));
+			if (existing) {
+				return fail(400, { error: `A file named "${label}" already exists for this problem.` });
 			}
 		} else {
-			// Delete old R2 file if replacing
+			// Reject if a file with this label already exists for this year.
 			const existing = await db
 				.select({ url: yearFiles.url })
 				.from(yearFiles)
 				.where(and(eq(yearFiles.yearId, yearRow.id), eq(yearFiles.label, label)))
 				.get();
-			if (existing?.url.startsWith(CDN_BASE_URL + '/')) {
-				await r2.delete(existing.url.slice(CDN_BASE_URL.length + 1));
+			if (existing) {
+				return fail(400, { error: `A file named "${label}" already exists for this year.` });
 			}
 		}
 
@@ -309,37 +319,41 @@ export const actions: Actions = {
 			.get();
 		if (!yearRow) return fail(404, { error: 'Year not found' });
 
-		const record = await db
-			.select()
-			.from(yearFiles)
-			.where(and(eq(yearFiles.yearId, yearRow.id), eq(yearFiles.label, label)))
-			.get();
-		if (!record) return fail(404, { error: 'File not found' });
-
-		// Delete from R2 using only the DB-stored URL, not the submitted one
-		if (record.url.startsWith(CDN_BASE_URL + '/')) {
-			await r2.delete(record.url.slice(CDN_BASE_URL.length + 1));
-		}
-
-		await db.delete(yearFiles).where(eq(yearFiles.id, record.id)).run();
-
 		if (scope === 'year') {
-			await db
-				.delete(yearFiles)
+			const record = await db
+				.select()
+				.from(yearFiles)
 				.where(and(eq(yearFiles.yearId, yearRow.id), eq(yearFiles.label, label)))
-				.run();
+				.get();
+			if (!record) return fail(404, { error: 'File not found' });
+
+			// Delete from R2 using only the DB-stored URL, not the submitted one
+			if (record.url.startsWith(CDN_BASE_URL + '/')) {
+				await r2.delete(record.url.slice(CDN_BASE_URL.length + 1));
+			}
+
+			await db.delete(yearFiles).where(eq(yearFiles.id, record.id)).run();
 		} else {
 			const problem = await db
 				.select()
 				.from(problems)
 				.where(and(eq(problems.yearId, yearRow.id), eq(problems.number, problemNumber)))
 				.get();
-			if (problem) {
-				await db
-					.delete(problemFiles)
-					.where(and(eq(problemFiles.problemId, problem.id), eq(problemFiles.label, label)))
-					.run();
+			if (!problem) return fail(404, { error: 'Problem not found' });
+
+			const record = await db
+				.select()
+				.from(problemFiles)
+				.where(and(eq(problemFiles.problemId, problem.id), eq(problemFiles.label, label)))
+				.get();
+			if (!record) return fail(404, { error: 'File not found' });
+
+			// Delete from R2 using only the DB-stored URL, not the submitted one
+			if (record.url.startsWith(CDN_BASE_URL + '/')) {
+				await r2.delete(record.url.slice(CDN_BASE_URL.length + 1));
 			}
+
+			await db.delete(problemFiles).where(eq(problemFiles.id, record.id)).run();
 		}
 
 		return { success: true, action: 'deleteFile' as const };
