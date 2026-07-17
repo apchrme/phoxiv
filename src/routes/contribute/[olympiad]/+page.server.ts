@@ -1,7 +1,7 @@
-import { error, fail } from '@sveltejs/kit';
+import { redirect, error, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { eq } from 'drizzle-orm';
-import { olympiads } from '$lib/server/db/schema.js';
+import { eq, desc } from 'drizzle-orm';
+import { olympiads, years } from '$lib/server/db/schema.js';
 import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
 import { requireAdmin } from '$lib/server/guard';
@@ -19,6 +19,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	if (!olympiadRow) error(404, 'Olympiad not found');
 
+	const yearRows = await db
+		.select({ year: years.year })
+		.from(years)
+		.where(eq(years.olympiadId, params.olympiad))
+		.orderBy(desc(years.year))
+		.all();
+
 	return {
 		olympiad: {
 			id: olympiadRow.id,
@@ -28,7 +35,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			tag: olympiadRow.tag,
 			descriptionMd: olympiadRow.descriptionMd ?? '',
 			displayOrder: olympiadRow.displayOrder
-		}
+		},
+		years: yearRows.map((y) => y.year)
 	};
 };
 
@@ -150,5 +158,27 @@ export const actions: Actions = {
 		await db.update(olympiads).set({ icon: '' }).where(eq(olympiads.id, params.olympiad)).run();
 
 		return { success: true, action: 'removeIcon' as const };
+	},
+
+	// Creates the year record if it doesn't exist yet, then takes the user straight to it.
+	// olympiadId is fixed to the current page, unlike the top-level /contribute selectYear action.
+	selectYear: async ({ request, params, locals }) => {
+		requireAdmin(locals);
+		const db = locals.db;
+		const data = await request.formData();
+		const yearRaw = String(data.get('year') ?? '').trim();
+
+		const year = parseInt(yearRaw, 10);
+		if (isNaN(year) || year < 1900 || year > 2100) {
+			return fail(400, { selectError: 'Please enter a valid year (1900-2100)' });
+		}
+
+		await db
+			.insert(years)
+			.values({ olympiadId: params.olympiad, year, notes: '[]', extraLinks: '[]' })
+			.onConflictDoNothing()
+			.run();
+
+		redirect(303, `/contribute/${params.olympiad}/${year}`);
 	}
 };

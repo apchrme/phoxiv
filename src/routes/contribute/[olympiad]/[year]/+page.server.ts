@@ -179,7 +179,7 @@ export const actions: Actions = {
 		// Cascades to `problems`, `yearFiles`, `problemFiles` via FK onDelete: 'cascade'
 		await db.delete(years).where(eq(years.id, yearRow.id)).run();
 
-		redirect(303, `/contribute`);
+		redirect(303, `/contribute/${params.olympiad}`);
 	},
 
 	uploadFile: async ({ request, params, platform, locals }) => {

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
-	import { ChevronLeft, Save, Upload, X, Image } from '@lucide/svelte';
+	import { ChevronLeft, Save, Upload, X, Plus, Pencil } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
@@ -28,6 +28,7 @@
 	let saving = $state(false);
 	let uploadingIcon = $state(false);
 	let removingIcon = $state(false);
+	let addingYear = $state(false);
 
 	// Preview for the selected-but-not-yet-uploaded icon file
 	let iconPreviewUrl = $state<string | null>(null);
@@ -104,6 +105,74 @@
 </header>
 
 <div class="mx-auto max-w-xl flex flex-col gap-5">
+	<!-- ── Years card ────────────────────────────────────────────────── -->
+	<Card.Root>
+		<Card.Header class="border-b">
+			<Card.Title>Years</Card.Title>
+			<Card.Description>
+				Select a year to edit its files and metadata, or add a new year below.
+			</Card.Description>
+		</Card.Header>
+		<Card.Content class="flex flex-col gap-4">
+			{#if data.years.length > 0}
+				<div class="flex flex-wrap gap-2">
+					{#each data.years as year (year)}
+						<a
+							href="/contribute/{data.olympiad.id}/{year}"
+							class="inline-flex items-center gap-1.5 rounded-4xl border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+						>
+							<Pencil class="size-3.5 text-muted-foreground" />
+							{year}
+						</a>
+					{/each}
+				</div>
+			{:else}
+				<p class="text-sm text-muted-foreground">No years added yet.</p>
+			{/if}
+
+			<Separator />
+
+			<!-- Add / jump to a year -->
+			<form
+				method="POST"
+				action="?/selectYear"
+				use:enhance={() => {
+					addingYear = true;
+					return async ({ update }) => {
+						addingYear = false;
+						await update();
+					};
+				}}
+				class="flex flex-wrap items-end gap-2"
+			>
+				<div class="flex flex-col gap-1.5">
+					<label for="newYear" class="text-xs font-medium text-muted-foreground">Year</label>
+					<Input
+						id="newYear"
+						name="year"
+						type="number"
+						min="1900"
+						max="2100"
+						placeholder="e.g. 2025"
+						required
+						class="w-32"
+					/>
+				</div>
+				<Button type="submit" size="sm" disabled={addingYear}>
+					{#if addingYear}
+						<Spinner class="size-3.5" />
+					{:else}
+						<Plus class="size-3.5" />
+					{/if}
+					Add / go to year
+				</Button>
+			</form>
+			{#if form && 'selectError' in form && form.selectError}
+				<p class="text-sm text-destructive">{form.selectError}</p>
+			{/if}
+		</Card.Content>
+	</Card.Root>
+
 	<!-- ── Icon card ─────────────────────────────────────────────────── -->
 	<Card.Root>
 		<Card.Header class="border-b">
@@ -369,19 +438,4 @@
 			{/if}
 		</div>
 	</form>
-
-	<!-- Quick link to manage years -->
-	<div class="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-		<p class="mb-2 font-medium text-foreground">Manage years for this olympiad</p>
-		<p class="mb-3 text-xs">
-			To add or edit content for a specific year, go back to the contribute page and select this
-			olympiad with a year.
-		</p>
-		<a
-			href={resolve('/contribute')}
-			class="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
-		>
-			Go to contribute →
-		</a>
-	</div>
 </div>

@@ -114,11 +114,11 @@
 />
 
 <a
-	href={resolve('/contribute')}
+	href={resolve(`/contribute/${params.olympiad}`)}
 	class="mt-5 inline-flex items-center gap-1.5 text-sm text-muted-foreground no-underline transition-colors hover:text-primary"
 >
 	<ChevronLeft class="size-4" />
-	Back
+	Back to {data.olympiad.name}
 </a>
 
 <header class="flex flex-col gap-1 py-5">

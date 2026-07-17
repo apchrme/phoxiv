@@ -18,6 +18,7 @@ Overall, the project is structured the same as a regular SvelteKit project, but 
 
 - `hooks.server.ts`: Server hooks. The connection to the D1 database occurs here, since it is so commonly used. Individual pages import the `locals.DB` object created here. The R2 connection is only necessary for contributors, so it is not connected in server hooks.
 
+
 ### `$lib` (i.e. `src/lib`)
 
 - `components/`: contains all the components that are used across the project
@@ -28,13 +29,13 @@ Overall, the project is structured the same as a regular SvelteKit project, but 
 
 ### `routes`
 
-- `(reg)`: regular pages that are cached in the local cache. API endpoints and the contribute page are excluded from this route group.
+- `(reg)`: Route group containing regular pages that are cached in the local cache. API endpoints and the contribute page are excluded from this route group.
   - `olympiads/`: lists all olympiads
   - `login/`: login page
   - `profile/`: profile of user
   - `admin/`: admin panel for managing users
   - `privacy/`: privacy policy
-- `api/`: api endpoints. These are often cached to reduced DB load.
+- `api/`: API endpoints cached in a **shared cache** to reduced DB load. Since a shared cache (Cloudflare's cache) is used, it also allows for manual reloading of the cache using Cloudflare's dashboard.
   - `search/`: contains the search index used for the global fuzzy search
   - `stats/`: endpoint for the statistics on the landing page.
   - `auth/`: endpoint for authentication (see auth section below)
@@ -51,3 +52,4 @@ Authentication is implemented with [BetterAuth](https://better-auth.com/). The B
 ### User types
 
 Currently, there are only two user types: `user` and `admin`, which are the defaults configured in BetterAuth's admin plugin. There is also a superadmin, which is an admin that cannot be demoted.
+
