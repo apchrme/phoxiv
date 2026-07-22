@@ -157,9 +157,23 @@
 			: current.filter((id) => id !== olympiadId);
 	}
 
-	// Refs to each row's role-change form, keyed by user id, so selecting a new
-	// role in the <Select> can submit its form directly without a DOM query.
-	let roleFormRefs: Record<string, HTMLFormElement> = {};
+	// Local, per-user draft of the selected role. Deliberately NOT bound to
+	// `u.role` directly — a select wired straight to reactive server data plus
+	// an auto-submitting onValueChange caused an infinite submit loop (the
+	// post-submit reload re-supplied `value`, which re-fired onValueChange,
+	// which submitted again, forever). Draft state + an explicit Save button
+	// avoids that entirely.
+	let roleDrafts = $state<Record<string, string>>({});
+
+	function currentRoleDraft(u: UserRow): string {
+		return roleDrafts[u.id] ?? (u.role ?? 'user');
+	}
+
+	function roleLabel(role: string): string {
+		if (role === 'admin') return 'Admin';
+		if (role === 'contributor') return 'Contributor';
+		return 'User';
+	}
 </script>
 
 <SvelteSeo title="Admin — phoXiv" description="phoXiv admin panel" />
@@ -307,6 +321,8 @@
 					<!-- Actions -->
 					<Table.Cell>
 						{#if !isSelf}
+							{@const draft = currentRoleDraft(u)}
+							{@const dirty = draft !== (u.role ?? '')}
 							<div class="flex flex-wrap items-center justify-end gap-2">
 								<!-- Role select -->
 								<form
@@ -316,32 +332,38 @@
 										submitting[u.id + '_role'] = true;
 										return async ({ update }) => {
 											submitting[u.id + '_role'] = false;
+											// Clear the local draft so the row falls back to reading
+											// straight from the (now-updated) server data again.
+											delete roleDrafts[u.id];
 											await update();
 										};
 									}}
-									bind:this={roleFormRefs[u.id]}
 									class="flex items-center gap-1.5"
 								>
 									<input type="hidden" name="userId" value={u.id} />
+									<input type="hidden" name="role" value={draft} />
 									<Select.Root
 										type="single"
-										name="role"
-										value={u.role ?? ''}
-										onValueChange={() => roleFormRefs[u.id]?.requestSubmit()}
+										value={draft}
+										onValueChange={(v) => (roleDrafts[u.id] = v)}
 									>
 										<Select.Trigger class="h-8 w-32 text-xs" disabled={submitting[u.id + '_role']}>
-											{u.role === 'admin'
-												? 'Admin'
-												: u.role === 'contributor'
-													? 'Contributor'
-													: 'User'}
+											{roleLabel(draft)}
 										</Select.Trigger>
 										<Select.Content>
-											<Select.Item value="">User</Select.Item>
+											<Select.Item value="user">User</Select.Item>
 											<Select.Item value="contributor">Contributor</Select.Item>
 											<Select.Item value="admin">Admin</Select.Item>
 										</Select.Content>
 									</Select.Root>
+									<Button
+										type="submit"
+										size="xs"
+										variant={dirty ? 'default' : 'outline'}
+										disabled={submitting[u.id + '_role'] || !dirty}
+									>
+										Save
+									</Button>
 								</form>
 
 								<!-- Assign olympiads — contributors only -->
