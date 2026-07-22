@@ -4,7 +4,7 @@ import { eq, desc } from 'drizzle-orm';
 import { olympiads, years } from '$lib/server/db/schema.js';
 import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
-import { requireAdmin } from '$lib/server/guard';
+import { requireOlympiadEditor } from '$lib/server/guard';
 
 const CDN_BASE_URL = 'https://cdn.phoxiv.org';
 
@@ -42,7 +42,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 export const actions: Actions = {
 	updateOlympiad: async ({ request, params, locals }) => {
-		requireAdmin(locals);
+		requireOlympiadEditor(locals, params.olympiad);
 		const db = locals.db;
 
 		const data = await request.formData();
@@ -92,7 +92,7 @@ export const actions: Actions = {
 	},
 
 	uploadIcon: async ({ request, params, platform, locals }) => {
-		requireAdmin(locals);
+		requireOlympiadEditor(locals, params.olympiad);
 		const db = locals.db;
 		const r2 = platform?.env.FILES;
 		if (!r2) return fail(500, { uploadIconError: 'Storage unavailable' });
@@ -151,7 +151,7 @@ export const actions: Actions = {
 	},
 
 	removeIcon: async ({ params, locals }) => {
-		requireAdmin(locals);
+		requireOlympiadEditor(locals, params.olympiad);
 		const db = locals.db;
 
 		// Clear to empty string so the fallback (emoji/flag) takes over
@@ -163,7 +163,7 @@ export const actions: Actions = {
 	// Creates the year record if it doesn't exist yet, then takes the user straight to it.
 	// olympiadId is fixed to the current page, unlike the top-level /contribute selectYear action.
 	selectYear: async ({ request, params, locals }) => {
-		requireAdmin(locals);
+		requireOlympiadEditor(locals, params.olympiad);
 		const db = locals.db;
 		const data = await request.formData();
 		const yearRaw = String(data.get('year') ?? '').trim();

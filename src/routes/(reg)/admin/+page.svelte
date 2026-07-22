@@ -4,20 +4,21 @@
 	import SvelteSeo from 'svelte-seo';
 	import Title from '$lib/components/Title.svelte';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { FlexRender, createSvelteTable } from '$lib/components/ui/data-table/index.js';
 	import {
 		User,
-		Shield,
 		Ban,
 		CircleCheck,
 		ChevronUp,
 		ChevronDown,
-		ChevronsUpDown
+		ChevronsUpDown,
+		BookOpenCheck
 	} from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import {
@@ -70,6 +71,7 @@
 			enableSorting: true,
 			filterFn: (row, _id, filterValue) => {
 				if (filterValue === 'admin') return row.original.role === 'admin';
+				if (filterValue === 'contributor') return row.original.role === 'contributor';
 				if (filterValue === 'banned') return !!row.original.banned;
 				return true;
 			}
@@ -128,6 +130,36 @@
 			year: 'numeric'
 		});
 	}
+
+	function parseAssigned(assignedOlympiads: string): string[] {
+		try {
+			const parsed = JSON.parse(assignedOlympiads || '[]');
+			return Array.isArray(parsed) ? parsed.filter((x) => typeof x === 'string') : [];
+		} catch {
+			return [];
+		}
+	}
+
+	// Local, per-user draft of checked olympiad IDs while the assign dropdown is open.
+	// Seeded lazily from the row's current assignment when first opened.
+	let assignDrafts = $state<Record<string, string[]>>({});
+
+	function openAssignDropdown(u: UserRow) {
+		if (!(u.id in assignDrafts)) {
+			assignDrafts[u.id] = parseAssigned(u.assignedOlympiads);
+		}
+	}
+
+	function toggleAssigned(userId: string, olympiadId: string, checked: boolean) {
+		const current = assignDrafts[userId] ?? [];
+		assignDrafts[userId] = checked
+			? [...current, olympiadId]
+			: current.filter((id) => id !== olympiadId);
+	}
+
+	// Refs to each row's role-change form, keyed by user id, so selecting a new
+	// role in the <Select> can submit its form directly without a DOM query.
+	let roleFormRefs: Record<string, HTMLFormElement> = {};
 </script>
 
 <SvelteSeo title="Admin — phoXiv" description="phoXiv admin panel" />
@@ -144,11 +176,18 @@
 	/>
 	<Select.Root type="single" bind:value={roleFilter}>
 		<Select.Trigger class="w-36">
-			{roleFilter === 'all' ? 'All users' : roleFilter === 'admin' ? 'Admins' : 'Banned'}
+			{roleFilter === 'all'
+				? 'All users'
+				: roleFilter === 'admin'
+					? 'Admins'
+					: roleFilter === 'contributor'
+						? 'Contributors'
+						: 'Banned'}
 		</Select.Trigger>
 		<Select.Content>
 			<Select.Item value="all">All users</Select.Item>
 			<Select.Item value="admin">Admins only</Select.Item>
+			<Select.Item value="contributor">Contributors only</Select.Item>
 			<Select.Item value="banned">Banned only</Select.Item>
 		</Select.Content>
 	</Select.Root>
@@ -200,7 +239,9 @@
 				{@const u = row.original}
 				{@const isSelf = u.id === data.user?.id}
 				{@const isAdmin = u.role === 'admin'}
+				{@const isContributor = u.role === 'contributor'}
 				{@const isBanned = u.banned}
+				{@const assignedIds = parseAssigned(u.assignedOlympiads)}
 
 				<Table.Row class={isBanned ? 'opacity-50' : ''}>
 					<!-- User cell — rendered manually for the avatar+badge treatment -->
@@ -243,6 +284,12 @@
 						<div class="flex flex-wrap gap-1">
 							{#if isAdmin}
 								<Badge variant="default" class="text-xs">Admin</Badge>
+							{:else if isContributor}
+								<Badge variant="secondary" class="text-xs">Contributor</Badge>
+								<Badge variant="outline" class="text-xs">
+									{assignedIds.length}
+									{assignedIds.length === 1 ? 'olympiad' : 'olympiads'}
+								</Badge>
 							{:else}
 								<Badge variant="outline" class="text-xs">User</Badge>
 							{/if}
@@ -260,8 +307,8 @@
 					<!-- Actions -->
 					<Table.Cell>
 						{#if !isSelf}
-							<div class="flex items-center justify-end gap-2">
-								<!-- Toggle admin role -->
+							<div class="flex flex-wrap items-center justify-end gap-2">
+								<!-- Role select -->
 								<form
 									method="POST"
 									action="?/setRole"
@@ -272,19 +319,95 @@
 											await update();
 										};
 									}}
+									bind:this={roleFormRefs[u.id]}
+									class="flex items-center gap-1.5"
 								>
 									<input type="hidden" name="userId" value={u.id} />
-									<input type="hidden" name="role" value={isAdmin ? 'user' : 'admin'} />
-									<Button
-										type="submit"
-										variant={isAdmin ? 'outline' : 'default'}
-										size="xs"
-										disabled={submitting[u.id + '_role']}
+									<Select.Root
+										type="single"
+										name="role"
+										value={u.role ?? ''}
+										onValueChange={() => roleFormRefs[u.id]?.requestSubmit()}
 									>
-										<Shield class="size-3" />
-										{isAdmin ? 'Demote' : 'Make admin'}
-									</Button>
+										<Select.Trigger class="h-8 w-32 text-xs" disabled={submitting[u.id + '_role']}>
+											{u.role === 'admin'
+												? 'Admin'
+												: u.role === 'contributor'
+													? 'Contributor'
+													: 'User'}
+										</Select.Trigger>
+										<Select.Content>
+											<Select.Item value="">User</Select.Item>
+											<Select.Item value="contributor">Contributor</Select.Item>
+											<Select.Item value="admin">Admin</Select.Item>
+										</Select.Content>
+									</Select.Root>
 								</form>
+
+								<!-- Assign olympiads — contributors only -->
+								{#if isContributor}
+									<DropdownMenu.Root
+										onOpenChange={(open) => {
+											if (open) openAssignDropdown(u);
+										}}
+									>
+										<DropdownMenu.Trigger
+											class={buttonVariants({ variant: 'outline', size: 'xs' })}
+										>
+											<BookOpenCheck class="size-3" />
+											Assign
+										</DropdownMenu.Trigger>
+										<DropdownMenu.Content align="end" class="max-h-72 w-56 overflow-y-auto">
+											<DropdownMenu.Label>Assigned olympiads</DropdownMenu.Label>
+											<DropdownMenu.Separator />
+											{#each data.olympiads as o (o.id)}
+												{@const draft = assignDrafts[u.id] ?? assignedIds}
+												{@const checked = draft.includes(o.id)}
+												<label
+													class="flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm select-none hover:bg-accent"
+												>
+													<input
+														type="checkbox"
+														{checked}
+														onchange={(e) =>
+															toggleAssigned(
+																u.id,
+																o.id,
+																(e.currentTarget as HTMLInputElement).checked
+															)}
+													/>
+													{o.name}
+												</label>
+											{/each}
+											<DropdownMenu.Separator />
+											<form
+												method="POST"
+												action="?/setAssignedOlympiads"
+												use:enhance={() => {
+													submitting[u.id + '_assign'] = true;
+													return async ({ update }) => {
+														submitting[u.id + '_assign'] = false;
+														await update();
+													};
+												}}
+												class="px-1 pb-1"
+											>
+												<input type="hidden" name="userId" value={u.id} />
+												{#each assignDrafts[u.id] ?? assignedIds as olympiadId (olympiadId)}
+													<input type="hidden" name="olympiadId" value={olympiadId} />
+												{/each}
+												<Button
+													type="submit"
+													size="xs"
+													class="w-full"
+													disabled={submitting[u.id + '_assign']}
+												>
+													Save assignments
+												</Button>
+											</form>
+										</DropdownMenu.Content>
+									</DropdownMenu.Root>
+								{/if}
 
 								<Separator orientation="vertical" class="h-5" />
 

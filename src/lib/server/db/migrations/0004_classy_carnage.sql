@@ -1,0 +1,1 @@
+ALTER TABLE `user` ADD `assigned_olympiads` text DEFAULT '[]' NOT NULL;

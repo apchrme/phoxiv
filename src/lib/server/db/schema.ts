@@ -76,12 +76,15 @@ export const user = sqliteTable('user', {
 		.notNull(),
 	updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
 		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-		.$onUpdate(() => /* @__PURE__ */ new Date())
+		.$onUpdate(() => new Date())
 		.notNull(),
 	role: text('role'),
 	banned: integer('banned', { mode: 'boolean' }).default(false),
 	banReason: text('ban_reason'),
-	banExpires: integer('ban_expires', { mode: 'timestamp_ms' })
+	banExpires: integer('ban_expires', { mode: 'timestamp_ms' }),
+	// JSON-encoded array of olympiad IDs this user (as a contributor) may edit.
+	// Same convention as `notes`/`extraLinks` elsewhere in this schema.
+	assignedOlympiads: text('assigned_olympiads').notNull().default('[]')
 });
 
 export const session = sqliteTable(

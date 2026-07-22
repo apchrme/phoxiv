@@ -3,7 +3,7 @@ import { asc } from 'drizzle-orm';
 import { olympiads, years } from '$lib/server/db/schema.js';
 import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
-import { requireAdmin } from '$lib/server/guard';
+import { requireAdmin, canEditOlympiad, getAssignedOlympiadIds } from '$lib/server/guard';
 
 const CDN_BASE_URL = 'https://cdn.phoxiv.org';
 
@@ -14,24 +14,29 @@ export const load = async ({ locals }) => {
 		.from(olympiads)
 		.orderBy(asc(olympiads.displayOrder), asc(olympiads.id))
 		.all();
-	return { olympiads: rows };
+
+	if (locals.user?.role === 'admin') return { olympiads: rows };
+
+	// Contributors only see (and can pick from) olympiads they're assigned to.
+	const assigned = new Set(getAssignedOlympiadIds(locals.user));
+	return { olympiads: rows.filter((o) => assigned.has(o.id)) };
 };
 
 export const actions = {
-	// Navigate to an existing olympiad+year, creating the year record if it doesn't exist yet.
-	// If no year is provided, redirect to the olympiad metadata edit page instead.
 	selectYear: async ({ request, locals }) => {
-		requireAdmin(locals);
 		const db = locals.db;
 		const data = await request.formData();
 		const olympiadId = String(data.get('olympiadId') ?? '').trim();
 		const yearRaw = String(data.get('year') ?? '').trim();
 
-		if (!olympiadId) {
-			return fail(400, { selectError: 'Please select an olympiad' });
+		if (!olympiadId) return fail(400, { selectError: 'Please select an olympiad' });
+
+		// This action previously had NO permission check of its own — it relied
+		// entirely on the layout guard, which now also admits contributors.
+		if (!canEditOlympiad(locals.user, olympiadId)) {
+			return fail(403, { selectError: 'You are not permitted to edit this olympiad' });
 		}
 
-		// If year is empty, redirect to the olympiad metadata editor
 		if (!yearRaw) {
 			redirect(303, `/contribute/${olympiadId}`);
 		}
@@ -49,8 +54,8 @@ export const actions = {
 		redirect(303, `/contribute/${olympiadId}/${year}`);
 	},
 
-	// Create a brand new olympiad, then go straight to editing its first year.
-	// Optionally uploads an icon image to R2.
+	// Creating brand-new olympiads stays admin-only — contributors work within
+	// olympiads they've already been assigned, they don't create new ones.
 	createOlympiad: async ({ request, locals, platform }) => {
 		requireAdmin(locals);
 		const db = locals.db;
