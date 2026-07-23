@@ -1,9 +1,10 @@
 import { redirect, fail } from '@sveltejs/kit';
-import { asc } from 'drizzle-orm';
+import { asc, eq, and } from 'drizzle-orm';
 import { olympiads, years } from '$lib/server/db/schema.js';
 import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
 import { requireAdmin, canEditOlympiad, getAssignedOlympiadIds } from '$lib/server/guard';
+import { logActivity } from '$lib/server/activity-log.js';
 
 const CDN_BASE_URL = 'https://cdn.phoxiv.org';
 
@@ -46,11 +47,22 @@ export const actions = {
 			return fail(400, { selectError: 'Please enter a valid year (1900-2100)' });
 		}
 
+		const existingYear = await db
+			.select({ id: years.id })
+			.from(years)
+			.where(and(eq(years.olympiadId, olympiadId), eq(years.year, year)))
+			.get();
+
 		await db
 			.insert(years)
 			.values({ olympiadId, year, notes: '[]', extraLinks: '[]' })
 			.onConflictDoNothing()
 			.run();
+
+		if (!existingYear) {
+			await logActivity(db, locals.user, 'add_year', `Added year ${year}`, { olympiadId, year });
+		}
+
 		redirect(303, `/contribute/${olympiadId}/${year}`);
 	},
 
@@ -142,6 +154,12 @@ export const actions = {
 			return fail(400, { createError: `An olympiad with the ID "${id}" already exists` });
 		}
 		await db.insert(years).values({ olympiadId: id, year, notes: '[]', extraLinks: '[]' }).run();
+
+		await logActivity(db, locals.user, 'create_olympiad', `Created "${name}" (${id})`, {
+			olympiadId: id,
+			year
+		});
+
 		redirect(303, `/contribute/${id}/${year}`);
 	}
 };

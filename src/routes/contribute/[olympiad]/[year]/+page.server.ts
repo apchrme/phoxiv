@@ -3,6 +3,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { eq, and } from 'drizzle-orm';
 import { olympiads, years, yearFiles, problems, problemFiles } from '$lib/server/db/schema.js';
 import { requireOlympiadEditor } from '$lib/server/guard';
+import { logActivity } from '$lib/server/activity-log.js';
 
 const CDN_BASE_URL = 'https://cdn.phoxiv.org';
 
@@ -136,6 +137,14 @@ export const actions: Actions = {
 			}
 		}
 
+		await logActivity(
+			db,
+			locals.user,
+			'save_metadata',
+			`Saved metadata (${notes.length} notes, ${extraLinks.length} links, ${problemPairs.length} problems)`,
+			{ olympiadId: params.olympiad, year: yearNum }
+		);
+
 		return { success: true, action: 'saveMetadata' as const };
 	},
 
@@ -178,6 +187,11 @@ export const actions: Actions = {
 
 		// Cascades to `problems`, `yearFiles`, `problemFiles` via FK onDelete: 'cascade'
 		await db.delete(years).where(eq(years.id, yearRow.id)).run();
+
+		await logActivity(db, locals.user, 'delete_year', `Deleted year ${yearNum}`, {
+			olympiadId: params.olympiad,
+			year: yearNum
+		});
 
 		redirect(303, `/contribute/${params.olympiad}`);
 	},
@@ -297,6 +311,14 @@ export const actions: Actions = {
 				.run();
 		}
 
+		await logActivity(
+			db,
+			locals.user,
+			'upload_file',
+			`Uploaded "${label}" for ${scope === 'year' ? 'year' : `problem ${problemNumber}`}`,
+			{ olympiadId: params.olympiad, year: yearNum }
+		);
+
 		return { success: true, action: 'uploadFile' as const };
 	},
 
@@ -355,6 +377,14 @@ export const actions: Actions = {
 
 			await db.delete(problemFiles).where(eq(problemFiles.id, record.id)).run();
 		}
+
+		await logActivity(
+			db,
+			locals.user,
+			'delete_file',
+			`Deleted "${label}" from ${scope === 'year' ? 'year' : `problem ${problemNumber}`}`,
+			{ olympiadId: params.olympiad, year: yearNum }
+		);
 
 		return { success: true, action: 'deleteFile' as const };
 	}

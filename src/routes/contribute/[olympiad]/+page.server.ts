@@ -1,10 +1,11 @@
 import { redirect, error, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { eq, desc } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { olympiads, years } from '$lib/server/db/schema.js';
 import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
 import { requireOlympiadEditor } from '$lib/server/guard';
+import { logActivity } from '$lib/server/activity-log.js';
 
 const CDN_BASE_URL = 'https://cdn.phoxiv.org';
 
@@ -88,6 +89,10 @@ export const actions: Actions = {
 			.where(eq(olympiads.id, params.olympiad))
 			.run();
 
+		await logActivity(db, locals.user, 'update_olympiad', `Updated metadata for "${name}"`, {
+			olympiadId: params.olympiad
+		});
+
 		return { success: true, action: 'updateOlympiad' as const };
 	},
 
@@ -147,6 +152,10 @@ export const actions: Actions = {
 			.where(eq(olympiads.id, params.olympiad))
 			.run();
 
+		await logActivity(db, locals.user, 'upload_icon', 'Uploaded a new icon', {
+			olympiadId: params.olympiad
+		});
+
 		return { success: true, action: 'uploadIcon' as const, iconUrl };
 	},
 
@@ -156,6 +165,10 @@ export const actions: Actions = {
 
 		// Clear to empty string so the fallback (emoji/flag) takes over
 		await db.update(olympiads).set({ icon: '' }).where(eq(olympiads.id, params.olympiad)).run();
+
+		await logActivity(db, locals.user, 'remove_icon', 'Removed the uploaded icon', {
+			olympiadId: params.olympiad
+		});
 
 		return { success: true, action: 'removeIcon' as const };
 	},
@@ -173,11 +186,24 @@ export const actions: Actions = {
 			return fail(400, { selectError: 'Please enter a valid year (1900-2100)' });
 		}
 
+		const existingYear = await db
+			.select({ id: years.id })
+			.from(years)
+			.where(and(eq(years.olympiadId, params.olympiad), eq(years.year, year)))
+			.get();
+
 		await db
 			.insert(years)
 			.values({ olympiadId: params.olympiad, year, notes: '[]', extraLinks: '[]' })
 			.onConflictDoNothing()
 			.run();
+
+		if (!existingYear) {
+			await logActivity(db, locals.user, 'add_year', `Added year ${year}`, {
+				olympiadId: params.olympiad,
+				year
+			});
+		}
 
 		redirect(303, `/contribute/${params.olympiad}/${year}`);
 	}

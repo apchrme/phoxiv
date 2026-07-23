@@ -1,7 +1,7 @@
 import type { Actions, PageServerLoad } from './$types';
 import { fail } from '@sveltejs/kit';
-import { eq, ne, asc } from 'drizzle-orm';
-import { user, olympiads } from '$lib/server/db/schema.js';
+import { eq, ne, asc, desc } from 'drizzle-orm';
+import { user, olympiads, activityLog } from '$lib/server/db/schema.js';
 import { requireAdmin } from '$lib/server/guard.js';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -29,7 +29,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.orderBy(asc(olympiads.displayOrder), asc(olympiads.id))
 		.all();
 
-	return { users, olympiads: olympiadOptions };
+	const log = await db
+		.select()
+		.from(activityLog)
+		.orderBy(desc(activityLog.createdAt))
+		.limit(100) // Limit to 100 most recent logs
+		.all();
+
+	return { users, olympiads: olympiadOptions, log };
 };
 
 export const actions: Actions = {

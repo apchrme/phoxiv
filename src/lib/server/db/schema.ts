@@ -157,6 +157,39 @@ export const verification = sqliteTable(
 	(table) => [index('verification_identifier_idx').on(table.identifier)]
 );
 
+// Records contributor/admin actions (creating olympiads, editing metadata,
+// uploading/deleting files, etc.) for display on the admin "Log" tab.
+export const activityLog = sqliteTable(
+	'activity_log',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
+		// Snapshot of the user's name at the time of the action, so the log still
+		// reads sensibly even if the user is later deleted or renamed.
+		userName: text('user_name').notNull(),
+		action: text('action', {
+			enum: [
+				'create_olympiad',
+				'update_olympiad',
+				'upload_icon',
+				'remove_icon',
+				'add_year',
+				'delete_year',
+				'save_metadata',
+				'upload_file',
+				'delete_file'
+			]
+		}).notNull(),
+		olympiadId: text('olympiad_id'),
+		year: integer('year'),
+		detail: text('detail').notNull().default(''),
+		createdAt: integer('created_at', { mode: 'timestamp_ms' })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull()
+	},
+	(t) => [index('activity_log_created_at_idx').on(t.createdAt)]
+);
+
 export const userRelations = relations(user, ({ many }) => ({
 	sessions: many(session),
 	accounts: many(account)
