@@ -198,7 +198,8 @@
 		delete_year: 'Deleted year',
 		save_metadata: 'Saved year metadata',
 		upload_file: 'Uploaded file',
-		delete_file: 'Deleted file'
+		delete_file: 'Deleted file',
+		import_titles: 'Imported problem titles'
 	};
 
 	function actionVariant(action: string): 'default' | 'secondary' | 'destructive' | 'outline' {

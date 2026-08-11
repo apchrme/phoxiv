@@ -10,7 +10,8 @@ export type LogAction =
 	| 'delete_year'
 	| 'save_metadata'
 	| 'upload_file'
-	| 'delete_file';
+	| 'delete_file'
+	| 'import_files';
 
 type ActingUser = { id: string; name: string } | null | undefined;
 

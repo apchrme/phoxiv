@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
-	import { ChevronLeft, Save, Upload, X, Plus, Pencil } from '@lucide/svelte';
+	import { ChevronLeft, Save, Upload, X, Plus, Pencil, FileUp } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
@@ -29,6 +29,18 @@
 	let uploadingIcon = $state(false);
 	let removingIcon = $state(false);
 	let addingYear = $state(false);
+
+	let importingTitles = $state(false);
+	let csvFileName = $state<string | null>(null);
+	let csvFileInput: HTMLInputElement | undefined = $state();
+
+	function onCsvFileChange(e: Event) {
+		csvFileName = (e.currentTarget as HTMLInputElement).files?.[0]?.name ?? null;
+	}
+	function clearCsvFile() {
+		csvFileName = null;
+		if (csvFileInput) csvFileInput.value = '';
+	}
 
 	// Preview for the selected-but-not-yet-uploaded icon file
 	let iconPreviewUrl = $state<string | null>(null);
@@ -69,9 +81,19 @@
 				clearIconFile();
 			}
 		}
+		if (form.action === 'importTitles' && 'success' in form && form.success) {
+				if ('stats' in form && form.stats) {
+					const s = form.stats;
+					toast.success(
+						`Import complete — ${s.created} created, ${s.filled} filled, ${s.kept} kept` +
+							`${s.yearsCreated ? `, ${s.yearsCreated} years added` : ''}.`
+					);
+				}
+				clearCsvFile();
+			}
 		if ('updateError' in form && form.updateError) toast.error(String(form.updateError));
-		if ('uploadIconError' in form && form.uploadIconError)
-			toast.error(String(form.uploadIconError));
+		if ('uploadIconError' in form && form.uploadIconError) toast.error(String(form.uploadIconError));
+		if ('importError' in form && form.importError) toast.error(String(form.importError));
 	});
 
 	// Whether the current icon is an uploaded image (URL)
@@ -428,6 +450,7 @@
 			</Card.Content>
 		</Card.Root>
 
+
 		<div class="flex items-center gap-3">
 			<Button type="submit" class="disabled:bg-primary/60" disabled={saving}>
 				<Save class="size-4" />
@@ -438,4 +461,62 @@
 			{/if}
 		</div>
 	</form>
+
+	<!-- ── Import titles card ────────────────────────────────────────── -->
+	<Card.Root>
+		<Card.Header class="border-b">
+			<Card.Title>Import problem titles</Card.Title>
+			<Card.Description>
+				Upload a CSV with columns <code class="font-mono text-xs">olympiad,year,number,title</code>.
+				New problems are created (missing years are added automatically); problems that already have
+				a title are left unchanged.
+			</Card.Description>
+		</Card.Header>
+		<Card.Content class="flex flex-col gap-4">
+			<form
+				method="POST"
+				action="?/importTitles"
+				enctype="multipart/form-data"
+				use:enhance={() => {
+					importingTitles = true;
+					return async ({ update }) => {
+						importingTitles = false;
+						await update({ reset: false });
+					};
+				}}
+				class="flex flex-col gap-3"
+			>
+				<Input
+					id="csvFile"
+					name="csvFile"
+					type="file"
+					accept=".csv"
+					bind:this={csvFileInput}
+					onchange={onCsvFileChange}
+					class="text-sm text-muted-foreground file:mr-3 file:rounded-4xl file:border file:border-border file:px-3 file:py-1 file:text-sm file:font-medium file:text-foreground hover:cursor-pointer"
+				/>
+				<div class="flex gap-2">
+					<Button type="submit" size="sm" disabled={importingTitles || !csvFileName}>
+						{#if importingTitles}
+							<Spinner class="size-3.5" />
+							Importing…
+						{:else}
+							<FileUp class="size-3.5" />
+							Import titles
+						{/if}
+					</Button>
+					{#if csvFileName}
+						<Button type="button" variant="ghost" size="sm" onclick={clearCsvFile}>
+							<X class="size-3.5" />
+							Clear
+						</Button>
+					{/if}
+				</div>
+			</form>
+			{#if form && 'importError' in form && form.importError}
+				<p class="text-sm text-destructive">{form.importError}</p>
+			{/if}
+		</Card.Content>
+	</Card.Root>
 </div>
+
