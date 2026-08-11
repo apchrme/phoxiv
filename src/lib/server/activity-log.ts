@@ -11,7 +11,7 @@ export type LogAction =
 	| 'save_metadata'
 	| 'upload_file'
 	| 'delete_file'
-	| 'import_files';
+	| 'import_titles';
 
 type ActingUser = { id: string; name: string } | null | undefined;
 

@@ -69,5 +69,8 @@
 		"cf-typegen": "wrangler types ./src/worker-configuration.d.ts",
 		"db:generate-auth": "bun x auth@latest generate --config src/lib/server/auth-cli.ts"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"csv-parse": "^7.0.2"
+	}
 }

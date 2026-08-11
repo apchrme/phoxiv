@@ -4,44 +4,12 @@ import { eq, and, desc, inArray } from 'drizzle-orm';
 import { olympiads, years, problems } from '$lib/server/db/schema.js';
 import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
+import { parse } from 'csv-parse/sync';
 import { requireOlympiadEditor } from '$lib/server/guard';
 import { logActivity } from '$lib/server/activity-log.js';
 
 const CDN_BASE_URL = 'https://cdn.phoxiv.org';
 
-// Minimal CSV parser: handles quoted fields, embedded commas, and "" escapes.
-function parseCsv(text: string): string[][] {
-	const rows: string[][] = [];
-	let row: string[] = [];
-	let field = '';
-	let inQuotes = false;
-	const s = text.replace(/\r\n?/g, '\n');
-	for (let i = 0; i < s.length; i++) {
-		const c = s[i];
-		if (inQuotes) {
-			if (c === '"') {
-				if (s[i + 1] === '"') {
-					field += '"';
-					i++;
-				} else inQuotes = false;
-			} else field += c;
-		} else if (c === '"') inQuotes = true;
-		else if (c === ',') {
-			row.push(field);
-			field = '';
-		} else if (c === '\n') {
-			row.push(field);
-			rows.push(row);
-			row = [];
-			field = '';
-		} else field += c;
-	}
-	if (field !== '' || row.length > 0) {
-		row.push(field);
-		rows.push(row);
-	}
-	return rows;
-}
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const db = locals.db;
@@ -242,133 +210,127 @@ export const actions: Actions = {
 		redirect(303, `/contribute/${params.olympiad}/${year}`);
 	},
 	importTitles: async ({ request, params, locals }) => {
-			requireOlympiadEditor(locals, params.olympiad);
-			const db = locals.db;
+		requireOlympiadEditor(locals, params.olympiad);
+		const db = locals.db;
 
-			const data = await request.formData();
-			const file = data.get('csvFile') as File | null;
-			if (!file || file.size === 0) return fail(400, { importError: 'No file provided' });
+		const data = await request.formData();
+		const file = data.get('csvFile') as File | null;
+		if (!file || file.size === 0) return fail(400, { importError: 'No file provided' });
 
-			const MAX_BYTES = 1 * 1024 * 1024; // 1 MB — ample for a titles CSV
-			if (file.size > MAX_BYTES) return fail(400, { importError: 'File too large (max 1 MB)' });
+		const MAX_BYTES = 1 * 1024 * 1024; // 1 MB — ample for a titles CSV
+		if (file.size > MAX_BYTES) return fail(400, { importError: 'File too large (max 1 MB)' });
 
-			const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-			if (ext !== 'csv') return fail(400, { importError: 'Please upload a .csv file' });
+		const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+		if (ext !== 'csv') return fail(400, { importError: 'Please upload a .csv file' });
 
-			const rows = parseCsv(await file.text());
-			if (rows.length < 2) return fail(400, { importError: 'CSV appears to be empty' });
-
-			// Resolve columns by header name so column order isn't assumed.
-			const header = rows[0].map((h) => h.trim().toLowerCase());
-			const col = {
-				olympiad: header.indexOf('olympiad'),
-				year: header.indexOf('year'),
-				number: header.indexOf('number'),
-				title: header.indexOf('title')
-			};
-			if (col.year === -1 || col.number === -1 || col.title === -1) {
-				return fail(400, { importError: 'CSV must have "year", "number", and "title" columns' });
-			}
-
-			type Entry = { year: number; number: string; title: string | null };
-			const entries: Entry[] = [];
-			let skippedOtherOlympiad = 0;
-			let skippedInvalid = 0;
-			for (let i = 1; i < rows.length; i++) {
-				const r = rows[i];
-				if (r.every((c) => c.trim() === '')) continue; // blank line
-				if (col.olympiad !== -1) {
-					const olympiadId = (r[col.olympiad] ?? '').trim();
-					if (olympiadId && olympiadId !== params.olympiad) {
-						skippedOtherOlympiad++;
-						continue;
-					}
-				}
-				const yearNum = parseInt((r[col.year] ?? '').trim(), 10);
-				const number = (r[col.number] ?? '').trim();
-				const title = (r[col.title] ?? '').trim() || null;
-				if (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100 || !number) {
-					skippedInvalid++;
-					continue;
-				}
-				entries.push({ year: yearNum, number, title });
-			}
-
-			if (entries.length === 0) {
-				return fail(400, { importError: 'No valid rows found for this olympiad' });
-			}
-
-			// Resolve (and create) the year rows -> Map<yearNumber, yearId>.
-			const existingYears = await db
-				.select({ id: years.id, year: years.year })
-				.from(years)
-				.where(eq(years.olympiadId, params.olympiad))
-				.all();
-			const yearIdByYear = new Map<number, number>(existingYears.map((y) => [y.year, y.id]));
-
-			let yearsCreated = 0;
-			for (const y of new Set(entries.map((e) => e.year))) {
-				if (yearIdByYear.has(y)) continue;
-				const inserted = await db
-					.insert(years)
-					.values({ olympiadId: params.olympiad, year: y, notes: '[]', extraLinks: '[]' })
-					.returning({ id: years.id })
-					.get();
-				yearIdByYear.set(y, inserted.id);
-				yearsCreated++;
-			}
-
-			// Existing problems for the involved years -> Map<"yearId:number", {id, title}>.
-			const involvedYearIds = [...new Set(entries.map((e) => yearIdByYear.get(e.year)!))];
-			const existingProblems = await db
-				.select({ id: problems.id, yearId: problems.yearId, number: problems.number, title: problems.title })
-				.from(problems)
-				.where(inArray(problems.yearId, involvedYearIds))
-				.all();
-			const problemByKey = new Map<string, { id: number; title: string | null }>();
-			for (const p of existingProblems) {
-				problemByKey.set(`${p.yearId}:${p.number}`, { id: p.id, title: p.title });
-			}
-
-			let created = 0;
-			let filled = 0;
-			let kept = 0;
-			for (const e of entries) {
-				const yearId = yearIdByYear.get(e.year)!;
-				const key = `${yearId}:${e.number}`;
-				const existing = problemByKey.get(key);
-				if (!existing) {
-					const inserted = await db
-						.insert(problems)
-						.values({ yearId, number: e.number, title: e.title })
-						.returning({ id: problems.id })
-						.get();
-					problemByKey.set(key, { id: inserted.id, title: e.title });
-					created++;
-				} else if ((existing.title === null || existing.title === '') && e.title) {
-					// Problem exists but has no title yet — fill it in.
-					await db.update(problems).set({ title: e.title }).where(eq(problems.id, existing.id)).run();
-					existing.title = e.title;
-					filled++;
-				} else {
-					// Title already present (or CSV title empty) — keep the existing one.
-					kept++;
-				}
-			}
-
-			await logActivity(
-				db,
-				locals.user,
-				'import_titles',
-				`Imported titles from CSV (${created} created, ${filled} filled, ${kept} kept` +
-					`${yearsCreated ? `, ${yearsCreated} years added` : ''})`,
-				{ olympiadId: params.olympiad }
-			);
-
-			return {
-				success: true,
-				action: 'importTitles' as const,
-				stats: { created, filled, kept, yearsCreated, skippedOtherOlympiad, skippedInvalid }
-			};
+		type Row = Record<string, string>;
+		let records: Row[];
+		try {
+			records = parse(await file.text(), {
+				columns: (header: string[]) => header.map((h) => h.trim().toLowerCase()),
+				skip_empty_lines: true,
+				trim: true,
+				relax_column_count: true
+			}) as Row[];
+		} catch {
+			return fail(400, { importError: 'Could not parse CSV file' });
 		}
+
+		if (records.length === 0) return fail(400, { importError: 'CSV appears to be empty' });
+
+		const header = Object.keys(records[0]);
+		if (!header.includes('year') || !header.includes('number') || !header.includes('title')) {
+			return fail(400, { importError: 'CSV must have "year", "number", and "title" columns' });
+		}
+
+		type Entry = { year: number; number: string; title: string | null };
+		const entries: Entry[] = [];
+		let skippedInvalid = 0;
+		for (const r of records) {
+			const yearNum = parseInt((r.year ?? '').trim(), 10);
+			const number = (r.number ?? '').trim();
+			const title = (r.title ?? '').trim() || null;
+			if (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100 || !number) {
+				skippedInvalid++;
+				continue;
+			}
+			entries.push({ year: yearNum, number, title });
+		}
+
+		if (entries.length === 0) {
+			return fail(400, { importError: 'No valid rows found for this olympiad' });
+		}
+		// Resolve (and create) the year rows -> Map<yearNumber, yearId>.
+		const existingYears = await db
+			.select({ id: years.id, year: years.year })
+			.from(years)
+			.where(eq(years.olympiadId, params.olympiad))
+			.all();
+		const yearIdByYear = new Map<number, number>(existingYears.map((y) => [y.year, y.id]));
+
+		let yearsCreated = 0;
+		for (const y of new Set(entries.map((e) => e.year))) {
+			if (yearIdByYear.has(y)) continue;
+			const inserted = await db
+				.insert(years)
+				.values({ olympiadId: params.olympiad, year: y, notes: '[]', extraLinks: '[]' })
+				.returning({ id: years.id })
+				.get();
+			yearIdByYear.set(y, inserted.id);
+			yearsCreated++;
+		}
+
+		// Existing problems for the involved years -> Map<"yearId:number", {id, title}>.
+		const involvedYearIds = [...new Set(entries.map((e) => yearIdByYear.get(e.year)!))];
+		const existingProblems = await db
+			.select({ id: problems.id, yearId: problems.yearId, number: problems.number, title: problems.title })
+			.from(problems)
+			.where(inArray(problems.yearId, involvedYearIds))
+			.all();
+		const problemByKey = new Map<string, { id: number; title: string | null }>();
+		for (const p of existingProblems) {
+			problemByKey.set(`${p.yearId}:${p.number}`, { id: p.id, title: p.title });
+		}
+
+		let created = 0;
+		let filled = 0;
+		let kept = 0;
+		for (const e of entries) {
+			const yearId = yearIdByYear.get(e.year)!;
+			const key = `${yearId}:${e.number}`;
+			const existing = problemByKey.get(key);
+			if (!existing) {
+				const inserted = await db
+					.insert(problems)
+					.values({ yearId, number: e.number, title: e.title })
+					.returning({ id: problems.id })
+					.get();
+				problemByKey.set(key, { id: inserted.id, title: e.title });
+				created++;
+			} else if ((existing.title === null || existing.title === '') && e.title) {
+				// Problem exists but has no title yet — fill it in.
+				await db.update(problems).set({ title: e.title }).where(eq(problems.id, existing.id)).run();
+				existing.title = e.title;
+				filled++;
+			} else {
+				// Title already present (or CSV title empty) — keep the existing one.
+				kept++;
+			}
+		}
+
+		await logActivity(
+			db,
+			locals.user,
+			'import_titles',
+			`Imported titles from CSV (${created} created, ${filled} filled, ${kept} kept` +
+				`${yearsCreated ? `, ${yearsCreated} years added` : ''})`,
+			{ olympiadId: params.olympiad }
+		);
+
+		return {
+			success: true,
+			action: 'importTitles' as const,
+			stats: { created, filled, kept, yearsCreated, skippedInvalid }
+		};
+	}
 };
