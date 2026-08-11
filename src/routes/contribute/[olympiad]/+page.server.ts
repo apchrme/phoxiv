@@ -7,9 +7,10 @@ import sanitizeHtml from 'sanitize-html';
 import { parse } from 'csv-parse/sync';
 import { requireOlympiadEditor } from '$lib/server/guard';
 import { logActivity } from '$lib/server/activity-log.js';
+import type { ProblemTopic } from '$lib/types.js';
+import { parseTopics, parseTopicsCsvCell, serializeTopics } from '$lib/utils/topics.js';
 
 const CDN_BASE_URL = 'https://cdn.phoxiv.org';
-
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const db = locals.db;
@@ -243,18 +244,21 @@ export const actions: Actions = {
 			return fail(400, { importError: 'CSV must have "year", "number", and "title" columns' });
 		}
 
-		type Entry = { year: number; number: string; title: string | null };
+		type Entry = { year: number; number: string; title: string | null; topics: ProblemTopic[] };
 		const entries: Entry[] = [];
 		let skippedInvalid = 0;
 		for (const r of records) {
 			const yearNum = parseInt((r.year ?? '').trim(), 10);
 			const number = (r.number ?? '').trim();
 			const title = (r.title ?? '').trim() || null;
+			// The "topics" column is optional, so older CSVs still import cleanly.
+			// Unrecognised topic names are ignored rather than failing the import.
+			const topics = parseTopicsCsvCell(r.topics);
 			if (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100 || !number) {
 				skippedInvalid++;
 				continue;
 			}
-			entries.push({ year: yearNum, number, title });
+			entries.push({ year: yearNum, number, title, topics });
 		}
 
 		if (entries.length === 0) {
@@ -280,20 +284,34 @@ export const actions: Actions = {
 			yearsCreated++;
 		}
 
-		// Existing problems for the involved years -> Map<"yearId:number", {id, title}>.
+		// Existing problems for the involved years -> Map<"yearId:number", {id, title, topics}>.
 		const involvedYearIds = [...new Set(entries.map((e) => yearIdByYear.get(e.year)!))];
 		const existingProblems = await db
-			.select({ id: problems.id, yearId: problems.yearId, number: problems.number, title: problems.title })
+			.select({
+				id: problems.id,
+				yearId: problems.yearId,
+				number: problems.number,
+				title: problems.title,
+				topics: problems.topics
+			})
 			.from(problems)
 			.where(inArray(problems.yearId, involvedYearIds))
 			.all();
-		const problemByKey = new Map<string, { id: number; title: string | null }>();
+		const problemByKey = new Map<
+			string,
+			{ id: number; title: string | null; topics: ProblemTopic[] }
+		>();
 		for (const p of existingProblems) {
-			problemByKey.set(`${p.yearId}:${p.number}`, { id: p.id, title: p.title });
+			problemByKey.set(`${p.yearId}:${p.number}`, {
+				id: p.id,
+				title: p.title,
+				topics: parseTopics(p.topics)
+			});
 		}
 
 		let created = 0;
 		let filled = 0;
+		let topicsFilled = 0;
 		let kept = 0;
 		for (const e of entries) {
 			const yearId = yearIdByYear.get(e.year)!;
@@ -302,19 +320,41 @@ export const actions: Actions = {
 			if (!existing) {
 				const inserted = await db
 					.insert(problems)
-					.values({ yearId, number: e.number, title: e.title })
+					.values({
+						yearId,
+						number: e.number,
+						title: e.title,
+						topics: serializeTopics(e.topics)
+					})
 					.returning({ id: problems.id })
 					.get();
-				problemByKey.set(key, { id: inserted.id, title: e.title });
+				problemByKey.set(key, { id: inserted.id, title: e.title, topics: e.topics });
 				created++;
-			} else if ((existing.title === null || existing.title === '') && e.title) {
-				// Problem exists but has no title yet — fill it in.
-				await db.update(problems).set({ title: e.title }).where(eq(problems.id, existing.id)).run();
-				existing.title = e.title;
-				filled++;
-			} else {
-				// Title already present (or CSV title empty) — keep the existing one.
+				continue;
+			}
+
+			// The problem already exists — only fill in what it's missing, so a
+			// re-import can never overwrite work done through the year page.
+			const patch: { title?: string; topics?: string } = {};
+			if ((existing.title === null || existing.title === '') && e.title) patch.title = e.title;
+			if (existing.topics.length === 0 && e.topics.length > 0) {
+				patch.topics = serializeTopics(e.topics);
+			}
+
+			if (patch.title === undefined && patch.topics === undefined) {
+				// Nothing missing (or nothing offered by the CSV) — leave it alone.
 				kept++;
+				continue;
+			}
+
+			await db.update(problems).set(patch).where(eq(problems.id, existing.id)).run();
+			if (patch.title !== undefined) {
+				existing.title = patch.title;
+				filled++;
+			}
+			if (patch.topics !== undefined) {
+				existing.topics = e.topics;
+				topicsFilled++;
 			}
 		}
 
@@ -322,7 +362,8 @@ export const actions: Actions = {
 			db,
 			locals.user,
 			'import_titles',
-			`Imported titles from CSV (${created} created, ${filled} filled, ${kept} kept` +
+			`Imported titles from CSV (${created} created, ${filled} titles filled, ` +
+				`${topicsFilled} topics filled, ${kept} kept` +
 				`${yearsCreated ? `, ${yearsCreated} years added` : ''})`,
 			{ olympiadId: params.olympiad }
 		);
@@ -330,7 +371,7 @@ export const actions: Actions = {
 		return {
 			success: true,
 			action: 'importTitles' as const,
-			stats: { created, filled, kept, yearsCreated, skippedInvalid }
+			stats: { created, filled, topicsFilled, kept, yearsCreated, skippedInvalid }
 		};
 	}
 };

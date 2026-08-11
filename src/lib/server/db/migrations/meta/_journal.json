@@ -43,6 +43,13 @@
       "when": 1784773124060,
       "tag": "0005_cool_nicolaos",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1786449719952,
+      "tag": "0006_yellow_glorian",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,1 @@
+ALTER TABLE `problems` ADD `topics` text DEFAULT '[]' NOT NULL;

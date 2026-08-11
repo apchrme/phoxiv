@@ -13,7 +13,7 @@
 	import { toast } from 'svelte-sonner';
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
-	import type { OlympiadTag } from '$lib/types';
+	import { PROBLEM_TOPICS, type OlympiadTag } from '$lib/types';
 
 	let { data, form }: PageProps = $props();
 
@@ -82,17 +82,19 @@
 			}
 		}
 		if (form.action === 'importTitles' && 'success' in form && form.success) {
-				if ('stats' in form && form.stats) {
-					const s = form.stats;
-					toast.success(
-						`Import complete — ${s.created} created, ${s.filled} filled, ${s.kept} kept` +
-							`${s.yearsCreated ? `, ${s.yearsCreated} years added` : ''}.`
-					);
-				}
-				clearCsvFile();
+			if ('stats' in form && form.stats) {
+				const s = form.stats;
+				toast.success(
+					`Import complete — ${s.created} created, ${s.filled} titles filled, ` +
+						`${s.topicsFilled} topics filled, ${s.kept} kept` +
+						`${s.yearsCreated ? `, ${s.yearsCreated} years added` : ''}.`
+				);
 			}
+			clearCsvFile();
+		}
 		if ('updateError' in form && form.updateError) toast.error(String(form.updateError));
-		if ('uploadIconError' in form && form.uploadIconError) toast.error(String(form.uploadIconError));
+		if ('uploadIconError' in form && form.uploadIconError)
+			toast.error(String(form.uploadIconError));
 		if ('importError' in form && form.importError) toast.error(String(form.importError));
 	});
 
@@ -450,7 +452,6 @@
 			</Card.Content>
 		</Card.Root>
 
-
 		<div class="flex items-center gap-3">
 			<Button type="submit" class="disabled:bg-primary/60" disabled={saving}>
 				<Save class="size-4" />
@@ -465,19 +466,28 @@
 	<!-- ── Import titles card ────────────────────────────────────────── -->
 	<Card.Root>
 		<Card.Header class="border-b">
-			<Card.Title>Import problem titles</Card.Title>
+			<Card.Title>Import problem titles &amp; topics</Card.Title>
 			<Card.Description>
-				Upload a CSV with columns <code class="font-mono text-xs">year,number,title</code>.
-				New problems are created (missing years are added automatically); problems that already have
-				a title are left unchanged.
+				Upload a CSV with columns <code class="font-mono text-xs">year,number,title,topics</code>.
+				New problems are created (missing years are added automatically); a title or topic list that
+				is already set is left unchanged. The <code class="font-mono text-xs">topics</code> column
+				is optional — separate multiple topics with semicolons, e.g.
+				<code class="font-mono text-xs">Mechanics;Waves and Optics</code>. Allowed topics:
+				{PROBLEM_TOPICS.join(', ')}.
 			</Card.Description>
 		</Card.Header>
 		<Card.Content class="flex flex-col gap-4">
 			<div class="flex items-center justify-between gap-3">
 				<p class="text-sm text-muted-foreground">
-					Download the current titles for this olympiad to edit and re-upload.
+					Download the current titles and topics for this olympiad to edit and re-upload.
 				</p>
-				<Button href="/contribute/{data.olympiad.id}/titles.csv" variant="outline" size="sm" class="shrink-0" data-sveltekit-reload>
+				<Button
+					href="/contribute/{data.olympiad.id}/titles.csv"
+					variant="outline"
+					size="sm"
+					class="shrink-0"
+					data-sveltekit-reload
+				>
 					<Download class="size-3.5" />
 					Export titles
 				</Button>
@@ -529,4 +539,3 @@
 		</Card.Content>
 	</Card.Root>
 </div>
-

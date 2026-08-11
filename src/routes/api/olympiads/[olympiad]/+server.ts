@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
-import type { YearEntry } from '$lib/types.js';
+import type { YearEntry, ProblemTopic } from '$lib/types.js';
+import { parseTopics } from '$lib/utils/topics.js';
 import { eq, desc, asc } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { olympiads, years, yearFiles, problems, problemFiles } from '$lib/server/db/schema.js';
@@ -73,6 +74,7 @@ export const GET = async ({ params, locals, setHeaders }) => {
 			yearId: number;
 			number: string;
 			title: string | null;
+			topics: ProblemTopic[];
 			files: { label: string; url: string }[];
 		}
 	>();
@@ -84,6 +86,7 @@ export const GET = async ({ params, locals, setHeaders }) => {
 				yearId: p.yearId,
 				number: p.number,
 				title: p.title,
+				topics: parseTopics(p.topics),
 				files: []
 			});
 		}
@@ -101,6 +104,7 @@ export const GET = async ({ params, locals, setHeaders }) => {
 		list.push({
 			number: p.number,
 			...(p.title ? { title: p.title } : {}),
+			topics: p.topics,
 			files: p.files
 		});
 		problemsByYear.set(p.yearId, list);

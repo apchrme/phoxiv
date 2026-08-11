@@ -1,8 +1,9 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import type { YearEntry } from '$lib/types.js';
+	import type { YearEntry, ProblemEntry, ProblemTopic } from '$lib/types.js';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
+	import TopicSelect from '$lib/components/TopicSelect.svelte';
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { ChevronLeft, ExternalLink } from '@lucide/svelte';
@@ -23,6 +24,7 @@
 		olympiadFiles = null;
 		olympiadFilesLoading = true;
 		query = '';
+		activeTopics = [];
 
 		fetch(`/api/olympiads/${id}`)
 			.then((r) => r.json())
@@ -40,21 +42,42 @@
 
 	let query = $state('');
 	let showFullYear = $state(false);
+	// Topics the user is filtering by. Empty = no topic filter.
+	let activeTopics = $state<ProblemTopic[]>([]);
+
+	function matchesQuery(problem: ProblemEntry, q: string) {
+		return (
+			problem.number.toLowerCase().includes(q) ||
+			(problem.title?.toLowerCase().includes(q) ?? false)
+		);
+	}
+
+	/** Problems of a year that satisfy the topic filter (all of them if it's off). */
+	function topicMatches(year: YearEntry) {
+		if (activeTopics.length === 0) return year.problems;
+		return year.problems.filter((p) => p.topics?.some((t) => activeTopics.includes(t)) ?? false);
+	}
 
 	const filtered = $derived(() => {
 		const q = query.trim().toLowerCase();
-		if (!q) return olympiadFiles.map((y) => ({ ...y, matchedProblems: y.problems }));
 
 		const results = [];
 		for (const year of olympiadFiles) {
+			// The topic filter always applies; the text query narrows things further.
+			const inTopics = topicMatches(year);
+			if (activeTopics.length > 0 && inTopics.length === 0) continue;
+
+			if (!q) {
+				results.push({ ...year, matchedProblems: inTopics });
+				continue;
+			}
+
 			const yearMatches = String(year.year).includes(q);
-			const matchedProblems = year.problems.filter(
-				(p) => p.number.toLowerCase().includes(q) || (p.title?.toLowerCase().includes(q) ?? false)
-			);
+			const queryMatched = inTopics.filter((p) => matchesQuery(p, q));
 			if (yearMatches) {
-				results.push({ ...year, matchedProblems: year.problems });
-			} else if (matchedProblems.length > 0) {
-				results.push({ ...year, matchedProblems: showFullYear ? year.problems : matchedProblems });
+				results.push({ ...year, matchedProblems: inTopics });
+			} else if (queryMatched.length > 0) {
+				results.push({ ...year, matchedProblems: showFullYear ? inTopics : queryMatched });
 			}
 		}
 		return results;
@@ -64,11 +87,7 @@
 		const q = query.trim().toLowerCase();
 		if (!q) return false;
 		return olympiadFiles.some(
-			(y) =>
-				!String(y.year).includes(q) &&
-				y.problems.some(
-					(p) => p.number.toLowerCase().includes(q) || (p.title?.toLowerCase().includes(q) ?? false)
-				)
+			(y) => !String(y.year).includes(q) && topicMatches(y).some((p) => matchesQuery(p, q))
 		);
 	});
 
@@ -115,6 +134,15 @@
 						<span class="text-sm text-nowrap text-muted-foreground">Show full year</span>
 					</label>
 				{/if}
+				<!-- Topics are never shown on a problem — that would spoil it — but they can
+				     still be used to narrow the list down. -->
+				<TopicSelect
+					bind:value={activeTopics}
+					label="All topics"
+					heading="Filter by topic"
+					align="end"
+					class="shrink-0"
+				/>
 			{/snippet}
 		</SearchBar>
 	</div>
@@ -206,9 +234,11 @@
 	{:else}
 		<SearchEmptyState
 			message="No results found"
-			hint="Try a different year or problem name."
+			hint="Try a different year or problem name, or clear the topic filter."
+			clearLabel="Clear filters"
 			onClear={() => {
 				query = '';
+				activeTopics = [];
 			}}
 		/>
 	{/if}

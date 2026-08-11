@@ -47,7 +47,11 @@ export const problems = sqliteTable(
 			.notNull()
 			.references(() => years.id, { onDelete: 'cascade' }),
 		number: text('number').notNull(),
-		title: text('title')
+		title: text('title'),
+		// JSON-encoded array of topic names (see PROBLEM_TOPICS in $lib/types).
+		// Same convention as `notes`/`extraLinks` elsewhere in this schema.
+		// Never exposed next to a problem in the UI — only used for filtering.
+		topics: text('topics').notNull().default('[]')
 	},
 	(t) => [uniqueIndex('problems_year_number_idx').on(t.yearId, t.number)]
 );
@@ -177,7 +181,8 @@ export const activityLog = sqliteTable(
 				'delete_year',
 				'save_metadata',
 				'upload_file',
-				'delete_file'
+				'delete_file',
+				'import_titles'
 			]
 		}).notNull(),
 		olympiadId: text('olympiad_id'),

@@ -4,6 +4,8 @@ import { eq, and } from 'drizzle-orm';
 import { olympiads, years, yearFiles, problems, problemFiles } from '$lib/server/db/schema.js';
 import { requireOlympiadEditor } from '$lib/server/guard';
 import { logActivity } from '$lib/server/activity-log.js';
+import type { ProblemTopic } from '$lib/types.js';
+import { parseTopics, serializeTopics } from '$lib/utils/topics.js';
 
 const CDN_BASE_URL = 'https://cdn.phoxiv.org';
 
@@ -39,12 +41,24 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	const problemMap = new Map<
 		number,
-		{ id: number; number: string; title: string | null; files: { label: string; url: string }[] }
+		{
+			id: number;
+			number: string;
+			title: string | null;
+			topics: ProblemTopic[];
+			files: { label: string; url: string }[];
+		}
 	>();
 	for (const row of problemRows) {
 		const p = row.problems;
 		if (!problemMap.has(p.id)) {
-			problemMap.set(p.id, { id: p.id, number: p.number, title: p.title, files: [] });
+			problemMap.set(p.id, {
+				id: p.id,
+				number: p.number,
+				title: p.title,
+				topics: parseTopics(p.topics),
+				files: []
+			});
 		}
 		if (row.problem_files) {
 			problemMap
@@ -101,8 +115,15 @@ export const actions: Actions = {
 
 		const rawNumbers = data.getAll('problemNumber').map((n) => String(n).trim());
 		const rawTitles = data.getAll('problemTitle').map(String);
+		// One `problemTopics` field per problem row, holding a JSON array of topic
+		// names, so the three problem fields stay positionally aligned.
+		const rawTopics = data.getAll('problemTopics').map(String);
 		const problemPairs = rawNumbers
-			.map((number, i) => ({ number, title: (rawTitles[i] ?? '').trim() || null }))
+			.map((number, i) => ({
+				number,
+				title: (rawTitles[i] ?? '').trim() || null,
+				topics: serializeTopics(parseTopics(rawTopics[i]))
+			}))
 			.filter((p) => p.number);
 
 		// Reject duplicate problem numbers instead of silently upserting over each other
@@ -114,13 +135,13 @@ export const actions: Actions = {
 			seenNumbers.add(number);
 		}
 
-		for (const { number, title } of problemPairs) {
+		for (const { number, title, topics } of problemPairs) {
 			await db
 				.insert(problems)
-				.values({ yearId: yearRow.id, number, title })
+				.values({ yearId: yearRow.id, number, title, topics })
 				.onConflictDoUpdate({
 					target: [problems.yearId, problems.number],
-					set: { title }
+					set: { title, topics }
 				})
 				.run();
 		}

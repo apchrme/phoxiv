@@ -21,9 +21,30 @@ export type FileEntry = {
 	url: string;
 };
 
+/**
+ * The fixed set of physics topics a problem can be tagged with. Topics are
+ * deliberately coarse — they are only used for filtering, and a finer-grained
+ * list would risk spoiling the problem.
+ */
+export const PROBLEM_TOPICS = [
+	'Mechanics',
+	'Electromagnetism',
+	'Thermodynamics',
+	'Waves and Optics',
+	'Others'
+] as const;
+
+export type ProblemTopic = (typeof PROBLEM_TOPICS)[number];
+
 export type ProblemEntry = {
 	number: string;
 	title?: string;
+	/**
+	 * Topics assigned to this problem. Never rendered next to the problem — they
+	 * would spoil it — but used by the topic filter on the olympiad page.
+	 * Omitted by endpoints that don't need them (e.g. the search index).
+	 */
+	topics?: ProblemTopic[];
 	files: FileEntry[];
 };
 

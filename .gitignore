@@ -36,3 +36,6 @@ files
 
 # Pregen output (not needed anyway)
 src/lib/pregen/output/
+
+# Claude skills
+.claude
