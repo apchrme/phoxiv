@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
-	import { ChevronLeft, Save, Upload, X, Plus, Pencil, FileUp } from '@lucide/svelte';
+	import { ChevronLeft, Save, Upload, X, Plus, Pencil, FileUp, Download } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
@@ -467,12 +467,22 @@
 		<Card.Header class="border-b">
 			<Card.Title>Import problem titles</Card.Title>
 			<Card.Description>
-				Upload a CSV with columns <code class="font-mono text-xs">olympiad,year,number,title</code>.
+				Upload a CSV with columns <code class="font-mono text-xs">year,number,title</code>.
 				New problems are created (missing years are added automatically); problems that already have
 				a title are left unchanged.
 			</Card.Description>
 		</Card.Header>
 		<Card.Content class="flex flex-col gap-4">
+			<div class="flex items-center justify-between gap-3">
+				<p class="text-sm text-muted-foreground">
+					Download the current titles for this olympiad to edit and re-upload.
+				</p>
+				<Button href="/contribute/{data.olympiad.id}/titles.csv" variant="outline" size="sm" class="shrink-0" data-sveltekit-reload>
+					<Download class="size-3.5" />
+					Export titles
+				</Button>
+			</div>
+			<Separator />
 			<form
 				method="POST"
 				action="?/importTitles"
