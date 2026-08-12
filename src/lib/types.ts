@@ -31,6 +31,8 @@ export const PROBLEM_TOPICS = [
 	'Electromagnetism',
 	'Thermodynamics',
 	'Waves and Optics',
+	'Relativity',
+	'Modern',
 	'Others'
 ] as const;
 
