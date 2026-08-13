@@ -10,7 +10,7 @@
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
-	import { toast } from 'svelte-sonner';
+	import { formToasts, Pending } from '$lib/forms.svelte';
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
 	import { OLYMPIAD_TAGS, PROBLEM_TOPICS, type OlympiadTag } from '$lib/types';
@@ -26,12 +26,9 @@
 	let description = $derived(data.olympiad.descriptionMd);
 	let displayOrder = $derived(String(data.olympiad.displayOrder ?? 9999));
 
-	let saving = $state(false);
-	let uploadingIcon = $state(false);
-	let removingIcon = $state(false);
-	let addingYear = $state(false);
+	/** In-flight submissions, keyed by the action they belong to. */
+	const pending = new Pending();
 
-	let importingTitles = $state(false);
 	let csvFileName = $state<string | null>(null);
 	let csvFileInput: HTMLInputElement | undefined = $state();
 
@@ -62,41 +59,39 @@
 		if (iconFileInput) iconFileInput.value = '';
 	}
 
-	$effect(() => {
-		if (!form) return;
-		if ('action' in form) {
-			if (form.action === 'updateOlympiad' && 'success' in form && form.success) {
-				toast.success('Olympiad updated');
-			}
-			if (form.action === 'uploadIcon' && 'success' in form && form.success) {
-				toast.success('Icon uploaded');
-				// Update local icon so OlympiadIcon re-renders immediately
-				if ('iconUrl' in form && typeof form.iconUrl === 'string') {
-					icon = form.iconUrl;
-				}
-				clearIconFile();
-			}
-			if (form.action === 'removeIcon' && 'success' in form && form.success) {
-				toast.success('Icon removed');
-				icon = '';
-				clearIconFile();
-			}
-		}
-		if (form.action === 'importTitles' && 'success' in form && form.success) {
-			if ('stats' in form && form.stats) {
-				const s = form.stats;
-				toast.success(
-					`Import complete — ${s.created} created, ${s.filled} titles filled, ` +
-						`${s.topicsFilled} topics filled, ${s.kept} kept` +
-						`${s.yearsCreated ? `, ${s.yearsCreated} years added` : ''}.`
-				);
-			}
+	/** Summary line for a finished CSV import. */
+	type ImportStats = {
+		created: number;
+		filled: number;
+		topicsFilled: number;
+		kept: number;
+		yearsCreated: number;
+	};
+	function importSummary(s: ImportStats) {
+		return (
+			`Import complete — ${s.created} created, ${s.filled} titles filled, ` +
+			`${s.topicsFilled} topics filled, ${s.kept} kept` +
+			`${s.yearsCreated ? `, ${s.yearsCreated} years added` : ''}.`
+		);
+	}
+
+	formToasts(() => form, {
+		updateOlympiad: 'Olympiad updated',
+		uploadIcon: (result) => {
+			// Reflect the new icon immediately, before the load revalidates.
+			if (typeof result.iconUrl === 'string') icon = result.iconUrl;
+			clearIconFile();
+			return 'Icon uploaded';
+		},
+		removeIcon: () => {
+			icon = '';
+			clearIconFile();
+			return 'Icon removed';
+		},
+		importTitles: (result) => {
 			clearCsvFile();
+			return importSummary(result.stats as ImportStats);
 		}
-		if ('updateError' in form && form.updateError) toast.error(String(form.updateError));
-		if ('uploadIconError' in form && form.uploadIconError)
-			toast.error(String(form.uploadIconError));
-		if ('importError' in form && form.importError) toast.error(String(form.importError));
 	});
 
 	// Whether the current icon is an uploaded image rather than an emoji/flag
@@ -162,13 +157,7 @@
 			<form
 				method="POST"
 				action="?/selectYear"
-				use:enhance={() => {
-					addingYear = true;
-					return async ({ update }) => {
-						addingYear = false;
-						await update();
-					};
-				}}
+				use:enhance={pending.track('selectYear', { reset: true })}
 				class="flex flex-wrap items-end gap-2"
 			>
 				<div class="flex flex-col gap-1.5">
@@ -184,8 +173,8 @@
 						class="w-32"
 					/>
 				</div>
-				<Button type="submit" size="sm" disabled={addingYear}>
-					{#if addingYear}
+				<Button type="submit" size="sm" disabled={pending.has('selectYear')}>
+					{#if pending.has('selectYear')}
 						<Spinner class="size-3.5" />
 					{:else}
 						<Plus class="size-3.5" />
@@ -193,8 +182,8 @@
 					Add / go to year
 				</Button>
 			</form>
-			{#if form && 'selectError' in form && form.selectError}
-				<p class="text-sm text-destructive">{form.selectError}</p>
+			{#if form && !form.success && form.action === 'selectYear'}
+				<p class="text-sm text-destructive">{form.error}</p>
 			{/if}
 		</Card.Content>
 	</Card.Root>
@@ -243,13 +232,7 @@
 				method="POST"
 				action="?/uploadIcon"
 				enctype="multipart/form-data"
-				use:enhance={() => {
-					uploadingIcon = true;
-					return async ({ update }) => {
-						uploadingIcon = false;
-						await update({ reset: false });
-					};
-				}}
+				use:enhance={pending.track('uploadIcon')}
 				class="flex flex-col gap-3"
 			>
 				<div class="flex flex-col gap-1.5">
@@ -266,8 +249,8 @@
 					/>
 				</div>
 				<div class="flex gap-2">
-					<Button type="submit" size="sm" disabled={uploadingIcon || !iconPreviewUrl}>
-						{#if uploadingIcon}
+					<Button type="submit" size="sm" disabled={pending.has('uploadIcon') || !iconPreviewUrl}>
+						{#if pending.has('uploadIcon')}
 							<Spinner class="size-3.5" />
 							Uploading…
 						{:else}
@@ -287,17 +270,7 @@
 			<!-- Remove uploaded icon -->
 			{#if hasUploadedIcon}
 				<Separator />
-				<form
-					method="POST"
-					action="?/removeIcon"
-					use:enhance={() => {
-						removingIcon = true;
-						return async ({ update }) => {
-							removingIcon = false;
-							await update({ reset: false });
-						};
-					}}
-				>
+				<form method="POST" action="?/removeIcon" use:enhance={pending.track('removeIcon')}>
 					<div class="flex items-center justify-between">
 						<p class="text-xs text-muted-foreground">
 							Remove the uploaded icon and fall back to the emoji/flag set in the metadata below.
@@ -306,10 +279,10 @@
 							type="submit"
 							variant="destructive"
 							size="sm"
-							disabled={removingIcon}
+							disabled={pending.has('removeIcon')}
 							class="ml-4 shrink-0"
 						>
-							{#if removingIcon}
+							{#if pending.has('removeIcon')}
 								<Spinner class="size-3.5" />
 							{:else}
 								<X class="size-3.5" />
@@ -326,13 +299,7 @@
 	<form
 		method="POST"
 		action="?/updateOlympiad"
-		use:enhance={() => {
-			saving = true;
-			return async ({ update }) => {
-				saving = false;
-				await update({ reset: false });
-			};
-		}}
+		use:enhance={pending.track('updateOlympiad')}
 		class="flex flex-col gap-5"
 	>
 		<Card.Root>
@@ -454,11 +421,11 @@
 		</Card.Root>
 
 		<div class="flex items-center gap-3">
-			<Button type="submit" class="disabled:bg-primary/60" disabled={saving}>
+			<Button type="submit" class="disabled:bg-primary/60" disabled={pending.has('updateOlympiad')}>
 				<Save class="size-4" />
 				Save changes
 			</Button>
-			{#if saving}
+			{#if pending.has('updateOlympiad')}
 				<Spinner class="size-5" />
 			{/if}
 		</div>
@@ -498,13 +465,7 @@
 				method="POST"
 				action="?/importTitles"
 				enctype="multipart/form-data"
-				use:enhance={() => {
-					importingTitles = true;
-					return async ({ update }) => {
-						importingTitles = false;
-						await update({ reset: false });
-					};
-				}}
+				use:enhance={pending.track('importTitles')}
 				class="flex flex-col gap-3"
 			>
 				<Input
@@ -517,8 +478,8 @@
 					class="file-input"
 				/>
 				<div class="flex gap-2">
-					<Button type="submit" size="sm" disabled={importingTitles || !csvFileName}>
-						{#if importingTitles}
+					<Button type="submit" size="sm" disabled={pending.has('importTitles') || !csvFileName}>
+						{#if pending.has('importTitles')}
 							<Spinner class="size-3.5" />
 							Importing…
 						{:else}
@@ -534,8 +495,8 @@
 					{/if}
 				</div>
 			</form>
-			{#if form && 'importError' in form && form.importError}
-				<p class="text-sm text-destructive">{form.importError}</p>
+			{#if form && !form.success && form.action === 'importTitles'}
+				<p class="text-sm text-destructive">{form.error}</p>
 			{/if}
 		</Card.Content>
 	</Card.Root>

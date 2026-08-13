@@ -1,4 +1,4 @@
-import { redirect, error, fail } from '@sveltejs/kit';
+import { redirect, error } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { and, eq, notInArray } from 'drizzle-orm';
 import { problemFiles, problems, yearFiles, years } from '$lib/server/db';
@@ -7,7 +7,7 @@ import { logActivity } from '$lib/server/activity-log';
 import { requireOlympiad } from '$lib/server/db/queries/olympiads';
 import { getYear, YEAR_NOT_FOUND } from '$lib/server/db/queries/years';
 import { getYearContent } from '$lib/server/db/queries/content';
-import { field, fieldList, fileField, parseYear } from '$lib/server/forms';
+import { actionFail, field, fieldList, fileField, ok, parseYear } from '$lib/server/forms';
 import {
 	cdnUrl,
 	deleteByUrl,
@@ -65,7 +65,7 @@ export const actions: Actions = {
 		const data = await request.formData();
 
 		const yearRow = await getYear(db, params.olympiad, yearNum);
-		if (!yearRow) return fail(404, { error: YEAR_NOT_FOUND });
+		if (!yearRow) return actionFail(404, 'saveMetadata', YEAR_NOT_FOUND);
 
 		const notes = fieldList(data, 'note')
 			.map((n) => n.trim())
@@ -98,7 +98,7 @@ export const actions: Actions = {
 		const seenNumbers = new Set<string>();
 		for (const { number } of submitted) {
 			if (seenNumbers.has(number)) {
-				return fail(400, { error: `Duplicate problem number: ${number}` });
+				return actionFail(400, 'saveMetadata', `Duplicate problem number: ${number}`);
 			}
 			seenNumbers.add(number);
 		}
@@ -135,18 +135,18 @@ export const actions: Actions = {
 			{ olympiadId: params.olympiad, year: yearNum }
 		);
 
-		return { success: true, action: 'saveMetadata' as const };
+		return ok('saveMetadata');
 	},
 
 	/** Deletes the year, its problems, and every R2 object either owns. */
 	deleteYear: async ({ params, platform, locals }) => {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
 		const bucket = getBucket(platform);
-		if (!bucket) return fail(500, { error: STORAGE_UNAVAILABLE });
+		if (!bucket) return actionFail(500, 'deleteYear', STORAGE_UNAVAILABLE);
 		const yearNum = parseYear(params.year)!;
 
 		const yearRow = await getYear(db, params.olympiad, yearNum);
-		if (!yearRow) return fail(404, { error: YEAR_NOT_FOUND });
+		if (!yearRow) return actionFail(404, 'deleteYear', YEAR_NOT_FOUND);
 
 		// Collect the object URLs before the rows go away — they are the only
 		// record of which R2 keys belong to this year.
@@ -183,7 +183,7 @@ export const actions: Actions = {
 	uploadFile: async ({ request, params, platform, locals }) => {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
 		const bucket = getBucket(platform);
-		if (!bucket) return fail(500, { error: STORAGE_UNAVAILABLE });
+		if (!bucket) return actionFail(500, 'uploadFile', STORAGE_UNAVAILABLE);
 		const yearNum = parseYear(params.year)!;
 		const data = await request.formData();
 
@@ -191,20 +191,21 @@ export const actions: Actions = {
 		const scope = field(data, 'scope') as Scope;
 		const problemNumber = field(data, 'problemNumber');
 
-		if (!label) return fail(400, { error: 'Label is required' });
-		if (scope !== 'year' && scope !== 'problem') return fail(400, { error: 'Scope is required' });
+		if (!label) return actionFail(400, 'uploadFile', 'Label is required');
+		if (scope !== 'year' && scope !== 'problem')
+			return actionFail(400, 'uploadFile', 'Scope is required');
 		if (scope === 'problem' && !problemNumber) {
-			return fail(400, { error: 'Problem number required' });
+			return actionFail(400, 'uploadFile', 'Problem number required');
 		}
 		// The label becomes a path segment, so a slash would silently nest the object.
-		if (label.includes('/')) return fail(400, { error: 'Label cannot include /' });
+		if (label.includes('/')) return actionFail(400, 'uploadFile', 'Label cannot include /');
 
 		const validated = validateUpload(fileField(data, 'file'), DOCUMENT_UPLOAD);
-		if (!validated.ok) return fail(400, { error: validated.error });
+		if (!validated.ok) return actionFail(400, 'uploadFile', validated.error);
 		const { file, ext, contentType } = validated.value;
 
 		const yearRow = await getYear(db, params.olympiad, yearNum);
-		if (!yearRow) return fail(404, { error: YEAR_NOT_FOUND });
+		if (!yearRow) return actionFail(404, 'uploadFile', YEAR_NOT_FOUND);
 
 		let problemRow: typeof problems.$inferSelect | undefined;
 
@@ -215,7 +216,11 @@ export const actions: Actions = {
 				.where(and(eq(problems.yearId, yearRow.id), eq(problems.number, problemNumber)))
 				.get();
 			if (!problemRow) {
-				return fail(404, { error: `Problem ${problemNumber} not found — save metadata first` });
+				return actionFail(
+					404,
+					'uploadFile',
+					`Problem ${problemNumber} not found — save metadata first`
+				);
 			}
 		}
 
@@ -235,7 +240,7 @@ export const actions: Actions = {
 					.get();
 		if (duplicate) {
 			const owner = scope === 'year' ? 'this year' : 'this problem';
-			return fail(400, { error: `A file named "${label}" already exists for ${owner}.` });
+			return actionFail(400, 'uploadFile', `A file named "${label}" already exists for ${owner}.`);
 		}
 
 		const key = fileKey(
@@ -270,13 +275,13 @@ export const actions: Actions = {
 			{ olympiadId: params.olympiad, year: yearNum }
 		);
 
-		return { success: true, action: 'uploadFile' as const };
+		return ok('uploadFile');
 	},
 
 	deleteFile: async ({ request, params, platform, locals }) => {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
 		const bucket = getBucket(platform);
-		if (!bucket) return fail(500, { error: STORAGE_UNAVAILABLE });
+		if (!bucket) return actionFail(500, 'deleteFile', STORAGE_UNAVAILABLE);
 		const yearNum = parseYear(params.year)!;
 		const data = await request.formData();
 
@@ -285,7 +290,7 @@ export const actions: Actions = {
 		const problemNumber = field(data, 'problemNumber');
 
 		const yearRow = await getYear(db, params.olympiad, yearNum);
-		if (!yearRow) return fail(404, { error: YEAR_NOT_FOUND });
+		if (!yearRow) return actionFail(404, 'deleteFile', YEAR_NOT_FOUND);
 
 		if (scope === 'year') {
 			const record = await db
@@ -293,7 +298,7 @@ export const actions: Actions = {
 				.from(yearFiles)
 				.where(and(eq(yearFiles.yearId, yearRow.id), eq(yearFiles.label, label)))
 				.get();
-			if (!record) return fail(404, { error: 'File not found' });
+			if (!record) return actionFail(404, 'deleteFile', 'File not found');
 
 			// Derive the R2 key from the stored URL, never from the submitted one:
 			// a crafted value could otherwise delete an arbitrary object.
@@ -305,14 +310,14 @@ export const actions: Actions = {
 				.from(problems)
 				.where(and(eq(problems.yearId, yearRow.id), eq(problems.number, problemNumber)))
 				.get();
-			if (!problem) return fail(404, { error: 'Problem not found' });
+			if (!problem) return actionFail(404, 'deleteFile', 'Problem not found');
 
 			const record = await db
 				.select()
 				.from(problemFiles)
 				.where(and(eq(problemFiles.problemId, problem.id), eq(problemFiles.label, label)))
 				.get();
-			if (!record) return fail(404, { error: 'File not found' });
+			if (!record) return actionFail(404, 'deleteFile', 'File not found');
 
 			await deleteByUrl(bucket, record.url);
 			await db.delete(problemFiles).where(eq(problemFiles.id, record.id)).run();
@@ -326,6 +331,6 @@ export const actions: Actions = {
 			{ olympiadId: params.olympiad, year: yearNum }
 		);
 
-		return { success: true, action: 'deleteFile' as const };
+		return ok('deleteFile');
 	}
 };

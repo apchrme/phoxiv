@@ -1,4 +1,4 @@
-import { redirect, fail } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { olympiads, years } from '$lib/server/db';
 import { canEditOlympiad, getAssignedOlympiadIds, requireAdmin } from '$lib/server/guard';
@@ -6,7 +6,14 @@ import { logActivity } from '$lib/server/activity-log';
 import { renderMarkdownOrNull } from '$lib/server/markdown';
 import { listOlympiadOptions } from '$lib/server/db/queries/olympiads';
 import { ensureYear } from '$lib/server/db/queries/years';
-import { field, fieldOrNull, fileField, parseYear, YEAR_RANGE_ERROR } from '$lib/server/forms';
+import {
+	actionFail,
+	field,
+	fieldOrNull,
+	fileField,
+	parseYear,
+	YEAR_RANGE_ERROR
+} from '$lib/server/forms';
 import { cdnUrl, getBucket, iconKey, STORAGE_UNAVAILABLE } from '$lib/server/storage';
 import { validateUpload } from '$lib/server/uploads';
 import { ICON_UPLOAD } from '$lib/uploads';
@@ -30,20 +37,20 @@ export const actions: Actions = {
 		const olympiadId = field(data, 'olympiadId');
 		const yearRaw = field(data, 'year');
 
-		if (!olympiadId) return fail(400, { selectError: 'Please select an olympiad' });
+		if (!olympiadId) return actionFail(400, 'selectYear', 'Please select an olympiad');
 
 		// This action needs its own permission check: the layout guard only
 		// establishes that the user is *a* contributor, not that they may edit
 		// this particular olympiad.
 		if (!canEditOlympiad(locals.user, olympiadId)) {
-			return fail(403, { selectError: 'You are not permitted to edit this olympiad' });
+			return actionFail(403, 'selectYear', 'You are not permitted to edit this olympiad');
 		}
 
 		// No year given — go to the olympiad's metadata page instead.
 		if (!yearRaw) redirect(303, `/contribute/${olympiadId}`);
 
 		const year = parseYear(yearRaw);
-		if (year === null) return fail(400, { selectError: YEAR_RANGE_ERROR });
+		if (year === null) return actionFail(400, 'selectYear', YEAR_RANGE_ERROR);
 
 		const { created } = await ensureYear(db, olympiadId, year);
 		if (created) {
@@ -73,17 +80,18 @@ export const actions: Actions = {
 		const emojiIcon = field(data, 'icon');
 
 		if (!id || !name || !summary || !tag || year === null) {
-			return fail(400, { createError: 'All required fields must be filled in' });
+			return actionFail(400, 'createOlympiad', 'All required fields must be filled in');
 		}
-		if (!isOlympiadTag(tag)) return fail(400, { createError: 'Invalid tag' });
+		if (!isOlympiadTag(tag)) return actionFail(400, 'createOlympiad', 'Invalid tag');
 
 		let iconValue = emojiIcon;
 		if (iconFile) {
 			const bucket = getBucket(platform);
-			if (!bucket) return fail(500, { createError: `${STORAGE_UNAVAILABLE} for icon upload` });
+			if (!bucket)
+				return actionFail(500, 'createOlympiad', `${STORAGE_UNAVAILABLE} for icon upload`);
 
 			const validated = validateUpload(iconFile, ICON_UPLOAD, 'Icon file');
-			if (!validated.ok) return fail(400, { createError: validated.error });
+			if (!validated.ok) return actionFail(400, 'createOlympiad', validated.error);
 
 			const { file, ext, contentType } = validated.value;
 			const key = iconKey(id, ext);
@@ -106,7 +114,7 @@ export const actions: Actions = {
 				.run();
 		} catch {
 			// The only realistic failure is the primary-key conflict.
-			return fail(400, { createError: `An olympiad with the ID "${id}" already exists` });
+			return actionFail(400, 'createOlympiad', `An olympiad with the ID "${id}" already exists`);
 		}
 
 		await db.insert(years).values({ olympiadId: id, year, notes: '[]', extraLinks: '[]' }).run();

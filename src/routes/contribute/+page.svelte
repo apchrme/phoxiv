@@ -2,6 +2,7 @@
 	import type { PageProps } from './$types';
 	import { resolve } from '$app/paths';
 	import { enhance } from '$app/forms';
+	import { Pending } from '$lib/forms.svelte';
 	import Title from '$lib/components/Title.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -15,8 +16,12 @@
 	import { OLYMPIAD_TAGS, type OlympiadTag } from '$lib/types';
 	import { ICON_UPLOAD } from '$lib/uploads';
 
-	let initialTab = $state('existing');
 	let { data, form }: PageProps = $props();
+
+	let initialTab = $state('existing');
+
+	/** In-flight submissions, keyed by action. */
+	const pending = new Pending();
 
 	let tag = $state<OlympiadTag | undefined>();
 	let olympiadId = $state<string | undefined>();
@@ -65,7 +70,12 @@
 				</Card.Description>
 			</Card.Header>
 			<Card.Content>
-				<form method="POST" action="?/selectYear" use:enhance class="flex flex-col gap-4">
+				<form
+					method="POST"
+					action="?/selectYear"
+					use:enhance={pending.track('selectYear')}
+					class="flex flex-col gap-4"
+				>
 					<div class="flex flex-col gap-1.5">
 						<label for="olympiadId" class="text-sm font-medium">Olympiad</label>
 						<Combobox.Root type="single" name="olympiadId" required bind:value={olympiadId}>
@@ -96,11 +106,11 @@
 							placeholder="e.g. 2025 (optional)"
 						/>
 					</div>
-					{#if form?.selectError}
-						<p class="text-sm text-destructive">{form.selectError}</p>
+					{#if form && !form.success && form.action === 'selectYear'}
+						<p class="text-sm text-destructive">{form.error}</p>
 					{/if}
 					<div class="flex flex-wrap gap-2">
-						<Button type="submit" class="self-start">
+						<Button type="submit" class="self-start" disabled={pending.has('selectYear')}>
 							Go <ArrowRight />
 						</Button>
 						{#if olympiadId}
@@ -128,7 +138,7 @@
 					method="POST"
 					action="?/createOlympiad"
 					enctype="multipart/form-data"
-					use:enhance
+					use:enhance={pending.track('createOlympiad')}
 					class="flex flex-col gap-4"
 				>
 					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -237,10 +247,12 @@
 							placeholder="Longer description shown on the olympiad page..."
 						></Textarea>
 					</div>
-					{#if form?.createError}
-						<p class="text-sm text-destructive">{form.createError}</p>
+					{#if form && !form.success && form.action === 'createOlympiad'}
+						<p class="text-sm text-destructive">{form.error}</p>
 					{/if}
-					<Button type="submit" class="self-start">Create olympiad <ArrowRight /></Button>
+					<Button type="submit" class="self-start" disabled={pending.has('createOlympiad')}>
+						Create olympiad <ArrowRight />
+					</Button>
 				</form>
 			</Card.Content>
 		</Card.Root>

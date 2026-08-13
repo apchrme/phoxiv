@@ -5,7 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "bunx --bun vite dev",
-		"build": "wrangler types ./src/worker-configuration.d.ts --check && bunx --bun vite build",
+		"build": "bunx --bun vite build",
 		"preview": "bun run build && wrangler dev",
 		"deploy": "bun run build && wrangler deploy",
 		"prepare": "svelte-kit sync || echo ''",
@@ -19,6 +19,7 @@
 		"db:migrate-remote": "wrangler d1 migrations apply DB --remote",
 		"db:studio": "drizzle-kit studio",
 		"cf-typegen": "wrangler types ./src/worker-configuration.d.ts",
+		"cf-typegen:check": "wrangler types ./src/worker-configuration.d.ts --check",
 		"db:generate-auth": "bun x auth@latest generate --config src/lib/server/auth-cli.ts"
 	},
 	"dependencies": {

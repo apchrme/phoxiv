@@ -1,4 +1,4 @@
-import { redirect, fail } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { eq, inArray } from 'drizzle-orm';
 import { olympiads, problems, years } from '$lib/server/db';
@@ -9,10 +9,12 @@ import { renderMarkdownOrNull } from '$lib/server/markdown';
 import { requireOlympiad } from '$lib/server/db/queries/olympiads';
 import { ensureYear, insertYear, listYearNumbers } from '$lib/server/db/queries/years';
 import {
+	actionFail,
 	field,
 	fieldOrNull,
 	fileField,
 	intField,
+	ok,
 	parseYear,
 	YEAR_RANGE_ERROR
 } from '$lib/server/forms';
@@ -64,9 +66,9 @@ export const actions: Actions = {
 		const displayOrder = intField(data, 'displayOrder', DEFAULT_DISPLAY_ORDER);
 
 		if (!name || !summary || !tag) {
-			return fail(400, { updateError: 'Name, summary, and tag are required' });
+			return actionFail(400, 'updateOlympiad', 'Name, summary, and tag are required');
 		}
-		if (!isOlympiadTag(tag)) return fail(400, { updateError: 'Invalid tag' });
+		if (!isOlympiadTag(tag)) return actionFail(400, 'updateOlympiad', 'Invalid tag');
 
 		await db
 			.update(olympiads)
@@ -86,17 +88,17 @@ export const actions: Actions = {
 			olympiadId: params.olympiad
 		});
 
-		return { success: true, action: 'updateOlympiad' as const };
+		return ok('updateOlympiad');
 	},
 
 	uploadIcon: async ({ request, params, platform, locals }) => {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
 		const bucket = getBucket(platform);
-		if (!bucket) return fail(500, { uploadIconError: STORAGE_UNAVAILABLE });
+		if (!bucket) return actionFail(500, 'uploadIcon', STORAGE_UNAVAILABLE);
 
 		const data = await request.formData();
 		const validated = validateUpload(fileField(data, 'iconFile'), ICON_UPLOAD);
-		if (!validated.ok) return fail(400, { uploadIconError: validated.error });
+		if (!validated.ok) return actionFail(400, 'uploadIcon', validated.error);
 
 		const { file, ext, contentType } = validated.value;
 		const key = iconKey(params.olympiad, ext);
@@ -117,7 +119,7 @@ export const actions: Actions = {
 			olympiadId: params.olympiad
 		});
 
-		return { success: true, action: 'uploadIcon' as const, iconUrl };
+		return ok('uploadIcon', { iconUrl });
 	},
 
 	removeIcon: async ({ params, locals }) => {
@@ -132,7 +134,7 @@ export const actions: Actions = {
 			olympiadId: params.olympiad
 		});
 
-		return { success: true, action: 'removeIcon' as const };
+		return ok('removeIcon');
 	},
 
 	/**
@@ -144,7 +146,7 @@ export const actions: Actions = {
 		const data = await request.formData();
 
 		const year = parseYear(field(data, 'year'));
-		if (year === null) return fail(400, { selectError: YEAR_RANGE_ERROR });
+		if (year === null) return actionFail(400, 'selectYear', YEAR_RANGE_ERROR);
 
 		const { created } = await ensureYear(db, params.olympiad, year);
 		if (created) {
@@ -170,7 +172,7 @@ export const actions: Actions = {
 
 		const data = await request.formData();
 		const validated = validateUpload(fileField(data, 'csvFile'), CSV_UPLOAD);
-		if (!validated.ok) return fail(400, { importError: validated.error });
+		if (!validated.ok) return actionFail(400, 'importTitles', validated.error);
 
 		type Row = Record<string, string>;
 		let records: Row[];
@@ -182,14 +184,14 @@ export const actions: Actions = {
 				relax_column_count: true
 			}) as Row[];
 		} catch {
-			return fail(400, { importError: 'Could not parse CSV file' });
+			return actionFail(400, 'importTitles', 'Could not parse CSV file');
 		}
 
-		if (records.length === 0) return fail(400, { importError: 'CSV appears to be empty' });
+		if (records.length === 0) return actionFail(400, 'importTitles', 'CSV appears to be empty');
 
 		const header = Object.keys(records[0]);
 		if (!header.includes('year') || !header.includes('number') || !header.includes('title')) {
-			return fail(400, { importError: 'CSV must have "year", "number", and "title" columns' });
+			return actionFail(400, 'importTitles', 'CSV must have "year", "number", and "title" columns');
 		}
 
 		type Entry = { year: number; number: string; title: string | null; topics: ProblemTopic[] };
@@ -210,7 +212,7 @@ export const actions: Actions = {
 		}
 
 		if (entries.length === 0) {
-			return fail(400, { importError: 'No valid rows found for this olympiad' });
+			return actionFail(400, 'importTitles', 'No valid rows found for this olympiad');
 		}
 
 		// Resolve (and create) the year rows -> Map<yearNumber, yearId>.
@@ -311,10 +313,8 @@ export const actions: Actions = {
 			{ olympiadId: params.olympiad }
 		);
 
-		return {
-			success: true,
-			action: 'importTitles' as const,
+		return ok('importTitles', {
 			stats: { created, filled, topicsFilled, kept, yearsCreated, skippedInvalid }
-		};
+		});
 	}
 };

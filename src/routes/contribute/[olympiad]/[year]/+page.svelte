@@ -9,7 +9,7 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import TopicSelect from '$lib/components/TopicSelect.svelte';
-	import { toast } from 'svelte-sonner';
+	import { formToasts, Pending } from '$lib/forms.svelte';
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
 	import { cn } from '$lib/utils.js';
@@ -22,7 +22,6 @@
 	// We need to use deep state here because the page data is just used to seed the variables, and subsequent client-side updates are by the user.
 	// svelte-ignore state_referenced_locally
 	let notes = $state(data.year.notes.map((n) => ({ id: crypto.randomUUID(), value: n })));
-	let deletingYear = $state(false);
 
 	// svelte-ignore state_referenced_locally
 	let extraLinks = $state(
@@ -87,30 +86,23 @@
 		return existingFiles.some((f) => f.label.trim().toLowerCase() === trimmed);
 	}
 
-	let savingMetadata = $state(false);
+	/**
+	 * In-flight submissions. Keys are section-scoped rather than label-scoped:
+	 * `'year'` or the problem number for uploads, and `<section>/<label>` for
+	 * deletions. A key must not depend on the typed label, because `use:enhance`
+	 * captures its callback once when the form mounts — a label-derived key would
+	 * be written under the mount-time value and read under the current one.
+	 */
+	const pending = new Pending();
 
-	// uploading[key] tracks in-flight uploads; key = "year__label" or "problem__number__label"
-	let uploading = $state<Record<string, boolean>>({});
-
-	// newFileLabel tracks the label input for each "add file" form
-	// key = "year" or problem number
+	// The label input for each "add file" form, keyed by "year" or problem number.
 	let newFileLabel = $state<Record<string, string>>({});
 
-	$effect(() => {
-		if (!form) return;
-		if ('success' in form && form.success) {
-			if (form.action === 'saveMetadata') toast.success('Metadata saved');
-			if (form.action === 'uploadFile') toast.success('File uploaded');
-			if (form.action === 'deleteFile') toast.success('File deleted');
-		}
-		if ('error' in form && form.error) {
-			toast.error(String(form.error));
-		}
+	formToasts(() => form, {
+		saveMetadata: 'Metadata saved',
+		uploadFile: 'File uploaded',
+		deleteFile: 'File deleted'
 	});
-
-	function uploadKey(scope: 'year' | 'problem', label: string, problemNumber?: string) {
-		return scope === 'year' ? `${label}` : `${problemNumber}/${label}`;
-	}
 </script>
 
 <SvelteSeo
@@ -148,20 +140,12 @@
 		<form
 			method="POST"
 			action="?/saveMetadata"
-			use:enhance={({ cancel }) => {
-				if (hasDuplicateNumbers) {
-					cancel();
-					toast.error('Duplicate problem numbers found — please make them unique before saving.');
-					return;
-				}
-				savingMetadata = true;
-				return async ({ update }) => {
-					// update() normally invalidates data and resets the form.
-					// We pass { reset: false } to keep the user's input intact.
-					savingMetadata = false;
-					await update({ reset: false });
-				};
-			}}
+			use:enhance={pending.track('metadata', {
+				guard: () =>
+					hasDuplicateNumbers
+						? 'Duplicate problem numbers found — please make them unique before saving.'
+						: null
+			})}
 			class="flex flex-col gap-5 pb-2"
 		>
 			<!-- Notes -->
@@ -286,11 +270,11 @@
 				<Button
 					type="submit"
 					class="disabled:bg-primary/60"
-					disabled={savingMetadata || hasDuplicateNumbers}
+					disabled={pending.has('metadata') || hasDuplicateNumbers}
 				>
 					Save metadata
 				</Button>
-				{#if savingMetadata}
+				{#if pending.has('metadata')}
 					<Spinner class="size-5" />
 				{/if}
 			</div>
@@ -298,25 +282,13 @@
 		<form
 			method="POST"
 			action="?/deleteYear"
-			use:enhance={({ cancel }) => {
-				if (
-					!confirm(
-						`Delete ${data.olympiad.name} ${data.year.year}? This will permanently remove the year, its problems, and all uploaded files.`
-					)
-				) {
-					cancel();
-					return;
-				}
-
-				deletingYear = true;
-				return async ({ update }) => {
-					deletingYear = false;
-					await update();
-				};
-			}}
+			use:enhance={pending.track('deleteYear', {
+				reset: true,
+				confirm: `Delete ${data.olympiad.name} ${data.year.year}? This will permanently remove the year, its problems, and all uploaded files.`
+			})}
 		>
-			<Button type="submit" variant="destructive" disabled={deletingYear}>
-				{#if deletingYear}
+			<Button type="submit" variant="destructive" disabled={pending.has('deleteYear')}>
+				{#if pending.has('deleteYear')}
 					<Spinner class="size-3.5" />
 					Deleting…
 				{:else}
@@ -359,26 +331,22 @@
 										<form
 											method="POST"
 											action="?/deleteFile"
-											use:enhance={({ cancel }) => {
-												if (
-													!confirm(
-														`Delete "${file.label}"? This will permanently remove the file. This cannot be undone.`
-													)
-												) {
-													cancel();
-													return;
-												}
-												return async ({ update }) => {
-													await update();
-												};
-											}}
+											use:enhance={pending.track(`${labelKey}/${file.label}`, {
+												reset: true,
+												confirm: `Delete "${file.label}"? This will permanently remove the file. This cannot be undone.`
+											})}
 										>
 											<input type="hidden" name="scope" value={scope} />
 											<input type="hidden" name="label" value={file.label} />
 											{#if problemNumber}
 												<input type="hidden" name="problemNumber" value={problemNumber} />
 											{/if}
-											<Button type="submit" variant="ghost" size="icon-sm">
+											<Button
+												type="submit"
+												variant="ghost"
+												size="icon-sm"
+												disabled={pending.has(`${labelKey}/${file.label}`)}
+											>
 												<Trash2 class="size-3.5 text-destructive" />
 											</Button>
 										</form>
@@ -394,20 +362,14 @@
 						method="POST"
 						action="?/uploadFile"
 						enctype="multipart/form-data"
-						use:enhance={({ cancel }) => {
-							if (duplicateLabel) {
-								cancel();
-								toast.error(`A file named "${currentLabel.trim()}" already exists.`);
-								return;
-							}
-							const key = uploadKey(scope, currentLabel, problemNumber);
-							uploading[key] = true;
-							return async ({ update }) => {
-								uploading[key] = false;
-								newFileLabel[labelKey] = '';
-								await update();
-							};
-						}}
+						use:enhance={pending.track(labelKey, {
+							reset: true,
+							guard: () =>
+								isDuplicateLabel(newFileLabel[labelKey] ?? '', existingFiles)
+									? `A file named "${(newFileLabel[labelKey] ?? '').trim()}" already exists.`
+									: null,
+							onDone: () => (newFileLabel[labelKey] = '')
+						})}
 						class="flex flex-col gap-2 sm:flex-row sm:items-end"
 					>
 						<input type="hidden" name="scope" value={scope} />
@@ -451,10 +413,11 @@
 						</div>
 						<Button
 							type="submit"
-							disabled={uploading[uploadKey(scope, currentLabel, problemNumber)] || duplicateLabel}
+							disabled={pending.has(labelKey) || duplicateLabel}
 							class="shrink-0"
 						>
-							{#if uploading[uploadKey(scope, currentLabel, problemNumber)]}
+							{#if pending.has(labelKey)}
+								<Spinner class="size-3.5" />
 								Uploading…
 							{:else}
 								Upload

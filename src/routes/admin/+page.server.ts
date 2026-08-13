@@ -1,10 +1,9 @@
 import type { Actions, PageServerLoad } from './$types';
-import { fail } from '@sveltejs/kit';
 import { desc, eq } from 'drizzle-orm';
 import { activityLog, user } from '$lib/server/db';
 import { isProtectedSuperadmin, requireAdmin } from '$lib/server/guard';
 import { listOlympiadOptions } from '$lib/server/db/queries/olympiads';
-import { field, fieldList, fieldOrNull } from '$lib/server/forms';
+import { actionFail, field, fieldList, fieldOrNull, ok } from '$lib/server/forms';
 
 /** How many activity-log entries the panel shows. */
 const LOG_LIMIT = 100;
@@ -48,13 +47,13 @@ export const actions: Actions = {
 		const userId = field(data, 'userId');
 		const role = field(data, 'role');
 
-		if (!userId) return fail(400, { error: 'User ID required' });
+		if (!userId) return actionFail(400, 'setRole', 'User ID required');
 		// Without this an admin could lock themselves out of the panel.
-		if (userId === actor.id) return fail(400, { error: 'You cannot change your own role' });
+		if (userId === actor.id) return actionFail(400, 'setRole', 'You cannot change your own role');
 		if (await isProtectedSuperadmin(db, platform, userId)) {
-			return fail(403, { error: 'This account cannot be modified' });
+			return actionFail(403, 'setRole', 'This account cannot be modified');
 		}
-		if (!ASSIGNABLE_ROLES.includes(role)) return fail(400, { error: 'Invalid role' });
+		if (!ASSIGNABLE_ROLES.includes(role)) return actionFail(400, 'setRole', 'Invalid role');
 
 		await db
 			.update(user)
@@ -62,7 +61,7 @@ export const actions: Actions = {
 			.where(eq(user.id, userId))
 			.run();
 
-		return { success: true };
+		return ok('setRole');
 	},
 
 	/** Admins choose which olympiads a contributor may edit. */
@@ -72,12 +71,12 @@ export const actions: Actions = {
 		const userId = field(data, 'userId');
 		const olympiadIds = fieldList(data, 'olympiadId');
 
-		if (!userId) return fail(400, { error: 'User ID required' });
+		if (!userId) return actionFail(400, 'setAssignedOlympiads', 'User ID required');
 		if (userId === actor.id) {
-			return fail(400, { error: 'You cannot change your own assignments' });
+			return actionFail(400, 'setAssignedOlympiads', 'You cannot change your own assignments');
 		}
 		if (await isProtectedSuperadmin(db, platform, userId)) {
-			return fail(403, { error: 'This account cannot be modified' });
+			return actionFail(403, 'setAssignedOlympiads', 'This account cannot be modified');
 		}
 
 		await db
@@ -86,7 +85,7 @@ export const actions: Actions = {
 			.where(eq(user.id, userId))
 			.run();
 
-		return { success: true };
+		return ok('setAssignedOlympiads');
 	},
 
 	banUser: async ({ request, locals, platform }) => {
@@ -95,15 +94,15 @@ export const actions: Actions = {
 		const userId = field(data, 'userId');
 		const reason = fieldOrNull(data, 'reason');
 
-		if (!userId) return fail(400, { error: 'User ID required' });
-		if (userId === actor.id) return fail(400, { error: 'You cannot ban yourself' });
+		if (!userId) return actionFail(400, 'banUser', 'User ID required');
+		if (userId === actor.id) return actionFail(400, 'banUser', 'You cannot ban yourself');
 		if (await isProtectedSuperadmin(db, platform, userId)) {
-			return fail(403, { error: 'This account cannot be modified' });
+			return actionFail(403, 'banUser', 'This account cannot be modified');
 		}
 
 		await db.update(user).set({ banned: true, banReason: reason }).where(eq(user.id, userId)).run();
 
-		return { success: true };
+		return ok('banUser');
 	},
 
 	unbanUser: async ({ request, locals, platform }) => {
@@ -111,15 +110,15 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const userId = field(data, 'userId');
 
-		if (!userId) return fail(400, { error: 'User ID required' });
+		if (!userId) return actionFail(400, 'unbanUser', 'User ID required');
 		// The superadmin check belongs here too: unbanning is a modification, and
 		// leaving it off made the protection inconsistent with its siblings.
 		if (await isProtectedSuperadmin(db, platform, userId)) {
-			return fail(403, { error: 'This account cannot be modified' });
+			return actionFail(403, 'unbanUser', 'This account cannot be modified');
 		}
 
 		await db.update(user).set({ banned: false, banReason: null }).where(eq(user.id, userId)).run();
 
-		return { success: true };
+		return ok('unbanUser');
 	}
 };

@@ -21,7 +21,7 @@
 		ChevronsUpDown,
 		BookOpenCheck
 	} from '@lucide/svelte';
-	import { toast } from 'svelte-sonner';
+	import { formToasts, Pending } from '$lib/forms.svelte';
 	import { formatDate, formatDateTime } from '$lib/utils/date';
 	import { parseStringArray } from '$lib/utils/json';
 	import { actionLabel, actionVariant, roleLabel } from '$lib/activity';
@@ -39,12 +39,14 @@
 	type UserRow = (typeof data.users)[number];
 
 	// ── Action state ──────────────────────────────────────────────────────────
-	let submitting = $state<Record<string, boolean>>({});
+	// Keyed per user and per operation, because one page drives every row's forms.
+	const pending = new Pending();
 
-	$effect(() => {
-		if (!form) return;
-		if ('success' in form && form.success) toast.success('User updated');
-		if ('error' in form && form.error) toast.error(String(form.error));
+	formToasts(() => form, {
+		setRole: 'Role updated',
+		setAssignedOlympiads: 'Assignments saved',
+		banUser: 'User banned',
+		unbanUser: 'User unbanned'
 	});
 
 	// ── Table state ───────────────────────────────────────────────────────────
@@ -317,16 +319,12 @@
 										<form
 											method="POST"
 											action="?/setRole"
-											use:enhance={() => {
-												submitting[u.id + '_role'] = true;
-												return async ({ update }) => {
-													submitting[u.id + '_role'] = false;
-													// Clear the local draft so the row falls back to reading
-													// straight from the (now-updated) server data again.
-													delete roleDrafts[u.id];
-													await update();
-												};
-											}}
+											use:enhance={pending.track(u.id + '_role', {
+												reset: true,
+												// Clear the local draft so the row falls back to reading
+												// straight from the (now-updated) server data again.
+												onDone: () => delete roleDrafts[u.id]
+											})}
 											class="flex items-center gap-1.5"
 										>
 											<input type="hidden" name="userId" value={u.id} />
@@ -338,7 +336,7 @@
 											>
 												<Select.Trigger
 													class="h-8 w-32 text-xs"
-													disabled={submitting[u.id + '_role']}
+													disabled={pending.has(u.id + '_role')}
 												>
 													{roleLabel(draft)}
 												</Select.Trigger>
@@ -352,7 +350,7 @@
 												type="submit"
 												size="xs"
 												variant={dirty ? 'default' : 'outline'}
-												disabled={submitting[u.id + '_role'] || !dirty}
+												disabled={pending.has(u.id + '_role') || !dirty}
 											>
 												Save
 											</Button>
@@ -397,13 +395,7 @@
 													<form
 														method="POST"
 														action="?/setAssignedOlympiads"
-														use:enhance={() => {
-															submitting[u.id + '_assign'] = true;
-															return async ({ update }) => {
-																submitting[u.id + '_assign'] = false;
-																await update();
-															};
-														}}
+														use:enhance={pending.track(u.id + '_assign', { reset: true })}
 														class="px-1 pb-1"
 													>
 														<input type="hidden" name="userId" value={u.id} />
@@ -414,7 +406,7 @@
 															type="submit"
 															size="xs"
 															class="w-full"
-															disabled={submitting[u.id + '_assign']}
+															disabled={pending.has(u.id + '_assign')}
 														>
 															Save assignments
 														</Button>
@@ -430,20 +422,14 @@
 											<form
 												method="POST"
 												action="?/unbanUser"
-												use:enhance={() => {
-													submitting[u.id + '_ban'] = true;
-													return async ({ update }) => {
-														submitting[u.id + '_ban'] = false;
-														await update();
-													};
-												}}
+												use:enhance={pending.track(u.id + '_ban', { reset: true })}
 											>
 												<input type="hidden" name="userId" value={u.id} />
 												<Button
 													type="submit"
 													variant="outline"
 													size="xs"
-													disabled={submitting[u.id + '_ban']}
+													disabled={pending.has(u.id + '_ban')}
 												>
 													<CircleCheck class="size-3" />
 													Unban
@@ -453,13 +439,7 @@
 											<form
 												method="POST"
 												action="?/banUser"
-												use:enhance={() => {
-													submitting[u.id + '_ban'] = true;
-													return async ({ update }) => {
-														submitting[u.id + '_ban'] = false;
-														await update();
-													};
-												}}
+												use:enhance={pending.track(u.id + '_ban', { reset: true })}
 											>
 												<input type="hidden" name="userId" value={u.id} />
 												<input type="hidden" name="reason" value="" />
@@ -467,7 +447,7 @@
 													type="submit"
 													variant="destructive"
 													size="xs"
-													disabled={submitting[u.id + '_ban']}
+													disabled={pending.has(u.id + '_ban')}
 												>
 													<Ban class="size-3" />
 													Ban
