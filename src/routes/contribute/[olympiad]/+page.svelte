@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
-	import { ChevronLeft, Save, Upload, X, Plus, Pencil, FileUp, Download } from '@lucide/svelte';
+	import { Save, Upload, X, Plus, Pencil, FileUp, Download } from '@lucide/svelte';
+	import BackLink from '$lib/components/BackLink.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
@@ -14,7 +15,8 @@
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
 	import { OLYMPIAD_TAGS, PROBLEM_TOPICS, type OlympiadTag } from '$lib/types';
-	import { CSV_UPLOAD, ICON_UPLOAD, isIconUrl } from '$lib/uploads';
+	import { CSV_UPLOAD, isIconUrl } from '$lib/uploads';
+	import IconFilePicker from '$lib/components/forms/IconFilePicker.svelte';
 
 	let { data, form }: PageProps = $props();
 
@@ -40,24 +42,10 @@
 		if (csvFileInput) csvFileInput.value = '';
 	}
 
-	// Preview for the selected-but-not-yet-uploaded icon file
+	// The picker owns the object-URL lifecycle; this page renders the larger
+	// preview in the card header from the URL it hands back.
+	let iconPicker: ReturnType<typeof IconFilePicker> | undefined = $state();
 	let iconPreviewUrl = $state<string | null>(null);
-	let iconFileInput: HTMLInputElement | undefined = $state();
-
-	function onIconFileChange(e: Event) {
-		const file = (e.currentTarget as HTMLInputElement).files?.[0];
-		if (!file) {
-			iconPreviewUrl = null;
-			return;
-		}
-		iconPreviewUrl = URL.createObjectURL(file);
-	}
-
-	function clearIconFile() {
-		if (iconPreviewUrl) URL.revokeObjectURL(iconPreviewUrl);
-		iconPreviewUrl = null;
-		if (iconFileInput) iconFileInput.value = '';
-	}
 
 	/** Summary line for a finished CSV import. */
 	type ImportStats = {
@@ -80,12 +68,12 @@
 		uploadIcon: (result) => {
 			// Reflect the new icon immediately, before the load revalidates.
 			if (typeof result.iconUrl === 'string') icon = result.iconUrl;
-			clearIconFile();
+			iconPicker?.clear();
 			return 'Icon uploaded';
 		},
 		removeIcon: () => {
 			icon = '';
-			clearIconFile();
+			iconPicker?.clear();
 			return 'Icon removed';
 		},
 		importTitles: (result) => {
@@ -103,13 +91,7 @@
 	description="Edit olympiad metadata for {data.olympiad.name}"
 />
 
-<a
-	href={resolve('/contribute')}
-	class="mt-5 inline-flex items-center gap-1.5 text-sm text-muted-foreground no-underline transition-colors hover:text-primary"
->
-	<ChevronLeft class="size-4" />
-	Back to contribute
-</a>
+<BackLink href={resolve('/contribute')}>Back to contribute</BackLink>
 
 <header class="flex flex-col gap-2 py-5">
 	<div class="flex items-center gap-3">
@@ -237,15 +219,11 @@
 			>
 				<div class="flex flex-col gap-1.5">
 					<label for="iconFile" class="text-sm font-medium">Image file</label>
-					<input
-						bind:this={iconFileInput}
-						id="iconFile"
-						name="iconFile"
-						type="file"
-						accept={ICON_UPLOAD.accept}
+					<IconFilePicker
+						bind:this={iconPicker}
 						required
-						onchange={onIconFileChange}
-						class="file-input"
+						showPreview={false}
+						onchange={(_file, url) => (iconPreviewUrl = url)}
 					/>
 				</div>
 				<div class="flex gap-2">
@@ -259,7 +237,7 @@
 						{/if}
 					</Button>
 					{#if iconPreviewUrl}
-						<Button type="button" variant="ghost" size="sm" onclick={clearIconFile}>
+						<Button type="button" variant="ghost" size="sm" onclick={() => iconPicker?.clear()}>
 							<X class="size-3.5" />
 							Clear
 						</Button>

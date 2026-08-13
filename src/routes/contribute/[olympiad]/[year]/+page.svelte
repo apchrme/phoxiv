@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import { enhance } from '$app/forms';
-	import { ChevronLeft, Plus, Trash2, ExternalLink } from '@lucide/svelte';
+	import { Plus, Trash2, ExternalLink } from '@lucide/svelte';
+	import BackLink from '$lib/components/BackLink.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
@@ -110,13 +111,7 @@
 	description="Modify {params.olympiad} {params.year}"
 />
 
-<a
-	href={resolve(`/contribute/${params.olympiad}`)}
-	class="mt-5 inline-flex items-center gap-1.5 text-sm text-muted-foreground no-underline transition-colors hover:text-primary"
->
-	<ChevronLeft class="size-4" />
-	Back to {data.olympiad.name}
-</a>
+<BackLink href={resolve(`/contribute/${params.olympiad}`)}>Back to {data.olympiad.name}</BackLink>
 
 <header class="flex flex-col gap-1 py-5">
 	<h1 class="text-2xl font-bold tracking-tight">

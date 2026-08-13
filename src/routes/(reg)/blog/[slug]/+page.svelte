@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import SvelteSeo from 'svelte-seo';
-	import { Calendar, User, Tag, ChevronLeft } from '@lucide/svelte';
+	import { Calendar, User, Tag } from '@lucide/svelte';
+	import BackLink from '$lib/components/BackLink.svelte';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { resolve } from '$app/paths';
@@ -16,13 +17,7 @@
 
 <article class="pb-10">
 	<!-- Back link -->
-	<a
-		href={resolve('/blog')}
-		class="mt-5 inline-flex items-center gap-1.5 text-sm text-muted-foreground no-underline transition-colors hover:text-primary"
-	>
-		<ChevronLeft class="size-4" />
-		Back to blog
-	</a>
+	<BackLink href={resolve('/blog')}>Back to blog</BackLink>
 
 	<!-- Post header -->
 	<header class="flex flex-col gap-3 py-3 md:py-5">

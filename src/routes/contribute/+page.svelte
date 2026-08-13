@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { enhance } from '$app/forms';
 	import { Pending } from '$lib/forms.svelte';
+	import IconFilePicker from '$lib/components/forms/IconFilePicker.svelte';
 	import Title from '$lib/components/Title.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -26,15 +27,6 @@
 	let tag = $state<OlympiadTag | undefined>();
 	let olympiadId = $state<string | undefined>();
 	let searchOlympiad = $state<string>('');
-
-	// Icon file preview for the new olympiad form
-	let iconPreviewUrl = $state<string | null>(null);
-
-	function onIconFileChange(e: Event) {
-		const file = (e.currentTarget as HTMLInputElement).files?.[0];
-		if (iconPreviewUrl) URL.revokeObjectURL(iconPreviewUrl);
-		iconPreviewUrl = file ? URL.createObjectURL(file) : null;
-	}
 
 	const filtered = $derived(
 		searchOlympiad === ''
@@ -162,23 +154,7 @@
 							Icon image
 							<span class="text-sm text-muted-foreground">(optional — overrides emoji)</span>
 						</label>
-						<div class="flex items-center gap-3">
-							<input
-								id="iconFile"
-								name="iconFile"
-								type="file"
-								accept={ICON_UPLOAD.accept}
-								onchange={onIconFileChange}
-								class="file-input flex-1"
-							/>
-							{#if iconPreviewUrl}
-								<img
-									src={iconPreviewUrl}
-									alt="Icon preview"
-									class="h-9 w-auto rounded-md border border-border object-contain"
-								/>
-							{/if}
-						</div>
+						<IconFilePicker class="flex-1" />
 						<p class="text-xs text-muted-foreground">
 							{ICON_UPLOAD.label} · max {ICON_UPLOAD.maxLabel}
 						</p>

@@ -5,8 +5,9 @@
 	import { resolve } from '$app/paths';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import SvelteSeo from 'svelte-seo';
-	import { LogOut, User, Mail, Shield } from '@lucide/svelte';
-	import Github from '$lib/assets/icons/Github.svelte';
+	import { LogOut, Mail, Shield } from '@lucide/svelte';
+	import Github from '$lib/components/GithubMark.svelte';
+	import UserAvatar from '$lib/components/UserAvatar.svelte';
 	import Title from '$lib/components/Title.svelte';
 
 	import { formatDate } from '$lib/utils/date';
@@ -38,19 +39,7 @@
 		<Card.Content class="flex flex-col items-center gap-4 py-8">
 			<!-- Avatar -->
 			<div class="relative">
-				{#if user?.image}
-					<img
-						src={user.image}
-						alt={user.name}
-						class="size-24 rounded-full ring-4 ring-primary/20"
-					/>
-				{:else}
-					<div
-						class="flex size-24 items-center justify-center rounded-full bg-primary/10 ring-4 ring-primary/20"
-					>
-						<User class="size-10 text-primary/60" />
-					</div>
-				{/if}
+				<UserAvatar {user} class="size-24 ring-4 ring-primary/20" iconClass="size-10" />
 				<!-- Online indicator -->
 				<span
 					class="absolute right-1 bottom-1 size-4 rounded-full border-2 border-card bg-green-500"

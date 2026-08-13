@@ -1,7 +1,8 @@
 <script lang="ts">
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { page } from '$app/state';
-	import { User, LogIn } from '@lucide/svelte';
+	import { LogIn } from '@lucide/svelte';
+	import UserAvatar from '$lib/components/UserAvatar.svelte';
 	import { resolve } from '$app/paths';
 	import DarkModeButton from '$lib/components/buttons/DarkModeButton.svelte';
 	import type { NavLink } from '$lib/nav';
@@ -30,19 +31,7 @@
 					class="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-sidebar-accent"
 					onclick={() => sidebar.setOpenMobile(false)}
 				>
-					{#if user.image}
-						<img
-							src={user.image}
-							alt={user.name}
-							class="size-9 shrink-0 rounded-full ring-2 ring-sidebar-border"
-						/>
-					{:else}
-						<div
-							class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 ring-2 ring-sidebar-border"
-						>
-							<User class="size-4 text-primary" />
-						</div>
-					{/if}
+					<UserAvatar {user} class="size-9 ring-2 ring-sidebar-border" />
 					<div class="flex min-w-0 flex-1 flex-col leading-tight">
 						<span class="truncate text-sm font-semibold text-sidebar-foreground">{user.name}</span>
 						<span class="truncate text-xs text-sidebar-foreground/50">{user.email}</span>

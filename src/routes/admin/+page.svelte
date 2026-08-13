@@ -13,7 +13,6 @@
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { FlexRender, createSvelteTable } from '$lib/components/ui/data-table/index.js';
 	import {
-		User,
 		Ban,
 		CircleCheck,
 		ChevronUp,
@@ -21,6 +20,7 @@
 		ChevronsUpDown,
 		BookOpenCheck
 	} from '@lucide/svelte';
+	import UserAvatar from '$lib/components/UserAvatar.svelte';
 	import { formToasts, Pending } from '$lib/forms.svelte';
 	import { formatDate, formatDateTime } from '$lib/utils/date';
 	import { parseStringArray } from '$lib/utils/json';
@@ -252,19 +252,7 @@
 							<!-- User cell — rendered manually for the avatar+badge treatment -->
 							<Table.Cell>
 								<div class="flex items-center gap-2.5">
-									{#if u.image}
-										<img
-											src={u.image}
-											alt={u.name}
-											class="size-8 shrink-0 rounded-full ring-2 ring-border"
-										/>
-									{:else}
-										<div
-											class="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted ring-2 ring-border"
-										>
-											<User class="size-3.5 text-muted-foreground" />
-										</div>
-									{/if}
+									<UserAvatar user={u} class="size-8 ring-2 ring-border" iconClass="size-3.5" />
 									<div class="flex min-w-0 flex-col gap-0.5">
 										<div class="flex flex-wrap items-center gap-1.5">
 											<span class="font-medium text-foreground">{u.name}</span>

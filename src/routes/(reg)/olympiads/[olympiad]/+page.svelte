@@ -1,12 +1,12 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import type { YearEntry, ProblemEntry, ProblemTopic } from '$lib/types.js';
-	import Badge from '$lib/components/ui/badge/badge.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import TopicSelect from '$lib/components/TopicSelect.svelte';
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
-	import { ChevronLeft, ExternalLink } from '@lucide/svelte';
+	import BackLink from '$lib/components/BackLink.svelte';
+	import FileBadge from '$lib/components/FileBadge.svelte';
 	import * as Card from '$lib/components/ui/card';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import SvelteSeo from 'svelte-seo';
@@ -110,13 +110,7 @@
 	keywords="problems, solutions, olympiad, physics"
 />
 
-<a
-	href={resolve('/olympiads')}
-	class="mt-5 inline-flex items-center gap-1.5 text-sm text-muted-foreground no-underline transition-colors hover:text-primary"
->
-	<ChevronLeft class="size-4" />
-	Back to olympiads
-</a>
+<BackLink href={resolve('/olympiads')}>Back to olympiads</BackLink>
 
 <header class="flex flex-col gap-3 pt-3 md:pt-5">
 	<h1 class="text-3xl leading-tight font-bold tracking-tight sm:text-4xl">{olympiad.name}</h1>
@@ -172,24 +166,6 @@
 					<Separator />
 
 					<div class="flex flex-col gap-4 px-3 sm:px-5">
-						{#snippet FileLink(url: string, label: string)}
-							<Badge
-								variant="outline"
-								href={url}
-								target="_blank"
-								class="px-2.5 py-2.5 text-sm hover:border-primary/40 dark:hover:border-primary/30"
-							>
-								{label}
-							</Badge>
-						{/snippet}
-
-						{#snippet ExtraFileLink(url: string, label: string)}
-							<Badge variant="outline" href={url} target="_blank" class="px-2.5 py-2.5 text-sm">
-								<ExternalLink />
-								{label}
-							</Badge>
-						{/snippet}
-
 						{#if showYearLevel(year) && hasYearLevelContent(year)}
 							<div class="flex flex-col gap-2">
 								{#each year.notes as note (note)}
@@ -198,10 +174,14 @@
 								{#if year.extraLinks.length > 0 || year.yearFiles.length > 0}
 									<div class="flex flex-wrap gap-2">
 										{#each year.extraLinks as link (link.label)}
-											{@render ExtraFileLink(link.url, link.label)}
+											<FileBadge href={link.url} label={link.label} external />
 										{/each}
 										{#each year.yearFiles as file (file.label)}
-											{@render FileLink(file.url, file.label)}
+											<FileBadge
+												href={file.url}
+												label={file.label}
+												class="px-2.5 py-2.5 text-sm hover:border-primary/40 dark:hover:border-primary/30"
+											/>
 										{/each}
 									</div>
 								{/if}
@@ -224,7 +204,11 @@
 										</div>
 										<div class="flex flex-wrap gap-2">
 											{#each problem.files as file (file.label)}
-												{@render FileLink(file.url, file.label)}
+												<FileBadge
+													href={file.url}
+													label={file.label}
+													class="px-2.5 py-2.5 text-sm hover:border-primary/40 dark:hover:border-primary/30"
+												/>
 											{/each}
 										</div>
 									</div>
