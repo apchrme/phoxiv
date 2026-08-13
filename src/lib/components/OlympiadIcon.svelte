@@ -53,8 +53,9 @@
 	// Per-instance error state for the Flagpedia CDN fallback.
 	let imageError = $state(false);
 
+	// A new icon deserves a fresh attempt at loading it.
 	$effect(() => {
-		icon;
+		const _icon = icon; // tracked dependency
 		imageError = false;
 	});
 </script>

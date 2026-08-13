@@ -4,6 +4,7 @@
 	import { Calendar, User, Tag, ChevronLeft } from '@lucide/svelte';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
+	import { resolve } from '$app/paths';
 
 	let { data }: PageProps = $props();
 
@@ -23,7 +24,7 @@
 <article class="pb-10">
 	<!-- Back link -->
 	<a
-		href="/blog"
+		href={resolve('/blog')}
 		class="mt-5 inline-flex items-center gap-1.5 text-sm text-muted-foreground no-underline transition-colors hover:text-primary"
 	>
 		<ChevronLeft class="size-4" />

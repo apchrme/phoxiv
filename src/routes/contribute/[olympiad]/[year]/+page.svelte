@@ -67,6 +67,8 @@
 	// Tracks which problem numbers appear more than once so we can warn the user
 	// and block saving until they're unique.
 	const duplicateNumbers = $derived.by(() => {
+		// A local accumulator, not reactive state — SvelteMap would be pointless here.
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const counts = new Map<string, number>();
 		for (const p of problemList) {
 			const num = p.number.trim();
@@ -344,6 +346,7 @@
 								>
 									<span class="flex-1 text-sm font-medium">{file.label}</span>
 									<div class="flex flex-row">
+										<!-- eslint-disable svelte/no-navigation-without-resolve -- absolute CDN url -->
 										<a
 											href={file.url}
 											target="_blank"
@@ -351,6 +354,7 @@
 										>
 											<ExternalLink class="size-3" /> View
 										</a>
+										<!-- eslint-enable svelte/no-navigation-without-resolve -->
 										<form
 											method="POST"
 											action="?/deleteFile"

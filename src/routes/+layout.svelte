@@ -1,11 +1,9 @@
 <script lang="ts">
 	import '../app.css';
-	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { toast } from 'svelte-sonner';
 	import { page } from '$app/state';
-	let { children, data } = $props();
+	import type { LayoutProps } from './$types';
+	let { children, data }: LayoutProps = $props();
 
 	import { ModeWatcher } from 'mode-watcher';
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
@@ -19,68 +17,12 @@
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import brand from '$lib/assets/branding/brand.svg';
 	import * as Kbd from '$lib/components/ui/kbd/index.js';
-	import { cn } from '$lib/utils.js';
 	import DarkModeButton from '$lib/components/buttons/DarkModeButton.svelte';
+	import { PRIMARY_NAV, secondaryNavFor } from '$lib/nav';
 
-	const navLinks = [
-		{ url: '/', label: 'home' },
-		{ url: '/olympiads', label: 'olympiads' },
-		{ url: '/resources', label: 'resources' }
-	];
-
-	let moreNavLinks = $state([
-		{ url: '/blog', label: 'blog' },
-		{ url: '/contribute', label: 'contribute' },
-		{ url: '/privacy', label: 'privacy policy' }
-	]);
-
-	onMount(() => {
-		if (data?.user?.role == 'admin') {
-			moreNavLinks.push({ url: '/admin', label: 'admin' });
-		}
-	});
+	const secondaryNav = $derived(secondaryNavFor(data.user));
 
 	let searchOpen = $state(false);
-
-	// Disabled as there hasn't been any blog posts in a while
-	/*
-	const postModules = import.meta.glob('/src/lib/posts/*.svx', { eager: true });
-
-	onMount(() => {
-		const posts = Object.entries(postModules)
-			.map(([path, mod]) => {
-				const slug = path.split('/').pop()?.replace('.svx', '') ?? '';
-				const { metadata } = mod as { metadata: Record<string, unknown> };
-				return {
-					slug,
-					title: String(metadata.title ?? 'Untitled'),
-					date: String(metadata.date ?? '')
-				};
-			})
-			.filter((p) => p.date)
-			.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-		const latestPost = posts[0];
-		if (!latestPost) return;
-
-		const STORAGE_KEY = 'blog:last-seen-post';
-		const lastSeen = localStorage.getItem(STORAGE_KEY);
-
-		if (lastSeen !== latestPost.slug) {
-			localStorage.setItem(STORAGE_KEY, latestPost.slug);
-			setTimeout(() => {
-				toast('New blog post!', {
-					description: latestPost.title,
-					action: {
-						label: 'Read',
-						onClick: () => goto(resolve(`/blog/${latestPost.slug}`))
-					},
-					duration: 8000
-				});
-			}, 1200);
-		}
-	});
-	*/
 </script>
 
 <svelte:head>
@@ -92,7 +34,7 @@
 <Toaster richColors closeButton position="top-center" />
 
 <Sidebar.Provider>
-	<AppSidebar navLinks={navLinks.concat(moreNavLinks)} user={data.user} />
+	<AppSidebar navLinks={[...PRIMARY_NAV, ...secondaryNav]} user={data.user} />
 	<!-- Main wrapper — transparent so html gradient shows through -->
 	<div class="flex min-h-screen w-full flex-col items-center px-4 pt-6 pb-3 bg-background">
 		<div class="w-full lg:w-5/6 xl:w-2/3">
@@ -131,12 +73,13 @@
 			>
 				<NavigationMenu.Root viewport={false}>
 					<NavigationMenu.List class="gap-1 sm:gap-2">
-						{#each navLinks as navLink (navLink.url)}
+						{#each PRIMARY_NAV as navLink (navLink.href)}
 							<NavigationMenu.Item>
+								<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- already resolved in $lib/nav.ts -->
 								<NavigationMenu.Link
-									href={navLink.url}
-									aria-current={page.url.pathname == navLink.url}
-									data-active={page.url.pathname == navLink.url}
+									href={navLink.href}
+									aria-current={page.url.pathname == navLink.href}
+									data-active={page.url.pathname == navLink.href}
 									class="rounded-full py-2 text-base font-medium text-foreground hover:text-primary transition-colors duration-250"
 									>{navLink.label}</NavigationMenu.Link
 								>
@@ -148,12 +91,13 @@
 							</NavigationMenu.Trigger>
 							<NavigationMenu.Content>
 								<ul class="flex flex-col gap-1">
-									{#each moreNavLinks as navLink (navLink.url)}
+									{#each secondaryNav as navLink (navLink.href)}
 										<li>
+											<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- already resolved in $lib/nav.ts -->
 											<NavigationMenu.Link
-												href={navLink.url}
-												aria-current={page.url.pathname == navLink.url}
-												data-active={page.url.pathname == navLink.url}
+												href={navLink.href}
+												aria-current={page.url.pathname == navLink.href}
+												data-active={page.url.pathname == navLink.href}
 												class="rounded-full py-2 text-base font-medium text-foreground hover:text-primary transition-colors duration-250"
 												>{navLink.label}</NavigationMenu.Link
 											>

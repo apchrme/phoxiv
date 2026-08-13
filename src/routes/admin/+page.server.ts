@@ -1,6 +1,6 @@
 import type { Actions, PageServerLoad } from './$types';
 import { fail } from '@sveltejs/kit';
-import { eq, ne, asc, desc } from 'drizzle-orm';
+import { eq, asc, desc } from 'drizzle-orm';
 import { user, olympiads, activityLog } from '$lib/server/db/schema.js';
 import { requireAdmin } from '$lib/server/guard.js';
 

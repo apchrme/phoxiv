@@ -11,8 +11,27 @@
 		"sourceMap": true,
 		"strict": true,
 		"moduleResolution": "bundler",
-		"types": ["./src/worker-configuration.d.ts"] // not necessary if we include this app.d.ts... i think
-	}
+		// Makes the Cloudflare Worker bindings (Env, R2Bucket, D1Database, ...) ambient.
+		// Regenerate with `bun run cf-typegen` after editing wrangler.jsonc.
+		"types": ["./src/worker-configuration.d.ts"]
+	},
+	// Build artifacts. `vite build` emits compiled .js into .svelte-kit/output and
+	// .svelte-kit/cloudflare; without this, `bun run check` type-checks the bundler's
+	// own output after any build and reports thousands of irrelevant errors.
+	// The service-worker entries are inherited from .svelte-kit/tsconfig.json, which
+	// this `exclude` overrides rather than extends.
+	"exclude": [
+		"./node_modules/**",
+		"./.svelte-kit/output/**",
+		"./.svelte-kit/cloudflare/**",
+		"./.svelte-kit/cloudflare-tmp/**",
+		"./src/service-worker.js",
+		"./src/service-worker/**/*.js",
+		"./src/service-worker.ts",
+		"./src/service-worker/**/*.ts",
+		"./src/service-worker.d.ts",
+		"./src/service-worker/**/*.d.ts"
+	]
 	// Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
 	// except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
 	//

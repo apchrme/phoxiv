@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button/index.ts';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { mode } from 'mode-watcher';
 
 	import DiscordWhite from '$lib/assets/icons/Discord-Symbol-White.svg';

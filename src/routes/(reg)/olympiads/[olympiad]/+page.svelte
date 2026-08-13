@@ -10,7 +10,8 @@
 	import * as Card from '$lib/components/ui/card';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import SvelteSeo from 'svelte-seo';
-	import { onMount, tick } from 'svelte';
+	import { tick } from 'svelte';
+	import { resolve } from '$app/paths';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
 	let { data }: PageProps = $props();
@@ -27,7 +28,7 @@
 		activeTopics = [];
 
 		fetch(`/api/olympiads/${id}`)
-			.then((r) => r.json())
+			.then((r) => r.json() as Promise<YearEntry[]>)
 			.then(async (data) => {
 				olympiadFiles = data;
 				olympiadFilesLoading = false;
@@ -62,7 +63,9 @@
 		const q = query.trim().toLowerCase();
 
 		const results = [];
-		for (const year of olympiadFiles) {
+		// `olympiadFiles` is null until the fetch resolves; the markup gates on the
+		// loading flag, but the filter snippet in the search bar renders eagerly.
+		for (const year of olympiadFiles ?? []) {
 			// The topic filter always applies; the text query narrows things further.
 			const inTopics = topicMatches(year);
 			if (activeTopics.length > 0 && inTopics.length === 0) continue;
@@ -86,7 +89,7 @@
 	const hasProblemMatches = $derived(() => {
 		const q = query.trim().toLowerCase();
 		if (!q) return false;
-		return olympiadFiles.some(
+		return (olympiadFiles ?? []).some(
 			(y) => !String(y.year).includes(q) && topicMatches(y).some((p) => matchesQuery(p, q))
 		);
 	});
@@ -108,7 +111,7 @@
 />
 
 <a
-	href="/olympiads"
+	href={resolve('/olympiads')}
 	class="mt-5 inline-flex items-center gap-1.5 text-sm text-muted-foreground no-underline transition-colors hover:text-primary"
 >
 	<ChevronLeft class="size-4" />
@@ -119,6 +122,8 @@
 	<h1 class="text-3xl leading-tight font-bold tracking-tight sm:text-4xl">{olympiad.name}</h1>
 	{#if olympiad?.descriptionHtml}
 		<div class="prose mb-4 max-w-none">
+			<!-- Sanitised server-side by $lib/server/markdown.ts before it is ever stored. -->
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			{@html olympiad.descriptionHtml}
 		</div>
 	{/if}

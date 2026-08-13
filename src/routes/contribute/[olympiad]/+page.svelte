@@ -142,7 +142,7 @@
 				<div class="flex flex-wrap gap-2">
 					{#each data.years as year (year)}
 						<a
-							href="/contribute/{data.olympiad.id}/{year}"
+							href={resolve(`/contribute/${data.olympiad.id}/${year}`)}
 							class="inline-flex items-center gap-1.5 rounded-4xl border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
 						>
 							<Pencil class="size-3.5 text-muted-foreground" />
@@ -511,7 +511,7 @@
 					name="csvFile"
 					type="file"
 					accept=".csv"
-					bind:this={csvFileInput}
+					bind:ref={csvFileInput}
 					onchange={onCsvFileChange}
 					class="text-sm text-muted-foreground file:mr-3 file:rounded-4xl file:border file:border-border file:px-3 file:py-1 file:text-sm file:font-medium file:text-foreground hover:cursor-pointer"
 				/>

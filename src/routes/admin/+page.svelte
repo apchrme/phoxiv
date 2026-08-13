@@ -167,7 +167,7 @@
 	let roleDrafts = $state<Record<string, string>>({});
 
 	function currentRoleDraft(u: UserRow): string {
-		return roleDrafts[u.id] ?? (u.role ?? 'user');
+		return roleDrafts[u.id] ?? u.role ?? 'user';
 	}
 
 	function roleLabel(role: string): string {
@@ -387,7 +387,10 @@
 												value={draft}
 												onValueChange={(v) => (roleDrafts[u.id] = v)}
 											>
-												<Select.Trigger class="h-8 w-32 text-xs" disabled={submitting[u.id + '_role']}>
+												<Select.Trigger
+													class="h-8 w-32 text-xs"
+													disabled={submitting[u.id + '_role']}
+												>
 													{roleLabel(draft)}
 												</Select.Trigger>
 												<Select.Content>

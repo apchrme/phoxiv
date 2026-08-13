@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
+	import { resolve } from '$app/paths';
 	import { enhance } from '$app/forms';
 	import Title from '$lib/components/Title.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
@@ -103,7 +104,7 @@
 						</Button>
 						{#if olympiadId}
 							<a
-								href="/contribute/{olympiadId}"
+								href={resolve(`/contribute/${olympiadId}`)}
 								class="inline-flex items-center gap-1.5 rounded-4xl border border-border bg-card px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
 							>
 								<Pencil class="size-3.5" />
@@ -233,7 +234,7 @@
 						<Textarea
 							id="description"
 							name="description"
-							rows="3"
+							rows={3}
 							placeholder="Longer description shown on the olympiad page..."
 						></Textarea>
 					</div>

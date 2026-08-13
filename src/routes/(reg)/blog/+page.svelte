@@ -4,7 +4,7 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Calendar, Tag, User, ArrowRight } from '@lucide/svelte';
 	import Title from '$lib/components/Title.svelte';
-	import { Separator } from '$lib/components/ui/separator/index';
+	import { resolve } from '$app/paths';
 
 	let { data }: { data: PageData } = $props();
 
@@ -30,10 +30,10 @@
 	</div>
 {:else}
 	<ol class="m-0 flex flex-col gap-3 p-0" style="list-style:none">
-		{#each data.posts as post, i (post.slug)}
+		{#each data.posts as post (post.slug)}
 			<li class="group relative">
 				<a
-					href="/blog/{post.slug}"
+					href={resolve(`/blog/${post.slug}`)}
 					class="flex flex-col items-start gap-3 px-5 py-5 sm:flex-row sm:gap-6 bg-muted/50 rounded-2xl transition-all hover:-translate-y-1 duration-250 hover:inset-ring-primary/50 inset-ring-accent inset-ring shadow-primary hover:shadow-lg/10"
 				>
 					<!-- Date column -->

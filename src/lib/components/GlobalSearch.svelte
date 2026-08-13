@@ -73,8 +73,9 @@
 		return order.slice(0, MAX_RESULTS).map((oi) => index[idxs[oi]]);
 	});
 
+	// Reset the keyboard highlight to the top whenever the query changes.
 	$effect(() => {
-		query;
+		const _query = query; // tracked dependency
 		focusedIndex = 0;
 	});
 

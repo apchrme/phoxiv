@@ -1,35 +1,21 @@
 <script lang="ts">
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { page } from '$app/state';
-	import HouseIcon from '@lucide/svelte/icons/house';
-	import TrophyIcon from '@lucide/svelte/icons/trophy';
-	import LibraryIcon from '@lucide/svelte/icons/library';
-	import FileTextIcon from '@lucide/svelte/icons/file-text';
-	import { HandHelping, User, LogIn, Shield, LockKeyhole } from '@lucide/svelte';
+	import { User, LogIn } from '@lucide/svelte';
 	import { resolve } from '$app/paths';
 	import DarkModeButton from '$lib/components/buttons/DarkModeButton.svelte';
+	import type { NavLink } from '$lib/nav';
 
 	const { navLinks, user } = $props<{
-		navLinks: { url: string; label: string }[];
+		navLinks: NavLink[];
 		user: { name: string; email: string; image?: string | null; role?: string | null } | null;
 	}>();
 
 	const sidebar = Sidebar.useSidebar();
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const iconMap: Record<string, any> = {
-		'/': HouseIcon,
-		'/olympiads': TrophyIcon,
-		'/resources': LibraryIcon,
-		'/blog': FileTextIcon,
-		'/contribute': HandHelping,
-		'/privacy': LockKeyhole,
-		'/admin': Shield
-	};
-
-	function isActive(url: string): boolean {
-		if (url === '/') return page.url.pathname === '/';
-		return page.url.pathname === url || page.url.pathname.startsWith(url + '/');
+	function isActive(href: string): boolean {
+		if (href === resolve('/')) return page.url.pathname === href;
+		return page.url.pathname === href || page.url.pathname.startsWith(href + '/');
 	}
 </script>
 
@@ -85,15 +71,14 @@
 			<Sidebar.Group>
 				<Sidebar.GroupContent>
 					<Sidebar.Menu>
-						{#each navLinks as navLink (navLink.url)}
-							{@const Icon = iconMap[navLink.url]}
+						{#each navLinks as navLink (navLink.href)}
+							{@const Icon = navLink.icon}
 							<Sidebar.MenuItem>
-								<Sidebar.MenuButton isActive={isActive(navLink.url)} size="lg">
+								<Sidebar.MenuButton isActive={isActive(navLink.href)} size="lg">
 									{#snippet child({ props })}
-										<a href={navLink.url} {...props} onclick={() => sidebar.toggle()}>
-											{#if Icon}
-												<Icon />
-											{/if}
+										<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- already resolved in $lib/nav.ts -->
+										<a href={navLink.href} {...props} onclick={() => sidebar.toggle()}>
+											<Icon />
 											<span>{navLink.label}</span>
 										</a>
 									{/snippet}

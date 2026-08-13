@@ -8,3 +8,7 @@ bun.lockb
 # Miscellaneous
 /static/
 /drizzle/
+
+# Generated — regenerating these would re-dirty the format check
+src/worker-configuration.d.ts
+src/lib/server/db/migrations/

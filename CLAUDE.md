@@ -16,7 +16,6 @@ Overall, the project is structured the same as a regular SvelteKit project, but 
 
 - `hooks.server.ts`: Server hooks. The connection to the D1 database occurs here, since it is so commonly used. Individual pages import the `locals.DB` object created here. The R2 connection is only necessary for contributors, so it is not connected in server hooks.
 
-
 ### `$lib` (i.e. `src/lib`)
 
 - `components/`: contains all the components that are used across the project

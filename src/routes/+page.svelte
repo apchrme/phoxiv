@@ -2,7 +2,6 @@
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { cn } from '$lib/utils.js';
 	import brand from '$lib/assets/branding/brand.svg';
 	import logo from '$lib/assets/branding/logo.svg';
 	import { onMount } from 'svelte';
@@ -10,8 +9,9 @@
 	import DiscordButton from '$lib/components/buttons/DiscordButton.svelte';
 	import { gsap } from 'gsap';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
+	import type { PageProps } from './$types';
 
-	const { data } = $props();
+	const { data }: PageProps = $props();
 
 	// ---------------------------------------------------------------------------
 	// Stats — fetched once on mount
@@ -30,42 +30,45 @@
 	]);
 
 	let pageRoot: HTMLElement | undefined = $state();
-onMount(() => {
-	if (!pageRoot) return;
+	onMount(() => {
+		if (!pageRoot) return;
 
-	gsap.registerPlugin(ScrollTrigger);
+		gsap.registerPlugin(ScrollTrigger);
 
-	// Respect prefers-reduced-motion: keep the reveals, just make them instant.
-	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-	const dur = (d: number) => (reduceMotion ? 0 : d);
+		// Respect prefers-reduced-motion: keep the reveals, just make them instant.
+		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const dur = (d: number) => (reduceMotion ? 0 : d);
 
-	const ctx = gsap.context(() => {
-		// Hide everything up front (synchronously) so there's no flash of visible
-		// content before the reveal timelines run.
-		gsap.set(['.hero-brand', '.hero-phonetic', '.hero-desc', '.hero-cta', '.stat'], {
-			autoAlpha: 0,
-			y: 20
-		});
-		gsap.set('.stat-item', { autoAlpha: 0, y: 30 });
+		const ctx = gsap.context(() => {
+			// Hide everything up front (synchronously) so there's no flash of visible
+			// content before the reveal timelines run.
+			gsap.set(['.hero-brand', '.hero-phonetic', '.hero-desc', '.hero-cta', '.stat'], {
+				autoAlpha: 0,
+				y: 20
+			});
+			gsap.set('.stat-item', { autoAlpha: 0, y: 30 });
 
-		// Hero entrance — brand mark, phonetic spelling, description, then CTAs in a stagger
-		gsap
-			.timeline({ defaults: { ease: 'power3.out' } })
-			.to('.hero-brand', { autoAlpha: 1, y: 0, duration: dur(0.6) })
-			.to('.hero-phonetic', { autoAlpha: 1, y: 0, duration: dur(0.6) }, '-=0.5')
-			.to('.hero-desc', { autoAlpha: 1, y: 0, duration: dur(0.6) }, '-=0.5')
-			.to(
-				'.hero-cta',
-				{ autoAlpha: 1, y: 0, duration: dur(0.5), stagger: dur(0.1), ease:'power3.out' },
-				'-=0.5'
-			)
-			.to('.stat', {autoAlpha: 1, y: 0, duration: dur(0.5)}, '-=0.5')
-			.to('.stat-item', {autoAlpha: 1, y: 0, duration: dur(0.7), stagger: dur(0.12), ease: 'power3.out',},'-=0.4');
-	}, pageRoot);
+			// Hero entrance — brand mark, phonetic spelling, description, then CTAs in a stagger
+			gsap
+				.timeline({ defaults: { ease: 'power3.out' } })
+				.to('.hero-brand', { autoAlpha: 1, y: 0, duration: dur(0.6) })
+				.to('.hero-phonetic', { autoAlpha: 1, y: 0, duration: dur(0.6) }, '-=0.5')
+				.to('.hero-desc', { autoAlpha: 1, y: 0, duration: dur(0.6) }, '-=0.5')
+				.to(
+					'.hero-cta',
+					{ autoAlpha: 1, y: 0, duration: dur(0.5), stagger: dur(0.1), ease: 'power3.out' },
+					'-=0.5'
+				)
+				.to('.stat', { autoAlpha: 1, y: 0, duration: dur(0.5) }, '-=0.5')
+				.to(
+					'.stat-item',
+					{ autoAlpha: 1, y: 0, duration: dur(0.7), stagger: dur(0.12), ease: 'power3.out' },
+					'-=0.4'
+				);
+		}, pageRoot);
 
-	return () => ctx.revert();
-});
-
+		return () => ctx.revert();
+	});
 </script>
 
 <SvelteSeo
@@ -112,29 +115,29 @@ onMount(() => {
 		<!-- CTAs -->
 		<div class="relative z-10 flex xs:flex-row flex-col justify-center gap-3">
 			<div class="hero-cta flex flex-row justify-center gap-2">
-			<Button href={resolve('/olympiads')}>
-				Browse olympiads
-			</Button>
+				<Button href={resolve('/olympiads')}>Browse olympiads</Button>
 
-			{#if data.user}
-				<Button
-					href="/contribute"
-					variant="outline"
-					class='border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10'
-				>
-					Contribute
-				</Button>
-			{:else}
-				<Button
-					href="/login"
-					variant="outline"
-					class='border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10'
-				>
-					Login
-				</Button>
-			{/if}
+				{#if data.user}
+					<Button
+						href={resolve('/contribute')}
+						variant="outline"
+						class="border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10"
+					>
+						Contribute
+					</Button>
+				{:else}
+					<Button
+						href={resolve('/login')}
+						variant="outline"
+						class="border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10"
+					>
+						Login
+					</Button>
+				{/if}
 			</div>
-			<div class="hero-cta flex flex-row justify-center gap-2"><GitHubButton /><DiscordButton /></div>
+			<div class="hero-cta flex flex-row justify-center gap-2">
+				<GitHubButton /><DiscordButton />
+			</div>
 		</div>
 
 		<div
@@ -154,13 +157,9 @@ onMount(() => {
 					</span>
 				</div>
 				{#if i < statItems.length - 1}
-					<div
-						class="self-stretch bg-border/60 h-auto w-px"
-						aria-hidden="true"
-					></div>
+					<div class="self-stretch bg-border/60 h-auto w-px" aria-hidden="true"></div>
 				{/if}
 			{/each}
 		</div>
 	</section>
-
 </div>
