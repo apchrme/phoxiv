@@ -58,9 +58,6 @@ export type YearEntry = {
 	problems: ProblemEntry[];
 };
 
-/** Shape of files.json (legacy pregen — no longer used) */
-export type FilesJson = Record<string, YearEntry[]>;
-
 /** A problem entry with the extra properties needed for the UI in GlobalSearch.svelte */
 export type SearchItem = {
 	olympiadId: string;

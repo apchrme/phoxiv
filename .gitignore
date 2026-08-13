@@ -31,11 +31,8 @@ vite.config.ts.timestamp-*
 # vscode
 .vscode
 
-# Local R2 copy. Move all files from /static/olympiads to /files/olympiads once R2 setup is complete, then update $lib/pregen/utils.ts to indicate new STATIC_DIR.
+# Local scratch copy of the R2 bucket, used when bulk-uploading with rclone.
 files
-
-# Pregen output (not needed anyway)
-src/lib/pregen/output/
 
 # Claude skills
 .claude
