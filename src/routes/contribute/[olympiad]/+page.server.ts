@@ -1,36 +1,43 @@
-import { redirect, error, fail } from '@sveltejs/kit';
+import { redirect, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { eq, and, desc, inArray } from 'drizzle-orm';
-import { olympiads, years, problems } from '$lib/server/db/schema.js';
-import { marked } from 'marked';
-import sanitizeHtml from 'sanitize-html';
+import { eq, inArray } from 'drizzle-orm';
+import { olympiads, problems, years } from '$lib/server/db';
 import { parse } from 'csv-parse/sync';
 import { requireOlympiadEditor } from '$lib/server/guard';
-import { logActivity } from '$lib/server/activity-log.js';
-import type { ProblemTopic } from '$lib/types.js';
-import { parseTopics, parseTopicsCsvCell, serializeTopics } from '$lib/utils/topics.js';
+import { logActivity } from '$lib/server/activity-log';
+import { renderMarkdownOrNull } from '$lib/server/markdown';
+import { requireOlympiad } from '$lib/server/db/queries/olympiads';
+import { ensureYear, insertYear, listYearNumbers } from '$lib/server/db/queries/years';
+import {
+	field,
+	fieldOrNull,
+	fileField,
+	intField,
+	parseYear,
+	YEAR_RANGE_ERROR
+} from '$lib/server/forms';
+import {
+	cdnUrl,
+	deleteStaleIcons,
+	getBucket,
+	iconKey,
+	STORAGE_UNAVAILABLE
+} from '$lib/server/storage';
+import { validateUpload } from '$lib/server/uploads';
+import { CSV_UPLOAD, ICON_UPLOAD } from '$lib/uploads';
+import { isOlympiadTag } from '$lib/types';
+import type { ProblemTopic } from '$lib/types';
+import { parseTopics, parseTopicsCsvCell, serializeTopics } from '$lib/utils/topics';
 
-const CDN_BASE_URL = 'https://cdn.phoxiv.org';
+/** Default `displayOrder` for an olympiad that hasn't been positioned yet. */
+const DEFAULT_DISPLAY_ORDER = 9999;
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-	const db = locals.db;
-
-	const olympiadRow = await db
-		.select()
-		.from(olympiads)
-		.where(eq(olympiads.id, params.olympiad))
-		.get();
-
-	if (!olympiadRow) error(404, 'Olympiad not found');
-
-	const yearRows = await db
-		.select({ year: years.year })
-		.from(years)
-		.where(eq(years.olympiadId, params.olympiad))
-		.orderBy(desc(years.year))
-		.all();
+	const olympiadRow = await requireOlympiad(locals.db, params.olympiad);
 
 	return {
+		// The editor's own view of an olympiad: unlike the public `OlympiadEntry`
+		// it carries the unrendered Markdown draft and the display order.
 		olympiad: {
 			id: olympiadRow.id,
 			name: olympiadRow.name,
@@ -40,43 +47,26 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			descriptionMd: olympiadRow.descriptionMd ?? '',
 			displayOrder: olympiadRow.displayOrder
 		},
-		years: yearRows.map((y) => y.year)
+		years: await listYearNumbers(locals.db, params.olympiad)
 	};
 };
 
 export const actions: Actions = {
 	updateOlympiad: async ({ request, params, locals }) => {
-		requireOlympiadEditor(locals, params.olympiad);
-		const db = locals.db;
+		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
 
 		const data = await request.formData();
-		const name = String(data.get('name') ?? '').trim();
-		const summary = String(data.get('summary') ?? '').trim();
-		const icon = String(data.get('icon') ?? '').trim();
-		const tag = String(data.get('tag') ?? '').trim();
-		const descriptionMd = String(data.get('description') ?? '').trim() || null;
-		const displayOrderRaw = String(data.get('displayOrder') ?? '').trim();
-		const displayOrder = displayOrderRaw ? parseInt(displayOrderRaw, 10) : 9999;
+		const name = field(data, 'name');
+		const summary = field(data, 'summary');
+		const icon = field(data, 'icon');
+		const tag = field(data, 'tag');
+		const descriptionMd = fieldOrNull(data, 'description');
+		const displayOrder = intField(data, 'displayOrder', DEFAULT_DISPLAY_ORDER);
 
 		if (!name || !summary || !tag) {
 			return fail(400, { updateError: 'Name, summary, and tag are required' });
 		}
-
-		const validTags = ['International', 'Regional', 'National', 'Open'];
-		if (!validTags.includes(tag)) {
-			return fail(400, { updateError: 'Invalid tag' });
-		}
-
-		const descriptionHtml = descriptionMd
-			? sanitizeHtml(await marked.parse(descriptionMd), {
-					allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
-					allowedAttributes: {
-						...sanitizeHtml.defaults.allowedAttributes,
-						a: ['href', 'target', 'rel'],
-						'*': ['class']
-					}
-				})
-			: null;
+		if (!isOlympiadTag(tag)) return fail(400, { updateError: 'Invalid tag' });
 
 		await db
 			.update(olympiads)
@@ -84,15 +74,15 @@ export const actions: Actions = {
 				name,
 				summary,
 				icon,
-				tag: tag as 'International' | 'Regional' | 'National' | 'Open',
+				tag,
 				descriptionMd,
-				descriptionHtml,
-				displayOrder: isNaN(displayOrder) ? 9999 : displayOrder
+				descriptionHtml: await renderMarkdownOrNull(descriptionMd),
+				displayOrder
 			})
 			.where(eq(olympiads.id, params.olympiad))
 			.run();
 
-		await logActivity(db, locals.user, 'update_olympiad', `Updated metadata for "${name}"`, {
+		await logActivity(db, user, 'update_olympiad', `Updated metadata for "${name}"`, {
 			olympiadId: params.olympiad
 		});
 
@@ -100,62 +90,30 @@ export const actions: Actions = {
 	},
 
 	uploadIcon: async ({ request, params, platform, locals }) => {
-		requireOlympiadEditor(locals, params.olympiad);
-		const db = locals.db;
-		const r2 = platform?.env.FILES;
-		if (!r2) return fail(500, { uploadIconError: 'Storage unavailable' });
+		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
+		const bucket = getBucket(platform);
+		if (!bucket) return fail(500, { uploadIconError: STORAGE_UNAVAILABLE });
 
 		const data = await request.formData();
-		const file = data.get('iconFile') as File | null;
+		const validated = validateUpload(fileField(data, 'iconFile'), ICON_UPLOAD);
+		if (!validated.ok) return fail(400, { uploadIconError: validated.error });
 
-		if (!file || file.size === 0) return fail(400, { uploadIconError: 'No file provided' });
+		const { file, ext, contentType } = validated.value;
+		const key = iconKey(params.olympiad, ext);
 
-		const MAX_BYTES = 2 * 1024 * 1024; // 2 MB — icons should be small
-		if (file.size > MAX_BYTES) return fail(400, { uploadIconError: 'File too large (max 2 MB)' });
+		// The key embeds the extension, so a .png replacing a .svg would otherwise
+		// leave the old file live on the CDN.
+		await deleteStaleIcons(bucket, params.olympiad, ext, ICON_UPLOAD.exts);
+		await bucket.put(key, file.stream(), { httpMetadata: { contentType } });
 
-		const ALLOWED_EXTS = new Set(['svg', 'png', 'jpg', 'jpeg', 'webp', 'avif']);
-		const ALLOWED_TYPES: Record<string, string> = {
-			svg: 'image/svg+xml',
-			png: 'image/png',
-			jpg: 'image/jpeg',
-			jpeg: 'image/jpeg',
-			webp: 'image/webp',
-			avif: 'image/avif'
-		};
-
-		const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-		if (!ALLOWED_EXTS.has(ext)) {
-			return fail(400, {
-				uploadIconError: 'Unsupported file type. Use SVG, PNG, JPG, WebP, or AVIF.'
-			});
-		}
-		const contentType = ALLOWED_TYPES[ext] ?? 'application/octet-stream';
-
-		const key = `icons/olympiads/${params.olympiad}.${ext}`;
-
-		// Delete any existing icon files for this olympiad (all extensions) to avoid stale files
-		for (const oldExt of ALLOWED_EXTS) {
-			if (oldExt === ext) continue;
-			try {
-				await r2.delete(`icons/olympiads/${params.olympiad}.${oldExt}`);
-			} catch {
-				// Ignore — file likely doesn't exist
-			}
-		}
-
-		await r2.put(key, file.stream(), {
-			httpMetadata: { contentType }
-		});
-
-		const iconUrl = `${CDN_BASE_URL}/${key}`;
-
+		const iconUrl = cdnUrl(key);
 		await db
 			.update(olympiads)
 			.set({ icon: iconUrl })
 			.where(eq(olympiads.id, params.olympiad))
 			.run();
 
-		await logActivity(db, locals.user, 'upload_icon', 'Uploaded a new icon', {
+		await logActivity(db, user, 'upload_icon', 'Uploaded a new icon', {
 			olympiadId: params.olympiad
 		});
 
@@ -163,46 +121,34 @@ export const actions: Actions = {
 	},
 
 	removeIcon: async ({ params, locals }) => {
-		requireOlympiadEditor(locals, params.olympiad);
-		const db = locals.db;
+		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
 
-		// Clear to empty string so the fallback (emoji/flag) takes over
+		// Cleared to an empty string rather than NULL so the emoji/flag fallback
+		// in OlympiadIcon takes over. The R2 object is left in place; re-uploading
+		// overwrites it, and an orphan icon costs nothing.
 		await db.update(olympiads).set({ icon: '' }).where(eq(olympiads.id, params.olympiad)).run();
 
-		await logActivity(db, locals.user, 'remove_icon', 'Removed the uploaded icon', {
+		await logActivity(db, user, 'remove_icon', 'Removed the uploaded icon', {
 			olympiadId: params.olympiad
 		});
 
 		return { success: true, action: 'removeIcon' as const };
 	},
 
-	// Creates the year record if it doesn't exist yet, then takes the user straight to it.
-	// olympiadId is fixed to the current page, unlike the top-level /contribute selectYear action.
+	/**
+	 * Same as the top-level `/contribute` selectYear, except the olympiad is
+	 * fixed to the current page rather than submitted.
+	 */
 	selectYear: async ({ request, params, locals }) => {
-		requireOlympiadEditor(locals, params.olympiad);
-		const db = locals.db;
+		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
 		const data = await request.formData();
-		const yearRaw = String(data.get('year') ?? '').trim();
 
-		const year = parseInt(yearRaw, 10);
-		if (isNaN(year) || year < 1900 || year > 2100) {
-			return fail(400, { selectError: 'Please enter a valid year (1900-2100)' });
-		}
+		const year = parseYear(field(data, 'year'));
+		if (year === null) return fail(400, { selectError: YEAR_RANGE_ERROR });
 
-		const existingYear = await db
-			.select({ id: years.id })
-			.from(years)
-			.where(and(eq(years.olympiadId, params.olympiad), eq(years.year, year)))
-			.get();
-
-		await db
-			.insert(years)
-			.values({ olympiadId: params.olympiad, year, notes: '[]', extraLinks: '[]' })
-			.onConflictDoNothing()
-			.run();
-
-		if (!existingYear) {
-			await logActivity(db, locals.user, 'add_year', `Added year ${year}`, {
+		const { created } = await ensureYear(db, params.olympiad, year);
+		if (created) {
+			await logActivity(db, user, 'add_year', `Added year ${year}`, {
 				olympiadId: params.olympiad,
 				year
 			});
@@ -210,24 +156,26 @@ export const actions: Actions = {
 
 		redirect(303, `/contribute/${params.olympiad}/${year}`);
 	},
+
+	/**
+	 * Bulk-imports problem numbers, titles and topics from the CSV produced by
+	 * `titles.csv`.
+	 *
+	 * Fill-only by design: an existing problem is never overwritten, only
+	 * completed. A re-import can therefore not clobber work done through the year
+	 * editor, which makes the round-trip safe to repeat.
+	 */
 	importTitles: async ({ request, params, locals }) => {
-		requireOlympiadEditor(locals, params.olympiad);
-		const db = locals.db;
+		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
 
 		const data = await request.formData();
-		const file = data.get('csvFile') as File | null;
-		if (!file || file.size === 0) return fail(400, { importError: 'No file provided' });
-
-		const MAX_BYTES = 1 * 1024 * 1024; // 1 MB — ample for a titles CSV
-		if (file.size > MAX_BYTES) return fail(400, { importError: 'File too large (max 1 MB)' });
-
-		const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-		if (ext !== 'csv') return fail(400, { importError: 'Please upload a .csv file' });
+		const validated = validateUpload(fileField(data, 'csvFile'), CSV_UPLOAD);
+		if (!validated.ok) return fail(400, { importError: validated.error });
 
 		type Row = Record<string, string>;
 		let records: Row[];
 		try {
-			records = parse(await file.text(), {
+			records = parse(await validated.value.file.text(), {
 				columns: (header: string[]) => header.map((h) => h.trim().toLowerCase()),
 				skip_empty_lines: true,
 				trim: true,
@@ -248,22 +196,23 @@ export const actions: Actions = {
 		const entries: Entry[] = [];
 		let skippedInvalid = 0;
 		for (const r of records) {
-			const yearNum = parseInt((r.year ?? '').trim(), 10);
+			const year = parseYear((r.year ?? '').trim());
 			const number = (r.number ?? '').trim();
 			const title = (r.title ?? '').trim() || null;
 			// The "topics" column is optional, so older CSVs still import cleanly.
 			// Unrecognised topic names are ignored rather than failing the import.
 			const topics = parseTopicsCsvCell(r.topics);
-			if (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100 || !number) {
+			if (year === null || !number) {
 				skippedInvalid++;
 				continue;
 			}
-			entries.push({ year: yearNum, number, title, topics });
+			entries.push({ year, number, title, topics });
 		}
 
 		if (entries.length === 0) {
 			return fail(400, { importError: 'No valid rows found for this olympiad' });
 		}
+
 		// Resolve (and create) the year rows -> Map<yearNumber, yearId>.
 		const existingYears = await db
 			.select({ id: years.id, year: years.year })
@@ -275,16 +224,11 @@ export const actions: Actions = {
 		let yearsCreated = 0;
 		for (const y of new Set(entries.map((e) => e.year))) {
 			if (yearIdByYear.has(y)) continue;
-			const inserted = await db
-				.insert(years)
-				.values({ olympiadId: params.olympiad, year: y, notes: '[]', extraLinks: '[]' })
-				.returning({ id: years.id })
-				.get();
-			yearIdByYear.set(y, inserted.id);
+			yearIdByYear.set(y, await insertYear(db, params.olympiad, y));
 			yearsCreated++;
 		}
 
-		// Existing problems for the involved years -> Map<"yearId:number", {id, title, topics}>.
+		// Existing problems for the involved years -> Map<"yearId:number", …>.
 		const involvedYearIds = [...new Set(entries.map((e) => yearIdByYear.get(e.year)!))];
 		const existingProblems = await db
 			.select({
@@ -333,8 +277,7 @@ export const actions: Actions = {
 				continue;
 			}
 
-			// The problem already exists — only fill in what it's missing, so a
-			// re-import can never overwrite work done through the year page.
+			// The problem already exists — only fill in what it's missing.
 			const patch: { title?: string; topics?: string } = {};
 			if ((existing.title === null || existing.title === '') && e.title) patch.title = e.title;
 			if (existing.topics.length === 0 && e.topics.length > 0) {
@@ -360,7 +303,7 @@ export const actions: Actions = {
 
 		await logActivity(
 			db,
-			locals.user,
+			user,
 			'import_titles',
 			`Imported titles from CSV (${created} created, ${filled} titles filled, ` +
 				`${topicsFilled} topics filled, ${kept} kept` +

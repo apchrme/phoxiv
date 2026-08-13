@@ -1,25 +1,32 @@
-import { error } from '@sveltejs/kit';
-import type { RequestHandler } from './$types';
-import { eq, asc } from 'drizzle-orm';
-import { olympiads, years, problems } from '$lib/server/db/schema.js';
+﻿import type { RequestHandler } from './$types';
+import { asc, eq } from 'drizzle-orm';
+import { problems, years } from '$lib/server/db';
 import { requireOlympiadEditor } from '$lib/server/guard';
-import { formatTopicsCsvCell, parseTopics } from '$lib/utils/topics.js';
+import { requireOlympiad } from '$lib/server/db/queries/olympiads';
+import { formatTopicsCsvCell, parseTopics } from '$lib/utils/topics';
+
+/**
+ * UTF-8 byte-order mark. Written as a char code rather than a literal so it
+ * stays visible in the source; without it Excel misreads accented titles.
+ */
+const BOM = String.fromCharCode(0xfeff);
 
 /** Quotes a CSV field (doubling embedded quotes) only when it actually needs it. */
 function csvField(value: string): string {
 	return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
 }
 
+/**
+ * Exports every problem title and topic set as CSV, for bulk editing in a
+ * spreadsheet and re-importing through the `importTitles` action.
+ *
+ * The format is a contract with that action, so the header row, the `;`-separated
+ * topics cell, the leading BOM and the CRLF line endings must all be preserved.
+ * See `docs/data-model.md`.
+ */
 export const GET: RequestHandler = async ({ params, locals }) => {
-	requireOlympiadEditor(locals, params.olympiad);
-	const db = locals.db;
-
-	const olympiadRow = await db
-		.select({ id: olympiads.id })
-		.from(olympiads)
-		.where(eq(olympiads.id, params.olympiad))
-		.get();
-	if (!olympiadRow) error(404, 'Olympiad not found');
+	const { db } = requireOlympiadEditor(locals, params.olympiad);
+	await requireOlympiad(db, params.olympiad);
 
 	const rows = await db
 		.select({
@@ -46,8 +53,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 		);
 	}
 
-	// Leading BOM so Excel opens accented titles (e.g. non-English olympiad names) correctly.
-	const csv = '\uFEFF' + lines.join('\r\n') + '\r\n';
+	const csv = BOM + lines.join('\r\n') + '\r\n';
 
 	return new Response(csv, {
 		headers: {

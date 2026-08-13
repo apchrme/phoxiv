@@ -1,26 +1,11 @@
-import { error } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
-import { olympiads } from '$lib/server/db/schema.js';
+import type { PageServerLoad } from './$types';
+import { requireOlympiad, toOlympiadEntry } from '$lib/server/db/queries/olympiads';
 
-export const load = async ({ params, locals }) => {
-	const db = locals.db;
-
-	const olympiadRow = await db
-		.select()
-		.from(olympiads)
-		.where(eq(olympiads.id, params.olympiad))
-		.get();
-
-	if (!olympiadRow) error(404, { message: 'Not found' });
-
-	const olympiad = {
-		id: olympiadRow.id,
-		name: olympiadRow.name,
-		summary: olympiadRow.summary,
-		icon: olympiadRow.icon,
-		tag: olympiadRow.tag,
-		descriptionHtml: olympiadRow.descriptionHtml
-	};
-
-	return { olympiad };
+/**
+ * Only the olympiad's own metadata. The years, problems and files are fetched
+ * client-side from `/api/olympiads/[olympiad]` so they come out of Cloudflare's
+ * shared cache instead of costing a D1 read per visit.
+ */
+export const load: PageServerLoad = async ({ params, locals }) => {
+	return { olympiad: toOlympiadEntry(await requireOlympiad(locals.db, params.olympiad)) };
 };

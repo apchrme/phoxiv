@@ -1,141 +1,95 @@
 import { redirect, fail } from '@sveltejs/kit';
-import { asc, eq, and } from 'drizzle-orm';
-import { olympiads, years } from '$lib/server/db/schema.js';
-import { marked } from 'marked';
-import sanitizeHtml from 'sanitize-html';
-import { requireAdmin, canEditOlympiad, getAssignedOlympiadIds } from '$lib/server/guard';
-import { logActivity } from '$lib/server/activity-log.js';
+import type { Actions, PageServerLoad } from './$types';
+import { olympiads, years } from '$lib/server/db';
+import { canEditOlympiad, getAssignedOlympiadIds, requireAdmin } from '$lib/server/guard';
+import { logActivity } from '$lib/server/activity-log';
+import { renderMarkdownOrNull } from '$lib/server/markdown';
+import { listOlympiadOptions } from '$lib/server/db/queries/olympiads';
+import { ensureYear } from '$lib/server/db/queries/years';
+import { field, fieldOrNull, fileField, parseYear, YEAR_RANGE_ERROR } from '$lib/server/forms';
+import { cdnUrl, getBucket, iconKey, STORAGE_UNAVAILABLE } from '$lib/server/storage';
+import { validateUpload } from '$lib/server/uploads';
+import { ICON_UPLOAD } from '$lib/uploads';
+import { isOlympiadTag } from '$lib/types';
 
-const CDN_BASE_URL = 'https://cdn.phoxiv.org';
-
-export const load = async ({ locals }) => {
-	const db = locals.db;
-	const rows = await db
-		.select({ id: olympiads.id, name: olympiads.name })
-		.from(olympiads)
-		.orderBy(asc(olympiads.displayOrder), asc(olympiads.id))
-		.all();
+/** The olympiads this user may pick from — all of them for admins. */
+export const load: PageServerLoad = async ({ locals }) => {
+	const rows = await listOlympiadOptions(locals.db);
 
 	if (locals.user?.role === 'admin') return { olympiads: rows };
 
-	// Contributors only see (and can pick from) olympiads they're assigned to.
 	const assigned = new Set(getAssignedOlympiadIds(locals.user));
 	return { olympiads: rows.filter((o) => assigned.has(o.id)) };
 };
 
-export const actions = {
+export const actions: Actions = {
+	/** Jumps to a year's editor, creating the year record if it's new. */
 	selectYear: async ({ request, locals }) => {
 		const db = locals.db;
 		const data = await request.formData();
-		const olympiadId = String(data.get('olympiadId') ?? '').trim();
-		const yearRaw = String(data.get('year') ?? '').trim();
+		const olympiadId = field(data, 'olympiadId');
+		const yearRaw = field(data, 'year');
 
 		if (!olympiadId) return fail(400, { selectError: 'Please select an olympiad' });
 
-		// This action previously had NO permission check of its own — it relied
-		// entirely on the layout guard, which now also admits contributors.
+		// This action needs its own permission check: the layout guard only
+		// establishes that the user is *a* contributor, not that they may edit
+		// this particular olympiad.
 		if (!canEditOlympiad(locals.user, olympiadId)) {
 			return fail(403, { selectError: 'You are not permitted to edit this olympiad' });
 		}
 
-		if (!yearRaw) {
-			redirect(303, `/contribute/${olympiadId}`);
-		}
+		// No year given — go to the olympiad's metadata page instead.
+		if (!yearRaw) redirect(303, `/contribute/${olympiadId}`);
 
-		const year = parseInt(yearRaw, 10);
-		if (isNaN(year) || year < 1900 || year > 2100) {
-			return fail(400, { selectError: 'Please enter a valid year (1900-2100)' });
-		}
+		const year = parseYear(yearRaw);
+		if (year === null) return fail(400, { selectError: YEAR_RANGE_ERROR });
 
-		const existingYear = await db
-			.select({ id: years.id })
-			.from(years)
-			.where(and(eq(years.olympiadId, olympiadId), eq(years.year, year)))
-			.get();
-
-		await db
-			.insert(years)
-			.values({ olympiadId, year, notes: '[]', extraLinks: '[]' })
-			.onConflictDoNothing()
-			.run();
-
-		if (!existingYear) {
+		const { created } = await ensureYear(db, olympiadId, year);
+		if (created) {
 			await logActivity(db, locals.user, 'add_year', `Added year ${year}`, { olympiadId, year });
 		}
 
 		redirect(303, `/contribute/${olympiadId}/${year}`);
 	},
 
-	// Creating brand-new olympiads stays admin-only — contributors work within
-	// olympiads they've already been assigned, they don't create new ones.
+	/**
+	 * Creating brand-new olympiads stays admin-only — contributors work within
+	 * olympiads they've already been assigned, they don't create new ones.
+	 */
 	createOlympiad: async ({ request, locals, platform }) => {
-		requireAdmin(locals);
-		const db = locals.db;
-		const r2 = platform?.env.FILES;
+		const { db, user } = requireAdmin(locals);
 
 		const data = await request.formData();
-		const id = String(data.get('id') ?? '')
-			.trim()
-			.toLowerCase()
-			.replace(/\s+/g, '-');
-		const name = String(data.get('name') ?? '').trim();
-		const summary = String(data.get('summary') ?? '').trim();
-		const tag = String(data.get('tag') ?? '').trim();
-		const year = parseInt(String(data.get('year') ?? ''), 10);
-		const descriptionMd = String(data.get('description') ?? '').trim() || null;
-		const iconFile = data.get('iconFile') as File | null;
+		// Ids appear in URLs and R2 keys, so they are slugified rather than validated.
+		const id = field(data, 'id').toLowerCase().replace(/\s+/g, '-');
+		const name = field(data, 'name');
+		const summary = field(data, 'summary');
+		const tag = field(data, 'tag');
+		const year = parseYear(field(data, 'year'));
+		const descriptionMd = fieldOrNull(data, 'description');
+		const iconFile = fileField(data, 'iconFile');
+		// Emoji icon field — used when no image file is uploaded.
+		const emojiIcon = field(data, 'icon');
 
-		// Emoji icon field — used when no image file is uploaded
-		const emojiIcon = String(data.get('icon') ?? '').trim();
-
-		if (!id || !name || !summary || !tag || isNaN(year)) {
+		if (!id || !name || !summary || !tag || year === null) {
 			return fail(400, { createError: 'All required fields must be filled in' });
 		}
-		const validTags = ['International', 'Regional', 'National', 'Open'];
-		if (!validTags.includes(tag)) return fail(400, { createError: 'Invalid tag' });
+		if (!isOlympiadTag(tag)) return fail(400, { createError: 'Invalid tag' });
 
-		// Handle optional icon file upload
 		let iconValue = emojiIcon;
-		if (iconFile && iconFile.size > 0) {
-			if (!r2) return fail(500, { createError: 'Storage unavailable for icon upload' });
+		if (iconFile) {
+			const bucket = getBucket(platform);
+			if (!bucket) return fail(500, { createError: `${STORAGE_UNAVAILABLE} for icon upload` });
 
-			const MAX_BYTES = 2 * 1024 * 1024;
-			if (iconFile.size > MAX_BYTES) {
-				return fail(400, { createError: 'Icon file too large (max 2 MB)' });
-			}
+			const validated = validateUpload(iconFile, ICON_UPLOAD, 'Icon file');
+			if (!validated.ok) return fail(400, { createError: validated.error });
 
-			const ALLOWED_EXTS = new Set(['svg', 'png', 'jpg', 'jpeg', 'webp', 'avif']);
-			const ALLOWED_TYPES: Record<string, string> = {
-				svg: 'image/svg+xml',
-				png: 'image/png',
-				jpg: 'image/jpeg',
-				jpeg: 'image/jpeg',
-				webp: 'image/webp',
-				avif: 'image/avif'
-			};
-			const ext = iconFile.name.split('.').pop()?.toLowerCase() ?? '';
-			if (!ALLOWED_EXTS.has(ext)) {
-				return fail(400, {
-					createError: 'Unsupported icon format. Use SVG, PNG, JPG, WebP, or AVIF.'
-				});
-			}
-			const contentType = ALLOWED_TYPES[ext] ?? 'application/octet-stream';
-			const key = `icons/olympiads/${id}.${ext}`;
-
-			await r2.put(key, iconFile.stream(), { httpMetadata: { contentType } });
-			iconValue = `${CDN_BASE_URL}/${key}`;
+			const { file, ext, contentType } = validated.value;
+			const key = iconKey(id, ext);
+			await bucket.put(key, file.stream(), { httpMetadata: { contentType } });
+			iconValue = cdnUrl(key);
 		}
-
-		const descriptionHtml = descriptionMd
-			? sanitizeHtml(await marked.parse(descriptionMd), {
-					allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
-					allowedAttributes: {
-						...sanitizeHtml.defaults.allowedAttributes,
-						a: ['href', 'target', 'rel'],
-						'*': ['class']
-					}
-				})
-			: null;
 
 		try {
 			await db
@@ -145,17 +99,19 @@ export const actions = {
 					name,
 					summary,
 					icon: iconValue,
-					tag: tag as 'International' | 'Regional' | 'National' | 'Open',
+					tag,
 					descriptionMd,
-					descriptionHtml
+					descriptionHtml: await renderMarkdownOrNull(descriptionMd)
 				})
 				.run();
 		} catch {
+			// The only realistic failure is the primary-key conflict.
 			return fail(400, { createError: `An olympiad with the ID "${id}" already exists` });
 		}
+
 		await db.insert(years).values({ olympiadId: id, year, notes: '[]', extraLinks: '[]' }).run();
 
-		await logActivity(db, locals.user, 'create_olympiad', `Created "${name}" (${id})`, {
+		await logActivity(db, user, 'create_olympiad', `Created "${name}" (${id})`, {
 			olympiadId: id,
 			year
 		});

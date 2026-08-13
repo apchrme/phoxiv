@@ -1,27 +1,24 @@
 import { count } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
-import { olympiads, years, problemFiles, yearFiles } from '$lib/server/db/schema.js';
+import type { RequestHandler } from './$types';
+import { olympiads, years, problemFiles, yearFiles } from '$lib/server/db';
+import { setSharedCache } from '$lib/server/cache';
 
-export const GET = async ({ locals, setHeaders }) => {
-	const db = locals.db;
+/** The three counters on the landing page. */
+export const GET: RequestHandler = async ({ locals, setHeaders }) => {
+	setSharedCache(setHeaders);
 
 	const [[olympiadCount], [yearCount], [yearFileCount], [problemFileCount]] = await Promise.all([
-		db.select({ value: count() }).from(olympiads),
-		db.select({ value: count() }).from(years),
-		db.select({ value: count() }).from(yearFiles),
-		db.select({ value: count() }).from(problemFiles)
+		locals.db.select({ value: count() }).from(olympiads),
+		locals.db.select({ value: count() }).from(years),
+		locals.db.select({ value: count() }).from(yearFiles),
+		locals.db.select({ value: count() }).from(problemFiles)
 	]);
-
-	setHeaders({
-		// max-age=0: prevents local cache from being used, so purge cache in cloudflare will update everyone's cache
-		// s-maxage=86400: shared cache only updates at most once a day
-		// stale-while-revalidate=604800: the shared cache will serve stale data after a day of "freshness", but force revalidation in the background. This ensures that no one will have to deal with a cache miss (unless no one views the site for a week)
-		'cache-control': 'max-age=0, s-maxage=86400, stale-while-revalidate=604800'
-	});
 
 	return json({
 		olympiads: olympiadCount.value,
 		years: yearCount.value,
+		// One user-facing "files" number; the two tables are an internal split.
 		files: yearFileCount.value + problemFileCount.value
 	});
 };

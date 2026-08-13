@@ -1,28 +1,27 @@
-import type { DrizzleD1Database } from 'drizzle-orm/d1';
-import { activityLog } from './db/schema.js';
+import { activityLog, type DB } from './db';
 
-export type LogAction =
-	| 'create_olympiad'
-	| 'update_olympiad'
-	| 'upload_icon'
-	| 'remove_icon'
-	| 'add_year'
-	| 'delete_year'
-	| 'save_metadata'
-	| 'upload_file'
-	| 'delete_file'
-	| 'import_titles';
+/**
+ * The set of loggable actions.
+ *
+ * Derived from the `activityLog.action` column's enum so the two can never drift.
+ * `$lib/activity.ts` maps these to display labels for the admin panel.
+ */
+export type LogAction = NonNullable<(typeof activityLog.$inferInsert)['action']>;
 
 type ActingUser = { id: string; name: string } | null | undefined;
 
 /**
- * Records a contributor action to the activity log for display on the admin
- * "Log" tab. No-ops if there's no signed-in user (shouldn't happen in
- * practice, since every call site is already gated by requireOlympiadEditor
- * or requireAdmin).
+ * Records a contributor action for the admin panel's "Log" tab.
+ *
+ * No-ops without a signed-in user. In practice there always is one — every call
+ * site sits behind a `require*` guard — but the log is an audit trail, not a
+ * control, so it must never be the thing that fails a write.
+ *
+ * The user's name is denormalised into the row on purpose: the log should still
+ * read correctly after an account is renamed or deleted.
  */
 export async function logActivity(
-	db: DrizzleD1Database,
+	db: DB,
 	user: ActingUser,
 	action: LogAction,
 	detail: string,

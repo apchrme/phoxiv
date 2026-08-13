@@ -1,8 +1,11 @@
-import { redirect, error } from '@sveltejs/kit';
+import type { LayoutServerLoad } from './$types';
+import { requireContributor } from '$lib/server/guard';
 
-export const load = ({ locals }) => {
-	if (!locals.user) redirect(303, '/login');
-	if (locals.user.role !== 'admin' && locals.user.role !== 'contributor') {
-		error(403, 'Unauthorised');
-	}
+/**
+ * Gates the whole contribute area. Per-olympiad permission is checked again in
+ * each load and action via `requireOlympiadEditor`, because a contributor who
+ * may edit one olympiad must not be able to edit another by URL.
+ */
+export const load: LayoutServerLoad = ({ locals }) => {
+	requireContributor(locals);
 };

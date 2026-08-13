@@ -1,11 +1,19 @@
 import type { Actions, PageServerLoad } from './$types';
 import { fail } from '@sveltejs/kit';
-import { eq, asc, desc } from 'drizzle-orm';
-import { user, olympiads, activityLog } from '$lib/server/db/schema.js';
-import { requireAdmin } from '$lib/server/guard.js';
+import { desc, eq } from 'drizzle-orm';
+import { activityLog, user } from '$lib/server/db';
+import { isProtectedSuperadmin, requireAdmin } from '$lib/server/guard';
+import { listOlympiadOptions } from '$lib/server/db/queries/olympiads';
+import { field, fieldList, fieldOrNull } from '$lib/server/forms';
+
+/** How many activity-log entries the panel shows. */
+const LOG_LIMIT = 100;
+
+/** Roles an admin may assign. `''` clears the role back to the default. */
+const ASSIGNABLE_ROLES = ['admin', 'contributor', 'user', ''];
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const db = locals.db;
+	const { db } = requireAdmin(locals);
 
 	const users = await db
 		.select({
@@ -23,50 +31,30 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.orderBy(user.createdAt)
 		.all();
 
-	const olympiadOptions = await db
-		.select({ id: olympiads.id, name: olympiads.name })
-		.from(olympiads)
-		.orderBy(asc(olympiads.displayOrder), asc(olympiads.id))
-		.all();
-
 	const log = await db
 		.select()
 		.from(activityLog)
 		.orderBy(desc(activityLog.createdAt))
-		.limit(100) // Limit to 100 most recent logs
+		.limit(LOG_LIMIT)
 		.all();
 
-	return { users, olympiads: olympiadOptions, log };
+	return { users, olympiads: await listOlympiadOptions(db), log };
 };
 
 export const actions: Actions = {
 	setRole: async ({ request, locals, platform }) => {
-		requireAdmin(locals);
-		const db = locals.db;
+		const { db, user: actor } = requireAdmin(locals);
 		const data = await request.formData();
-		const userId = String(data.get('userId') ?? '').trim();
-		const role = String(data.get('role') ?? '').trim();
+		const userId = field(data, 'userId');
+		const role = field(data, 'role');
 
 		if (!userId) return fail(400, { error: 'User ID required' });
-
-		// Prevent an admin from demoting themselves
-		if (userId === locals.user!.id) {
-			return fail(400, { error: 'You cannot change your own role' });
-		}
-
-		// prevent modifying superadmin
-		const superadminEmail = platform?.env.SUPERADMIN_EMAIL;
-		const target = await db
-			.select({ email: user.email })
-			.from(user)
-			.where(eq(user.id, userId))
-			.get();
-		if (superadminEmail && target?.email === superadminEmail) {
+		// Without this an admin could lock themselves out of the panel.
+		if (userId === actor.id) return fail(400, { error: 'You cannot change your own role' });
+		if (await isProtectedSuperadmin(db, platform, userId)) {
 			return fail(403, { error: 'This account cannot be modified' });
 		}
-
-		const validRoles = ['admin', 'contributor', 'user', ''];
-		if (!validRoles.includes(role)) return fail(400, { error: 'Invalid role' });
+		if (!ASSIGNABLE_ROLES.includes(role)) return fail(400, { error: 'Invalid role' });
 
 		await db
 			.update(user)
@@ -77,17 +65,19 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
-	// New: admins assign which olympiads a contributor may edit.
-	setAssignedOlympiads: async ({ request, locals }) => {
-		requireAdmin(locals);
-		const db = locals.db;
+	/** Admins choose which olympiads a contributor may edit. */
+	setAssignedOlympiads: async ({ request, locals, platform }) => {
+		const { db, user: actor } = requireAdmin(locals);
 		const data = await request.formData();
-		const userId = String(data.get('userId') ?? '').trim();
-		const olympiadIds = data.getAll('olympiadId').map(String);
+		const userId = field(data, 'userId');
+		const olympiadIds = fieldList(data, 'olympiadId');
 
 		if (!userId) return fail(400, { error: 'User ID required' });
-		if (userId === locals.user!.id) {
+		if (userId === actor.id) {
 			return fail(400, { error: 'You cannot change your own assignments' });
+		}
+		if (await isProtectedSuperadmin(db, platform, userId)) {
+			return fail(403, { error: 'This account cannot be modified' });
 		}
 
 		await db
@@ -100,23 +90,14 @@ export const actions: Actions = {
 	},
 
 	banUser: async ({ request, locals, platform }) => {
-		requireAdmin(locals);
-		const db = locals.db;
+		const { db, user: actor } = requireAdmin(locals);
 		const data = await request.formData();
-		const userId = String(data.get('userId') ?? '').trim();
-		const reason = String(data.get('reason') ?? '').trim() || null;
+		const userId = field(data, 'userId');
+		const reason = fieldOrNull(data, 'reason');
 
 		if (!userId) return fail(400, { error: 'User ID required' });
-		if (userId === locals.user!.id) return fail(400, { error: 'You cannot ban yourself' });
-
-		// prevent modifying superadmin
-		const superadminEmail = platform?.env.SUPERADMIN_EMAIL;
-		const target = await db
-			.select({ email: user.email })
-			.from(user)
-			.where(eq(user.id, userId))
-			.get();
-		if (superadminEmail && target?.email === superadminEmail) {
+		if (userId === actor.id) return fail(400, { error: 'You cannot ban yourself' });
+		if (await isProtectedSuperadmin(db, platform, userId)) {
 			return fail(403, { error: 'This account cannot be modified' });
 		}
 
@@ -125,13 +106,17 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
-	unbanUser: async ({ request, locals }) => {
-		requireAdmin(locals);
-		const db = locals.db;
+	unbanUser: async ({ request, locals, platform }) => {
+		const { db } = requireAdmin(locals);
 		const data = await request.formData();
-		const userId = String(data.get('userId') ?? '').trim();
+		const userId = field(data, 'userId');
 
 		if (!userId) return fail(400, { error: 'User ID required' });
+		// The superadmin check belongs here too: unbanning is a modification, and
+		// leaving it off made the protection inconsistent with its siblings.
+		if (await isProtectedSuperadmin(db, platform, userId)) {
+			return fail(403, { error: 'This account cannot be modified' });
+		}
 
 		await db.update(user).set({ banned: false, banReason: null }).where(eq(user.id, userId)).run();
 

@@ -6,6 +6,9 @@ export const olympiads = sqliteTable('olympiads', {
 	name: text('name').notNull(),
 	summary: text('summary').notNull(),
 	icon: text('icon').notNull().default(''),
+	// Must stay in sync with OLYMPIAD_TAGS in $lib/types.ts. It cannot be imported
+	// here: drizzle-kit bundles this file with its own resolver, which does not
+	// understand the $lib alias.
 	tag: text('tag', { enum: ['International', 'Regional', 'National', 'Open'] }).notNull(),
 	displayOrder: integer('display_order').notNull().default(9999),
 	descriptionMd: text('description_md'),

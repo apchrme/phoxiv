@@ -1,108 +1,77 @@
 import { redirect, error, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { eq, and } from 'drizzle-orm';
-import { olympiads, years, yearFiles, problems, problemFiles } from '$lib/server/db/schema.js';
+import { and, eq, notInArray } from 'drizzle-orm';
+import { problemFiles, problems, yearFiles, years } from '$lib/server/db';
 import { requireOlympiadEditor } from '$lib/server/guard';
-import { logActivity } from '$lib/server/activity-log.js';
-import type { ProblemTopic } from '$lib/types.js';
-import { parseTopics, serializeTopics } from '$lib/utils/topics.js';
+import { logActivity } from '$lib/server/activity-log';
+import { requireOlympiad } from '$lib/server/db/queries/olympiads';
+import { getYear, YEAR_NOT_FOUND } from '$lib/server/db/queries/years';
+import { getYearContent } from '$lib/server/db/queries/content';
+import { field, fieldList, fileField, parseYear } from '$lib/server/forms';
+import {
+	cdnUrl,
+	deleteByUrl,
+	deleteByUrls,
+	fileKey,
+	getBucket,
+	slugifyLabel,
+	STORAGE_UNAVAILABLE
+} from '$lib/server/storage';
+import { validateUpload } from '$lib/server/uploads';
+import { DOCUMENT_UPLOAD } from '$lib/uploads';
+import { parseLabelledUrls, parseStringArray } from '$lib/utils/json';
+import { parseTopics, serializeTopics } from '$lib/utils/topics';
 
-const CDN_BASE_URL = 'https://cdn.phoxiv.org';
+/** Whether a file belongs to the year as a whole or to one problem. */
+type Scope = 'year' | 'problem';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-	const db = locals.db;
-	const yearNum = parseInt(params.year, 10);
-	if (isNaN(yearNum)) error(400, 'Invalid year');
+	const yearNum = parseYear(params.year);
+	if (yearNum === null) error(400, 'Invalid year');
 
-	const olympiadRow = await db
-		.select()
-		.from(olympiads)
-		.where(eq(olympiads.id, params.olympiad))
-		.get();
-	if (!olympiadRow) error(404, 'Olympiad not found');
+	const olympiadRow = await requireOlympiad(locals.db, params.olympiad);
 
-	const yearRow = await db
-		.select()
-		.from(years)
-		.where(and(eq(years.olympiadId, params.olympiad), eq(years.year, yearNum)))
-		.get();
-	if (!yearRow) error(404, 'Year not found');
+	const yearRow = await getYear(locals.db, params.olympiad, yearNum);
+	if (!yearRow) error(404, YEAR_NOT_FOUND);
 
-	const [yearFileRows, problemRows] = await Promise.all([
-		db.select().from(yearFiles).where(eq(yearFiles.yearId, yearRow.id)).orderBy(yearFiles.id).all(),
-		db
-			.select()
-			.from(problems)
-			.leftJoin(problemFiles, eq(problemFiles.problemId, problems.id))
-			.where(eq(problems.yearId, yearRow.id))
-			.orderBy(problems.id, problemFiles.id)
-			.all()
-	]);
-
-	const problemMap = new Map<
-		number,
-		{
-			id: number;
-			number: string;
-			title: string | null;
-			topics: ProblemTopic[];
-			files: { label: string; url: string }[];
-		}
-	>();
-	for (const row of problemRows) {
-		const p = row.problems;
-		if (!problemMap.has(p.id)) {
-			problemMap.set(p.id, {
-				id: p.id,
-				number: p.number,
-				title: p.title,
-				topics: parseTopics(p.topics),
-				files: []
-			});
-		}
-		if (row.problem_files) {
-			problemMap
-				.get(p.id)!
-				.files.push({ label: row.problem_files.label, url: row.problem_files.url });
-		}
-	}
+	const { yearFiles: yearFileEntries, problems: problemEntries } = await getYearContent(
+		locals.db,
+		yearRow.id
+	);
 
 	return {
-		olympiad: {
-			id: olympiadRow.id,
-			name: olympiadRow.name
-		},
+		olympiad: { id: olympiadRow.id, name: olympiadRow.name },
 		year: {
 			id: yearRow.id,
 			year: yearRow.year,
-			notes: JSON.parse(yearRow.notes) as string[],
-			extraLinks: JSON.parse(yearRow.extraLinks) as { label: string; url: string }[]
+			notes: parseStringArray(yearRow.notes),
+			extraLinks: parseLabelledUrls(yearRow.extraLinks)
 		},
-		yearFiles: yearFileRows.map((f) => ({ label: f.label, url: f.url })),
-		problems: [...problemMap.values()]
+		yearFiles: yearFileEntries,
+		problems: problemEntries
 	};
 };
 
 export const actions: Actions = {
+	/**
+	 * Replaces the year's notes, extra links and problem list in one shot.
+	 *
+	 * The three problem fields (`problemNumber`, `problemTitle`, `problemTopics`)
+	 * are positionally aligned: one of each per row in the editor's repeater.
+	 */
 	saveMetadata: async ({ request, params, locals }) => {
-		requireOlympiadEditor(locals, params.olympiad);
-		const db = locals.db;
-		const yearNum = parseInt(params.year, 10);
+		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
+		const yearNum = parseYear(params.year)!;
 		const data = await request.formData();
 
-		const yearRow = await db
-			.select()
-			.from(years)
-			.where(and(eq(years.olympiadId, params.olympiad), eq(years.year, yearNum)))
-			.get();
-		if (!yearRow) return fail(404, { error: 'Year not found' });
+		const yearRow = await getYear(db, params.olympiad, yearNum);
+		if (!yearRow) return fail(404, { error: YEAR_NOT_FOUND });
 
-		const notes = data
-			.getAll('note')
-			.map((n) => String(n).trim())
+		const notes = fieldList(data, 'note')
+			.map((n) => n.trim())
 			.filter(Boolean);
-		const linkLabels = data.getAll('linkLabel').map(String);
-		const linkUrls = data.getAll('linkUrl').map(String);
+		const linkLabels = fieldList(data, 'linkLabel');
+		const linkUrls = fieldList(data, 'linkUrl');
 		const extraLinks = linkLabels
 			.map((label, i) => ({ label: label.trim(), url: (linkUrls[i] ?? '').trim() }))
 			.filter((l) => l.label && l.url);
@@ -113,12 +82,10 @@ export const actions: Actions = {
 			.where(eq(years.id, yearRow.id))
 			.run();
 
-		const rawNumbers = data.getAll('problemNumber').map((n) => String(n).trim());
-		const rawTitles = data.getAll('problemTitle').map(String);
-		// One `problemTopics` field per problem row, holding a JSON array of topic
-		// names, so the three problem fields stay positionally aligned.
-		const rawTopics = data.getAll('problemTopics').map(String);
-		const problemPairs = rawNumbers
+		const rawNumbers = fieldList(data, 'problemNumber').map((n) => n.trim());
+		const rawTitles = fieldList(data, 'problemTitle');
+		const rawTopics = fieldList(data, 'problemTopics');
+		const submitted = rawNumbers
 			.map((number, i) => ({
 				number,
 				title: (rawTitles[i] ?? '').trim() || null,
@@ -126,16 +93,17 @@ export const actions: Actions = {
 			}))
 			.filter((p) => p.number);
 
-		// Reject duplicate problem numbers instead of silently upserting over each other
+		// Reject duplicates rather than silently upserting them over each other,
+		// which would lose one of the two problems' files.
 		const seenNumbers = new Set<string>();
-		for (const { number } of problemPairs) {
+		for (const { number } of submitted) {
 			if (seenNumbers.has(number)) {
 				return fail(400, { error: `Duplicate problem number: ${number}` });
 			}
 			seenNumbers.add(number);
 		}
 
-		for (const { number, title, topics } of problemPairs) {
+		for (const { number, title, topics } of submitted) {
 			await db
 				.insert(problems)
 				.values({ yearId: yearRow.id, number, title, topics })
@@ -146,44 +114,42 @@ export const actions: Actions = {
 				.run();
 		}
 
-		const submittedNumbers = problemPairs.map((p) => p.number);
-		const existing = await db
-			.select({ id: problems.id, number: problems.number })
-			.from(problems)
-			.where(eq(problems.yearId, yearRow.id))
-			.all();
-		for (const p of existing) {
-			if (!submittedNumbers.includes(p.number)) {
-				await db.delete(problems).where(eq(problems.id, p.id)).run();
-			}
-		}
+		// Anything the editor no longer lists was removed by the user. Cascades to
+		// problemFiles via the FK, though their R2 objects are left orphaned —
+		// deleting a whole year is the path that cleans up storage.
+		const submittedNumbers = submitted.map((p) => p.number);
+		await db
+			.delete(problems)
+			.where(
+				submittedNumbers.length > 0
+					? and(eq(problems.yearId, yearRow.id), notInArray(problems.number, submittedNumbers))
+					: eq(problems.yearId, yearRow.id)
+			)
+			.run();
 
 		await logActivity(
 			db,
-			locals.user,
+			user,
 			'save_metadata',
-			`Saved metadata (${notes.length} notes, ${extraLinks.length} links, ${problemPairs.length} problems)`,
+			`Saved metadata (${notes.length} notes, ${extraLinks.length} links, ${submitted.length} problems)`,
 			{ olympiadId: params.olympiad, year: yearNum }
 		);
 
 		return { success: true, action: 'saveMetadata' as const };
 	},
 
+	/** Deletes the year, its problems, and every R2 object either owns. */
 	deleteYear: async ({ params, platform, locals }) => {
-		requireOlympiadEditor(locals, params.olympiad);
-		const db = locals.db;
-		const r2 = platform?.env.FILES;
-		if (!r2) return fail(500, { error: 'Storage unavailable' });
-		const yearNum = parseInt(params.year, 10);
+		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
+		const bucket = getBucket(platform);
+		if (!bucket) return fail(500, { error: STORAGE_UNAVAILABLE });
+		const yearNum = parseYear(params.year)!;
 
-		const yearRow = await db
-			.select()
-			.from(years)
-			.where(and(eq(years.olympiadId, params.olympiad), eq(years.year, yearNum)))
-			.get();
-		if (!yearRow) return fail(404, { error: 'Year not found' });
+		const yearRow = await getYear(db, params.olympiad, yearNum);
+		if (!yearRow) return fail(404, { error: YEAR_NOT_FOUND });
 
-		// Gather every R2 object tied to this year (year-level + all problem files)
+		// Collect the object URLs before the rows go away — they are the only
+		// record of which R2 keys belong to this year.
 		const [yearFileRows, problemFileRows] = await Promise.all([
 			db
 				.select({ url: yearFiles.url })
@@ -198,18 +164,15 @@ export const actions: Actions = {
 				.all()
 		]);
 
-		const urls = [...yearFileRows.map((f) => f.url), ...problemFileRows.map((f) => f.url)];
-
-		await Promise.all(
-			urls
-				.filter((url) => url.startsWith(CDN_BASE_URL + '/'))
-				.map((url) => r2.delete(url.slice(CDN_BASE_URL.length + 1)).catch(() => {}))
-		);
+		await deleteByUrls(bucket, [
+			...yearFileRows.map((f) => f.url),
+			...problemFileRows.map((f) => f.url)
+		]);
 
 		// Cascades to `problems`, `yearFiles`, `problemFiles` via FK onDelete: 'cascade'
 		await db.delete(years).where(eq(years.id, yearRow.id)).run();
 
-		await logActivity(db, locals.user, 'delete_year', `Deleted year ${yearNum}`, {
+		await logActivity(db, user, 'delete_year', `Deleted year ${yearNum}`, {
 			olympiadId: params.olympiad,
 			year: yearNum
 		});
@@ -218,60 +181,30 @@ export const actions: Actions = {
 	},
 
 	uploadFile: async ({ request, params, platform, locals }) => {
-		requireOlympiadEditor(locals, params.olympiad);
-		const db = locals.db;
-		const r2 = platform?.env.FILES;
-		if (!r2) return fail(500, { error: 'Storage unavailable' });
-		const yearNum = parseInt(params.year, 10);
+		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
+		const bucket = getBucket(platform);
+		if (!bucket) return fail(500, { error: STORAGE_UNAVAILABLE });
+		const yearNum = parseYear(params.year)!;
 		const data = await request.formData();
 
-		const label = String(data.get('label') ?? '').trim();
-		const scope = String(data.get('scope') ?? '').trim();
-		const problemNumber = String(data.get('problemNumber') ?? '').trim();
-		const file = data.get('file') as File | null;
-
-		if (!file || file.size === 0) return fail(400, { error: 'No file provided' });
-
-		const MAX_BYTES = 50 * 1024 * 1024; // 50 MB file size limit
-		if (file.size > MAX_BYTES) return fail(400, { error: 'File too large (max 50 MB)' });
+		const label = field(data, 'label');
+		const scope = field(data, 'scope') as Scope;
+		const problemNumber = field(data, 'problemNumber');
 
 		if (!label) return fail(400, { error: 'Label is required' });
-		if (!scope) return fail(400, { error: 'Scope is required' });
-		if (scope === 'problem' && !problemNumber)
+		if (scope !== 'year' && scope !== 'problem') return fail(400, { error: 'Scope is required' });
+		if (scope === 'problem' && !problemNumber) {
 			return fail(400, { error: 'Problem number required' });
+		}
+		// The label becomes a path segment, so a slash would silently nest the object.
 		if (label.includes('/')) return fail(400, { error: 'Label cannot include /' });
 
-		const ALLOWED_EXTS = new Set(['pdf', 'xlsx', 'zip', 'doc', 'docx', 'htm', 'html']);
-		const ALLOWED_TYPES: Record<string, string> = {
-			pdf: 'application/pdf',
-			xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-			zip: 'application/zip',
-			doc: 'application/msword',
-			docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-			htm: 'text/html',
-			html: 'text/html'
-		};
+		const validated = validateUpload(fileField(data, 'file'), DOCUMENT_UPLOAD);
+		if (!validated.ok) return fail(400, { error: validated.error });
+		const { file, ext, contentType } = validated.value;
 
-		const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-		if (!ALLOWED_EXTS.has(ext)) return fail(400, { error: 'File type not allowed' });
-		// Don't trust the MIME type sent by the client
-		const contentType = ALLOWED_TYPES[ext] ?? 'application/octet-stream';
-
-		const slugLabel = label
-			.toLowerCase()
-			.replace(/\s+/g, '_')
-			.replace(/[^a-z0-9_]/g, '');
-		const key =
-			scope === 'year'
-				? `olympiads/${params.olympiad}/${params.year}/${slugLabel}.${ext}`
-				: `olympiads/${params.olympiad}/${params.year}/${problemNumber}/${slugLabel}.${ext}`;
-
-		const yearRow = await db
-			.select()
-			.from(years)
-			.where(and(eq(years.olympiadId, params.olympiad), eq(years.year, yearNum)))
-			.get();
-		if (!yearRow) return fail(404, { error: 'Year not found' });
+		const yearRow = await getYear(db, params.olympiad, yearNum);
+		if (!yearRow) return fail(404, { error: YEAR_NOT_FOUND });
 
 		let problemRow: typeof problems.$inferSelect | undefined;
 
@@ -281,60 +214,57 @@ export const actions: Actions = {
 				.from(problems)
 				.where(and(eq(problems.yearId, yearRow.id), eq(problems.number, problemNumber)))
 				.get();
-			if (!problemRow)
+			if (!problemRow) {
 				return fail(404, { error: `Problem ${problemNumber} not found — save metadata first` });
-
-			// Reject if a file with this label already exists for this problem —
-			// the user must delete the existing file first rather than silently overwrite it.
-			const existing = await db
-				.select({ url: problemFiles.url })
-				.from(problemFiles)
-				.where(and(eq(problemFiles.problemId, problemRow.id), eq(problemFiles.label, label)))
-				.get();
-			if (existing) {
-				return fail(400, { error: `A file named "${label}" already exists for this problem.` });
-			}
-		} else {
-			// Reject if a file with this label already exists for this year.
-			const existing = await db
-				.select({ url: yearFiles.url })
-				.from(yearFiles)
-				.where(and(eq(yearFiles.yearId, yearRow.id), eq(yearFiles.label, label)))
-				.get();
-			if (existing) {
-				return fail(400, { error: `A file named "${label}" already exists for this year.` });
 			}
 		}
 
-		await r2.put(key, file.stream(), {
-			httpMetadata: { contentType: contentType }
-		});
+		// Reject a duplicate label rather than overwriting: the existing object may
+		// have a different extension, which would leave the old file orphaned but
+		// still linked from the database.
+		const duplicate = problemRow
+			? await db
+					.select({ url: problemFiles.url })
+					.from(problemFiles)
+					.where(and(eq(problemFiles.problemId, problemRow.id), eq(problemFiles.label, label)))
+					.get()
+			: await db
+					.select({ url: yearFiles.url })
+					.from(yearFiles)
+					.where(and(eq(yearFiles.yearId, yearRow.id), eq(yearFiles.label, label)))
+					.get();
+		if (duplicate) {
+			const owner = scope === 'year' ? 'this year' : 'this problem';
+			return fail(400, { error: `A file named "${label}" already exists for ${owner}.` });
+		}
 
-		const url = `${CDN_BASE_URL}/${key}`;
+		const key = fileKey(
+			params.olympiad,
+			params.year,
+			slugifyLabel(label),
+			ext,
+			scope === 'problem' ? problemNumber : undefined
+		);
+		await bucket.put(key, file.stream(), { httpMetadata: { contentType } });
+		const url = cdnUrl(key);
 
 		if (scope === 'year') {
 			await db
 				.insert(yearFiles)
 				.values({ yearId: yearRow.id, label, url })
-				.onConflictDoUpdate({
-					target: [yearFiles.yearId, yearFiles.label],
-					set: { url }
-				})
+				.onConflictDoUpdate({ target: [yearFiles.yearId, yearFiles.label], set: { url } })
 				.run();
 		} else {
 			await db
 				.insert(problemFiles)
 				.values({ problemId: problemRow!.id, label, url })
-				.onConflictDoUpdate({
-					target: [problemFiles.problemId, problemFiles.label],
-					set: { url }
-				})
+				.onConflictDoUpdate({ target: [problemFiles.problemId, problemFiles.label], set: { url } })
 				.run();
 		}
 
 		await logActivity(
 			db,
-			locals.user,
+			user,
 			'upload_file',
 			`Uploaded "${label}" for ${scope === 'year' ? 'year' : `problem ${problemNumber}`}`,
 			{ olympiadId: params.olympiad, year: yearNum }
@@ -344,23 +274,18 @@ export const actions: Actions = {
 	},
 
 	deleteFile: async ({ request, params, platform, locals }) => {
-		requireOlympiadEditor(locals, params.olympiad);
-		const db = locals.db;
-		const r2 = platform?.env.FILES;
-		if (!r2) return fail(500, { error: 'Storage unavailable' });
-		const yearNum = parseInt(params.year, 10);
+		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
+		const bucket = getBucket(platform);
+		if (!bucket) return fail(500, { error: STORAGE_UNAVAILABLE });
+		const yearNum = parseYear(params.year)!;
 		const data = await request.formData();
 
-		const label = String(data.get('label') ?? '').trim();
-		const scope = String(data.get('scope') ?? '').trim();
-		const problemNumber = String(data.get('problemNumber') ?? '').trim();
+		const label = field(data, 'label');
+		const scope = field(data, 'scope') as Scope;
+		const problemNumber = field(data, 'problemNumber');
 
-		const yearRow = await db
-			.select()
-			.from(years)
-			.where(and(eq(years.olympiadId, params.olympiad), eq(years.year, yearNum)))
-			.get();
-		if (!yearRow) return fail(404, { error: 'Year not found' });
+		const yearRow = await getYear(db, params.olympiad, yearNum);
+		if (!yearRow) return fail(404, { error: YEAR_NOT_FOUND });
 
 		if (scope === 'year') {
 			const record = await db
@@ -370,11 +295,9 @@ export const actions: Actions = {
 				.get();
 			if (!record) return fail(404, { error: 'File not found' });
 
-			// Delete from R2 using only the DB-stored URL, not the submitted one
-			if (record.url.startsWith(CDN_BASE_URL + '/')) {
-				await r2.delete(record.url.slice(CDN_BASE_URL.length + 1));
-			}
-
+			// Derive the R2 key from the stored URL, never from the submitted one:
+			// a crafted value could otherwise delete an arbitrary object.
+			await deleteByUrl(bucket, record.url);
 			await db.delete(yearFiles).where(eq(yearFiles.id, record.id)).run();
 		} else {
 			const problem = await db
@@ -391,17 +314,13 @@ export const actions: Actions = {
 				.get();
 			if (!record) return fail(404, { error: 'File not found' });
 
-			// Delete from R2 using only the DB-stored URL, not the submitted one
-			if (record.url.startsWith(CDN_BASE_URL + '/')) {
-				await r2.delete(record.url.slice(CDN_BASE_URL.length + 1));
-			}
-
+			await deleteByUrl(bucket, record.url);
 			await db.delete(problemFiles).where(eq(problemFiles.id, record.id)).run();
 		}
 
 		await logActivity(
 			db,
-			locals.user,
+			user,
 			'delete_file',
 			`Deleted "${label}" from ${scope === 'year' ? 'year' : `problem ${problemNumber}`}`,
 			{ olympiadId: params.olympiad, year: yearNum }
