@@ -12,7 +12,8 @@
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { ArrowRight, Pencil } from '@lucide/svelte';
 	import SvelteSeo from 'svelte-seo';
-	import type { OlympiadTag } from '$lib/types';
+	import { OLYMPIAD_TAGS, type OlympiadTag } from '$lib/types';
+	import { ICON_UPLOAD } from '$lib/uploads';
 
 	let initialTab = $state('existing');
 	let { data, form }: PageProps = $props();
@@ -103,13 +104,10 @@
 							Go <ArrowRight />
 						</Button>
 						{#if olympiadId}
-							<a
-								href={resolve(`/contribute/${olympiadId}`)}
-								class="inline-flex items-center gap-1.5 rounded-4xl border border-border bg-card px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-							>
+							<Button variant="outline" href={resolve(`/contribute/${olympiadId}`)}>
 								<Pencil class="size-3.5" />
 								Edit olympiad metadata
-							</a>
+							</Button>
 						{/if}
 					</div>
 				</form>
@@ -159,9 +157,9 @@
 								id="iconFile"
 								name="iconFile"
 								type="file"
-								accept=".svg,.png,.jpg,.jpeg,.webp,.avif,image/svg+xml,image/png,image/jpeg,image/webp,image/avif"
+								accept={ICON_UPLOAD.accept}
 								onchange={onIconFileChange}
-								class="flex-1 text-sm text-muted-foreground file:mr-3 file:rounded-4xl file:border file:border-border file:bg-card file:px-3 file:py-1 file:text-sm file:font-medium file:text-foreground cursor-pointer"
+								class="file-input flex-1"
 							/>
 							{#if iconPreviewUrl}
 								<img
@@ -171,7 +169,9 @@
 								/>
 							{/if}
 						</div>
-						<p class="text-xs text-muted-foreground">SVG, PNG, JPG, WebP, or AVIF · max 2 MB</p>
+						<p class="text-xs text-muted-foreground">
+							{ICON_UPLOAD.label} · max {ICON_UPLOAD.maxLabel}
+						</p>
 					</div>
 
 					<div class="flex flex-col gap-1.5">
@@ -207,10 +207,9 @@
 									{/if}
 								</Select.Trigger>
 								<Select.Content class="overflow-scroll">
-									<Select.Item value="International">International</Select.Item>
-									<Select.Item value="Regional">Regional</Select.Item>
-									<Select.Item value="National">National</Select.Item>
-									<Select.Item value="Open">Open</Select.Item>
+									{#each OLYMPIAD_TAGS as olympiadTag (olympiadTag)}
+										<Select.Item value={olympiadTag}>{olympiadTag}</Select.Item>
+									{/each}
 								</Select.Content>
 							</Select.Root>
 						</div>

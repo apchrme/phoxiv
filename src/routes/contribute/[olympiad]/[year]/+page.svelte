@@ -13,6 +13,7 @@
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
 	import { cn } from '$lib/utils.js';
+	import { DOCUMENT_UPLOAD } from '$lib/uploads';
 
 	let { data, params, form }: PageProps = $props();
 
@@ -443,9 +444,9 @@
 								id="file"
 								type="file"
 								name="file"
-								accept=".pdf,.xlsx,.zip,.doc,.docx,.htm,.html"
+								accept={DOCUMENT_UPLOAD.accept}
 								required
-								class="text-sm text-muted-foreground file:mr-3 file:rounded-4xl file:border file:border-border file:bg-card file:px-3 file:py-1 file:text-sm file:font-medium file:text-foreground"
+								class="file-input"
 							/>
 						</div>
 						<Button

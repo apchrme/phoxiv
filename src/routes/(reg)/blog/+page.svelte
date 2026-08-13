@@ -5,16 +5,9 @@
 	import { Calendar, Tag, User, ArrowRight } from '@lucide/svelte';
 	import Title from '$lib/components/Title.svelte';
 	import { resolve } from '$app/paths';
+	import { formatDate } from '$lib/utils/date';
 
 	let { data }: { data: PageData } = $props();
-
-	function formatDate(dateStr: string): string {
-		return new Date(dateStr).toLocaleDateString('en-GB', {
-			day: 'numeric',
-			month: 'long',
-			year: 'numeric'
-		});
-	}
 </script>
 
 <SvelteSeo title="Blog — phoXiv" description="Updates, articles and anything related to phoXiv." />

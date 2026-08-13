@@ -40,13 +40,7 @@
 		<div class="w-full lg:w-5/6 xl:w-2/3">
 			<!-- Mobile nav — glass pill -->
 			<nav
-				class="sticky top-3 z-40 md:hidden flex-row flex-wrap items-center justify-between gap-2 rounded-full border
-				       border-white/65
-				       bg-white/45 p-1.5
-				       shadow-lg
-				       ring-1 shadow-violet-500/5 ring-white/50
-				       backdrop-blur-xl ring-inset flex
-				       dark:border-white/10 dark:bg-white/5 dark:shadow-black/40 dark:ring-white/5"
+				class="glass sticky top-3 z-40 flex flex-row flex-wrap items-center justify-between gap-2 rounded-full p-1.5 md:hidden"
 			>
 				<Sidebar.Trigger />
 				<a href={resolve('/')}>
@@ -63,13 +57,7 @@
 
 			<!-- Desktop nav — glass pill -->
 			<nav
-				class="sticky top-3 z-40 hidden flex-row flex-wrap items-center justify-between gap-2 rounded-full border
-				       border-white/65
-				       bg-white/45 p-1.5
-				       shadow-lg
-				       ring-1 shadow-violet-500/5 ring-white/50
-				       backdrop-blur-xl ring-inset md:flex
-				       dark:border-white/10 dark:bg-white/5 dark:shadow-black/40 dark:ring-white/5"
+				class="glass sticky top-3 z-40 hidden flex-row flex-wrap items-center justify-between gap-2 rounded-full p-1.5 md:flex"
 			>
 				<NavigationMenu.Root viewport={false}>
 					<NavigationMenu.List class="gap-1 sm:gap-2">

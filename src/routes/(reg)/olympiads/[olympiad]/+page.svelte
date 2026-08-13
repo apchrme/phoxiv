@@ -153,10 +153,9 @@
 	</div>
 	{#if olympiadFilesLoading}
 		<div class="flex flex-col gap-4">
-			<Skeleton class="h-50 w-full" />
-			<Skeleton class="h-50 w-full" />
-			<Skeleton class="h-50 w-full" />
-			<Skeleton class="h-50 w-full" />
+			{#each { length: 4 }, i (i)}
+				<Skeleton class="h-50 w-full" />
+			{/each}
 		</div>
 	{:else if filtered().length > 0}
 		<div class="flex flex-col gap-4">

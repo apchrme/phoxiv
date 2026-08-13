@@ -181,6 +181,38 @@ html.dark {
 }
 
 /* ================================================
+   Shared surface treatments
+
+   These exist because the same decoration is applied to structurally different
+   elements (a <nav>, a <div>, a dialog panel), so a component would not fit.
+   Anything that repeats its *markup* as well should be a component instead.
+   ================================================ */
+
+/**
+ * The frosted-glass panel used by the nav pills and the landing stat bar.
+ * Light mode leans on white translucency; dark mode inverts to a faint tint.
+ */
+@utility glass {
+	@apply border border-white/65 bg-white/45 shadow-lg ring-1 shadow-violet-500/5 ring-white/50 backdrop-blur-xl ring-inset;
+	@apply dark:border-white/10 dark:bg-white/5 dark:shadow-black/40 dark:ring-white/5;
+}
+
+/** The hairline divider used between rows inside a `glass` panel. */
+@utility glass-hairline {
+	@apply border-white/50 dark:border-white/10;
+}
+
+/**
+ * A bare `<input type="file">` styled to match the shadcn button language.
+ * Used where the shadcn `Input` component is not appropriate because the input
+ * needs to sit inline with a preview thumbnail.
+ */
+@utility file-input {
+	@apply cursor-pointer text-sm text-muted-foreground;
+	@apply file:mr-3 file:rounded-4xl file:border file:border-border file:bg-card file:px-3 file:py-1 file:text-sm file:font-medium file:text-foreground;
+}
+
+/* ================================================
    Custom data-state variants
    ================================================ */
 

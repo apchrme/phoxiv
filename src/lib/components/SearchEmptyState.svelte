@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { Button } from '$lib/components/ui/button/index.js';
+
 	let {
 		message = 'No results found',
 		hint = 'Try a different search term.',
@@ -15,10 +17,7 @@
 <div class="rounded-xl border border-dashed border-border py-12 text-center">
 	<p class="mb-1 text-center text-base font-medium text-foreground">{message}</p>
 	<p class="mb-0 text-center text-sm text-muted-foreground">{hint}</p>
-	<button
-		onclick={onClear}
-		class="mt-3 rounded-4xl border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-	>
+	<Button variant="outline" size="sm" class="mt-3" onclick={onClear}>
 		{clearLabel}
-	</button>
+	</Button>
 </div>

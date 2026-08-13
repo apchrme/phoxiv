@@ -5,18 +5,11 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { resolve } from '$app/paths';
+	import { formatDate } from '$lib/utils/date';
 
 	let { data }: PageProps = $props();
 
 	const { content: PostContent, metadata } = $derived(data);
-
-	function formatDate(dateStr: string): string {
-		return new Date(dateStr).toLocaleDateString('en-GB', {
-			day: 'numeric',
-			month: 'long',
-			year: 'numeric'
-		});
-	}
 </script>
 
 <SvelteSeo title="{metadata.title} — phoXiv Blog" description={metadata.description} />

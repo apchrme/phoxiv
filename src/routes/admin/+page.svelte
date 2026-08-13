@@ -22,6 +22,9 @@
 		BookOpenCheck
 	} from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
+	import { formatDate, formatDateTime } from '$lib/utils/date';
+	import { parseStringArray } from '$lib/utils/json';
+	import { actionLabel, actionVariant, roleLabel } from '$lib/activity';
 	import {
 		getCoreRowModel,
 		getSortedRowModel,
@@ -123,31 +126,13 @@
 		}
 	});
 
-	function formatDate(date: Date | string | null) {
-		if (!date) return '—';
-		return new Date(date).toLocaleDateString('en-GB', {
-			day: 'numeric',
-			month: 'short',
-			year: 'numeric'
-		});
-	}
-
-	function parseAssigned(assignedOlympiads: string): string[] {
-		try {
-			const parsed = JSON.parse(assignedOlympiads || '[]');
-			return Array.isArray(parsed) ? parsed.filter((x) => typeof x === 'string') : [];
-		} catch {
-			return [];
-		}
-	}
-
 	// Local, per-user draft of checked olympiad IDs while the assign dropdown is open.
 	// Seeded lazily from the row's current assignment when first opened.
 	let assignDrafts = $state<Record<string, string[]>>({});
 
 	function openAssignDropdown(u: UserRow) {
 		if (!(u.id in assignDrafts)) {
-			assignDrafts[u.id] = parseAssigned(u.assignedOlympiads);
+			assignDrafts[u.id] = parseStringArray(u.assignedOlympiads);
 		}
 	}
 
@@ -170,43 +155,7 @@
 		return roleDrafts[u.id] ?? u.role ?? 'user';
 	}
 
-	function roleLabel(role: string): string {
-		if (role === 'admin') return 'Admin';
-		if (role === 'contributor') return 'Contributor';
-		return 'User';
-	}
-
-	// ── Activity log helpers ──────────────────────────────────────────────────
 	let activeAdminTab = $state('users');
-
-	function formatDateTime(date: Date | string) {
-		return new Date(date).toLocaleString('en-GB', {
-			day: 'numeric',
-			month: 'short',
-			year: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
-	}
-
-	const actionLabels: Record<string, string> = {
-		create_olympiad: 'Created olympiad',
-		update_olympiad: 'Updated metadata',
-		upload_icon: 'Uploaded icon',
-		remove_icon: 'Removed icon',
-		add_year: 'Added year',
-		delete_year: 'Deleted year',
-		save_metadata: 'Saved year metadata',
-		upload_file: 'Uploaded file',
-		delete_file: 'Deleted file',
-		import_titles: 'Imported problem titles'
-	};
-
-	function actionVariant(action: string): 'default' | 'secondary' | 'destructive' | 'outline' {
-		if (action.startsWith('delete')) return 'destructive';
-		if (action.startsWith('create') || action.startsWith('add')) return 'default';
-		return 'secondary';
-	}
 </script>
 
 <SvelteSeo title="Admin — phoXiv" description="phoXiv admin panel" />
@@ -295,7 +244,7 @@
 						{@const isAdmin = u.role === 'admin'}
 						{@const isContributor = u.role === 'contributor'}
 						{@const isBanned = u.banned}
-						{@const assignedIds = parseAssigned(u.assignedOlympiads)}
+						{@const assignedIds = parseStringArray(u.assignedOlympiads)}
 
 						<Table.Row class={isBanned ? 'opacity-50' : ''}>
 							<!-- User cell — rendered manually for the avatar+badge treatment -->
@@ -355,7 +304,7 @@
 
 							<!-- Joined date -->
 							<Table.Cell class="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
-								{formatDate(u.createdAt)}
+								{formatDate(u.createdAt, 'short')}
 							</Table.Cell>
 
 							<!-- Actions -->
@@ -563,7 +512,7 @@
 							<Table.Cell class="font-medium">{entry.userName}</Table.Cell>
 							<Table.Cell>
 								<Badge variant={actionVariant(entry.action)} class="text-xs">
-									{actionLabels[entry.action] ?? entry.action}
+									{actionLabel(entry.action)}
 								</Badge>
 							</Table.Cell>
 							<Table.Cell class="max-w-md text-muted-foreground">

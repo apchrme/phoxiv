@@ -13,7 +13,8 @@
 	import { toast } from 'svelte-sonner';
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
-	import { PROBLEM_TOPICS, type OlympiadTag } from '$lib/types';
+	import { OLYMPIAD_TAGS, PROBLEM_TOPICS, type OlympiadTag } from '$lib/types';
+	import { CSV_UPLOAD, ICON_UPLOAD, isIconUrl } from '$lib/uploads';
 
 	let { data, form }: PageProps = $props();
 
@@ -98,8 +99,8 @@
 		if ('importError' in form && form.importError) toast.error(String(form.importError));
 	});
 
-	// Whether the current icon is an uploaded image (URL)
-	const hasUploadedIcon = $derived(icon.startsWith('https://') || icon.startsWith('http://'));
+	// Whether the current icon is an uploaded image rather than an emoji/flag
+	const hasUploadedIcon = $derived(isIconUrl(icon));
 </script>
 
 <SvelteSeo
@@ -141,13 +142,14 @@
 			{#if data.years.length > 0}
 				<div class="flex flex-wrap gap-2">
 					{#each data.years as year (year)}
-						<a
+						<Button
+							variant="outline"
+							size="sm"
 							href={resolve(`/contribute/${data.olympiad.id}/${year}`)}
-							class="inline-flex items-center gap-1.5 rounded-4xl border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
 						>
 							<Pencil class="size-3.5 text-muted-foreground" />
 							{year}
-						</a>
+						</Button>
 					{/each}
 				</div>
 			{:else}
@@ -257,10 +259,10 @@
 						id="iconFile"
 						name="iconFile"
 						type="file"
-						accept=".svg,.png,.jpg,.jpeg,.webp,.avif,image/svg+xml,image/png,image/jpeg,image/webp,image/avif"
+						accept={ICON_UPLOAD.accept}
 						required
 						onchange={onIconFileChange}
-						class="text-sm text-muted-foreground file:mr-3 file:rounded-4xl file:border file:border-border file:bg-card file:px-3 file:py-1 file:text-sm file:font-medium file:text-foreground cursor-pointer"
+						class="file-input"
 					/>
 				</div>
 				<div class="flex gap-2">
@@ -404,10 +406,9 @@
 								{/if}
 							</Select.Trigger>
 							<Select.Content>
-								<Select.Item value="International">International</Select.Item>
-								<Select.Item value="Regional">Regional</Select.Item>
-								<Select.Item value="National">National</Select.Item>
-								<Select.Item value="Open">Open</Select.Item>
+								{#each OLYMPIAD_TAGS as olympiadTag (olympiadTag)}
+									<Select.Item value={olympiadTag}>{olympiadTag}</Select.Item>
+								{/each}
 							</Select.Content>
 						</Select.Root>
 					</div>
@@ -510,10 +511,10 @@
 					id="csvFile"
 					name="csvFile"
 					type="file"
-					accept=".csv"
+					accept={CSV_UPLOAD.accept}
 					bind:ref={csvFileInput}
 					onchange={onCsvFileChange}
-					class="text-sm text-muted-foreground file:mr-3 file:rounded-4xl file:border file:border-border file:px-3 file:py-1 file:text-sm file:font-medium file:text-foreground hover:cursor-pointer"
+					class="file-input"
 				/>
 				<div class="flex gap-2">
 					<Button type="submit" size="sm" disabled={importingTitles || !csvFileName}>

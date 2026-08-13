@@ -117,36 +117,21 @@
 			<div class="hero-cta flex flex-row justify-center gap-2">
 				<Button href={resolve('/olympiads')}>Browse olympiads</Button>
 
-				{#if data.user}
-					<Button
-						href={resolve('/contribute')}
-						variant="outline"
-						class="border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10"
-					>
-						Contribute
-					</Button>
-				{:else}
-					<Button
-						href={resolve('/login')}
-						variant="outline"
-						class="border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10"
-					>
-						Login
-					</Button>
-				{/if}
+				<!-- Signed-in visitors get taken straight to the editor instead of the login page. -->
+				<Button
+					href={data.user ? resolve('/contribute') : resolve('/login')}
+					variant="outline"
+					class="border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10"
+				>
+					{data.user ? 'Contribute' : 'Login'}
+				</Button>
 			</div>
 			<div class="hero-cta flex flex-row justify-center gap-2">
 				<GitHubButton /><DiscordButton />
 			</div>
 		</div>
 
-		<div
-			class="stat mx-auto flex w-[80vw] max-w-md overflow-hidden rounded-2xl border
-			       border-white/70 bg-white/50 shadow-md
-			       ring-1 shadow-black/5 ring-white/60
-			       backdrop-blur-md ring-inset
-			       flex-row dark:border-white/10 dark:bg-white/5 dark:shadow-black/30 dark:ring-white/5"
-		>
+		<div class="stat glass mx-auto flex w-[80vw] max-w-md flex-row overflow-hidden rounded-2xl">
 			{#each statItems as { value, label }, i (label)}
 				<div class="stat-item flex flex-1 flex-col items-center gap-1 px-4 py-4">
 					<span class="font-mono text-xl leading-none font-bold text-foreground">

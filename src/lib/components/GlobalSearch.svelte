@@ -1,6 +1,6 @@
 <script lang="ts">
-	import uFuzzy from '@leeoniya/ufuzzy';
 	import type { SearchItem } from '$lib/types.js';
+	import { highlight, rank, MAX_RESULTS } from '$lib/utils/fuzzy';
 	import { Search } from '@lucide/svelte';
 	import XIcon from '@lucide/svelte/icons/x';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
@@ -13,8 +13,6 @@
 	import * as Kbd from '$lib/components/ui/kbd/index.js';
 
 	let { open = $bindable(false) }: { open?: boolean } = $props();
-
-	const uf = new uFuzzy({ intraMode: 1, intraIns: 1 });
 
 	// ---------------------------------------------------------------------------
 	// Index — fetched once on first open, then cached for the session
@@ -43,20 +41,6 @@
 	const haystack = $derived(index.map((i) => i.searchText));
 
 	// ---------------------------------------------------------------------------
-	// Highlighting — applied per display field so marks appear in the right place
-	// ---------------------------------------------------------------------------
-
-	/** Wraps fuzzy-matched characters in <mark> for a single display field. */
-	function highlight(text: string, q: string): string {
-		if (!text || !q) return text;
-		const [idxs, info, order] = uf.search([text.toLowerCase()], q.toLowerCase());
-		if (!idxs?.length || !order?.length) return text;
-		return uFuzzy.highlight(text, info.ranges[order[0]]);
-	}
-
-	const MAX_RESULTS = 50;
-
-	// ---------------------------------------------------------------------------
 	// State
 	// ---------------------------------------------------------------------------
 
@@ -65,13 +49,7 @@
 	let inputEl: HTMLInputElement | undefined = $state();
 	let resultsEl: HTMLDivElement | undefined = $state();
 
-	const results = $derived.by(() => {
-		const q = query.trim();
-		if (!q || indexLoading) return [];
-		const [idxs, , order] = uf.search(haystack, q.toLowerCase());
-		if (!idxs?.length || !order?.length) return [];
-		return order.slice(0, MAX_RESULTS).map((oi) => index[idxs[oi]]);
-	});
+	const results = $derived.by(() => (indexLoading ? [] : rank(index, haystack, query)));
 
 	// Reset the keyboard highlight to the top whenever the query changes.
 	$effect(() => {
@@ -159,9 +137,7 @@
 				<Dialog.Title class="sr-only">Search problems</Dialog.Title>
 
 				<!-- Input row -->
-				<div
-					class="flex items-center gap-3 border-b border-white/50 px-4 py-3 dark:border-white/10"
-				>
+				<div class="glass-hairline flex items-center gap-3 border-b px-4 py-3">
 					<Search class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 					<input
 						bind:this={inputEl}
@@ -275,8 +251,7 @@
 
 				<!-- Footer hints -->
 				<div
-					class="hidden items-center gap-4 border-t border-white/50 bg-white/20 px-4 py-2.5 text-xs text-muted-foreground md:flex
-					       dark:border-white/10 dark:bg-white/3"
+					class="glass-hairline hidden items-center gap-4 border-t bg-white/20 px-4 py-2.5 text-xs text-muted-foreground md:flex dark:bg-white/3"
 				>
 					<span><Kbd.Root>↑↓</Kbd.Root> navigate</span>
 					<span><Kbd.Root>↵</Kbd.Root> go to year</span>

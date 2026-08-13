@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import type { OlympiadTag, OlympiadEntry } from '$lib/types.js';
+	import { OLYMPIAD_TAGS, type OlympiadTag, type OlympiadEntry } from '$lib/types.js';
 	import { Badge } from '$lib/components/ui/badge/index';
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
 	import SearchBar from '$lib/components/SearchBar.svelte';
@@ -12,8 +12,6 @@
 	import SvelteSeo from 'svelte-seo';
 	import { onMount } from 'svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
-
-	const ALL_TAGS: OlympiadTag[] = ['International', 'Regional', 'National', 'Open'];
 
 	let query = $state('');
 	let activeTag = $state<OlympiadTag | null>(null);
@@ -62,7 +60,7 @@
 					class="flex-wrap justify-center sm:flex-nowrap"
 				>
 					<ToggleGroup.Item value="">All</ToggleGroup.Item>
-					{#each ALL_TAGS as tag (tag)}
+					{#each OLYMPIAD_TAGS as tag (tag)}
 						<ToggleGroup.Item value={tag}>{tag}</ToggleGroup.Item>
 					{/each}
 				</ToggleGroup.Root>
@@ -74,12 +72,9 @@
 
 	{#if olympiadsLoading}
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">
-			<Skeleton class="h-50 w-full" />
-			<Skeleton class="h-50 w-full" />
-			<Skeleton class="h-50 w-full" />
-			<Skeleton class="h-50 w-full" />
-			<Skeleton class="h-50 w-full" />
-			<Skeleton class="h-50 w-full" />
+			{#each { length: 6 }, i (i)}
+				<Skeleton class="h-50 w-full" />
+			{/each}
 		</div>
 	{:else if filtered().length > 0}
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">

@@ -9,6 +9,8 @@
 	import Github from '$lib/assets/icons/Github.svelte';
 	import Title from '$lib/components/Title.svelte';
 
+	import { formatDate } from '$lib/utils/date';
+
 	let { data }: PageProps = $props();
 
 	const user = $derived(data.user);
@@ -23,14 +25,6 @@
 		} finally {
 			signingOut = false;
 		}
-	}
-
-	function formatDate(date: Date | string) {
-		return new Date(date).toLocaleDateString('en-GB', {
-			day: 'numeric',
-			month: 'long',
-			year: 'numeric'
-		});
 	}
 </script>
 
@@ -99,7 +93,7 @@
 				<Shield class="size-4 shrink-0 text-muted-foreground" />
 				<div class="flex min-w-0 flex-1 flex-col gap-0.5">
 					<span class="text-xs text-muted-foreground">Member since</span>
-					<span class="text-sm font-medium">{formatDate(user?.createdAt ?? new Date())}</span>
+					<span class="text-sm font-medium">{formatDate(user?.createdAt)}</span>
 				</div>
 			</div>
 			<button

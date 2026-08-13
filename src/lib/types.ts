@@ -1,4 +1,19 @@
-export type OlympiadTag = 'International' | 'Regional' | 'National' | 'Open';
+/**
+ * How wide an olympiad's field is. Used for the filter on the olympiads page
+ * and as the `tag` column's allowed values.
+ *
+ * `src/lib/server/db/schema.ts` repeats these literals in its `enum:` option:
+ * drizzle-kit bundles the schema with its own resolver, so `$lib` does not
+ * resolve there. Keep the two in sync.
+ */
+export const OLYMPIAD_TAGS = ['International', 'Regional', 'National', 'Open'] as const;
+
+export type OlympiadTag = (typeof OLYMPIAD_TAGS)[number];
+
+/** Narrows an arbitrary string to an `OlympiadTag`, for validating form input. */
+export function isOlympiadTag(value: string): value is OlympiadTag {
+	return (OLYMPIAD_TAGS as readonly string[]).includes(value);
+}
 
 /** A olympiad entry. */
 export type OlympiadEntry = {
