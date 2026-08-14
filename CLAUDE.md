@@ -1,54 +1,86 @@
-# Project Information
+# phoXiv
+
+An archive of high-school physics olympiad problems. SvelteKit on a single
+Cloudflare Worker, with metadata in D1 and files in R2.
+
+Full documentation lives in [`docs/`](./docs). Read the relevant one before
+changing anything in that area — each records invariants that are not obvious
+from the code:
+
+| Doc                                       | Read it before…                                              |
+| ----------------------------------------- | ------------------------------------------------------------ |
+| [architecture.md](./docs/architecture.md) | touching routes, caching, `$lib/server/`, or form plumbing   |
+| [data-model.md](./docs/data-model.md)     | touching the schema, the R2 key layout, or `titles.csv`      |
+| [auth.md](./docs/auth.md)                 | touching auth, roles, or any permission check                |
+| [contributing.md](./docs/contributing.md) | running the project, or writing code in it                   |
+| [deployment.md](./docs/deployment.md)     | deploying, migrating production, or changing an API response |
 
 ## Stack
 
-- Framework: SvelteKit
-- UI Library: shadcn-svelte (based on the bits-ui primitives)
-- Database ORM: Drizzle
+- **SvelteKit** (Svelte 5, runes) on `@sveltejs/adapter-cloudflare`
+- **shadcn-svelte** over bits-ui, in `src/lib/components/ui/` — vendored from the
+  CLI, excluded from linting, never hand-edited
+- **Drizzle** over Cloudflare **D1**; olympiad files in **R2**, served from
+  `cdn.phoxiv.org`
+- **BetterAuth** with GitHub OAuth and the `admin` plugin
+- **Bun** as package manager and script runner
 
-Cloudflare D1 is used to store metadata of the olympiad files and Cloudflare R2 to store the olympiad files themselves. The database schema can be found in the database folder `src/lib/server/db`.
+## The shape of it, in one screen
 
-## Project structure
+`src/hooks.server.ts` builds the per-request context: `locals.db` (Drizzle over
+the `DB` binding), `locals.auth` (a per-request BetterAuth instance), and
+`locals.user` / `locals.session` from a single session lookup. Loads, actions and
+endpoints read those.
 
-Overall, the project is structured the same as a regular SvelteKit project, but there are some additional items.
+```
+src/routes/
+├── +page          landing (outside (reg); sets its own private cache header)
+├── (reg)/         a route group whose ONLY purpose is the private cache header:
+│                  olympiads/, blog/, resources/, privacy/, login/, profile/
+├── admin/         deliberately outside (reg) — must never be cached
+├── contribute/    also outside (reg); [olympiad]/ and [olympiad]/[year]/ editors
+└── api/           Cloudflare's SHARED cache (s-maxage=86400) …
+                   olympiads/, olympiads/[olympiad]/, search/, stats/
+                   …except auth/[...all]/, which sets no cache headers
+```
 
-### `src`
+`src/lib/server/` has one module per concern: `auth`, `auth-cli`, `guard`,
+`cache`, `forms`, `uploads`, `storage`, `markdown`, `activity-log`, and `db/`
+(`schema.ts` plus `queries/{olympiads,years,content}.ts`). Client-safe shared
+code sits directly under `src/lib/`: `types`, `uploads`, `constants`, `nav`,
+`posts`, `activity`, `forms.svelte`, `auth-client`, `utils/{date,flag,fuzzy,json,topics}`.
 
-- `hooks.server.ts`: Server hooks. The connection to the D1 database occurs here, since it is so commonly used. Individual pages import the `locals.DB` object created here. The R2 connection is only necessary for contributors, so it is not connected in server hooks.
+**Roles are `user`, `contributor` and `admin`.** `contributor` is real and
+load-bearing: contributors may edit the olympiads listed in their
+`assignedOlympiads`, enforced entirely by `$lib/server/guard.ts` — BetterAuth's
+plugin is pinned to `adminRoles: ['admin']` and knows nothing about it. Only
+`createOlympiad` is admin-only within `/contribute`.
 
-### `$lib` (i.e. `src/lib`)
+## Rules
 
-- `components/`: contains all the components that are used across the project
-  - `ui/`: contains the shadcn-svelte components
-- `posts/`: contains the blog posts
-- `server/db`: database information. the migrations here are generated from the schema using drizzle-kit, so the migration files should never be modified directly.
-- `utils/flag.ts`: a utility file used to render nice-looking flags in the olympiads page
-
-### `routes`
-
-- `(reg)`: Route group containing regular pages that are cached in the local cache. API endpoints and the contribute page are excluded from this route group.
-  - `olympiads/`: lists all olympiads
-  - `login/`: login page
-  - `profile/`: profile of user
-  - `admin/`: admin panel for managing users
-  - `privacy/`: privacy policy
-- `api/`: API endpoints cached in a **shared cache** to reduced DB load. Since a shared cache (Cloudflare's cache) is used, it also allows for manual reloading of the cache using Cloudflare's dashboard.
-  - `search/`: contains the search index used for the global fuzzy search
-  - `stats/`: endpoint for the statistics on the landing page.
-  - `auth/`: endpoint for authentication (see auth section below)
-  - `olympiads`: endpoint for olympiad list
-    - `[olympiad]`: endpoint for the olympiad files
-- `contribute/`: page for users to contribute. Currently, only admins can use this page.
-  - `[olympiad]`: edit olympiad metadata
-    - `[year]`: edit files and metadata of a year
-
-## Authentication
-
-Authentication is implemented with [BetterAuth](https://better-auth.com/). The BetterAuth instance is found in `src/lib/server/auth.ts`. It is a function rather than a constant, as the Cloudflare D1 binding is only known at runtime. Hence, when using the BetterAuth CLI to generate the database schema based on the BetterAuth instance, we use separate code that pretends that the DB is just some regular path. The client code interacts with the BetterAuth server using the auth client found in `src/lib/auth-client.ts`. The default SvelteKit handler doesn't work due to quirks of Cloudflare Workers, so we hardcode the callback URL handling in `src/routes/api/auth/[...all]/+server.ts`.
-
-### User types
-
-Currently, there are only two user types: `user` and `admin`, which are the defaults configured in BetterAuth's admin plugin. There is also a superadmin, which is an admin that cannot be demoted.
+1. **Never hand-edit `src/lib/server/db/migrations/`.** Change `schema.ts`, then
+   `bun run db:generate`.
+2. **Never hand-edit `src/lib/components/ui/`.** Re-run the shadcn-svelte CLI.
+3. **Never change `CDN_BASE_URL`, the R2 key layout, or `slugifyLabel`.** The
+   database stores whole CDN URLs and recovers keys by stripping the prefix; a
+   change orphans every object _and_ silently breaks deletion.
+4. **Never change an `/api/*` response shape casually.** Those payloads sit in
+   Cloudflare's shared cache for up to a day and need a manual dashboard purge.
+5. **Colocate page-only components** next to their route, flat, no `+` prefix, no
+   subfolder. They import `PageData` / `ActionData` from `./$types`, which cannot
+   resolve under `$lib`. See
+   [`(reg)/olympiads/[olympiad]/`](<./src/routes/(reg)/olympiads/[olympiad]>) for
+   the reference style.
+6. **Call `formToasts` exactly once**, on the component that owns `form`, and pass
+   a **single** `Pending` instance down — `has()` must read the map `track()` wrote.
+7. **Prefer `actionFail()` over `error()` inside an action.** `error()` replaces
+   the page and discards whatever the contributor had typed.
+8. **Run `bun run format && bun run check && bun run lint` before every commit,**
+   and smoke-test the route under `bun run dev`. There is **no test suite**;
+   `svelte-check` plus a click-through is the entire safety net.
+9. **Comment the _why_.** Several comments in this codebase record real
+   incidents — an infinite submit loop in the admin panel, a data-loss bug in the
+   olympiad editor. Do not delete one without understanding what it protects.
 
 # Svelte usage
 
