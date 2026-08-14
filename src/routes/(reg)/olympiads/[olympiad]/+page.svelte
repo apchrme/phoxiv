@@ -1,107 +1,69 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import type { YearEntry, ProblemEntry, ProblemTopic } from '$lib/types.js';
+	import type { ProblemTopic, YearEntry } from '$lib/types.js';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import TopicSelect from '$lib/components/TopicSelect.svelte';
 	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import BackLink from '$lib/components/BackLink.svelte';
-	import FileBadge from '$lib/components/FileBadge.svelte';
-	import * as Card from '$lib/components/ui/card';
-	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import SvelteSeo from 'svelte-seo';
 	import { tick } from 'svelte';
 	import { resolve } from '$app/paths';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
+	import YearPanel from './YearPanel.svelte';
+	import { filterYears, hasProblemMatches, showYearLevel, type FilterState } from './filter';
 
 	let { data }: PageProps = $props();
 
-	let olympiad = $derived(data.olympiad);
-	let olympiadFiles: YearEntry[] | null = $state(null);
-	let olympiadFilesLoading = $state(true);
+	const olympiad = $derived(data.olympiad);
 
+	let years: YearEntry[] | null = $state(null);
+	let loading = $state(true);
+	let loadFailed = $state(false);
+
+	let query = $state('');
+	let showFullYear = $state(false);
+	/** Topics the user is filtering by. Empty means no topic filter. */
+	let activeTopics = $state<ProblemTopic[]>([]);
+
+	/**
+	 * The years, problems and files come from `/api/olympiads/[olympiad]` rather
+	 * than from the page load, so the response is served out of Cloudflare's
+	 * shared cache instead of costing a D1 read per visit.
+	 */
 	$effect(() => {
-		const id = olympiad.id; // tracked dependency
-		olympiadFiles = null;
-		olympiadFilesLoading = true;
+		const id = olympiad.id; // tracked dependency: refetch when navigating between olympiads
+		years = null;
+		loading = true;
+		loadFailed = false;
 		query = '';
 		activeTopics = [];
 
 		fetch(`/api/olympiads/${id}`)
-			.then((r) => r.json() as Promise<YearEntry[]>)
-			.then(async (data) => {
-				olympiadFiles = data;
-				olympiadFilesLoading = false;
+			.then((r) => {
+				if (!r.ok) throw new Error(`HTTP ${r.status}`);
+				return r.json() as Promise<YearEntry[]>;
+			})
+			.then(async (fetched) => {
+				years = fetched;
+				loading = false;
 
+				// Honour a #<year> deep link once the panels actually exist.
 				const hash = window.location.hash;
 				if (hash) {
 					await tick();
 					document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' });
 				}
+			})
+			.catch(() => {
+				loading = false;
+				loadFailed = true;
 			});
 	});
 
-	let query = $state('');
-	let showFullYear = $state(false);
-	// Topics the user is filtering by. Empty = no topic filter.
-	let activeTopics = $state<ProblemTopic[]>([]);
-
-	function matchesQuery(problem: ProblemEntry, q: string) {
-		return (
-			problem.number.toLowerCase().includes(q) ||
-			(problem.title?.toLowerCase().includes(q) ?? false)
-		);
-	}
-
-	/** Problems of a year that satisfy the topic filter (all of them if it's off). */
-	function topicMatches(year: YearEntry) {
-		if (activeTopics.length === 0) return year.problems;
-		return year.problems.filter((p) => p.topics?.some((t) => activeTopics.includes(t)) ?? false);
-	}
-
-	const filtered = $derived(() => {
-		const q = query.trim().toLowerCase();
-
-		const results = [];
-		// `olympiadFiles` is null until the fetch resolves; the markup gates on the
-		// loading flag, but the filter snippet in the search bar renders eagerly.
-		for (const year of olympiadFiles ?? []) {
-			// The topic filter always applies; the text query narrows things further.
-			const inTopics = topicMatches(year);
-			if (activeTopics.length > 0 && inTopics.length === 0) continue;
-
-			if (!q) {
-				results.push({ ...year, matchedProblems: inTopics });
-				continue;
-			}
-
-			const yearMatches = String(year.year).includes(q);
-			const queryMatched = inTopics.filter((p) => matchesQuery(p, q));
-			if (yearMatches) {
-				results.push({ ...year, matchedProblems: inTopics });
-			} else if (queryMatched.length > 0) {
-				results.push({ ...year, matchedProblems: showFullYear ? inTopics : queryMatched });
-			}
-		}
-		return results;
-	});
-
-	const hasProblemMatches = $derived(() => {
-		const q = query.trim().toLowerCase();
-		if (!q) return false;
-		return (olympiadFiles ?? []).some(
-			(y) => !String(y.year).includes(q) && topicMatches(y).some((p) => matchesQuery(p, q))
-		);
-	});
-
-	function showYearLevel(year: (typeof filtered extends () => infer R ? R : never)[number]) {
-		const q = query.trim().toLowerCase();
-		return !q || String(year.year).includes(q) || showFullYear;
-	}
-
-	function hasYearLevelContent(year: YearEntry) {
-		return year.yearFiles.length > 0 || year.notes.length > 0 || year.extraLinks.length > 0;
-	}
+	const filterState = $derived<FilterState>({ query, topics: activeTopics, showFullYear });
+	const filtered = $derived.by(() => filterYears(years, filterState));
+	const canShowFullYear = $derived.by(() => hasProblemMatches(years, filterState));
 </script>
 
 <SvelteSeo
@@ -127,7 +89,7 @@
 	<div class="mb-5">
 		<SearchBar placeholder="Search by year or problem…" bind:value={query}>
 			{#snippet filters()}
-				{#if hasProblemMatches()}
+				{#if canShowFullYear}
 					<label class="flex cursor-pointer items-center gap-2">
 						<Switch bind:checked={showFullYear} />
 						<span class="text-sm text-nowrap text-muted-foreground">Show full year</span>
@@ -145,78 +107,24 @@
 			{/snippet}
 		</SearchBar>
 	</div>
-	{#if olympiadFilesLoading}
+
+	{#if loading}
 		<div class="flex flex-col gap-4">
 			{#each { length: 4 }, i (i)}
 				<Skeleton class="h-50 w-full" />
 			{/each}
 		</div>
-	{:else if filtered().length > 0}
+	{:else if loadFailed}
+		<SearchEmptyState
+			message="Couldn't load this olympiad"
+			hint="Something went wrong fetching the file list. Reloading usually fixes it."
+			clearLabel="Reload"
+			onClear={() => location.reload()}
+		/>
+	{:else if filtered.length > 0}
 		<div class="flex flex-col gap-4">
-			{#each filtered() as year (year.year)}
-				<!-- Glass year panel -->
-				<Card.Root id={String(year.year)}>
-					<!-- Year header -->
-					<Card.Header>
-						<Card.Title class="font-mono text-lg font-semibold text-foreground tabular-nums">
-							{year.year}
-						</Card.Title>
-					</Card.Header>
-
-					<Separator />
-
-					<div class="flex flex-col gap-4 px-3 sm:px-5">
-						{#if showYearLevel(year) && hasYearLevelContent(year)}
-							<div class="flex flex-col gap-2">
-								{#each year.notes as note (note)}
-									<p class="m-0 text-sm text-muted-foreground">{note}</p>
-								{/each}
-								{#if year.extraLinks.length > 0 || year.yearFiles.length > 0}
-									<div class="flex flex-wrap gap-2">
-										{#each year.extraLinks as link (link.label)}
-											<FileBadge href={link.url} label={link.label} external />
-										{/each}
-										{#each year.yearFiles as file (file.label)}
-											<FileBadge
-												href={file.url}
-												label={file.label}
-												class="px-2.5 py-2.5 text-sm hover:border-primary/40 dark:hover:border-primary/30"
-											/>
-										{/each}
-									</div>
-								{/if}
-							</div>
-						{/if}
-
-						{#if year.matchedProblems.length > 0}
-							<div class="grid grid-cols-1 gap-3 xs:grid-cols-2 lg:grid-cols-3">
-								{#each year.matchedProblems as problem (problem.number)}
-									<div class="flex flex-col gap-2 p-5 rounded-xl bg-muted/50">
-										<div class="flex flex-col gap-0.5">
-											<span class="font-mono text-base font-semibold text-primary">
-												{problem.number}
-											</span>
-											{#if problem.title}
-												<span class="text-base leading-snug font-medium text-foreground">
-													{problem.title}
-												</span>
-											{/if}
-										</div>
-										<div class="flex flex-wrap gap-2">
-											{#each problem.files as file (file.label)}
-												<FileBadge
-													href={file.url}
-													label={file.label}
-													class="px-2.5 py-2.5 text-sm hover:border-primary/40 dark:hover:border-primary/30"
-												/>
-											{/each}
-										</div>
-									</div>
-								{/each}
-							</div>
-						{/if}
-					</div>
-				</Card.Root>
+			{#each filtered as year (year.year)}
+				<YearPanel {year} showYearLevel={showYearLevel(year, filterState)} />
 			{/each}
 		</div>
 	{:else}
