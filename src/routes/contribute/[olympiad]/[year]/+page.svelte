@@ -1,103 +1,28 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import { enhance } from '$app/forms';
-	import { Plus, Trash2, ExternalLink } from '@lucide/svelte';
-	import BackLink from '$lib/components/BackLink.svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { Separator } from '$lib/components/ui/separator/index.js';
-	import { Spinner } from '$lib/components/ui/spinner/index.js';
-	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import TopicSelect from '$lib/components/TopicSelect.svelte';
-	import { formToasts, Pending } from '$lib/forms.svelte';
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
-	import { cn } from '$lib/utils.js';
-	import { DOCUMENT_UPLOAD } from '$lib/uploads';
+	import BackLink from '$lib/components/BackLink.svelte';
+	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import { formToasts, Pending } from '$lib/forms.svelte';
+	import MetadataTab from './MetadataTab.svelte';
+	import FilesTab from './FilesTab.svelte';
 
 	let { data, params, form }: PageProps = $props();
 
 	let phase = $state<'metadata' | 'files'>('metadata');
-	// Map existing data to objects with unique IDs
-	// We need to use deep state here because the page data is just used to seed the variables, and subsequent client-side updates are by the user.
-	// svelte-ignore state_referenced_locally
-	let notes = $state(data.year.notes.map((n) => ({ id: crypto.randomUUID(), value: n })));
-
-	// svelte-ignore state_referenced_locally
-	let extraLinks = $state(
-		data.year.extraLinks.map((l) => ({
-			id: crypto.randomUUID(),
-			label: l.label,
-			url: l.url
-		}))
-	);
-
-	// svelte-ignore state_referenced_locally
-	let problemList = $state(
-		data.problems.map((p) => ({
-			id: crypto.randomUUID(),
-			number: p.number,
-			title: p.title ?? '',
-			topics: [...p.topics]
-		}))
-	);
-
-	// Helper to add new entries with fresh IDs
-	function addNote() {
-		notes.push({ id: crypto.randomUUID(), value: '' });
-	}
-	function addLink() {
-		extraLinks.push({ id: crypto.randomUUID(), label: '', url: '' });
-	}
-	function addProblem() {
-		problemList.push({ id: crypto.randomUUID(), number: '', title: '', topics: [] });
-	}
-	// Remove functions remain simple (can use index or ID)
-	function removeNote(i: number) {
-		notes.splice(i, 1);
-	}
-	function removeLink(i: number) {
-		extraLinks.splice(i, 1);
-	}
-	function removeProblem(i: number) {
-		problemList.splice(i, 1);
-	}
-
-	// ── Duplicate problem number detection ────────────────────────────────────
-	// Tracks which problem numbers appear more than once so we can warn the user
-	// and block saving until they're unique.
-	const duplicateNumbers = $derived.by(() => {
-		// A local accumulator, not reactive state — SvelteMap would be pointless here.
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity
-		const counts = new Map<string, number>();
-		for (const p of problemList) {
-			const num = p.number.trim();
-			if (!num) continue;
-			counts.set(num, (counts.get(num) ?? 0) + 1);
-		}
-		return new Set([...counts.entries()].filter(([, count]) => count > 1).map(([num]) => num));
-	});
-	const hasDuplicateNumbers = $derived(duplicateNumbers.size > 0);
-
-	// ── Duplicate file label detection ────────────────────────────────────────
-	function isDuplicateLabel(label: string, existingFiles: { label: string; url: string }[]) {
-		const trimmed = label.trim().toLowerCase();
-		if (!trimmed) return false;
-		return existingFiles.some((f) => f.label.trim().toLowerCase() === trimmed);
-	}
 
 	/**
-	 * In-flight submissions. Keys are section-scoped rather than label-scoped:
-	 * `'year'` or the problem number for uploads, and `<section>/<label>` for
-	 * deletions. A key must not depend on the typed label, because `use:enhance`
-	 * captures its callback once when the form mounts — a label-derived key would
-	 * be written under the mount-time value and read under the current one.
+	 * In-flight submissions, shared by both tabs.
+	 *
+	 * Keys are section-scoped rather than label-scoped: `'metadata'`,
+	 * `'deleteYear'`, `'year'` or the problem number for uploads, and
+	 * `<section>/<label>` for deletions. A key must not depend on a typed label,
+	 * because `use:enhance` captures its callback once when the form mounts — a
+	 * label-derived key would be written under the mount-time value and read
+	 * under the current one, and the button would never re-enable.
 	 */
 	const pending = new Pending();
-
-	// The label input for each "add file" form, keyed by "year" or problem number.
-	let newFileLabel = $state<Record<string, string>>({});
 
 	formToasts(() => form, {
 		saveMetadata: 'Metadata saved',
@@ -131,332 +56,18 @@
 		<Tabs.Trigger value="files">Phase 2 — Files</Tabs.Trigger>
 	</Tabs.List>
 
+	<!-- bits-ui hides the inactive panel rather than unmounting it, which is what
+	     lets the metadata draft survive a switch to the files tab and back. -->
 	<Tabs.Content value="metadata">
-		<form
-			method="POST"
-			action="?/saveMetadata"
-			use:enhance={pending.track('metadata', {
-				guard: () =>
-					hasDuplicateNumbers
-						? 'Duplicate problem numbers found — please make them unique before saving.'
-						: null
-			})}
-			class="flex flex-col gap-5 pb-2"
-		>
-			<!-- Notes -->
-			<Card.Root>
-				<Card.Header class="border-b">
-					<Card.Title>Notes</Card.Title>
-					<Card.Description
-						>Short notices shown above the file links for this year.</Card.Description
-					>
-				</Card.Header>
-				<Card.Content class="flex flex-col gap-3">
-					{#each notes as note, i (note.id)}
-						<div class="flex gap-2">
-							<Input
-								name="note"
-								type="text"
-								bind:value={note.value}
-								placeholder="e.g. Solutions are unofficial"
-							/>
-							<Button type="button" variant="ghost" size="icon-sm" onclick={() => removeNote(i)}>
-								<Trash2 class="size-4" />
-							</Button>
-						</div>
-					{/each}
-					<Button type="button" variant="outline" size="sm" onclick={addNote} class="self-start">
-						<Plus class="size-4" /> Add note
-					</Button>
-				</Card.Content>
-			</Card.Root>
-
-			<!-- Extra links -->
-			<Card.Root>
-				<Card.Header class="border-b">
-					<Card.Title>Extra links</Card.Title>
-					<Card.Description>External links not associated with uploaded files.</Card.Description>
-				</Card.Header>
-				<Card.Content class="flex flex-col gap-3">
-					{#each extraLinks as extraLink, i (extraLink.id)}
-						<div class="flex gap-2">
-							<Input
-								name="linkLabel"
-								type="text"
-								bind:value={extraLink.label}
-								placeholder="Label"
-								class="w-20"
-							/>
-							<Input
-								name="linkUrl"
-								type="url"
-								bind:value={extraLink.url}
-								placeholder="https://..."
-							/>
-							<Button type="button" variant="ghost" size="icon-sm" onclick={() => removeLink(i)}>
-								<Trash2 class="size-4" />
-							</Button>
-						</div>
-					{/each}
-					<Button type="button" variant="outline" size="sm" onclick={addLink} class="self-start">
-						<Plus class="size-4" /> Add link
-					</Button>
-				</Card.Content>
-			</Card.Root>
-
-			<!-- Problems -->
-			<Card.Root>
-				<Card.Header class="border-b">
-					<Card.Title>Problems</Card.Title>
-					<Card.Description>
-						Define the problems for this year. Removing a problem <span class="text-sm font-bold"
-							>or changing the problem number</span
-						> will delete all its associated file records. Topics are only used by the topic filter on
-						the olympiad page — they are never shown next to a problem, so they can't spoil it.
-					</Card.Description>
-				</Card.Header>
-				<Card.Content class="flex flex-col gap-3">
-					{#each problemList as problem, i (problem.id)}
-						{@const isDuplicate =
-							problem.number.trim() !== '' && duplicateNumbers.has(problem.number.trim())}
-						<div class="flex flex-wrap items-center gap-2">
-							<Input
-								name="problemNumber"
-								type="text"
-								bind:value={problem.number}
-								placeholder="T1"
-								class="w-15"
-								aria-invalid={isDuplicate}
-							/>
-							<Input
-								name="problemTitle"
-								type="text"
-								bind:value={problem.title}
-								placeholder="Problem title (optional)"
-								class="min-w-40 flex-1"
-							/>
-							<!-- Topics are never displayed alongside the problem publicly — they
-							     only power the topic filter on the olympiad page. -->
-							<TopicSelect
-								bind:value={problem.topics}
-								align="end"
-								heading="Topics for {problem.number.trim() || 'this problem'}"
-								class="shrink-0"
-							/>
-							<input type="hidden" name="problemTopics" value={JSON.stringify(problem.topics)} />
-							<Button type="button" variant="ghost" size="icon" onclick={() => removeProblem(i)}>
-								<Trash2 class="size-4" />
-							</Button>
-						</div>
-					{/each}
-					<Button type="button" variant="outline" size="sm" onclick={addProblem} class="self-start">
-						<Plus class="size-4" /> Add problem
-					</Button>
-					{#if hasDuplicateNumbers}
-						<p class="text-sm text-destructive">
-							Duplicate problem numbers: {[...duplicateNumbers].join(', ')}. Each problem number
-							must be unique.
-						</p>
-					{/if}
-				</Card.Content>
-			</Card.Root>
-
-			<div class="flex flex-row items-center gap-2">
-				<Button
-					type="submit"
-					class="disabled:bg-primary/60"
-					disabled={pending.has('metadata') || hasDuplicateNumbers}
-				>
-					Save metadata
-				</Button>
-				{#if pending.has('metadata')}
-					<Spinner class="size-5" />
-				{/if}
-			</div>
-		</form>
-		<form
-			method="POST"
-			action="?/deleteYear"
-			use:enhance={pending.track('deleteYear', {
-				reset: true,
-				confirm: `Delete ${data.olympiad.name} ${data.year.year}? This will permanently remove the year, its problems, and all uploaded files.`
-			})}
-		>
-			<Button type="submit" variant="destructive" disabled={pending.has('deleteYear')}>
-				{#if pending.has('deleteYear')}
-					<Spinner class="size-3.5" />
-					Deleting…
-				{:else}
-					<Trash2 class="size-4" />
-					Delete this year
-				{/if}
-			</Button>
-		</form>
+		<MetadataTab
+			olympiadName={data.olympiad.name}
+			year={data.year}
+			problems={data.problems}
+			{pending}
+		/>
 	</Tabs.Content>
 
 	<Tabs.Content value="files">
-		<div class="flex flex-col gap-5">
-			{#snippet fileSection(
-				scope: 'year' | 'problem',
-				existingFiles: { label: string; url: string }[],
-				problemNumber?: string
-			)}
-				{@const labelKey = problemNumber ?? 'year'}
-				{@const currentLabel = newFileLabel[labelKey] ?? ''}
-				{@const duplicateLabel = isDuplicateLabel(currentLabel, existingFiles)}
-				<div class="flex flex-col gap-3">
-					<!-- Existing files -->
-					{#if existingFiles.length > 0}
-						<div class="flex flex-col gap-2">
-							{#each existingFiles as file (file.label)}
-								<div
-									class="flex flex-col items-center gap-2 rounded-xl border border-border bg-muted/30 p-3 sm:flex-row"
-								>
-									<span class="flex-1 text-sm font-medium">{file.label}</span>
-									<div class="flex flex-row">
-										<!-- eslint-disable svelte/no-navigation-without-resolve -- absolute CDN url -->
-										<a
-											href={file.url}
-											target="_blank"
-											class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
-										>
-											<ExternalLink class="size-3" /> View
-										</a>
-										<!-- eslint-enable svelte/no-navigation-without-resolve -->
-										<form
-											method="POST"
-											action="?/deleteFile"
-											use:enhance={pending.track(`${labelKey}/${file.label}`, {
-												reset: true,
-												confirm: `Delete "${file.label}"? This will permanently remove the file. This cannot be undone.`
-											})}
-										>
-											<input type="hidden" name="scope" value={scope} />
-											<input type="hidden" name="label" value={file.label} />
-											{#if problemNumber}
-												<input type="hidden" name="problemNumber" value={problemNumber} />
-											{/if}
-											<Button
-												type="submit"
-												variant="ghost"
-												size="icon-sm"
-												disabled={pending.has(`${labelKey}/${file.label}`)}
-											>
-												<Trash2 class="size-3.5 text-destructive" />
-											</Button>
-										</form>
-									</div>
-								</div>
-							{/each}
-						</div>
-						<Separator />
-					{/if}
-
-					<!-- Add new file form -->
-					<form
-						method="POST"
-						action="?/uploadFile"
-						enctype="multipart/form-data"
-						use:enhance={pending.track(labelKey, {
-							reset: true,
-							guard: () =>
-								isDuplicateLabel(newFileLabel[labelKey] ?? '', existingFiles)
-									? `A file named "${(newFileLabel[labelKey] ?? '').trim()}" already exists.`
-									: null,
-							onDone: () => (newFileLabel[labelKey] = '')
-						})}
-						class="flex flex-col gap-2 sm:flex-row sm:items-end"
-					>
-						<input type="hidden" name="scope" value={scope} />
-						{#if problemNumber}
-							<input type="hidden" name="problemNumber" value={problemNumber} />
-						{/if}
-						<div class="flex flex-1 flex-col gap-1.5">
-							<label for="label" class="text-xs font-medium text-muted-foreground">Label</label>
-							<input
-								id="label"
-								name="label"
-								type="text"
-								bind:value={newFileLabel[labelKey]}
-								placeholder="e.g. Problems, Solutions, Marking Scheme…"
-								required
-								pattern="[^\/]*"
-								// don't allow forward slashes to prevent conflicts
-								aria-invalid={duplicateLabel}
-								class={cn(
-									'h-9 w-full rounded-4xl border border-input bg-input/30 px-3 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
-									duplicateLabel && 'border-destructive focus-visible:ring-destructive/20'
-								)}
-							/>
-							{#if duplicateLabel}
-								<p class="text-xs text-destructive">
-									A file named "{currentLabel.trim()}" already exists. Delete it first or choose a
-									different name.
-								</p>
-							{/if}
-						</div>
-						<div class="flex flex-1 flex-col gap-1.5">
-							<label for="file" class="text-xs font-medium text-muted-foreground">File</label>
-							<input
-								id="file"
-								type="file"
-								name="file"
-								accept={DOCUMENT_UPLOAD.accept}
-								required
-								class="file-input"
-							/>
-						</div>
-						<Button
-							type="submit"
-							disabled={pending.has(labelKey) || duplicateLabel}
-							class="shrink-0"
-						>
-							{#if pending.has(labelKey)}
-								<Spinner class="size-3.5" />
-								Uploading…
-							{:else}
-								Upload
-							{/if}
-						</Button>
-					</form>
-				</div>
-			{/snippet}
-
-			<!-- Year-level files -->
-			<Card.Root>
-				<Card.Header class="border-b">
-					<Card.Title>Year-level files</Card.Title>
-					<Card.Description
-						>Files that cover the whole year rather than a single problem.</Card.Description
-					>
-				</Card.Header>
-				<Card.Content>
-					{@render fileSection('year', data.yearFiles)}
-				</Card.Content>
-			</Card.Root>
-
-			<!-- Per-problem files -->
-			{#if data.problems.length === 0}
-				<p class="text-sm text-muted-foreground">
-					No problems defined yet — go to Phase 1 to add them first.
-				</p>
-			{:else}
-				{#each data.problems as problem (problem.id)}
-					<Card.Root>
-						<Card.Header class="border-b">
-							<Card.Title>
-								<span class="font-mono text-primary">{problem.number}</span>
-								{#if problem.title}
-									<span class="ml-2 font-normal text-muted-foreground">{problem.title}</span>
-								{/if}
-							</Card.Title>
-						</Card.Header>
-						<Card.Content>
-							{@render fileSection('problem', problem.files, problem.number)}
-						</Card.Content>
-					</Card.Root>
-				{/each}
-			{/if}
-		</div>
+		<FilesTab yearFiles={data.yearFiles} problems={data.problems} {pending} />
 	</Tabs.Content>
 </Tabs.Root>
