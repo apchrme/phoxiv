@@ -73,7 +73,8 @@ export type YearEntry = {
 	problems: ProblemEntry[];
 };
 
-/** A problem entry with the extra properties needed for the UI in GlobalSearch.svelte */
+/** A problem entry with the extra properties the ⌘K search UI needs — see
+ *  `$lib/components/search/`. `searchText` is what the fuzzy matcher runs over. */
 export type SearchItem = {
 	olympiadId: string;
 	olympiadName: string;

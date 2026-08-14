@@ -10,7 +10,7 @@
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import AppSidebar from './AppSidebar.svelte';
 	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
-	import GlobalSearch from '$lib/components/GlobalSearch.svelte';
+	import GlobalSearch from '$lib/components/search/GlobalSearch.svelte';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
 	import { Search } from '@lucide/svelte';
 	import LogIn from '$lib/components/buttons/LogIn.svelte';

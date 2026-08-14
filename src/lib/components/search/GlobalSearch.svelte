@@ -1,17 +1,27 @@
 <script lang="ts">
 	import type { SearchItem } from '$lib/types.js';
-	import { highlight, rank, MAX_RESULTS } from '$lib/utils/fuzzy';
+	import { rank, MAX_RESULTS } from '$lib/utils/fuzzy';
 	import { Search } from '@lucide/svelte';
 	import XIcon from '@lucide/svelte/icons/x';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
-	import Badge from '$lib/components/ui/badge/badge.svelte';
-	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
 	import { cn } from '$lib/utils.js';
 	import { goto } from '$app/navigation';
 	import { Dialog } from 'bits-ui';
 	import { resolve } from '$app/paths';
-	import * as Kbd from '$lib/components/ui/kbd/index.js';
+	import SearchResultItem from './SearchResultItem.svelte';
+	import SearchHints from './SearchHints.svelte';
 
+	/**
+	 * The ⌘K search dialog, mounted once by the root layout.
+	 *
+	 * Everything stateful lives in this shell on purpose. `Dialog.Content` is
+	 * wrapped in bits-ui's `{#if shouldRender}`, so its whole subtree unmounts
+	 * when the dialog closes — state pushed into a child would be rebuilt on
+	 * every open, and the session-long index cache below would quietly become a
+	 * fetch per keystroke of ⌘K. The `<svelte:window>` handler has to stay out
+	 * here for the same reason: it is what *opens* the dialog, so it could never
+	 * fire from inside the content.
+	 */
 	let { open = $bindable(false) }: { open?: boolean } = $props();
 
 	// ---------------------------------------------------------------------------
@@ -77,6 +87,19 @@
 		closeSearch();
 	}
 
+	/**
+	 * Keeps the keyboard-focused row visible.
+	 *
+	 * Reaches into the DOM rather than holding element references, since the rows
+	 * are rendered by a child. The lookup is optional-chained at both ends: the
+	 * container is undefined before mount, and an empty result list makes any
+	 * index out of range.
+	 */
+	function scrollFocusedIntoView() {
+		const row = resultsEl?.querySelectorAll('li')[focusedIndex];
+		row?.scrollIntoView({ block: 'nearest' });
+	}
+
 	// ---------------------------------------------------------------------------
 	// Keyboard handling
 	// ---------------------------------------------------------------------------
@@ -95,12 +118,12 @@
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
 			focusedIndex = Math.min(focusedIndex + 1, results.length - 1);
-			resultsEl?.querySelectorAll('li')[focusedIndex].scrollIntoView({ block: 'nearest' });
+			scrollFocusedIntoView();
 		}
 		if (e.key === 'ArrowUp') {
 			e.preventDefault();
 			focusedIndex = Math.max(focusedIndex - 1, 0);
-			resultsEl?.querySelectorAll('li')[focusedIndex].scrollIntoView({ block: 'nearest' });
+			scrollFocusedIntoView();
 		}
 		if (e.key === 'Enter' && results[focusedIndex]) {
 			navigateTo(results[focusedIndex]);
@@ -179,66 +202,13 @@
 					{:else}
 						<ul>
 							{#each results as item, i (item.olympiadId + item.year + item.problem.number)}
-								<li>
-									<a
-										href={resolve(`/olympiads/${item.olympiadId}#${item.year}`)}
-										onclick={(e) => {
-											e.preventDefault();
-											navigateTo(item);
-										}}
-										onmousemove={() => (focusedIndex = i)}
-										class={cn(
-											'flex flex-col gap-1.5 border-b border-white/40 px-4 py-3 transition-all duration-150 last:border-0 dark:border-white/8',
-											i === focusedIndex
-												? 'bg-white/50 dark:bg-white/8'
-												: 'hover:bg-white/35 dark:hover:bg-white/5'
-										)}
-									>
-										<!-- Olympiad + year -->
-										<div class="flex items-center gap-1.5 text-muted-foreground">
-											<OlympiadIcon
-												icon={item.olympiadIcon}
-												id={item.olympiadId}
-												class="h-4 w-auto shrink-0 text-base"
-											/>
-											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-											<span>{@html highlight(item.olympiadName, query)}</span>
-											<span aria-hidden="true">·</span>
-											<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-											<span class="font-mono">{@html highlight(String(item.year), query)}</span>
-										</div>
-
-										<!-- Problem number + title -->
-										<div class="flex items-baseline gap-2">
-											<span class="font-mono font-semibold text-primary">
-												<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-												{@html highlight(item.problem.number, query)}
-											</span>
-											{#if item.problem.title}
-												<span class="font-medium text-foreground">
-													<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-													{@html highlight(item.problem.title, query)}
-												</span>
-											{/if}
-										</div>
-
-										{#if item.problem.files.length > 0}
-											<div class="flex flex-wrap gap-1.5">
-												{#each item.problem.files as file (file.label)}
-													<Badge
-														variant="outline"
-														href={file.url}
-														target="_blank"
-														class="px-2 py-1 text-xs"
-														onclick={(e: MouseEvent) => e.stopPropagation()}
-													>
-														{file.label}
-													</Badge>
-												{/each}
-											</div>
-										{/if}
-									</a>
-								</li>
+								<SearchResultItem
+									{item}
+									{query}
+									focused={i === focusedIndex}
+									onactivate={() => navigateTo(item)}
+									onhover={() => (focusedIndex = i)}
+								/>
 							{/each}
 						</ul>
 						{#if results.length === MAX_RESULTS}
@@ -249,27 +219,8 @@
 					{/if}
 				</div>
 
-				<!-- Footer hints -->
-				<div
-					class="glass-hairline hidden items-center gap-4 border-t bg-white/20 px-4 py-2.5 text-xs text-muted-foreground md:flex dark:bg-white/3"
-				>
-					<span><Kbd.Root>↑↓</Kbd.Root> navigate</span>
-					<span><Kbd.Root>↵</Kbd.Root> go to year</span>
-					<span><Kbd.Root>Esc</Kbd.Root> close</span>
-					<span class="ml-auto flex gap-1">
-						<Kbd.Root>⌘</Kbd.Root>
-						<Kbd.Root>K</Kbd.Root>
-					</span>
-				</div>
+				<SearchHints />
 			</Dialog.Content>
 		</div>
 	</Dialog.Portal>
 </Dialog.Root>
-
-<style>
-	:global(mark) {
-		background: transparent;
-		color: var(--primary);
-		font-weight: 600;
-	}
-</style>

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import type { ProblemTopic, YearEntry } from '$lib/types.js';
-	import SearchBar from '$lib/components/SearchBar.svelte';
+	import SearchBar from '$lib/components/search/SearchBar.svelte';
 	import TopicSelect from '$lib/components/TopicSelect.svelte';
-	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
+	import SearchEmptyState from '$lib/components/search/SearchEmptyState.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import BackLink from '$lib/components/BackLink.svelte';
 	import SvelteSeo from 'svelte-seo';

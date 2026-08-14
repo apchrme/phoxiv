@@ -3,8 +3,8 @@
 	import { OLYMPIAD_TAGS, type OlympiadTag, type OlympiadEntry } from '$lib/types.js';
 	import { Badge } from '$lib/components/ui/badge/index';
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
-	import SearchBar from '$lib/components/SearchBar.svelte';
-	import SearchEmptyState from '$lib/components/SearchEmptyState.svelte';
+	import SearchBar from '$lib/components/search/SearchBar.svelte';
+	import SearchEmptyState from '$lib/components/search/SearchEmptyState.svelte';
 	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
 	import { ArrowRight } from '@lucide/svelte';
 	import * as Card from '$lib/components/ui/card';
