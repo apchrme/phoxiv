@@ -60,7 +60,6 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const name = field(data, 'name');
 		const summary = field(data, 'summary');
-		const icon = field(data, 'icon');
 		const tag = field(data, 'tag');
 		const descriptionMd = fieldOrNull(data, 'description');
 		const displayOrder = intField(data, 'displayOrder', DEFAULT_DISPLAY_ORDER);
@@ -70,12 +69,22 @@ export const actions: Actions = {
 		}
 		if (!isOlympiadTag(tag)) return actionFail(400, 'updateOlympiad', 'Invalid tag');
 
+		// The emoji field is `disabled` whenever an uploaded image icon is in force,
+		// and browsers omit disabled controls from FormData. An absent `icon` therefore
+		// means "the form had nothing to say about the icon", not "clear it" — writing
+		// the empty string here used to silently delete the uploaded icon's URL while
+		// the page cheerfully toasted "Olympiad updated". Keying off presence rather
+		// than value keeps the fix independent of how the form is split into
+		// components; a hidden input would only work for as long as it stayed a DOM
+		// descendant of this form.
+		const iconPatch = data.has('icon') ? { icon: field(data, 'icon') } : {};
+
 		await db
 			.update(olympiads)
 			.set({
 				name,
 				summary,
-				icon,
+				...iconPatch,
 				tag,
 				descriptionMd,
 				descriptionHtml: await renderMarkdownOrNull(descriptionMd),
