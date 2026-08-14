@@ -30,7 +30,7 @@
 	} = $props();
 
 	let fileName = $state<string | null>(null);
-	let fileInput: HTMLInputElement | undefined = $state();
+	let fileInput: HTMLInputElement | null = $state(null);
 
 	/** Discards the chosen file. Called by the page once an import lands. */
 	export function clear() {

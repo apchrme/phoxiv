@@ -33,6 +33,3 @@ vite.config.ts.timestamp-*
 
 # Local scratch copy of the R2 bucket, used when bulk-uploading with rclone.
 files
-
-# Claude skills
-.claude
