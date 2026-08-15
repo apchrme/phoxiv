@@ -88,8 +88,8 @@
 </header>
 
 <div class="mx-auto max-w-xl flex flex-col gap-5">
-	<YearsCard olympiadId={data.olympiad.id} years={data.years} {form} {pending} />
+	<YearsCard olympiadId={data.olympiad.id} years={data.years} {pending} />
 	<IconCard bind:this={iconCard} olympiadId={data.olympiad.id} {icon} {pending} />
 	<OlympiadMetadataForm olympiad={data.olympiad} bind:icon {pending} />
-	<ImportTitlesCard bind:this={importCard} olympiadId={data.olympiad.id} {form} {pending} />
+	<ImportTitlesCard bind:this={importCard} olympiadId={data.olympiad.id} {pending} />
 </div>

@@ -48,8 +48,15 @@
 	 * user's draft.
 	 */
 	let roleDraft = $state<string | null>(null);
-	const role = $derived(roleDraft ?? user.role ?? 'user');
-	const roleDirty = $derived(role !== (user.role ?? ''));
+	/**
+	 * Resolved once so the displayed value and the dirty check cannot disagree
+	 * about what "no role" looks like. `role` is nullable with no default, so NULL
+	 * is the ordinary state for a plain user — comparing the display value against
+	 * a differently-defaulted stored value made every untouched row read as edited.
+	 */
+	const storedRole = $derived(user.role ?? 'user');
+	const role = $derived(roleDraft ?? storedRole);
+	const roleDirty = $derived(role !== storedRole);
 
 	/** Same idea for the assignment checkboxes: `null` means "unedited". */
 	let assignDraft = $state<string[] | null>(null);

@@ -50,19 +50,19 @@ export async function ensureYear(
 	olympiadId: string,
 	year: number
 ): Promise<{ created: boolean }> {
-	const existing = await db
-		.select({ id: years.id })
-		.from(years)
-		.where(and(eq(years.olympiadId, olympiadId), eq(years.year, year)))
-		.get();
-
-	await db
+	// One atomic statement rather than a check-then-insert: two callers racing on
+	// the same year would both read "absent" and both report `created: true`,
+	// logging two `add_year` entries for the single row the unique index allows.
+	// `RETURNING` reports what this statement actually did, so exactly one of them
+	// can claim the creation.
+	const inserted = await db
 		.insert(years)
 		.values({ olympiadId, year, ...EMPTY_YEAR })
 		.onConflictDoNothing()
-		.run();
+		.returning({ id: years.id })
+		.all();
 
-	return { created: !existing };
+	return { created: inserted.length > 0 };
 }
 
 /** Creates a year unconditionally and returns its id. Used by the CSV import. */

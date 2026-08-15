@@ -37,8 +37,15 @@
 	// input.
 	const uid = $props.id();
 
-	/** Namespaces this section's entries in the shared `Pending` map. */
-	const key = $derived(problemNumber ?? 'year');
+	/**
+	 * Namespaces this section's entries in the shared `Pending` map.
+	 *
+	 * Prefixed by scope rather than falling back to a bare `'year'`: problem
+	 * numbers are free text with no format validation, so a problem numbered
+	 * literally `year` would otherwise share a key with the year-level section and
+	 * the two would disable each other's buttons.
+	 */
+	const key = $derived(scope === 'problem' ? `problem:${problemNumber}` : 'year');
 	const isDuplicate = $derived(hasLabel(label));
 
 	/** Whether `candidate` collides with a file this owner already has. */

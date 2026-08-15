@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ActionData, PageData } from './$types';
+	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 	import type { Pending } from '$lib/forms.svelte';
@@ -14,19 +14,18 @@
 	 * The olympiad's existing years, plus the form that adds one.
 	 *
 	 * `?/selectYear` always redirects into the year editor, so there is no success
-	 * result to toast — only the failure line below. The action creates the year
-	 * record when it doesn't exist yet, which is why the same control both adds
-	 * and navigates.
+	 * result to toast. Failures are left to the page's `formToasts`, which toasts
+	 * every failed action — rendering them inline here as well showed the same
+	 * message twice. The action creates the year record when it doesn't exist yet,
+	 * which is why the same control both adds and navigates.
 	 */
 	let {
 		olympiadId,
 		years,
-		form,
 		pending
 	}: {
 		olympiadId: string;
 		years: PageData['years'];
-		form: ActionData;
 		/** The page's single tracker, so the submit button can disable itself. */
 		pending: Pending;
 	} = $props();
@@ -84,8 +83,5 @@
 				Add / go to year
 			</Button>
 		</form>
-		{#if form && !form.success && form.action === 'selectYear'}
-			<p class="text-sm text-destructive">{form.error}</p>
-		{/if}
 	</Card.Content>
 </Card.Root>

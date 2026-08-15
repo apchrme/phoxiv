@@ -10,7 +10,11 @@ import { getOlympiadYearEntries } from '$lib/server/db/queries/content';
  * response comes from Cloudflare's shared cache rather than D1.
  */
 export const GET: RequestHandler = async ({ params, locals, setHeaders }) => {
-	setSharedCache(setHeaders);
+	// The 404 has to be raised BEFORE the cache header goes on. `setHeaders`
+	// applies to the error response too, so caching a not-found here would pin it
+	// in Cloudflare's shared cache for a day — long enough that an olympiad
+	// created moments later would keep 404ing until someone purged the dashboard.
 	await requireOlympiad(locals.db, params.olympiad);
+	setSharedCache(setHeaders);
 	return json(await getOlympiadYearEntries(locals.db, params.olympiad));
 };

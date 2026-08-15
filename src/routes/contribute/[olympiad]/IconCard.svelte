@@ -82,12 +82,24 @@
 
 		<Separator />
 
-		<!-- Upload form -->
+		<!--
+			Upload form.
+
+			`invalidateAll: false` because re-running `load` hands
+			`OlympiadMetadataForm` a freshly built `olympiad` object, which recomputes
+			all five of its `$derived` fields and silently throws away whatever the
+			contributor had typed into the metadata form but not yet saved.
+
+			Nothing here needs that reload: the page's toast handler already overwrites
+			`icon` from the action's `iconUrl`, and every consumer — the header, this
+			card, the metadata form — reads that override rather than
+			`data.olympiad.icon`.
+		-->
 		<form
 			method="POST"
 			action="?/uploadIcon"
 			enctype="multipart/form-data"
-			use:enhance={pending.track('uploadIcon')}
+			use:enhance={pending.track('uploadIcon', { invalidateAll: false })}
 			class="flex flex-col gap-3"
 		>
 			<div class="flex flex-col gap-1.5">
@@ -121,7 +133,12 @@
 		<!-- Remove uploaded icon -->
 		{#if hasUploadedIcon}
 			<Separator />
-			<form method="POST" action="?/removeIcon" use:enhance={pending.track('removeIcon')}>
+			<!-- `invalidateAll: false` for the same reason as the upload form above. -->
+			<form
+				method="POST"
+				action="?/removeIcon"
+				use:enhance={pending.track('removeIcon', { invalidateAll: false })}
+			>
 				<div class="flex items-center justify-between">
 					<p class="text-xs text-muted-foreground">
 						Remove the uploaded icon and fall back to the emoji/flag set in the metadata below.

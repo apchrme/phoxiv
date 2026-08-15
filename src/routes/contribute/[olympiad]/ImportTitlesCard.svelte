@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { ActionData } from './$types';
 	import { enhance } from '$app/forms';
 	import type { Pending } from '$lib/forms.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
@@ -17,14 +16,16 @@
 	 * The export link is a plain `href` with `data-sveltekit-reload`: the endpoint
 	 * responds with a file download rather than a page, so the client router must
 	 * not try to handle it.
+	 *
+	 * Import failures are left to the page's `formToasts`, which toasts every
+	 * failed action — rendering them inline here as well showed the same message
+	 * twice.
 	 */
 	let {
 		olympiadId,
-		form,
 		pending
 	}: {
 		olympiadId: string;
-		form: ActionData;
 		/** The page's single tracker, so the submit button can disable itself. */
 		pending: Pending;
 	} = $props();
@@ -106,8 +107,5 @@
 				{/if}
 			</div>
 		</form>
-		{#if form && !form.success && form.action === 'importTitles'}
-			<p class="text-sm text-destructive">{form.error}</p>
-		{/if}
 	</Card.Content>
 </Card.Root>
