@@ -59,7 +59,7 @@ export const actions: Actions = {
 	 * The three problem fields (`problemNumber`, `problemTitle`, `problemTopics`)
 	 * are positionally aligned: one of each per row in the editor's repeater.
 	 */
-	saveMetadata: async ({ request, params, locals }) => {
+	saveMetadata: async ({ request, params, platform, locals }) => {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
 		const yearNum = parseYear(params.year)!;
 		const data = await request.formData();
@@ -114,18 +114,40 @@ export const actions: Actions = {
 				.run();
 		}
 
-		// Anything the editor no longer lists was removed by the user. Cascades to
-		// problemFiles via the FK, though their R2 objects are left orphaned —
-		// deleting a whole year is the path that cleans up storage.
+		// Anything the editor no longer lists was removed by the user — including a
+		// problem whose number was edited, which is a delete plus an insert.
+		//
+		// One condition, built once and used for both statements below, so the
+		// query that finds the files and the query that deletes the rows can never
+		// disagree about which problems went away.
 		const submittedNumbers = submitted.map((p) => p.number);
-		await db
-			.delete(problems)
-			.where(
-				submittedNumbers.length > 0
-					? and(eq(problems.yearId, yearRow.id), notInArray(problems.number, submittedNumbers))
-					: eq(problems.yearId, yearRow.id)
-			)
-			.run();
+		const removed =
+			submittedNumbers.length > 0
+				? and(eq(problems.yearId, yearRow.id), notInArray(problems.number, submittedNumbers))
+				: eq(problems.yearId, yearRow.id);
+
+		// The FK cascade takes the problemFiles rows with the problem, and those
+		// rows are the only record of which R2 keys belong to it — so the objects
+		// have to go first, or they are unreachable garbage in the bucket forever.
+		const orphaned = await db
+			.select({ url: problemFiles.url })
+			.from(problemFiles)
+			.innerJoin(problems, eq(problems.id, problemFiles.problemId))
+			.where(removed)
+			.all();
+
+		// Only demand a bucket when something actually has to be deleted, so a
+		// storage outage cannot block the ordinary save that removes nothing.
+		if (orphaned.length > 0) {
+			const bucket = getBucket(platform);
+			if (!bucket) return actionFail(500, 'saveMetadata', STORAGE_UNAVAILABLE);
+			await deleteByUrls(
+				bucket,
+				orphaned.map((f) => f.url)
+			);
+		}
+
+		await db.delete(problems).where(removed).run();
 
 		await logActivity(
 			db,
