@@ -18,16 +18,31 @@
 
 	let olympiads: OlympiadEntry[] = $state([]);
 	let olympiadsLoading = $state(true);
+	let loadFailed = $state(false);
 
+	/**
+	 * The list comes from `/api/olympiads` rather than a page load, so the
+	 * response is served out of Cloudflare's shared cache instead of costing a D1
+	 * read per visit.
+	 *
+	 * The loading flag is cleared in `finally`: letting a rejection escape left it
+	 * stuck at `true` and the page showed its six skeletons forever.
+	 */
 	onMount(async () => {
-		olympiads = await (await fetch('/api/olympiads')).json();
-		// await new Promise((f) => setTimeout(f, 5000));
-		olympiadsLoading = false;
+		try {
+			const res = await fetch('/api/olympiads');
+			if (!res.ok) throw new Error(`HTTP ${res.status}`);
+			olympiads = await res.json();
+		} catch {
+			loadFailed = true;
+		} finally {
+			olympiadsLoading = false;
+		}
 	});
 
 	const filtered = $derived(() => {
 		const q = query.trim().toLowerCase();
-		return (olympiads as OlympiadEntry[]).filter((c) => {
+		return olympiads.filter((c) => {
 			const matchesTag = activeTag === null || c.tag === activeTag;
 			const matchesQuery =
 				!q ||
@@ -76,6 +91,13 @@
 				<Skeleton class="h-50 w-full" />
 			{/each}
 		</div>
+	{:else if loadFailed}
+		<SearchEmptyState
+			message="Couldn't load the olympiads"
+			hint="Something went wrong fetching the list. Reloading usually fixes it."
+			clearLabel="Reload"
+			onClear={() => location.reload()}
+		/>
 	{:else if filtered().length > 0}
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">
 			{#each filtered() as olympiad (olympiad.id)}

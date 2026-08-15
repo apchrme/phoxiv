@@ -30,15 +30,29 @@
 
 	let index = $state<SearchItem[]>([]);
 	let indexLoading = $state(false);
+	let indexFailed = $state(false);
 	let indexFetched = false;
 
+	/**
+	 * `indexFetched` is only set on success, so a failed attempt is retried the
+	 * next time the dialog opens rather than leaving the session permanently
+	 * unsearchable.
+	 *
+	 * The explicit `ok` check matters: an error response with an HTML body makes
+	 * `res.json()` throw, which used to escape as an unhandled rejection and left
+	 * the dialog claiming "No results found" as though the archive were empty.
+	 */
 	async function fetchIndex() {
 		if (indexFetched) return;
 		indexLoading = true;
+		indexFailed = false;
 		try {
 			const res = await fetch('/api/search');
+			if (!res.ok) throw new Error(`HTTP ${res.status}`);
 			index = await res.json();
 			indexFetched = true;
+		} catch {
+			indexFailed = true;
 		} finally {
 			indexLoading = false;
 		}
@@ -185,6 +199,13 @@
 					{#if indexLoading}
 						<div class="m-auto">
 							<p class="text-center text-sm text-muted-foreground">Loading search index…</p>
+						</div>
+					{:else if indexFailed}
+						<div class="m-auto flex flex-col gap-2 px-5">
+							<p class="text-center text-sm text-destructive">Couldn't load the search index.</p>
+							<p class="text-center text-sm text-muted-foreground">
+								Close this and reopen it to try again.
+							</p>
 						</div>
 					{:else if !query.trim()}
 						<div class="m-auto flex flex-col gap-2 px-5">

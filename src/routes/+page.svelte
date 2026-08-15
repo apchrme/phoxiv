@@ -17,16 +17,29 @@
 	// Stats — fetched once on mount
 	// ---------------------------------------------------------------------------
 
-	let stats: Record<string, number> = $state({ olympiads: 0, years: 0, files: 0 });
+	/**
+	 * Null until the counts arrive, and left null if they never do.
+	 *
+	 * Seeding this with zeroes meant a failed request rendered a confident
+	 * "0 / 0 / 0" — the archive claiming to be empty — with the reveal animation
+	 * playing over it as though nothing were wrong.
+	 */
+	let stats = $state<Record<string, number> | null>(null);
 
 	onMount(async () => {
-		stats = await (await fetch('/api/stats')).json();
+		try {
+			const res = await fetch('/api/stats');
+			if (!res.ok) throw new Error(`HTTP ${res.status}`);
+			stats = await res.json();
+		} catch {
+			stats = null;
+		}
 	});
 
 	const statItems = $derived([
-		{ value: stats.olympiads, label: 'Olympiads' },
-		{ value: stats.years, label: 'Years' },
-		{ value: stats.files, label: 'Files' }
+		{ value: stats?.olympiads, label: 'Olympiads' },
+		{ value: stats?.years, label: 'Years' },
+		{ value: stats?.files, label: 'Files' }
 	]);
 
 	let pageRoot: HTMLElement | undefined = $state();
@@ -135,7 +148,7 @@
 			{#each statItems as { value, label }, i (label)}
 				<div class="stat-item flex flex-1 flex-col items-center gap-1 px-4 py-4">
 					<span class="font-mono text-xl leading-none font-bold text-foreground">
-						{value}
+						{value ?? '—'}
 					</span>
 					<span class="font-mono text-xs tracking-widest text-muted-foreground uppercase">
 						{label}
