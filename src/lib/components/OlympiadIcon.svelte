@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getFlagCountryCode } from '$lib/utils/flag.js';
+	import { isIconUrl } from '$lib/uploads.js';
 	import { CircleAlert } from '@lucide/svelte';
 
 	let {
@@ -42,7 +43,7 @@
 	// -------------------------------------------------------------------------
 
 	// Check if the icon field itself is a URL (uploaded to R2 at runtime). It is possible for contributors to inject a custom URL through the icon emoji field, but that isn't dangerous, so I won't fix it.
-	const isUrl = $derived(icon.startsWith('https://') || icon.startsWith('http://'));
+	const isUrl = $derived(isIconUrl(icon));
 
 	// Build-time local override (only relevant when icon is not a URL)
 	const overrideUrl = $derived(!isUrl && id ? (iconOverrides[id] ?? null) : null);

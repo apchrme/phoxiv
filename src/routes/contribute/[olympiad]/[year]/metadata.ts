@@ -78,11 +78,14 @@ export function newProblemRow(): ProblemRow {
  * The problem numbers used by more than one row.
  *
  * Blank numbers are skipped — a freshly added row is not yet a duplicate of
- * anything. The server rejects duplicates as well, because two problems sharing
- * a number would upsert over each other and one of them would lose its files;
- * this is the client-side half, which stops the save before that can happen.
+ * anything. Two problems sharing a number would upsert over each other and one
+ * of them would lose its files, so `saveMetadata` calls this too and refuses the
+ * save; the editor calls it to flag the rows before the contributor gets there.
+ *
+ * The parameter is widened past `ProblemRow` so the server's plain
+ * `{ number }` records fit — it must stay the *same* check on both sides.
  */
-export function duplicateProblemNumbers(problems: readonly ProblemRow[]): Set<string> {
+export function duplicateProblemNumbers(problems: readonly { number: string }[]): Set<string> {
 	const counts = new Map<string, number>();
 	for (const problem of problems) {
 		const number = problem.number.trim();

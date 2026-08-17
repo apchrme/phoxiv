@@ -65,7 +65,12 @@ export async function ensureYear(
 	return { created: inserted.length > 0 };
 }
 
-/** Creates a year unconditionally and returns its id. Used by the CSV import. */
+/**
+ * Creates a year unconditionally and returns its id.
+ *
+ * For callers that already know the year is new — the CSV import, and the first
+ * year of a freshly created olympiad.
+ */
 export async function insertYear(db: DB, olympiadId: string, year: number): Promise<number> {
 	const inserted = await db
 		.insert(years)

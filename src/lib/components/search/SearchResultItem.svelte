@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { SearchItem } from '$lib/types.js';
 	import { highlight } from '$lib/utils/fuzzy';
-	import Badge from '$lib/components/ui/badge/badge.svelte';
+	import FileBadge from '$lib/components/FileBadge.svelte';
 	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
 	import { cn } from '$lib/utils.js';
 	import { resolve } from '$app/paths';
@@ -81,15 +81,12 @@
 		{#if item.problem.files.length > 0}
 			<div class="flex flex-wrap gap-1.5">
 				{#each item.problem.files as file (file.label)}
-					<Badge
-						variant="outline"
+					<FileBadge
 						href={file.url}
-						target="_blank"
+						label={file.label}
 						class="px-2 py-1 text-xs"
-						onclick={(e: MouseEvent) => e.stopPropagation()}
-					>
-						{file.label}
-					</Badge>
+						onclick={(e) => e.stopPropagation()}
+					/>
 				{/each}
 			</div>
 		{/if}

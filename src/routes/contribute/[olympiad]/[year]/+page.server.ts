@@ -21,6 +21,7 @@ import { validateUpload } from '$lib/server/uploads';
 import { DOCUMENT_UPLOAD } from '$lib/uploads';
 import { parseLabelledUrls, parseStringArray } from '$lib/utils/json';
 import { parseTopics, serializeTopics } from '$lib/utils/topics';
+import { duplicateProblemNumbers } from './metadata';
 
 /** Whether a file belongs to the year as a whole or to one problem. */
 type Scope = 'year' | 'problem';
@@ -94,13 +95,11 @@ export const actions: Actions = {
 			.filter((p) => p.number);
 
 		// Reject duplicates rather than silently upserting them over each other,
-		// which would lose one of the two problems' files.
-		const seenNumbers = new Set<string>();
-		for (const { number } of submitted) {
-			if (seenNumbers.has(number)) {
-				return actionFail(400, 'saveMetadata', `Duplicate problem number: ${number}`);
-			}
-			seenNumbers.add(number);
+		// which would lose one of the two problems' files. Shares the editor's
+		// helper so the two halves of the check cannot drift apart.
+		const [duplicate] = duplicateProblemNumbers(submitted);
+		if (duplicate !== undefined) {
+			return actionFail(400, 'saveMetadata', `Duplicate problem number: ${duplicate}`);
 		}
 
 		for (const { number, title, topics } of submitted) {

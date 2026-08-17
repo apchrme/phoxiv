@@ -1,11 +1,11 @@
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { olympiads, years } from '$lib/server/db';
-import { canEditOlympiad, getAssignedOlympiadIds, requireAdmin } from '$lib/server/guard';
+import { olympiads } from '$lib/server/db';
+import { canEditOlympiad, requireAdmin } from '$lib/server/guard';
 import { logActivity } from '$lib/server/activity-log';
 import { renderMarkdownOrNull } from '$lib/server/markdown';
 import { listOlympiadOptions } from '$lib/server/db/queries/olympiads';
-import { ensureYear } from '$lib/server/db/queries/years';
+import { ensureYear, insertYear } from '$lib/server/db/queries/years';
 import {
 	actionFail,
 	field,
@@ -22,11 +22,7 @@ import { isOlympiadTag } from '$lib/types';
 /** The olympiads this user may pick from — all of them for admins. */
 export const load: PageServerLoad = async ({ locals }) => {
 	const rows = await listOlympiadOptions(locals.db);
-
-	if (locals.user?.role === 'admin') return { olympiads: rows };
-
-	const assigned = new Set(getAssignedOlympiadIds(locals.user));
-	return { olympiads: rows.filter((o) => assigned.has(o.id)) };
+	return { olympiads: rows.filter((o) => canEditOlympiad(locals.user, o.id)) };
 };
 
 export const actions: Actions = {
@@ -117,7 +113,7 @@ export const actions: Actions = {
 			return actionFail(400, 'createOlympiad', `An olympiad with the ID "${id}" already exists`);
 		}
 
-		await db.insert(years).values({ olympiadId: id, year, notes: '[]', extraLinks: '[]' }).run();
+		await insertYear(db, id, year);
 
 		await logActivity(db, user, 'create_olympiad', `Created "${name}" (${id})`, {
 			olympiadId: id,
