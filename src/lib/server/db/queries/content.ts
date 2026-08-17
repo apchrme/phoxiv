@@ -62,16 +62,37 @@ export type EditableProblem = {
 export async function getOlympiadYearEntries(db: DB, olympiadId: string): Promise<YearEntry[]> {
 	const [yearRows, problemRows] = await Promise.all([
 		db
-			.select()
+			// Nested select form, not a flat one: Drizzle only nullifies a LEFT
+			// JOIN's group when the selection path is two levels deep. Flatten this
+			// and `if (row.year_files)` below is permanently truthy, pushing
+			// `{label: null, url: null}` entries into a frozen API payload.
+			.select({
+				years: { id: years.id, year: years.year, notes: years.notes, extraLinks: years.extraLinks },
+				year_files: { label: yearFiles.label, url: yearFiles.url }
+			})
 			.from(years)
 			.leftJoin(yearFiles, eq(yearFiles.yearId, years.id))
 			.where(eq(years.olympiadId, olympiadId))
+			// `yearFiles.id` is ordered by but no longer selected. Valid SQLite, and
+			// the emitted SQL is unchanged — but the ordering is load-bearing (see
+			// the file header), so it must survive any further trimming here.
 			.orderBy(desc(years.year), asc(yearFiles.id))
 			.all(),
 		db
-			.select()
+			.select({
+				problems: {
+					id: problems.id,
+					yearId: problems.yearId,
+					number: problems.number,
+					title: problems.title,
+					topics: problems.topics
+				},
+				problem_files: { label: problemFiles.label, url: problemFiles.url }
+			})
 			.from(problems)
 			.leftJoin(problemFiles, eq(problemFiles.problemId, problems.id))
+			// `years` is joined purely to make the `where` expressible; no column of
+			// it is read, so none is selected.
 			.innerJoin(years, eq(years.id, problems.yearId))
 			.where(eq(years.olympiadId, olympiadId))
 			.orderBy(asc(problems.id), asc(problemFiles.id))
@@ -180,11 +201,25 @@ export async function getYearContent(
  */
 export async function getSearchIndex(db: DB): Promise<SearchItem[]> {
 	const rows = await db
-		.select()
+		// Projected down to the nine columns the mapper reads. The full row dragged
+		// `olympiads.descriptionMd`/`descriptionHtml` along — per-olympiad markdown
+		// blobs, replicated onto every problem-file row of the whole corpus.
+		//
+		// Nested select form, not a flat one: Drizzle only nullifies a LEFT JOIN's
+		// group when the selection path is two levels deep, and `if
+		// (row.problem_files)` below depends on that.
+		.select({
+			problems: { id: problems.id, number: problems.number, title: problems.title },
+			years: { year: years.year },
+			olympiads: { id: olympiads.id, name: olympiads.name, icon: olympiads.icon },
+			problem_files: { label: problemFiles.label, url: problemFiles.url }
+		})
 		.from(problems)
 		.innerJoin(years, eq(years.id, problems.yearId))
 		.innerJoin(olympiads, eq(olympiads.id, years.olympiadId))
 		.leftJoin(problemFiles, eq(problemFiles.problemId, problems.id))
+		// Ordered by a column that is no longer selected. Valid SQLite, unchanged
+		// SQL — but load-bearing, so it must survive any further trimming.
 		.orderBy(asc(problemFiles.id))
 		.all();
 

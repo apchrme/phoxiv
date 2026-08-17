@@ -21,30 +21,29 @@ const ACCEPTED_ROLES: readonly string[] = [...ASSIGNABLE_ROLES, ''];
 export const load: PageServerLoad = async ({ locals }) => {
 	const { db } = requireAdmin(locals);
 
-	const users = await db
-		.select({
-			id: user.id,
-			name: user.name,
-			email: user.email,
-			image: user.image,
-			role: user.role,
-			banned: user.banned,
-			banReason: user.banReason,
-			createdAt: user.createdAt,
-			assignedOlympiads: user.assignedOlympiads
-		})
-		.from(user)
-		.orderBy(user.createdAt)
-		.all();
+	// Three independent reads — one of them used to hide inside the return object,
+	// which is why this read like two sequential awaits rather than three.
+	const [users, olympiads, log] = await Promise.all([
+		db
+			.select({
+				id: user.id,
+				name: user.name,
+				email: user.email,
+				image: user.image,
+				role: user.role,
+				banned: user.banned,
+				banReason: user.banReason,
+				createdAt: user.createdAt,
+				assignedOlympiads: user.assignedOlympiads
+			})
+			.from(user)
+			.orderBy(user.createdAt)
+			.all(),
+		listOlympiadOptions(db),
+		db.select().from(activityLog).orderBy(desc(activityLog.createdAt)).limit(LOG_LIMIT).all()
+	]);
 
-	const log = await db
-		.select()
-		.from(activityLog)
-		.orderBy(desc(activityLog.createdAt))
-		.limit(LOG_LIMIT)
-		.all();
-
-	return { users, olympiads: await listOlympiadOptions(db), log };
+	return { users, olympiads, log };
 };
 
 export const actions: Actions = {

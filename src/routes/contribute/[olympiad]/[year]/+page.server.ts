@@ -30,10 +30,16 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const yearNum = parseYear(params.year);
 	if (yearNum === null) error(400, 'Invalid year');
 
-	const olympiadRow = await requireOlympiad(locals.db, params.olympiad);
-
-	const yearRow = await getYear(locals.db, params.olympiad, yearNum);
+	// Independent reads. `requireOlympiad` throws inside the promise, so a missing
+	// olympiad still rejects before the `if (!yearRow)` line — the 404 for the
+	// olympiad keeps winning over the one for the year.
+	const [olympiadRow, yearRow] = await Promise.all([
+		requireOlympiad(locals.db, params.olympiad),
+		getYear(locals.db, params.olympiad, yearNum)
+	]);
 	if (!yearRow) error(404, YEAR_NOT_FOUND);
+
+	// Sequential on purpose: this one genuinely needs `yearRow.id`.
 
 	const { yearFiles: yearFileEntries, problems: problemEntries } = await getYearContent(
 		locals.db,
