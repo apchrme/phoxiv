@@ -19,7 +19,7 @@ from the code:
 
 - **SvelteKit** (Svelte 5, runes) on `@sveltejs/adapter-cloudflare`
 - **shadcn-svelte** over bits-ui, in `src/lib/components/ui/` — vendored from the
-  CLI, excluded from linting, never hand-edited
+  CLI, then **deliberately customised**; excluded from linting and formatting
 - **Drizzle** over Cloudflare **D1**; olympiad files in **R2**, served from
   `cdn.phoxiv.org`
 - **BetterAuth** with GitHub OAuth and the `admin` plugin
@@ -60,7 +60,13 @@ plugin is pinned to `adminRoles: ['admin']` and knows nothing about it. Only
 
 1. **Never hand-edit `src/lib/server/db/migrations/`.** Change `schema.ts`, then
    `bun run db:generate`.
-2. **Never hand-edit `src/lib/components/ui/`.** Re-run the shadcn-svelte CLI.
+2. **Never re-run the shadcn-svelte CLI over `src/lib/components/ui/`.** Those
+   files came from the CLI but have been customised since — glass styles, the
+   sheet overlay, `input.svelte` — across ~40 commits, and `components.json`
+   points at a _live_ registry, so a re-add pulls today's upstream and discards
+   all of it. Edit the vendored file, and say in the commit message why. The
+   directory is excluded from eslint _and_ prettier, so a tidy-up there is
+   invisible to the gate and will not be caught for you.
 3. **Never change `CDN_BASE_URL`, the R2 key layout, or `slugifyLabel`.** The
    database stores whole CDN URLs and recovers keys by stripping the prefix; a
    change orphans every object _and_ silently breaks deletion.

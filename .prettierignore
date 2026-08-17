@@ -13,6 +13,12 @@ bun.lockb
 src/worker-configuration.d.ts
 src/lib/server/db/migrations/
 
+# Vendored shadcn-svelte components, already ignored by eslint.config.js.
+# fc0384a claimed to have added this and only landed the eslint half, so prettier
+# went on reformatting ui/ — see the textarea `{...restProps}` collapse in that
+# same commit, which reads like a hand-edit and was not one.
+src/lib/components/ui/
+
 # Vendored agent skills, installed and updated by the skill tooling. Same rule as
 # src/lib/components/ui/: reformatting them means the next update lands as a diff.
 .agents/skills/
