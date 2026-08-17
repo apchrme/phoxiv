@@ -18,7 +18,7 @@ import {
 	STORAGE_UNAVAILABLE
 } from '$lib/server/storage';
 import { validateUpload } from '$lib/server/uploads';
-import { DOCUMENT_UPLOAD } from '$lib/uploads';
+import { collidingLabel, DOCUMENT_UPLOAD } from '$lib/uploads';
 import { parseLabelledUrls, parseStringArray } from '$lib/utils/json';
 import { parseTopics, serializeTopics } from '$lib/utils/topics';
 import { duplicateProblemNumbers } from './metadata';
@@ -106,6 +106,16 @@ export const actions: Actions = {
 		const [duplicate] = duplicateProblemNumbers(submitted);
 		if (duplicate !== undefined) {
 			return actionFail(400, 'saveMetadata', `Duplicate problem number: ${duplicate}`);
+		}
+
+		// The number becomes a path segment of every key under this problem, so a
+		// slash would nest its files a level deeper than `fileKey` intends — the same
+		// reason `uploadFile` forbids one in a label. Rejected rather than slugified:
+		// keys are built from the raw number, and normalising it now would orphan
+		// every file already uploaded under a number that normalising would change.
+		const nested = submitted.find((p) => p.number.includes('/'));
+		if (nested) {
+			return actionFail(400, 'saveMetadata', `Problem number cannot include /: ${nested.number}`);
 		}
 
 		for (const { number, title, topics } of submitted) {
@@ -226,6 +236,12 @@ export const actions: Actions = {
 		}
 		// The label becomes a path segment, so a slash would silently nest the object.
 		if (label.includes('/')) return actionFail(400, 'uploadFile', 'Label cannot include /');
+		// `slugifyLabel` deletes everything outside [a-z0-9_], so a label made only of
+		// punctuation slugs to nothing and would key the object as a bare ".pdf" —
+		// and every such label collides with every other one.
+		if (!slugifyLabel(label)) {
+			return actionFail(400, 'uploadFile', 'Label must include a letter or number');
+		}
 
 		const validated = validateUpload(fileField(data, 'file'), DOCUMENT_UPLOAD);
 		if (!validated.ok) return actionFail(400, 'uploadFile', validated.error);
@@ -251,23 +267,37 @@ export const actions: Actions = {
 			}
 		}
 
-		// Reject a duplicate label rather than overwriting: the existing object may
-		// have a different extension, which would leave the old file orphaned but
-		// still linked from the database.
-		const duplicate = problemRow
+		// Reject a colliding label rather than overwriting, on two counts. An exact
+		// match may carry a different extension, which would leave the old object
+		// orphaned but still linked from the database. And a *different* label can
+		// slug to the same key, in which case `bucket.put` below would replace the
+		// earlier object silently — see `collidingLabel`. Compared in JS because
+		// SQLite cannot run `slugifyLabel`, so the labels come back and are matched
+		// here, with the same helper the editor uses to warn in advance.
+		const siblings = problemRow
 			? await db
-					.select({ url: problemFiles.url })
+					.select({ label: problemFiles.label })
 					.from(problemFiles)
-					.where(and(eq(problemFiles.problemId, problemRow.id), eq(problemFiles.label, label)))
-					.get()
+					.where(eq(problemFiles.problemId, problemRow.id))
+					.all()
 			: await db
-					.select({ url: yearFiles.url })
+					.select({ label: yearFiles.label })
 					.from(yearFiles)
-					.where(and(eq(yearFiles.yearId, yearRow.id), eq(yearFiles.label, label)))
-					.get();
-		if (duplicate) {
+					.where(eq(yearFiles.yearId, yearRow.id))
+					.all();
+		const collision = collidingLabel(
+			siblings.map((f) => f.label),
+			label
+		);
+		if (collision !== null) {
 			const owner = scope === 'year' ? 'this year' : 'this problem';
-			return actionFail(400, 'uploadFile', `A file named "${label}" already exists for ${owner}.`);
+			return actionFail(
+				400,
+				'uploadFile',
+				collision === label
+					? `A file named "${label}" already exists for ${owner}.`
+					: `"${label}" and the existing "${collision}" would be stored as the same file. Rename one of them.`
+			);
 		}
 
 		const key = fileKey(

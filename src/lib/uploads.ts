@@ -5,6 +5,10 @@
  * a form advertises and the allow-list the action enforces are derived from the
  * same table and cannot drift apart. The server-side validator that consumes
  * these specs lives in `$lib/server/uploads.ts`.
+ *
+ * `slugifyLabel` and `collidingLabel` live here for the same reason: the file
+ * editor warns about a colliding label before the upload and the action refuses
+ * it after, and the two must agree on what "colliding" means.
  */
 
 export type UploadSpec = {
@@ -96,6 +100,39 @@ export function isAllowedExt(spec: UploadSpec, ext: string): boolean {
 /** The `Content-Type` to store `ext` under, falling back to a safe generic. */
 export function contentTypeFor(spec: UploadSpec, ext: string): string {
 	return spec.mimeByExt[ext] ?? 'application/octet-stream';
+}
+
+/**
+ * A file label reduced to a safe key segment.
+ *
+ * Must stay byte-identical to what produced the keys already in the bucket —
+ * a change here means existing objects can no longer be located. See
+ * `$lib/server/storage.ts` for the key layout it feeds, and `docs/data-model.md`.
+ */
+export function slugifyLabel(label: string): string {
+	return label
+		.toLowerCase()
+		.replace(/\s+/g, '_')
+		.replace(/[^a-z0-9_]/g, '');
+}
+
+/**
+ * The existing label whose R2 key `candidate` would overwrite, or `null`.
+ *
+ * Compared on the *slug*, not on the labels themselves. The slug is what becomes
+ * the key's filename and it is lossy — case, punctuation and repeated whitespace
+ * all vanish — so `Solutions (official)` and `Solutions official` are two
+ * different labels naming one object. The database cannot catch that: its unique
+ * index is on the raw label. R2's `put` would then replace the earlier file in
+ * place without complaint, leaving both rows pointing at a single object that
+ * either row's delete can remove, and the survivor linked to a 404.
+ *
+ * Blank and punctuation-only candidates are the caller's problem: reject them
+ * before asking, or an empty slug will match every other empty slug.
+ */
+export function collidingLabel(existing: readonly string[], candidate: string): string | null {
+	const slug = slugifyLabel(candidate);
+	return existing.find((label) => slugifyLabel(label) === slug) ?? null;
 }
 
 /** True when `icon` is an uploaded R2 URL rather than an emoji or flag code. */

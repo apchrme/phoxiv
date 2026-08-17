@@ -151,7 +151,23 @@ olympiads/<olympiadId>/<year>/<problemNumber>/<slug>.<ext>    ← problem files
 ```
 
 `<slug>` is `slugifyLabel(label)`: lowercased, whitespace → `_`, everything
-outside `[a-z0-9_]` dropped.
+outside `[a-z0-9_]` dropped. It is defined in
+[`$lib/uploads.ts`](../src/lib/uploads.ts) — client-safe, so the editor can apply
+it in the browser — and re-exported from `storage.ts`.
+
+**The slug is lossy, and the uniqueness that matters is the slug's, not the
+label's.** `year_files` and `problem_files` are unique on the raw `label`, so
+`Solutions (official)` and `Solutions official` are two perfectly legal rows that
+name one object. `bucket.put` overwrites silently — no error, no versioning, and
+the object's metadata is replaced rather than merged — so the second upload would
+destroy the first file's bytes, leave both rows holding the same `url`, and let
+either row's delete 404 the other. `collidingLabel` in `$lib/uploads.ts` is what
+prevents that; `uploadFile` refuses the upload and the editor warns before it.
+A label that slugs to _nothing_ (`!!!`) is refused for the same reason.
+
+`<problemNumber>` is **not** slugified — existing keys were built from the raw
+number, so normalising it now would orphan them. `saveMetadata` instead refuses a
+number containing `/`, which would nest the problem's files a level too deep.
 
 **Keys are never stored.** The database keeps the _whole_ CDN URL
 (`https://cdn.phoxiv.org/<key>`) in its `url` columns, and deletion recovers the

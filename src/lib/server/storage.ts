@@ -58,19 +58,6 @@ export function fileKey(
 }
 
 /**
- * A file label reduced to a safe key segment.
- *
- * Must stay byte-identical to what produced the keys already in the bucket —
- * a change here means existing objects can no longer be located.
- */
-export function slugifyLabel(label: string): string {
-	return label
-		.toLowerCase()
-		.replace(/\s+/g, '_')
-		.replace(/[^a-z0-9_]/g, '');
-}
-
-/**
  * Deletes the object behind a stored CDN `url`. No-ops for foreign URLs.
  *
  * Always pass the URL read back from the database, never one submitted by the
@@ -112,3 +99,11 @@ export async function deleteStaleIcons(
 }
 
 export { CDN_BASE_URL };
+
+/**
+ * Re-exported so the `<slugLabel>` half of `fileKey` stays discoverable here,
+ * next to the layout it feeds. It is defined in `$lib/uploads.ts` rather than in
+ * this module because the year editor has to apply the same slug in the browser
+ * to warn about a collision, and `$lib/server/` cannot be imported client-side.
+ */
+export { slugifyLabel } from '$lib/uploads';
