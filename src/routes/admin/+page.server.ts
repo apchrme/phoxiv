@@ -4,12 +4,19 @@ import { activityLog, user } from '$lib/server/db';
 import { isProtectedSuperadmin, requireAdmin } from '$lib/server/guard';
 import { listOlympiadOptions } from '$lib/server/db/queries/olympiads';
 import { actionFail, field, fieldList, fieldOrNull, ok } from '$lib/server/forms';
+import { ASSIGNABLE_ROLES } from '$lib/activity';
 
 /** How many activity-log entries the panel shows. */
 const LOG_LIMIT = 100;
 
-/** Roles an admin may assign. `''` clears the role back to the default. */
-const ASSIGNABLE_ROLES = ['admin', 'contributor', 'user', ''];
+/**
+ * What `setRole` accepts: the roles the dropdown offers, plus `''`.
+ *
+ * The empty string clears the role back to NULL. It is input-only — no control
+ * submits it deliberately — which is why it is added here rather than kept in
+ * the shared `ASSIGNABLE_ROLES` the dropdown iterates.
+ */
+const ACCEPTED_ROLES: readonly string[] = [...ASSIGNABLE_ROLES, ''];
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const { db } = requireAdmin(locals);
@@ -53,7 +60,7 @@ export const actions: Actions = {
 		if (await isProtectedSuperadmin(db, platform, userId)) {
 			return actionFail(403, 'setRole', 'This account cannot be modified');
 		}
-		if (!ASSIGNABLE_ROLES.includes(role)) return actionFail(400, 'setRole', 'Invalid role');
+		if (!ACCEPTED_ROLES.includes(role)) return actionFail(400, 'setRole', 'Invalid role');
 
 		await db
 			.update(user)

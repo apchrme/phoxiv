@@ -9,7 +9,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Ban, CircleCheck, BookOpenCheck } from '@lucide/svelte';
 	import { parseStringArray } from '$lib/utils/json';
-	import { roleLabel } from '$lib/activity';
+	import { ASSIGNABLE_ROLES, roleLabel } from '$lib/activity';
 
 	/**
 	 * Everything an admin can do to one user: change the role, pick the olympiads
@@ -87,9 +87,9 @@
 				{roleLabel(role)}
 			</Select.Trigger>
 			<Select.Content>
-				<Select.Item value="user">User</Select.Item>
-				<Select.Item value="contributor">Contributor</Select.Item>
-				<Select.Item value="admin">Admin</Select.Item>
+				{#each ASSIGNABLE_ROLES as assignable (assignable)}
+					<Select.Item value={assignable}>{roleLabel(assignable)}</Select.Item>
+				{/each}
 			</Select.Content>
 		</Select.Root>
 		<Button

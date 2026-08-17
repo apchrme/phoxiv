@@ -36,9 +36,27 @@ export function actionVariant(action: string): 'default' | 'secondary' | 'destru
 	return 'secondary';
 }
 
+/**
+ * The roles an admin may assign, in the order the role dropdown lists them.
+ *
+ * The `setRole` action accepts one more value — `''`, which clears the role back
+ * to NULL — but that is server-side input only and deliberately not offered
+ * here, so it stays in the action's own validation list.
+ */
+export const ASSIGNABLE_ROLES = ['user', 'contributor', 'admin'] as const;
+
 /** Human-readable label for a user role. */
 export function roleLabel(role: string | null | undefined): string {
 	if (role === 'admin') return 'Admin';
 	if (role === 'contributor') return 'Contributor';
 	return 'User';
+}
+
+/** Badge colour for a role, so every badge showing one agrees on the styling. */
+export function roleVariant(
+	role: string | null | undefined
+): 'default' | 'secondary' | 'destructive' | 'outline' {
+	if (role === 'admin') return 'default';
+	if (role === 'contributor') return 'secondary';
+	return 'outline';
 }

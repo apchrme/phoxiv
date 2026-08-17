@@ -3,13 +3,14 @@
 	import { enhance } from '$app/forms';
 	import type { Pending } from '$lib/forms.svelte';
 	import IconFilePicker from '$lib/components/forms/IconFilePicker.svelte';
+	import TagSelect from '$lib/components/TagSelect.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import * as Select from '$lib/components/ui/select/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { ArrowRight } from '@lucide/svelte';
-	import { OLYMPIAD_TAGS, type OlympiadTag } from '$lib/types';
+	import { MAX_YEAR, MIN_YEAR } from '$lib/constants';
+	import { type OlympiadTag } from '$lib/types';
 	import { ICON_UPLOAD } from '$lib/uploads';
 
 	/**
@@ -19,8 +20,8 @@
 	 * action refuses. Both icon fields are submitted — the server prefers the
 	 * uploaded file and falls back to the emoji.
 	 *
-	 * `Select.Root` submits `tag` through a hidden input rendered in place while
-	 * its list portals to `document.body`, so it has to stay inside the `<form>`.
+	 * `TagSelect` submits `tag` through a hidden input rendered in place while its
+	 * list portals to `document.body`, so it has to stay inside the `<form>`.
 	 */
 	let {
 		form,
@@ -100,20 +101,7 @@
 				<div class="flex flex-col gap-1.5">
 					<!-- svelte-ignore a11y_label_has_associated_control -->
 					<label class="text-sm font-medium">Tag</label>
-					<Select.Root name="tag" type="single" bind:value={tag}>
-						<Select.Trigger>
-							{#if tag}
-								{tag}
-							{:else}
-								<span class="text-sm text-muted-foreground">Select a tag...</span>
-							{/if}
-						</Select.Trigger>
-						<Select.Content class="overflow-scroll">
-							{#each OLYMPIAD_TAGS as olympiadTag (olympiadTag)}
-								<Select.Item value={olympiadTag}>{olympiadTag}</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
+					<TagSelect bind:value={tag} />
 				</div>
 				<div class="flex flex-col gap-1.5">
 					<label for="first-year" class="text-sm font-medium">First year</label>
@@ -122,8 +110,8 @@
 						name="year"
 						type="number"
 						required
-						min="1900"
-						max="2100"
+						min={MIN_YEAR}
+						max={MAX_YEAR}
 						placeholder="e.g. 2025"
 					/>
 				</div>

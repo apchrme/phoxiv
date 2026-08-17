@@ -9,6 +9,7 @@
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import { Plus, Pencil } from '@lucide/svelte';
+	import { MAX_YEAR, MIN_YEAR } from '$lib/constants';
 
 	/**
 	 * The olympiad's existing years, plus the form that adds one.
@@ -67,8 +68,8 @@
 					id="newYear"
 					name="year"
 					type="number"
-					min="1900"
-					max="2100"
+					min={MIN_YEAR}
+					max={MAX_YEAR}
 					placeholder="e.g. 2025"
 					required
 					class="w-32"

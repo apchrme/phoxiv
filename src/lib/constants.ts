@@ -13,3 +13,15 @@
  * this value orphans every existing object — see `docs/data-model.md`.
  */
 export const CDN_BASE_URL = 'https://cdn.phoxiv.org';
+
+/**
+ * The accepted range of competition years.
+ *
+ * Here rather than beside `parseYear` in `$lib/server/forms.ts` because the
+ * year inputs need them for their `min`/`max` attributes, and a `.svelte` file
+ * cannot import from `$lib/server/`. `forms.ts` re-exports them, so the server
+ * validator and the client-side hint can never disagree about the range.
+ */
+export const MIN_YEAR = 1900;
+/** Loose enough to schedule a competition ahead of time. */
+export const MAX_YEAR = 2100;

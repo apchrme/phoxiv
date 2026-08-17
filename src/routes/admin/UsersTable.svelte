@@ -12,6 +12,7 @@
 	import { globalFilterFn, userColumns } from './columns';
 	import { formatDate } from '$lib/utils/date';
 	import { parseStringArray } from '$lib/utils/json';
+	import { roleLabel, roleVariant } from '$lib/activity';
 	import {
 		getCoreRowModel,
 		getSortedRowModel,
@@ -183,16 +184,12 @@
 					<!-- Role / status badges -->
 					<Table.Cell>
 						<div class="flex flex-wrap gap-1">
-							{#if u.role === 'admin'}
-								<Badge variant="default" class="text-xs">Admin</Badge>
-							{:else if u.role === 'contributor'}
-								<Badge variant="secondary" class="text-xs">Contributor</Badge>
+							<Badge variant={roleVariant(u.role)} class="text-xs">{roleLabel(u.role)}</Badge>
+							{#if u.role === 'contributor'}
 								<Badge variant="outline" class="text-xs">
 									{assignedIds.length}
 									{assignedIds.length === 1 ? 'olympiad' : 'olympiads'}
 								</Badge>
-							{:else}
-								<Badge variant="outline" class="text-xs">User</Badge>
 							{/if}
 							{#if u.banned}
 								<Badge variant="destructive" class="text-xs">Banned</Badge>

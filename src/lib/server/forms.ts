@@ -1,4 +1,5 @@
 import { fail, type ActionFailure } from '@sveltejs/kit';
+import { MAX_YEAR, MIN_YEAR } from '$lib/constants';
 
 /**
  * Form-field parsing and the shape every form action returns.
@@ -85,10 +86,9 @@ export function fileField(data: FormData, name: string): File | null {
 
 // ── Year parsing ────────────────────────────────────────────────────────────
 
-/** Earliest accepted competition year. */
-export const MIN_YEAR = 1900;
-/** Latest accepted competition year, loose enough to schedule ahead. */
-export const MAX_YEAR = 2100;
+// The range itself lives in `$lib/constants.ts`, where the year inputs can also
+// reach it — re-exported here so server-side callers need only one import.
+export { MIN_YEAR, MAX_YEAR };
 
 export const YEAR_RANGE_ERROR = `Please enter a valid year (${MIN_YEAR}-${MAX_YEAR})`;
 

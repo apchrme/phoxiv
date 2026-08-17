@@ -3,14 +3,14 @@
 	import { enhance } from '$app/forms';
 	import type { Pending } from '$lib/forms.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import * as Select from '$lib/components/ui/select/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
 	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
+	import TagSelect from '$lib/components/TagSelect.svelte';
 	import { Save } from '@lucide/svelte';
-	import { OLYMPIAD_TAGS, type OlympiadTag } from '$lib/types';
+	import { type OlympiadTag } from '$lib/types';
 	import { isIconUrl } from '$lib/uploads';
 
 	/**
@@ -121,20 +121,7 @@
 				<div class="flex flex-col gap-1.5">
 					<!-- svelte-ignore a11y_label_has_associated_control -->
 					<label class="text-sm font-medium">Tag</label>
-					<Select.Root name="tag" type="single" bind:value={tag}>
-						<Select.Trigger>
-							{#if tag}
-								{tag}
-							{:else}
-								<span class="text-sm text-muted-foreground">Select…</span>
-							{/if}
-						</Select.Trigger>
-						<Select.Content>
-							{#each OLYMPIAD_TAGS as olympiadTag (olympiadTag)}
-								<Select.Item value={olympiadTag}>{olympiadTag}</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
+					<TagSelect bind:value={tag} placeholder="Select…" />
 				</div>
 			</div>
 

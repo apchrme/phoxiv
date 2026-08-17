@@ -8,6 +8,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { ArrowRight, Pencil } from '@lucide/svelte';
+	import { MAX_YEAR, MIN_YEAR } from '$lib/constants';
 
 	/**
 	 * Picks an existing olympiad and jumps to one of its years, creating the year
@@ -83,8 +84,8 @@
 					id="year"
 					name="year"
 					type="number"
-					min="1900"
-					max="2100"
+					min={MIN_YEAR}
+					max={MAX_YEAR}
 					placeholder="e.g. 2025 (optional)"
 				/>
 			</div>
