@@ -174,7 +174,7 @@
 				<Dialog.Title class="sr-only">Search problems</Dialog.Title>
 
 				<!-- Input row -->
-				<div class="glass-hairline flex items-center gap-3 border-b px-4 py-3">
+				<div class="flex items-center gap-3 border-b glass-hairline px-4 py-3">
 					<Search class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 					<input
 						bind:this={inputEl}

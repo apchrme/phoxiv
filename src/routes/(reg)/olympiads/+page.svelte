@@ -103,7 +103,7 @@
 			{#each filtered() as olympiad (olympiad.id)}
 				<a href={resolve(`/olympiads/${olympiad.id}`)} class="group z-10 block">
 					<Card.Root
-						class="h-full p-5 hover:-translate-y-2 hover:inset-ring-primary/50 hover:shadow-lg/15 shadow-primary inset-ring inset-ring-accent transition-all duration-250"
+						class="h-full p-5 inset-ring shadow-primary inset-ring-accent transition-all duration-250 hover:-translate-y-2 hover:shadow-lg/15 hover:inset-ring-primary/50"
 					>
 						<!-- Top row: icon + badge -->
 						<div class="flex items-start justify-between">

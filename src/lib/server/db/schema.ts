@@ -1,5 +1,5 @@
 import { sqliteTable, text, integer, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
-import { relations, sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 
 export const olympiads = sqliteTable('olympiads', {
 	id: text('id').primaryKey(),
@@ -72,34 +72,46 @@ export const problemFiles = sqliteTable(
 	(t) => [uniqueIndex('problem_files_problem_label_idx').on(t.problemId, t.label)]
 );
 
-export const user = sqliteTable('user', {
-	id: text('id').primaryKey(),
-	name: text('name').notNull(),
-	email: text('email').notNull().unique(),
-	emailVerified: integer('email_verified', { mode: 'boolean' }).default(false).notNull(),
-	image: text('image'),
-	createdAt: integer('created_at', { mode: 'timestamp_ms' })
-		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-		.notNull(),
-	updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
-		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-		.$onUpdate(() => new Date())
-		.notNull(),
-	role: text('role'),
-	banned: integer('banned', { mode: 'boolean' }).default(false),
-	banReason: text('ban_reason'),
-	banExpires: integer('ban_expires', { mode: 'timestamp_ms' }),
-	// JSON-encoded array of olympiad IDs this user (as a contributor) may edit.
-	// Same convention as `notes`/`extraLinks` elsewhere in this schema.
-	assignedOlympiads: text('assigned_olympiads').notNull().default('[]')
-});
+// `user.email` and `session.token` are unique via an explicit `uniqueIndex`
+// below rather than a `.unique()` on the column, and must stay that way. The two
+// are equivalent in v0, which rendered either as a `CREATE UNIQUE INDEX`, but
+// drizzle-kit v1 renders `.unique()` as an inline column constraint instead —
+// and SQLite cannot add one to an existing table. Switching back therefore makes
+// `db:generate` emit a full rebuild (create/copy/drop/rename) of `user` and
+// `session` for no logical change, dropping `session_userId_idx` on the way.
+// The index names match what `curvy_the_hunter` actually created.
+export const user = sqliteTable(
+	'user',
+	{
+		id: text('id').primaryKey(),
+		name: text('name').notNull(),
+		email: text('email').notNull(),
+		emailVerified: integer('email_verified', { mode: 'boolean' }).default(false).notNull(),
+		image: text('image'),
+		createdAt: integer('created_at', { mode: 'timestamp_ms' })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull(),
+		updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.$onUpdate(() => new Date())
+			.notNull(),
+		role: text('role'),
+		banned: integer('banned', { mode: 'boolean' }).default(false),
+		banReason: text('ban_reason'),
+		banExpires: integer('ban_expires', { mode: 'timestamp_ms' }),
+		// JSON-encoded array of olympiad IDs this user (as a contributor) may edit.
+		// Same convention as `notes`/`extraLinks` elsewhere in this schema.
+		assignedOlympiads: text('assigned_olympiads').notNull().default('[]')
+	},
+	(table) => [uniqueIndex('user_email_unique').on(table.email)]
+);
 
 export const session = sqliteTable(
 	'session',
 	{
 		id: text('id').primaryKey(),
 		expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
-		token: text('token').notNull().unique(),
+		token: text('token').notNull(),
 		createdAt: integer('created_at', { mode: 'timestamp_ms' })
 			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 			.notNull(),
@@ -113,13 +125,30 @@ export const session = sqliteTable(
 			.references(() => user.id, { onDelete: 'cascade' }),
 		impersonatedBy: text('impersonated_by')
 	},
-	(table) => [index('session_userId_idx').on(table.userId)]
+	(table) => [
+		index('session_userId_idx').on(table.userId),
+		uniqueIndex('session_token_unique').on(table.token)
+	]
 );
 
 export const account = sqliteTable(
 	'account',
 	{
 		id: text('id').primaryKey(),
+		// better-auth 1.7 identifies an external account by (issuer, accountId)
+		// rather than (providerId, accountId), so this column is required: without
+		// it the OAuth callback dies with `The field "issuer" does not exist in the
+		// schema for the model "account"`. For a provider that declares no issuer of
+		// its own, better-auth writes the synthetic
+		// `local:oauth:<encodeURIComponent(providerId)>` — GitHub is such a provider,
+		// so every row here is `local:oauth:github`.
+		//
+		// The default is deliberate. SQLite cannot add a NOT NULL column without one
+		// ("Cannot add a NOT NULL column with default value NULL"), and it doubles as
+		// the backfill for the rows that predate 1.7 — all of which were GitHub.
+		// better-auth always writes `issuer` explicitly on insert, so the running app
+		// never relies on it. Dropping it later costs a full table rebuild.
+		issuer: text('issuer').notNull().default('local:oauth:github'),
 		accountId: text('account_id').notNull(),
 		providerId: text('provider_id').notNull(),
 		userId: text('user_id')
@@ -143,7 +172,10 @@ export const account = sqliteTable(
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull()
 	},
-	(table) => [index('account_userId_idx').on(table.userId)]
+	(table) => [
+		index('account_userId_idx').on(table.userId),
+		uniqueIndex('account_issuer_accountId_idx').on(table.issuer, table.accountId)
+	]
 );
 
 export const verification = sqliteTable(
@@ -197,22 +229,3 @@ export const activityLog = sqliteTable(
 	},
 	(t) => [index('activity_log_created_at_idx').on(t.createdAt)]
 );
-
-export const userRelations = relations(user, ({ many }) => ({
-	sessions: many(session),
-	accounts: many(account)
-}));
-
-export const sessionRelations = relations(session, ({ one }) => ({
-	user: one(user, {
-		fields: [session.userId],
-		references: [user.id]
-	})
-}));
-
-export const accountRelations = relations(account, ({ one }) => ({
-	user: one(user, {
-		fields: [account.userId],
-		references: [user.id]
-	})
-}));

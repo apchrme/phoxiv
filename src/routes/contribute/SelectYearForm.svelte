@@ -76,7 +76,7 @@
 			<div class="flex flex-col gap-1.5">
 				<label for="year" class="text-sm font-medium">
 					Year
-					<span class="text-xs font-normal text-muted-foreground ml-1">
+					<span class="ml-1 text-xs font-normal text-muted-foreground">
 						— leave blank to edit olympiad metadata
 					</span>
 				</label>

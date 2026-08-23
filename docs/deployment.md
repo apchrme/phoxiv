@@ -16,11 +16,11 @@ and deployed with wrangler.
 
 ### Bindings
 
-| Binding  | Kind   | Notes                                                                        |
-| -------- | ------ | ---------------------------------------------------------------------------- |
-| `ASSETS` | assets | `.svelte-kit/cloudflare` — the static build output                           |
-| `DB`     | D1     | database `phoxiv`; `migrations_dir` points at `src/lib/server/db/migrations` |
-| `FILES`  | R2     | bucket `phoxiv-files`                                                        |
+| Binding  | Kind   | Notes                                                                                                                                          |
+| -------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ASSETS` | assets | `.svelte-kit/cloudflare` — the static build output                                                                                             |
+| `DB`     | D1     | database `phoxiv`; `migrations_dir` points at `src/lib/server/db/migrations`, with `migrations_pattern` for Drizzle v1's per-migration folders |
+| `FILES`  | R2     | bucket `phoxiv-files`                                                                                                                          |
 
 The app reads these off `platform.env`. `DB` is reached through `locals.db`
 (built once per request in `hooks.server.ts`); `FILES` through `getBucket()` in
@@ -74,9 +74,23 @@ Migration files are generated locally, committed, and applied to the remote
 database as a separate step:
 
 ```sh
-bun run db:generate        # after editing schema.ts — writes migrations/NNNN_*.sql
+bun run db:generate        # after editing schema.ts — writes migrations/<timestamp>_<name>/
 bun run db:migrate         # local D1
 bun run db:migrate-remote  # production D1  (wrangler d1 migrations apply DB --remote)
+```
+
+Wrangler identifies an applied migration by the **path** it matched, relative to
+`migrations_dir`, and stores that string in the `d1_migrations` table. Under the
+Drizzle v1 layout that is `<timestamp>_<name>/migration.sql`, which is why the
+`DB` binding must set `migrations_pattern` — with wrangler's default `*.sql` it
+matches nothing and reports "No migrations folder found".
+
+Because the name _is_ the identity, renaming a migration folder makes an
+already-applied migration look new and wrangler will try to run it again. Check
+what production believes before applying anything after a layout change:
+
+```sh
+bunx wrangler d1 migrations list DB --remote
 ```
 
 Order matters when a change is not backwards-compatible: apply the migration
@@ -87,6 +101,75 @@ are additive.
 `db:push` never touches production and must not be used for anything you intend
 to ship — it bypasses the migration files entirely, so the remote database would
 have no record of the change.
+
+### One-off: retagging `d1_migrations` for the Drizzle v1 layout
+
+The v1 upgrade ran `drizzle-kit up`, which moved every migration from
+`NNNN_<name>.sql` to `<timestamp>_<name>/migration.sql`. The SQL itself is
+byte-for-byte unchanged, but the names in `d1_migrations` still refer to the old
+paths, so wrangler sees all seven as unapplied and will try to replay them —
+including `CREATE TABLE`s that already exist.
+
+**This must be run once against production before the next
+`bun run db:migrate-remote`.** It has already been applied to the local D1.
+
+```sh
+bunx wrangler d1 execute DB --remote --command "SELECT name FROM d1_migrations ORDER BY id;"
+```
+
+If that still lists the `NNNN_*.sql` names, retag them:
+
+```sql
+UPDATE d1_migrations SET name = '20260426040858_noisy_edwin_jarvis/migration.sql' WHERE name = '0000_noisy_edwin_jarvis.sql';
+UPDATE d1_migrations SET name = '20260502003546_material_supernaut/migration.sql' WHERE name = '0001_material_supernaut.sql';
+UPDATE d1_migrations SET name = '20260511053650_curvy_the_hunter/migration.sql'   WHERE name = '0002_curvy_the_hunter.sql';
+UPDATE d1_migrations SET name = '20260512070717_living_zombie/migration.sql'      WHERE name = '0003_living_zombie.sql';
+UPDATE d1_migrations SET name = '20260722055750_classy_carnage/migration.sql'     WHERE name = '0004_classy_carnage.sql';
+UPDATE d1_migrations SET name = '20260723021844_cool_nicolaos/migration.sql'       WHERE name = '0005_cool_nicolaos.sql';
+UPDATE d1_migrations SET name = '20260811120159_yellow_glorian/migration.sql'      WHERE name = '0006_yellow_glorian.sql';
+```
+
+Then confirm the ledger agrees with the folder before deploying anything:
+
+```sh
+bunx wrangler d1 migrations list DB --remote   # must print "No migrations to apply!"
+```
+
+The statements are idempotent — each matches an old name that no longer exists
+once it has run — so re-running the file is harmless. Nothing else in the database
+is touched.
+
+### One-off: the BetterAuth 1.7 `account.issuer` column
+
+The 1.6 → 1.7 upgrade made `account.issuer` a required column and the identity of
+an external account `(issuer, account_id)` rather than `(provider_id,
+account_id)`. Login fails without it; see
+[auth.md](./auth.md#how-an-account-is-identified).
+
+`20260823043430_confused_quasimodo` handles this in one additive step — the
+column's `DEFAULT 'local:oauth:github'` is what both satisfies SQLite's refusal to
+add a NOT NULL column without a default and backfills every pre-1.7 row. That is
+only correct because **every** existing account row is a GitHub account. Confirm
+that before applying, along with the absence of identity collisions:
+
+```sh
+bunx wrangler d1 execute DB --remote --command "SELECT provider_id, count(*) FROM account GROUP BY provider_id;"
+bunx wrangler d1 execute DB --remote --command "SELECT count(*) AS total, count(DISTINCT account_id) AS distinct_ids FROM account;"
+```
+
+The first must return `github` and nothing else. The second must return two equal
+numbers — the migration creates a unique index on `(issuer, account_id)`, and with
+one issuer that reduces to `account_id` being unique.
+
+Because the change is purely additive, apply it **before** deploying the 1.7
+code. The full order for this upgrade is:
+
+```sh
+# 1. retag d1_migrations for the Drizzle v1 layout (above), then
+bunx wrangler d1 migrations list DB --remote   # must list only the issuer migration
+bun run db:migrate-remote
+bun run deploy
+```
 
 ### Ad-hoc SQL
 

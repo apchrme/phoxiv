@@ -10,7 +10,7 @@
 </script>
 
 <div
-	class="glass-hairline hidden items-center gap-4 border-t bg-white/20 px-4 py-2.5 text-xs text-muted-foreground md:flex dark:bg-white/3"
+	class="hidden items-center gap-4 border-t glass-hairline bg-white/20 px-4 py-2.5 text-xs text-muted-foreground md:flex dark:bg-white/3"
 >
 	<span><Kbd.Root>↑↓</Kbd.Root> navigate</span>
 	<span><Kbd.Root>↵</Kbd.Root> go to year</span>

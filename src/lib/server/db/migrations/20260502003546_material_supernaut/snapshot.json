@@ -1,0 +1,461 @@
+{
+  "dialect": "sqlite",
+  "id": "0c4fc0eb-2c00-4eb6-873c-6b27338ecfe8",
+  "prevIds": [
+    "f577b405-016f-489d-a7d2-df1cc4400ef7"
+  ],
+  "version": "7",
+  "ddl": [
+    {
+      "name": "olympiads",
+      "entityType": "tables"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "table": "olympiads",
+      "entityType": "columns"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "olympiads_pk",
+      "table": "olympiads",
+      "entityType": "pks"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "name",
+      "table": "olympiads",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "summary",
+      "table": "olympiads",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "''",
+      "generated": null,
+      "name": "icon",
+      "table": "olympiads",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "tag",
+      "table": "olympiads",
+      "entityType": "columns"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "9999",
+      "generated": null,
+      "name": "display_order",
+      "table": "olympiads",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "description_md",
+      "table": "olympiads",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "description_html",
+      "table": "olympiads",
+      "entityType": "columns"
+    },
+    {
+      "name": "problem_files",
+      "entityType": "tables"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": true,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "table": "problem_files",
+      "entityType": "columns"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "problem_files_pk",
+      "table": "problem_files",
+      "entityType": "pks"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "problem_id",
+      "table": "problem_files",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "label",
+      "table": "problem_files",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "url",
+      "table": "problem_files",
+      "entityType": "columns"
+    },
+    {
+      "columns": [
+        {
+          "value": "problem_id",
+          "isExpression": false
+        },
+        {
+          "value": "label",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "origin": "manual",
+      "name": "problem_files_problem_label_idx",
+      "table": "problem_files",
+      "entityType": "indexes"
+    },
+    {
+      "columns": [
+        "problem_id"
+      ],
+      "tableTo": "problems",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "problem_files_problem_id_problems_id_fk",
+      "table": "problem_files",
+      "entityType": "fks"
+    },
+    {
+      "name": "problems",
+      "entityType": "tables"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": true,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "table": "problems",
+      "entityType": "columns"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "problems_pk",
+      "table": "problems",
+      "entityType": "pks"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "year_id",
+      "table": "problems",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "number",
+      "table": "problems",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "title",
+      "table": "problems",
+      "entityType": "columns"
+    },
+    {
+      "columns": [
+        {
+          "value": "year_id",
+          "isExpression": false
+        },
+        {
+          "value": "number",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "origin": "manual",
+      "name": "problems_year_number_idx",
+      "table": "problems",
+      "entityType": "indexes"
+    },
+    {
+      "columns": [
+        "year_id"
+      ],
+      "tableTo": "years",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "problems_year_id_years_id_fk",
+      "table": "problems",
+      "entityType": "fks"
+    },
+    {
+      "name": "year_files",
+      "entityType": "tables"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": true,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "table": "year_files",
+      "entityType": "columns"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "year_files_pk",
+      "table": "year_files",
+      "entityType": "pks"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "year_id",
+      "table": "year_files",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "label",
+      "table": "year_files",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "url",
+      "table": "year_files",
+      "entityType": "columns"
+    },
+    {
+      "columns": [
+        {
+          "value": "year_id",
+          "isExpression": false
+        },
+        {
+          "value": "label",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "origin": "manual",
+      "name": "year_files_year_label_idx",
+      "table": "year_files",
+      "entityType": "indexes"
+    },
+    {
+      "columns": [
+        "year_id"
+      ],
+      "tableTo": "years",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "year_files_year_id_years_id_fk",
+      "table": "year_files",
+      "entityType": "fks"
+    },
+    {
+      "name": "years",
+      "entityType": "tables"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": true,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "table": "years",
+      "entityType": "columns"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "years_pk",
+      "table": "years",
+      "entityType": "pks"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "olympiad_id",
+      "table": "years",
+      "entityType": "columns"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "year",
+      "table": "years",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'[]'",
+      "generated": null,
+      "name": "notes",
+      "table": "years",
+      "entityType": "columns"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'[]'",
+      "generated": null,
+      "name": "extra_links",
+      "table": "years",
+      "entityType": "columns"
+    },
+    {
+      "columns": [
+        {
+          "value": "olympiad_id",
+          "isExpression": false
+        },
+        {
+          "value": "year",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "origin": "manual",
+      "name": "years_olympiad_year_idx",
+      "table": "years",
+      "entityType": "indexes"
+    },
+    {
+      "columns": [
+        "olympiad_id"
+      ],
+      "tableTo": "olympiads",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "years_olympiad_id_olympiads_id_fk",
+      "table": "years",
+      "entityType": "fks"
+    }
+  ],
+  "renames": [
+    "\"problem_files\".\"file_type\"->\"problem_files\".\"label\"",
+    "\"year_files\".\"file_type\"->\"year_files\".\"label\""
+  ]
+}

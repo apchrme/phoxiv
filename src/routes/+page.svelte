@@ -105,7 +105,7 @@
 			<img
 				src={logo}
 				alt=""
-				class="h-120 w-md dark:opacity-10 opacity-40 select-none"
+				class="h-120 w-md opacity-40 select-none dark:opacity-10"
 				style="filter: blur(2px);"
 			/>
 		</div>
@@ -126,7 +126,7 @@
 		</p>
 
 		<!-- CTAs -->
-		<div class="relative z-10 flex xs:flex-row flex-col justify-center gap-3">
+		<div class="relative z-10 flex flex-col justify-center gap-3 xs:flex-row">
 			<div class="hero-cta flex flex-row justify-center gap-2">
 				<Button href={resolve('/olympiads')}>Browse olympiads</Button>
 
@@ -144,7 +144,7 @@
 			</div>
 		</div>
 
-		<div class="stat glass mx-auto flex w-[80vw] max-w-md flex-row overflow-hidden rounded-2xl">
+		<div class="stat mx-auto flex w-[80vw] max-w-md flex-row overflow-hidden rounded-2xl glass">
 			{#each statItems as { value, label }, i (label)}
 				<div class="stat-item flex flex-1 flex-col items-center gap-1 px-4 py-4">
 					<span class="font-mono text-xl leading-none font-bold text-foreground">
@@ -155,7 +155,7 @@
 					</span>
 				</div>
 				{#if i < statItems.length - 1}
-					<div class="self-stretch bg-border/60 h-auto w-px" aria-hidden="true"></div>
+					<div class="h-auto w-px self-stretch bg-border/60" aria-hidden="true"></div>
 				{/if}
 			{/each}
 		</div>

@@ -93,6 +93,21 @@ deliberately omits them for the same reason.
   `input: false`, so it can never be set through BetterAuth's own update-user
   endpoint; only the admin panel writes it, directly via Drizzle.
 
+`account` carries one column that is easy to mistake for boilerplate:
+
+- **`issuer`** — TEXT, not null, default `'local:oauth:github'`. BetterAuth 1.7
+  identifies an external account by the pair **(`issuer`, `account_id`)**, not by
+  `(provider_id, account_id)` as 1.6 did, and enforces it with a unique index.
+  For a provider that declares no issuer of its own — GitHub is one — BetterAuth
+  writes the synthetic `local:oauth:<encodeURIComponent(providerId)>`, so every
+  row here reads `local:oauth:github`.
+
+  The default is load-bearing rather than decorative: SQLite refuses to add a
+  NOT NULL column without one, so the default is what let the column be added to
+  a populated table _and_ is what backfilled the rows that predate 1.7 — all of
+  which were GitHub. BetterAuth always writes `issuer` explicitly on insert, so
+  nothing at runtime depends on it. Removing it costs a full table rebuild.
+
 See [auth.md](./auth.md).
 
 ## `activity_log`
@@ -240,15 +255,29 @@ repeat.
 
 ```sh
 # 1. edit src/lib/server/db/schema.ts
-bun run db:generate        # drizzle-kit writes a new migrations/NNNN_*.sql
+bun run db:generate        # drizzle-kit writes migrations/<timestamp>_<name>/
 bun run db:migrate         # apply to the LOCAL D1
 bun run db:migrate-remote  # apply to the production D1
 ```
 
-**Never hand-edit anything under `src/lib/server/db/migrations/`.** The files and
-the `meta/` snapshots beside them are generated together; editing one leaves
-drizzle-kit's idea of the schema out of step with the database's, and the next
-generated migration will be wrong.
+Since the Drizzle v1 upgrade each migration is a **folder** holding a
+`migration.sql` and the `snapshot.json` it was diffed against — there is no
+top-level `meta/` directory and no `_journal.json` any more. Wrangler does not
+find that layout on its own, which is why the `DB` binding sets
+`migrations_pattern` as well as `migrations_dir`; see
+[deployment.md](./deployment.md#migrations-against-production).
+
+**Never hand-edit anything under `src/lib/server/db/migrations/`.** The
+`migration.sql` and the `snapshot.json` beside it are generated together; editing
+one leaves drizzle-kit's idea of the schema out of step with the database's, and
+the next generated migration will be wrong.
+
+Two columns look like they should carry `.unique()` and deliberately do not —
+`user.email` and `session.token` are declared with an explicit `uniqueIndex`
+instead. The reason is recorded in `schema.ts`: drizzle-kit v1 renders `.unique()`
+as an inline column constraint, which SQLite cannot add to an existing table, so
+`db:generate` would emit a full rebuild of `user` and `session` for no logical
+change.
 
 `bun run db:push` exists for throwaway local experiments. It skips the migration
 files entirely, so anything it does is invisible to the deployed database — do

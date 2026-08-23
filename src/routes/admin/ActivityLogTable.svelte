@@ -27,7 +27,7 @@
 		<Table.Body>
 			{#each log as entry (entry.id)}
 				<Table.Row>
-					<Table.Cell class="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+					<Table.Cell class="text-xs whitespace-nowrap text-muted-foreground tabular-nums">
 						{formatDateTime(entry.createdAt)}
 					</Table.Cell>
 					<Table.Cell class="font-medium">{entry.userName}</Table.Cell>

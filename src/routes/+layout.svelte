@@ -36,11 +36,11 @@
 <Sidebar.Provider>
 	<AppSidebar navLinks={[...PRIMARY_NAV, ...secondaryNav]} user={data.user} />
 	<!-- Main wrapper — transparent so html gradient shows through -->
-	<div class="flex min-h-screen w-full flex-col items-center px-4 pt-6 pb-3 bg-background">
+	<div class="flex min-h-screen w-full flex-col items-center bg-background px-4 pt-6 pb-3">
 		<div class="w-full lg:w-5/6 xl:w-2/3">
 			<!-- Mobile nav — glass pill -->
 			<nav
-				class="glass sticky top-3 z-40 flex flex-row flex-wrap items-center justify-between gap-2 rounded-full p-1.5 md:hidden"
+				class="sticky top-3 z-40 flex flex-row flex-wrap items-center justify-between gap-2 rounded-full glass p-1.5 md:hidden"
 			>
 				<Sidebar.Trigger />
 				<a href={resolve('/')}>
@@ -57,7 +57,7 @@
 
 			<!-- Desktop nav — glass pill -->
 			<nav
-				class="glass sticky top-3 z-40 hidden flex-row flex-wrap items-center justify-between gap-2 rounded-full p-1.5 md:flex"
+				class="sticky top-3 z-40 hidden flex-row flex-wrap items-center justify-between gap-2 rounded-full glass p-1.5 md:flex"
 			>
 				<NavigationMenu.Root viewport={false}>
 					<NavigationMenu.List class="gap-1 sm:gap-2">
@@ -68,7 +68,7 @@
 									href={navLink.href}
 									aria-current={page.url.pathname == navLink.href}
 									data-active={page.url.pathname == navLink.href}
-									class="rounded-full py-2 text-base font-medium text-foreground hover:text-primary transition-colors duration-250"
+									class="rounded-full py-2 text-base font-medium text-foreground transition-colors duration-250 hover:text-primary"
 									>{navLink.label}</NavigationMenu.Link
 								>
 							</NavigationMenu.Item>
@@ -86,7 +86,7 @@
 												href={navLink.href}
 												aria-current={page.url.pathname == navLink.href}
 												data-active={page.url.pathname == navLink.href}
-												class="rounded-full py-2 text-base font-medium text-foreground hover:text-primary transition-colors duration-250"
+												class="rounded-full py-2 text-base font-medium text-foreground transition-colors duration-250 hover:text-primary"
 												>{navLink.label}</NavigationMenu.Link
 											>
 										</li>

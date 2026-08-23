@@ -62,6 +62,28 @@ Drizzle table for a related reason: BetterAuth returns `undefined` for absent
 optional columns where Drizzle's `InferSelectModel` promises `null`, so the
 Drizzle model is not assignable to what `getSession` actually hands back.
 
+## How an account is identified
+
+BetterAuth 1.7 changed the identity of an external account. Where 1.6 matched on
+`(provider_id, account_id)`, 1.7 matches on **(`issuer`, `account_id`)** and
+enforces that pair with a unique index. `account.issuer` is therefore a required
+column, and the GitHub callback fails outright without it:
+
+```
+The field "issuer" does not exist in the schema for the model "account".
+```
+
+That error surfaces as a login that never completes — the OAuth round trip
+succeeds, then `findAccountOwnerByKey` throws before a session is created. If a
+BetterAuth upgrade ever breaks login again, check the canonical table definition
+in `@better-auth/core/dist/db/get-tables.mjs` against `schema.ts` first; that is
+where the required columns actually live.
+
+GitHub declares no issuer of its own, so BetterAuth writes the synthetic
+`local:oauth:github`. See
+[data-model.md](./data-model.md#auth-tables) for the column and why it carries a
+default.
+
 ## The three roles
 
 | Role          | Stored as                    | May do                                                    |

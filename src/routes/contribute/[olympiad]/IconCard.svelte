@@ -70,7 +70,7 @@
 					<span class="text-xs text-muted-foreground">Upload to apply</span>
 				{:else if hasUploadedIcon}
 					<span class="font-medium text-foreground">Custom uploaded icon</span>
-					<span class="text-xs text-muted-foreground truncate max-w-48">{icon}</span>
+					<span class="max-w-48 truncate text-xs text-muted-foreground">{icon}</span>
 				{:else if icon}
 					<span class="font-medium text-foreground">Emoji / flag icon</span>
 					<span class="text-xs text-muted-foreground">Upload an image to override it</span>

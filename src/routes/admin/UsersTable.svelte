@@ -198,7 +198,7 @@
 					</Table.Cell>
 
 					<!-- Joined date -->
-					<Table.Cell class="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+					<Table.Cell class="text-xs whitespace-nowrap text-muted-foreground tabular-nums">
 						{formatDate(u.createdAt, 'short')}
 					</Table.Cell>
 

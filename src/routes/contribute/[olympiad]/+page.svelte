@@ -79,7 +79,7 @@
 		<OlympiadIcon {icon} id={data.olympiad.id} class="h-9 w-auto text-4xl leading-none" />
 		<div>
 			<h1 class="text-2xl font-bold tracking-tight">{data.olympiad.name}</h1>
-			<p class="text-sm text-muted-foreground font-mono">{data.olympiad.id}</p>
+			<p class="font-mono text-sm text-muted-foreground">{data.olympiad.id}</p>
 		</div>
 	</div>
 	<p class="text-sm text-muted-foreground">
@@ -87,7 +87,7 @@
 	</p>
 </header>
 
-<div class="mx-auto max-w-xl flex flex-col gap-5">
+<div class="mx-auto flex max-w-xl flex-col gap-5">
 	<YearsCard olympiadId={data.olympiad.id} years={data.years} {pending} />
 	<IconCard bind:this={iconCard} olympiadId={data.olympiad.id} {icon} {pending} />
 	<OlympiadMetadataForm olympiad={data.olympiad} bind:icon {pending} />
