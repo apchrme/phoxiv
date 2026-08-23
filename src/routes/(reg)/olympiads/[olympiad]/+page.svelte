@@ -88,6 +88,19 @@
 <section class="py-4">
 	<div class="mb-5">
 		<SearchBar placeholder="Search by year or problem…" bind:value={query}>
+			{#snippet trailing()}
+				<!-- Topics are never shown on a problem — that would spoil it — but they can
+				     still be used to narrow the list down. Icon-only so that sharing the
+				     input's row on a phone doesn't cost the input a topic name's width. -->
+				<TopicSelect
+					bind:value={activeTopics}
+					label="All topics"
+					heading="Filter by topic"
+					align="end"
+					iconOnly
+					class="shrink-0"
+				/>
+			{/snippet}
 			{#snippet filters()}
 				{#if canShowFullYear}
 					<label class="flex cursor-pointer items-center gap-2">
@@ -95,15 +108,6 @@
 						<span class="text-sm text-nowrap text-muted-foreground">Show full year</span>
 					</label>
 				{/if}
-				<!-- Topics are never shown on a problem — that would spoil it — but they can
-				     still be used to narrow the list down. -->
-				<TopicSelect
-					bind:value={activeTopics}
-					label="All topics"
-					heading="Filter by topic"
-					align="end"
-					class="shrink-0"
-				/>
 			{/snippet}
 		</SearchBar>
 	</div>

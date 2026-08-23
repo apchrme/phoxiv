@@ -10,7 +10,7 @@
 		type ButtonSize,
 		type ButtonVariant
 	} from '$lib/components/ui/button/index.js';
-	import { Tags, ChevronDown } from '@lucide/svelte';
+	import { Tags, ChevronDown, Funnel } from '@lucide/svelte';
 	import { PROBLEM_TOPICS, type ProblemTopic } from '$lib/types.js';
 	import { cn } from '$lib/utils.js';
 
@@ -20,7 +20,8 @@
 		heading = 'Topics',
 		align = 'start',
 		variant = 'outline',
-		size = 'default',
+		size = undefined,
+		iconOnly = false,
 		class: className
 	}: {
 		/** Currently selected topics, always in `PROBLEM_TOPICS` order. */
@@ -32,6 +33,12 @@
 		align?: 'start' | 'center' | 'end';
 		variant?: ButtonVariant;
 		size?: ButtonSize;
+		/**
+		 * Collapse the trigger to a funnel icon of fixed width, filled while any
+		 * topic is selected. For the olympiad page, where the trigger shares a row
+		 * with the search input even on a phone and so cannot grow with its label.
+		 */
+		iconOnly?: boolean;
 		class?: string;
 	} = $props();
 
@@ -46,13 +53,29 @@
 	const summary = $derived(
 		value.length === 0 ? label : value.length === 1 ? value[0] : `${value.length} topics`
 	);
+
+	const triggerSize = $derived(size ?? (iconOnly ? 'icon' : 'default'));
+
+	// Only the icon-only trigger fills in: with a label the summary already says
+	// what is selected, and on the contribute page the dropdown sits in a form,
+	// where a primary fill would read as the submit button.
+	const triggerVariant = $derived(iconOnly && value.length > 0 ? 'default' : variant);
 </script>
 
 <DropdownMenu.Root>
-	<DropdownMenu.Trigger class={cn(buttonVariants({ variant, size }), className)}>
-		<Tags class="text-muted-foreground" />
-		{summary}
-		<ChevronDown class="text-muted-foreground" />
+	<DropdownMenu.Trigger
+		class={cn(buttonVariants({ variant: triggerVariant, size: triggerSize }), className)}
+		title={summary}
+	>
+		{#if iconOnly}
+			<!-- Uncoloured on purpose: it has to inherit text-primary-foreground once filled. -->
+			<Funnel />
+			<span class="sr-only">{heading}</span>
+		{:else}
+			<Tags class="text-muted-foreground" />
+			{summary}
+			<ChevronDown class="text-muted-foreground" />
+		{/if}
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content {align} class="w-56">
 		<DropdownMenu.Label>{heading}</DropdownMenu.Label>
