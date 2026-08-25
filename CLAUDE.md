@@ -37,6 +37,8 @@ src/routes/
 ├── +page          landing (outside (reg); sets its own private cache header)
 ├── (reg)/         a route group whose ONLY purpose is the private cache header:
 │                  olympiads/, blog/, resources/, privacy/, login/, profile/
+│                  …except olympiads/[olympiad]/progress/, an endpoint that sets
+│                  its own `private, no-store` — it serves per-user progress
 ├── admin/         deliberately outside (reg) — must never be cached
 ├── contribute/    also outside (reg); [olympiad]/ and [olympiad]/[year]/ editors
 └── api/           Cloudflare's SHARED cache (s-maxage=86400) …
@@ -46,9 +48,10 @@ src/routes/
 
 `src/lib/server/` has one module per concern: `auth`, `auth-cli`, `guard`,
 `cache`, `forms`, `uploads`, `storage`, `markdown`, `activity-log`, and `db/`
-(`schema.ts` plus `queries/{olympiads,years,content}.ts`). Client-safe shared
-code sits directly under `src/lib/`: `types`, `uploads`, `constants`, `nav`,
-`posts`, `activity`, `forms.svelte`, `auth-client`, `utils/{date,flag,fuzzy,json,topics}`.
+(`schema.ts` plus `queries/{olympiads,years,content,progress}.ts`). Client-safe
+shared code sits directly under `src/lib/`: `types`, `uploads`, `constants`,
+`nav`, `posts`, `activity`, `progress`, `forms.svelte`, `auth-client`,
+`utils/{date,flag,fuzzy,json,topics}`.
 
 **Roles are `user`, `contributor` and `admin`.** `contributor` is real and
 load-bearing: contributors may edit the olympiads listed in their
@@ -70,23 +73,22 @@ plugin is pinned to `adminRoles: ['admin']` and knows nothing about it. Only
 3. **Never change `CDN_BASE_URL`, the R2 key layout, or `slugifyLabel`.** The
    database stores whole CDN URLs and recovers keys by stripping the prefix; a
    change orphans every object _and_ silently breaks deletion.
-4. **Never change an `/api/*` response shape casually.** Those payloads sit in
-   Cloudflare's shared cache for up to a day and need a manual dashboard purge.
-5. **Colocate page-only components** next to their route, flat, no `+` prefix, no
+4. **Colocate page-only components** next to their route, flat, no `+` prefix, no
    subfolder. They import `PageData` / `ActionData` from `./$types`, which cannot
    resolve under `$lib`. See
    [`(reg)/olympiads/[olympiad]/`](<./src/routes/(reg)/olympiads/[olympiad]>) for
    the reference style.
-6. **Call `formToasts` exactly once**, on the component that owns `form`, and pass
+5. **Call `formToasts` exactly once**, on the component that owns `form`, and pass
    a **single** `Pending` instance down — `has()` must read the map `track()` wrote.
-7. **Prefer `actionFail()` over `error()` inside an action.** `error()` replaces
+6. **Prefer `actionFail()` over `error()` inside an action.** `error()` replaces
    the page and discards whatever the contributor had typed.
-8. **Run `bun run format && bun run check && bun run lint` before every commit,**
+7. **Run `bun run format && bun run check && bun run lint` before every commit,**
    and smoke-test the route under `bun run dev`. There is **no test suite**;
    `svelte-check` plus a click-through is the entire safety net.
-9. **Comment the _why_.** Several comments in this codebase record real
+8. **Comment the _why_.** Several comments in this codebase record real
    incidents — an infinite submit loop in the admin panel, a data-loss bug in the
    olympiad editor. Do not delete one without understanding what it protects.
+9. If the API response shape is modified, make sure to warn me beforehand, so that I am able to purge the shared cache.
 
 # Svelte usage
 

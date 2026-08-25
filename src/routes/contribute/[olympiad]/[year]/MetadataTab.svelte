@@ -8,17 +8,24 @@
 	import NotesEditor from './NotesEditor.svelte';
 	import LinksEditor from './LinksEditor.svelte';
 	import ProblemsEditor from './ProblemsEditor.svelte';
-	import { duplicateProblemNumbers, toLinkRows, toNoteRows, toProblemRows } from './metadata';
+	import {
+		duplicateProblemNumbers,
+		invalidMaxScores,
+		toLinkRows,
+		toNoteRows,
+		toProblemRows
+	} from './metadata';
 
 	/**
 	 * Phase 1 of the year editor: the notes, links and problems the year is made
 	 * of, saved in one shot by `?/saveMetadata`.
 	 *
 	 * The three repeaters live here rather than in the editors below because the
-	 * form, the submit button and the duplicate check all have to agree on the
+	 * form, the submit button and the validity checks all have to agree on the
 	 * same array. In particular `hasDuplicates` gates both `use:enhance`'s guard
 	 * and the button's `disabled` — splitting them across a component boundary
-	 * would let one drift out of step with the other.
+	 * would let one drift out of step with the other. A refused maximum score is
+	 * gated exactly the same way, by the same triple.
 	 */
 	let {
 		olympiadName,
@@ -45,30 +52,41 @@
 
 	const duplicates = $derived(duplicateProblemNumbers(problemList));
 	const hasDuplicates = $derived(duplicates.size > 0);
+
+	// Keyed by problem number so `ProblemsEditor` can flag the offending row, and
+	// so the message below can name it. Duplicate numbers are refused separately,
+	// so in practice each key belongs to exactly one row.
+	const badMaxScores = $derived(invalidMaxScores(problemList));
+	const maxScoreErrors = $derived(new Map(badMaxScores.map((b) => [b.number, b.error])));
+
+	/** The one message shown for whichever problem is blocking the save. */
+	function saveError(): string | null {
+		if (hasDuplicates) {
+			return 'Duplicate problem numbers found — please make them unique before saving.';
+		}
+		const [bad] = badMaxScores;
+		if (bad) return `Maximum score for problem ${bad.number}: ${bad.error}.`;
+		return null;
+	}
 </script>
 
 <form
 	method="POST"
 	action="?/saveMetadata"
-	use:enhance={pending.track('metadata', {
-		guard: () =>
-			hasDuplicates
-				? 'Duplicate problem numbers found — please make them unique before saving.'
-				: null
-	})}
+	use:enhance={pending.track('metadata', { guard: saveError })}
 	class="flex flex-col gap-5 pb-2"
 >
 	<!-- Bound, not merely passed: each editor adds and removes its own rows, and
 	     Svelte only allows a child to mutate state the parent owns across `bind:`. -->
 	<NotesEditor bind:rows={notes} />
 	<LinksEditor bind:rows={extraLinks} />
-	<ProblemsEditor bind:rows={problemList} {duplicates} />
+	<ProblemsEditor bind:rows={problemList} {duplicates} {maxScoreErrors} />
 
 	<div class="flex flex-row items-center gap-2">
 		<Button
 			type="submit"
 			class="disabled:bg-primary/60"
-			disabled={pending.has('metadata') || hasDuplicates}
+			disabled={pending.has('metadata') || saveError() !== null}
 		>
 			Save metadata
 		</Button>

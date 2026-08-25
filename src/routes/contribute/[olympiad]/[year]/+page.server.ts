@@ -21,7 +21,8 @@ import { validateUpload } from '$lib/server/uploads';
 import { collidingLabel, DOCUMENT_UPLOAD } from '$lib/uploads';
 import { parseLabelledUrls, parseStringArray } from '$lib/utils/json';
 import { parseTopics, serializeTopics } from '$lib/utils/topics';
-import { duplicateProblemNumbers } from './metadata';
+import { parseMaxScore } from '$lib/progress';
+import { duplicateProblemNumbers, invalidMaxScores } from './metadata';
 
 /** Whether a file belongs to the year as a whole or to one problem. */
 type Scope = 'year' | 'problem';
@@ -63,8 +64,9 @@ export const actions: Actions = {
 	/**
 	 * Replaces the year's notes, extra links and problem list in one shot.
 	 *
-	 * The three problem fields (`problemNumber`, `problemTitle`, `problemTopics`)
-	 * are positionally aligned: one of each per row in the editor's repeater.
+	 * The four problem fields (`problemNumber`, `problemTitle`, `problemTopics`,
+	 * `problemMaxScore`) are positionally aligned: one of each per row in the
+	 * editor's repeater.
 	 */
 	saveMetadata: async ({ request, params, platform, locals }) => {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
@@ -92,11 +94,15 @@ export const actions: Actions = {
 		const rawNumbers = fieldList(data, 'problemNumber').map((n) => n.trim());
 		const rawTitles = fieldList(data, 'problemTitle');
 		const rawTopics = fieldList(data, 'problemTopics');
+		const rawMaxScores = fieldList(data, 'problemMaxScore');
+		// The maximum score stays a raw string through the zip and the filter below,
+		// so that it is validated only for the rows that actually survive.
 		const submitted = rawNumbers
 			.map((number, i) => ({
 				number,
 				title: (rawTitles[i] ?? '').trim() || null,
-				topics: serializeTopics(parseTopics(rawTopics[i]))
+				topics: serializeTopics(parseTopics(rawTopics[i])),
+				maxScore: (rawMaxScores[i] ?? '').trim()
 			}))
 			.filter((p) => p.number);
 
@@ -118,13 +124,35 @@ export const actions: Actions = {
 			return actionFail(400, 'saveMetadata', `Problem number cannot include /: ${nested.number}`);
 		}
 
-		for (const { number, title, topics } of submitted) {
+		// Checked *after* the blank-number filter above, so a stray character left
+		// in a row the contributor is about to discard cannot block the save. Shares
+		// the editor's helper, like the duplicate check, so the two halves cannot
+		// drift apart. Checked before the first write, too: the upserts below are
+		// not in a transaction, so failing halfway would leave a partial save.
+		const [badMaxScore] = invalidMaxScores(submitted);
+		if (badMaxScore !== undefined) {
+			return actionFail(
+				400,
+				'saveMetadata',
+				`Maximum score for problem ${badMaxScore.number}: ${badMaxScore.error}`
+			);
+		}
+
+		for (const { number, title, topics, maxScore: rawMaxScore } of submitted) {
+			// Cannot fail — `invalidMaxScores` just refused everything that could.
+			// Written as a branch rather than a cast so that a later change to
+			// `parseMaxScore` cannot quietly slip an unvalidated value into the row.
+			const parsedMaxScore = parseMaxScore(rawMaxScore);
+			const maxScore = parsedMaxScore.ok ? parsedMaxScore.value : null;
 			await db
 				.insert(problems)
-				.values({ yearId: yearRow.id, number, title, topics })
+				.values({ yearId: yearRow.id, number, title, topics, maxScore })
+				// `maxScore` has to appear in the `set` as well as the `values`, or the
+				// field would be unclearable: blanking it in the editor would leave the
+				// stored maximum in place on every existing problem.
 				.onConflictDoUpdate({
 					target: [problems.yearId, problems.number],
-					set: { title, topics }
+					set: { title, topics, maxScore }
 				})
 				.run();
 		}
@@ -168,7 +196,8 @@ export const actions: Actions = {
 			db,
 			user,
 			'save_metadata',
-			`Saved metadata (${notes.length} notes, ${extraLinks.length} links, ${submitted.length} problems)`,
+			`Saved metadata (${notes.length} notes, ${extraLinks.length} links, ${submitted.length} problems, ` +
+				`${submitted.filter((p) => p.maxScore).length} with a maximum score)`,
 			{ olympiadId: params.olympiad, year: yearNum }
 		);
 

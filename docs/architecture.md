@@ -51,6 +51,10 @@ two policies, both defined in [`$lib/server/cache.ts`](../src/lib/server/cache.t
 | `setPrivateCache()` | `max-age=14400, must-revalidate, private`                  | pages under `(reg)`     |
 | `setSharedCache()`  | `max-age=0, s-maxage=86400, stale-while-revalidate=604800` | `/api/*` data endpoints |
 
+One route sets its own third policy: `/olympiads/[olympiad]/progress` answers
+`private, no-store`, because it carries one user's answers. See
+[below](#why-some-pages-fetch-their-own-data).
+
 `(reg)` is a route _group_ — it adds nothing to the URL. Its only member is
 [`(reg)/+layout.server.ts`](<../src/routes/(reg)/+layout.server.ts>), which calls
 `setPrivateCache()`. **That is the entire reason the group exists.** Pages in it
@@ -89,7 +93,9 @@ src/routes/
 ├── +page.svelte / .server.ts   landing page (fetches /api/stats client-side)
 │
 ├── (reg)/                      ← private browser cache, nothing else
-│   ├── olympiads/              index; [olympiad]/ detail + YearPanel/ProblemCard/filter
+│   ├── olympiads/              index; [olympiad]/ detail + YearPanel/ProblemCard/
+│   │                           ProgressControl/filter, and [olympiad]/progress/,
+│   │                           an endpoint that answers private, no-store
 │   ├── blog/                   index and [slug]/, from $lib/posts/*.svx
 │   ├── resources/              .svx page
 │   ├── privacy/                .svx page
@@ -130,6 +136,28 @@ server load would cost a D1 read per visit, while the `fetch` is answered by
 Cloudflare's shared cache. The four public response shapes are effectively
 frozen for that reason — a changed shape lives in the cache for a day.
 
+**`/olympiads/[olympiad]/progress` is a `fetch` for the opposite reason.** It
+serves the signed-in user's tracked problems, plus every problem's `max_score`,
+and three things follow from that:
+
+- It sits **outside `/api/`** so that nobody reflexively adds `setSharedCache()`
+  to it, which would serve one user's answers to every visitor. The header it
+  sets instead is the second line of defence, not the first.
+- It is **not a page load**. `(reg)/+layout.server.ts` has already set the
+  four-hour private cache header and SvelteKit refuses to set the same header
+  twice, so a page load could not downgrade itself to `no-store` — and four
+  hours of privately cached `__data.json` would serve stale progress. A
+  `+server.ts` runs no layout loads, so neither that header nor `+layout.ts`'s
+  legacy redirects apply to it.
+- It is why `max_score` is **not** on `ProblemEntry`. Adding it to the shared
+  `/api/olympiads/[olympiad]` payload would leave a freshly deployed client
+  reading a day-old body with no maximums in it, and only signed-in users ever
+  need the value.
+
+The tracking action itself, `?/trackProblem`, resolves `problems.id` server-side
+from `(olympiad, year, number)`. That is what lets the page stay ignorant of
+problem ids, and so what keeps `ProblemEntry` frozen.
+
 ## The `$lib/server/` module map
 
 Server-only code. SvelteKit refuses to bundle anything under `$lib/server/` into
@@ -148,13 +176,15 @@ the client, so this boundary is enforced by the build, not by convention.
 | `activity-log.ts` | `logActivity`, writing the admin panel's audit trail                                           |
 | `db/index.ts`     | re-exports the schema and aliases the `DB` handle type                                         |
 | `db/schema.ts`    | the Drizzle schema — the source drizzle-kit generates migrations from                          |
-| `db/queries/`     | `olympiads.ts`, `years.ts`, `content.ts`: every query, one module per concern                  |
+| `db/queries/`     | `olympiads.ts`, `years.ts`, `content.ts`, `progress.ts`: every query, one module per concern   |
 
 Client-safe modules sit directly under `$lib/`: `types.ts`, `uploads.ts`,
-`constants.ts`, `nav.ts`, `posts.ts`, `activity.ts`, `forms.svelte.ts`,
-`auth-client.ts` and `utils/{date,flag,fuzzy,json,topics}.ts`. Several of them
-exist specifically so a rule is stated once and consumed from both sides — the
-upload allow-list is the clearest example.
+`constants.ts`, `nav.ts`, `posts.ts`, `activity.ts`, `progress.ts`,
+`forms.svelte.ts`, `auth-client.ts` and `utils/{date,flag,fuzzy,json,topics}.ts`.
+Several of them exist specifically so a rule is stated once and consumed from
+both sides — the upload allow-list is the clearest example, and `progress.ts` is
+the newest: the year editor, the CSV import, the `trackProblem` action and the
+problem cards all validate and format scores through it.
 
 ## The colocation convention
 

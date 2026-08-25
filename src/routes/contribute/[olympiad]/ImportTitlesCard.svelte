@@ -11,7 +11,7 @@
 	import { CSV_UPLOAD } from '$lib/uploads';
 
 	/**
-	 * Round-trips problem titles and topics through a CSV.
+	 * Round-trips problem titles, topics and maximum scores through a CSV.
 	 *
 	 * The export link is a plain `href` with `data-sveltekit-reload`: the endpoint
 	 * responds with a file download rather than a page, so the client router must
@@ -46,14 +46,19 @@
 
 <Card.Root>
 	<Card.Header class="border-b">
-		<Card.Title>Import problem titles &amp; topics</Card.Title>
+		<Card.Title>Import problem titles, topics &amp; scores</Card.Title>
 		<Card.Description>
-			Upload a CSV with columns <code class="font-mono text-xs">year,number,title,topics</code>. New
-			problems are created (missing years are added automatically); a title or topic list that is
-			already set is left unchanged. The <code class="font-mono text-xs">topics</code> column is
-			optional — separate multiple topics with semicolons, e.g.
-			<code class="font-mono text-xs">Mechanics;Waves and Optics</code>. Allowed topics:
-			{PROBLEM_TOPICS.join(', ')}.
+			Upload a CSV with columns
+			<code class="font-mono text-xs">year,number,title,topics,max_score</code>. New problems are
+			created (missing years are added automatically); a title, topic list or maximum score that is
+			already set is left unchanged. The <code class="font-mono text-xs">topics</code> and
+			<code class="font-mono text-xs">max_score</code>
+			columns are both optional, so older exports still import. Separate multiple topics with semicolons,
+			e.g. <code class="font-mono text-xs">Mechanics;Waves and Optics</code>. Allowed topics: {PROBLEM_TOPICS.join(
+				', '
+			)}. A
+			<code class="font-mono text-xs">max_score</code> cell that isn't a number greater than zero is ignored,
+			and counted in the summary.
 		</Card.Description>
 	</Card.Header>
 	<Card.Content class="flex flex-col gap-4">

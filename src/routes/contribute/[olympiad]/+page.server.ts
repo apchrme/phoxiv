@@ -30,6 +30,7 @@ import { CSV_UPLOAD, ICON_UPLOAD } from '$lib/uploads';
 import { isOlympiadTag } from '$lib/types';
 import type { ProblemTopic } from '$lib/types';
 import { parseTopics, parseTopicsCsvCell, serializeTopics } from '$lib/utils/topics';
+import { parseMaxScore } from '$lib/progress';
 
 /** Default `displayOrder` for an olympiad that hasn't been positioned yet. */
 const DEFAULT_DISPLAY_ORDER = 9999;
@@ -169,8 +170,8 @@ export const actions: Actions = {
 	},
 
 	/**
-	 * Bulk-imports problem numbers, titles and topics from the CSV produced by
-	 * `titles.csv`.
+	 * Bulk-imports problem numbers, titles, topics and maximum scores from the CSV
+	 * produced by `titles.csv`.
 	 *
 	 * Fill-only by design: an existing problem is never overwritten, only
 	 * completed. A re-import can therefore not clobber work done through the year
@@ -198,14 +199,23 @@ export const actions: Actions = {
 
 		if (records.length === 0) return actionFail(400, 'importTitles', 'CSV appears to be empty');
 
+		// Still only three required columns: "topics" and "max_score" are both
+		// optional, so every CSV exported before either existed still imports.
 		const header = Object.keys(records[0]);
 		if (!header.includes('year') || !header.includes('number') || !header.includes('title')) {
 			return actionFail(400, 'importTitles', 'CSV must have "year", "number", and "title" columns');
 		}
 
-		type Entry = { year: number; number: string; title: string | null; topics: ProblemTopic[] };
+		type Entry = {
+			year: number;
+			number: string;
+			title: string | null;
+			topics: ProblemTopic[];
+			maxScore: number | null;
+		};
 		const entries: Entry[] = [];
 		let skippedInvalid = 0;
+		let badMaxScores = 0;
 		for (const r of records) {
 			const year = parseYear((r.year ?? '').trim());
 			const number = (r.number ?? '').trim();
@@ -217,7 +227,19 @@ export const actions: Actions = {
 				skippedInvalid++;
 				continue;
 			}
-			entries.push({ year, number, title, topics });
+			// So is "max_score". An unreadable cell is dropped rather than failing the
+			// whole import — the same tolerance `parseTopicsCsvCell` shows an
+			// unrecognised topic — but it is counted and reported back, so a typo in
+			// one cell of a thousand-row spreadsheet is visible instead of silent.
+			const parsedMaxScore = parseMaxScore(r.max_score ?? '');
+			if (!parsedMaxScore.ok) badMaxScores++;
+			entries.push({
+				year,
+				number,
+				title,
+				topics,
+				maxScore: parsedMaxScore.ok ? parsedMaxScore.value : null
+			});
 		}
 
 		if (entries.length === 0) {
@@ -247,26 +269,29 @@ export const actions: Actions = {
 				yearId: problems.yearId,
 				number: problems.number,
 				title: problems.title,
-				topics: problems.topics
+				topics: problems.topics,
+				maxScore: problems.maxScore
 			})
 			.from(problems)
 			.where(inArray(problems.yearId, involvedYearIds))
 			.all();
 		const problemByKey = new Map<
 			string,
-			{ id: number; title: string | null; topics: ProblemTopic[] }
+			{ id: number; title: string | null; topics: ProblemTopic[]; maxScore: number | null }
 		>();
 		for (const p of existingProblems) {
 			problemByKey.set(`${p.yearId}:${p.number}`, {
 				id: p.id,
 				title: p.title,
-				topics: parseTopics(p.topics)
+				topics: parseTopics(p.topics),
+				maxScore: p.maxScore
 			});
 		}
 
 		let created = 0;
 		let filled = 0;
 		let topicsFilled = 0;
+		let maxScoresFilled = 0;
 		let kept = 0;
 		for (const e of entries) {
 			const yearId = yearIdByYear.get(e.year)!;
@@ -279,23 +304,32 @@ export const actions: Actions = {
 						yearId,
 						number: e.number,
 						title: e.title,
-						topics: serializeTopics(e.topics)
+						topics: serializeTopics(e.topics),
+						maxScore: e.maxScore
 					})
 					.returning({ id: problems.id })
 					.get();
-				problemByKey.set(key, { id: inserted.id, title: e.title, topics: e.topics });
+				problemByKey.set(key, {
+					id: inserted.id,
+					title: e.title,
+					topics: e.topics,
+					maxScore: e.maxScore
+				});
 				created++;
 				continue;
 			}
 
 			// The problem already exists — only fill in what it's missing.
-			const patch: { title?: string; topics?: string } = {};
+			const patch: { title?: string; topics?: string; maxScore?: number } = {};
 			if ((existing.title === null || existing.title === '') && e.title) patch.title = e.title;
 			if (existing.topics.length === 0 && e.topics.length > 0) {
 				patch.topics = serializeTopics(e.topics);
 			}
+			// Fill-only like the two above: a maximum already set through the year
+			// editor is never replaced by one from a spreadsheet.
+			if (existing.maxScore === null && e.maxScore !== null) patch.maxScore = e.maxScore;
 
-			if (patch.title === undefined && patch.topics === undefined) {
+			if (patch.title === undefined && patch.topics === undefined && patch.maxScore === undefined) {
 				// Nothing missing (or nothing offered by the CSV) — leave it alone.
 				kept++;
 				continue;
@@ -310,6 +344,10 @@ export const actions: Actions = {
 				existing.topics = e.topics;
 				topicsFilled++;
 			}
+			if (patch.maxScore !== undefined) {
+				existing.maxScore = patch.maxScore;
+				maxScoresFilled++;
+			}
 		}
 
 		await logActivity(
@@ -317,13 +355,23 @@ export const actions: Actions = {
 			user,
 			'import_titles',
 			`Imported titles from CSV (${created} created, ${filled} titles filled, ` +
-				`${topicsFilled} topics filled, ${kept} kept` +
-				`${yearsCreated ? `, ${yearsCreated} years added` : ''})`,
+				`${topicsFilled} topics filled, ${maxScoresFilled} max scores filled, ${kept} kept` +
+				`${yearsCreated ? `, ${yearsCreated} years added` : ''}` +
+				`${badMaxScores ? `, ${badMaxScores} unreadable max scores ignored` : ''})`,
 			{ olympiadId: params.olympiad }
 		);
 
 		return ok('importTitles', {
-			stats: { created, filled, topicsFilled, kept, yearsCreated, skippedInvalid }
+			stats: {
+				created,
+				filled,
+				topicsFilled,
+				maxScoresFilled,
+				kept,
+				yearsCreated,
+				skippedInvalid,
+				badMaxScores
+			}
 		});
 	}
 };

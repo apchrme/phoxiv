@@ -7,8 +7,8 @@
 	import { newProblemRow, type ProblemRow } from './metadata';
 
 	/**
-	 * The `problemNumber` / `problemTitle` / `problemTopics` repeater — fields
-	 * only, no `<form>`.
+	 * The `problemNumber` / `problemTitle` / `problemTopics` / `problemMaxScore`
+	 * repeater — fields only, no `<form>`.
 	 *
 	 * The hidden `problemTopics` input is the *only* channel through which topics
 	 * reach the server: `TopicSelect` renders its checkboxes in a portalled
@@ -20,12 +20,15 @@
 	 */
 	let {
 		rows = $bindable(),
-		duplicates
+		duplicates,
+		maxScoreErrors
 	}: {
 		rows: ProblemRow[];
 		/** Numbers used by more than one row; owned by the parent, which also
 		 *  blocks the save while it is non-empty. */
 		duplicates: Set<string>;
+		/** Problem number -> why its maximum score was refused; same ownership. */
+		maxScoreErrors: Map<string, string>;
 	} = $props();
 </script>
 
@@ -35,8 +38,11 @@
 		<Card.Description>
 			Define the problems for this year. Removing a problem <span class="text-sm font-bold"
 				>or changing the problem number</span
-			> will delete all its associated file records. Topics are only used by the topic filter on the olympiad
-			page — they are never shown next to a problem, so they can't spoil it.
+			>
+			will delete all its associated file records — and every user's tracked progress on it. Topics are
+			only used by the topic filter on the olympiad page — they are never shown next to a problem, so
+			they can't spoil it. The maximum score is optional: set it and a reader who tracks the problem sees
+			their mark out of it, leave it blank and they can still record a score with no denominator.
 		</Card.Description>
 	</Card.Header>
 	<Card.Content class="flex flex-col gap-3">
@@ -44,6 +50,7 @@
 			<!-- `{@const}` compiles to `$derived`, so this re-evaluates as the number
 			     is typed. A plain `const` in a script block would freeze at mount. -->
 			{@const isDuplicate = problem.number.trim() !== '' && duplicates.has(problem.number.trim())}
+			{@const maxScoreError = maxScoreErrors.get(problem.number.trim())}
 			<div class="flex flex-wrap items-center gap-2">
 				<Input
 					name="problemNumber"
@@ -69,6 +76,27 @@
 					class="shrink-0"
 				/>
 				<input type="hidden" name="problemTopics" value={JSON.stringify(problem.topics)} />
+				<!-- Unconditional, like every other field in this row: `saveMetadata`
+				     zips the repeater by position, so an input behind an `{#if}` would
+				     shift every later row's data into the wrong record.
+
+				     `type="text"` rather than `type="number"`, for two reasons that both
+				     end in silent data loss. Svelte coerces `bind:value` on a number
+				     input to a *number*, which breaks `parseMaxScore`'s `.trim()` — and,
+				     worse, a browser that judges the field invalid (`1.2.3`) reports its
+				     value as `''`, so a visibly wrong entry would submit as "no maximum"
+				     with nothing on screen to say so. `inputmode` still gets the numeric
+				     keypad on a phone, and `parseMaxScore` is the real validator on both
+				     sides regardless. -->
+				<Input
+					name="problemMaxScore"
+					type="text"
+					inputmode="decimal"
+					bind:value={problem.maxScore}
+					placeholder="Max"
+					class="w-20"
+					aria-invalid={maxScoreError !== undefined}
+				/>
 				<Button type="button" variant="ghost" size="icon" onclick={() => rows.splice(i, 1)}>
 					<Trash2 class="size-4" />
 				</Button>
@@ -88,5 +116,8 @@
 				Duplicate problem numbers: {[...duplicates].join(', ')}. Each problem number must be unique.
 			</p>
 		{/if}
+		{#each [...maxScoreErrors] as [number, error] (number)}
+			<p class="text-sm text-destructive">Maximum score for {number}: {error}.</p>
+		{/each}
 	</Card.Content>
 </Card.Root>

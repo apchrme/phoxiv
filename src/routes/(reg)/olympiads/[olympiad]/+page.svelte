@@ -10,12 +10,16 @@
 	import { tick } from 'svelte';
 	import { resolve } from '$app/paths';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
+	import { formToasts, Pending } from '$lib/forms.svelte';
+	import type { ProgressMap } from '$lib/progress';
 	import YearPanel from './YearPanel.svelte';
 	import { filterYears, hasProblemMatches, showYearLevel, type FilterState } from './filter';
 
-	let { data }: PageProps = $props();
+	let { data, form }: PageProps = $props();
 
 	const olympiad = $derived(data.olympiad);
+	/** Layout data is merged into page data, so `user` is reachable from here. */
+	const signedIn = $derived(!!data.user);
 
 	let years: YearEntry[] | null = $state(null);
 	let loading = $state(true);
@@ -25,6 +29,15 @@
 	let showFullYear = $state(false);
 	/** Topics the user is filtering by. Empty means no topic filter. */
 	let activeTopics = $state<ProblemTopic[]>([]);
+
+	/**
+	 * The signed-in user's tracked problems, and every problem's maximum score.
+	 * Empty for anonymous visitors, who see no tracking UI at all.
+	 */
+	let progress = $state<ProgressMap>({});
+
+	/** In-flight submissions, one entry per problem — see `ProgressControl`. */
+	const pending = new Pending();
 
 	/**
 	 * The years, problems and files come from `/api/olympiads/[olympiad]` rather
@@ -59,6 +72,61 @@
 				loading = false;
 				loadFailed = true;
 			});
+	});
+
+	/**
+	 * Progress, fetched separately from the years above.
+	 *
+	 * A second effect rather than a branch of the first, because the dependencies
+	 * genuinely differ: this one tracks the signed-in user as well as the
+	 * olympiad, so signing in or out refetches — and it must not drag the years
+	 * fetch along with it when that happens.
+	 *
+	 * The endpoint sits outside `/api/` and answers `private, no-store`; a page
+	 * load could not have carried this, because `(reg)/+layout.server.ts` has
+	 * already set a four-hour private cache header and SvelteKit refuses to set
+	 * the same header twice.
+	 */
+	$effect(() => {
+		const id = olympiad.id;
+		const userId = data.user?.id;
+		progress = {};
+		if (!userId) return;
+
+		fetch(`/olympiads/${id}/progress`)
+			.then((r) => {
+				if (!r.ok) throw new Error(`HTTP ${r.status}`);
+				return r.json() as Promise<ProgressMap>;
+			})
+			.then((fetched) => {
+				// Discard a response the user has already navigated away from. (The
+				// years fetch above has no such guard — a slow first response can
+				// still overwrite a faster second one. Pre-existing, and left alone
+				// here rather than fixed in passing.)
+				if (olympiad.id !== id) return;
+				progress = fetched;
+			})
+			.catch(() => {
+				// Tracking is an enhancement: a failure here leaves every problem
+				// looking untracked rather than breaking the page.
+			});
+	});
+
+	// Failures toast automatically. There is deliberately no `trackProblem` entry
+	// in the success map: a successful click is silent, and the icon changing
+	// state is the feedback.
+	formToasts(() => form);
+
+	/**
+	 * Merges the action's canonical entry back into the map.
+	 *
+	 * `form` is a discriminated union — first on `success`, then on `action` — so
+	 * `form.key` and `form.entry` narrow without any `'x' in form` probing. This
+	 * is why the merge lives here rather than in a `formToasts` handler, which
+	 * only sees the loosely typed envelope.
+	 */
+	$effect(() => {
+		if (form?.success && form.action === 'trackProblem') progress[form.key] = form.entry;
 	});
 
 	const filterState = $derived<FilterState>({ query, topics: activeTopics, showFullYear });
@@ -128,7 +196,13 @@
 	{:else if filtered.length > 0}
 		<div class="flex flex-col gap-4">
 			{#each filtered as year (year.year)}
-				<YearPanel {year} showYearLevel={showYearLevel(year, filterState)} />
+				<YearPanel
+					{year}
+					showYearLevel={showYearLevel(year, filterState)}
+					{progress}
+					{pending}
+					{signedIn}
+				/>
 			{/each}
 		</div>
 	{:else}

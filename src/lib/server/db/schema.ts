@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 
 export const olympiads = sqliteTable('olympiads', {
@@ -54,7 +54,13 @@ export const problems = sqliteTable(
 		// JSON-encoded array of topic names (see PROBLEM_TOPICS in $lib/types).
 		// Same convention as `notes`/`extraLinks` elsewhere in this schema.
 		// Never exposed next to a problem in the UI — only used for filtering.
-		topics: text('topics').notNull().default('[]')
+		topics: text('topics').notNull().default('[]'),
+		// The denominator a tracked score is shown against, or NULL when no
+		// contributor has set one. REAL rather than INTEGER because a marking
+		// scheme's maximum is not always whole (4.5), and neither are the scores
+		// compared against it — see `problem_progress.score`. Nullable, so the
+		// column could be added without backfilling every existing problem.
+		maxScore: real('max_score')
 	},
 	(t) => [uniqueIndex('problems_year_number_idx').on(t.yearId, t.number)]
 );
@@ -228,4 +234,48 @@ export const activityLog = sqliteTable(
 			.notNull()
 	},
 	(t) => [index('activity_log_created_at_idx').on(t.createdAt)]
+);
+
+/**
+ * One signed-in user's progress on one problem.
+ *
+ * The row's existence *is* completion; `score` is null for "completed, but no
+ * score recorded". There is no third state and no `completed` column — a user
+ * who un-marks a problem has their row deleted.
+ *
+ * Both foreign keys cascade, matching `session`/`account`: progress is the
+ * user's own data and dies with the account, unlike `activity_log`, which is an
+ * audit trail and must outlive it. The cascade from `problems` is also why
+ * renaming a problem number in the year editor throws away every user's progress
+ * on it — that save is a delete plus an insert. See docs/data-model.md.
+ */
+export const problemProgress = sqliteTable(
+	'problem_progress',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		problemId: integer('problem_id')
+			.notNull()
+			.references(() => problems.id, { onDelete: 'cascade' }),
+		// Stored exactly as entered — validated finite and non-negative, never
+		// rounded. Rounding on the way in would make three marks of 8.333 sum to
+		// 24.99 where the honest total is 25; `formatScore` rounds for display only.
+		score: real('score'),
+		createdAt: integer('created_at', { mode: 'timestamp_ms' })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull(),
+		// `$onUpdate` only fires for `db.update`, so the upsert in
+		// `queries/progress.ts` has to set this explicitly in its `onConflictDoUpdate`.
+		updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.$onUpdate(() => new Date())
+			.notNull()
+	},
+	// A surrogate `id` plus a unique index, never a composite primary key — the
+	// pattern every other child table here uses. No second index: this one's
+	// leading `user_id` already serves the "all of one user's rows" read that
+	// `getOlympiadProgress` issues.
+	(t) => [uniqueIndex('problem_progress_user_problem_idx').on(t.userId, t.problemId)]
 );

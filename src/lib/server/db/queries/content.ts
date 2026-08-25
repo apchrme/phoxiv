@@ -49,6 +49,8 @@ export type EditableProblem = {
 	number: string;
 	title: string | null;
 	topics: ProblemTopic[];
+	/** The denominator a tracked score is shown against; null when unset. */
+	maxScore: number | null;
 	files: FileEntry[];
 };
 
@@ -175,11 +177,14 @@ export async function getYearContent(
 		problems: groupJoined(
 			problemRows,
 			(row) => row.problems.id,
+			// Lists its fields explicitly even though the select above is a bare
+			// `db.select()`, so a new column is only exposed to the editor on purpose.
 			(row) => ({
 				id: row.problems.id,
 				number: row.problems.number,
 				title: row.problems.title,
 				topics: parseTopics(row.problems.topics),
+				maxScore: row.problems.maxScore,
 				files: [] as FileEntry[]
 			}),
 			(entry, row) => {

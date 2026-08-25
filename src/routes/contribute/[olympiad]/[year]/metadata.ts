@@ -1,4 +1,5 @@
 import type { ProblemTopic } from '$lib/types';
+import { formatScore, parseMaxScore } from '$lib/progress';
 
 /**
  * The client-side row model behind the year editor's metadata tab.
@@ -8,9 +9,10 @@ import type { ProblemTopic } from '$lib/types';
  * view of the stored row.
  *
  * `saveMetadata` reassembles them by **position**: `note`, then
- * `linkLabel`/`linkUrl`, then `problemNumber`/`problemTitle`/`problemTopics`,
- * each zipped by index. So every row must render exactly one input per field
- * name, unconditionally and in a stable order. An input hidden behind an `{#if}`
+ * `linkLabel`/`linkUrl`, then
+ * `problemNumber`/`problemTitle`/`problemTopics`/`problemMaxScore`, each zipped
+ * by index. So every row must render exactly one input per field name,
+ * unconditionally and in a stable order. An input hidden behind an `{#if}`
  * shifts every later row's data into the wrong record, silently.
  *
  * Each row carries a generated `id` for one reason: `{#each}` needs a key that
@@ -23,12 +25,18 @@ export type NoteRow = { id: string; value: string };
 /** One external link shown alongside the year's files. */
 export type LinkRow = { id: string; label: string; url: string };
 
-/** One problem. `title` is `''` rather than `null`, since it is bound to an input. */
+/**
+ * One problem.
+ *
+ * `title` and `maxScore` are `''` rather than `null`, since both are bound to an
+ * input; `''` is what "no title" and "no maximum score" look like in the DOM.
+ */
 export type ProblemRow = {
 	id: string;
 	number: string;
 	title: string;
 	topics: ProblemTopic[];
+	maxScore: string;
 };
 
 function rowId(): string {
@@ -52,13 +60,21 @@ export function toLinkRows(links: readonly { label: string; url: string }[]): Li
  * `$state`, and mutating the loaded page data in place would be a surprise.
  */
 export function toProblemRows(
-	problems: readonly { number: string; title: string | null; topics: ProblemTopic[] }[]
+	problems: readonly {
+		number: string;
+		title: string | null;
+		topics: ProblemTopic[];
+		maxScore: number | null;
+	}[]
 ): ProblemRow[] {
 	return problems.map((problem) => ({
 		id: rowId(),
 		number: problem.number,
 		title: problem.title ?? '',
-		topics: [...problem.topics]
+		topics: [...problem.topics],
+		// Through `formatScore` so a stored `8.50` is seeded as `8.5`, and so a
+		// save that changes nothing else writes the value back unchanged.
+		maxScore: problem.maxScore === null ? '' : formatScore(problem.maxScore)
 	}));
 }
 
@@ -71,7 +87,7 @@ export function newLinkRow(): LinkRow {
 }
 
 export function newProblemRow(): ProblemRow {
-	return { id: rowId(), number: '', title: '', topics: [] };
+	return { id: rowId(), number: '', title: '', topics: [], maxScore: '' };
 }
 
 /**
@@ -93,4 +109,30 @@ export function duplicateProblemNumbers(problems: readonly { number: string }[])
 		counts.set(number, (counts.get(number) ?? 0) + 1);
 	}
 	return new Set([...counts.entries()].filter(([, count]) => count > 1).map(([number]) => number));
+}
+
+/**
+ * The rows whose maximum-score cell {@link parseMaxScore} refuses.
+ *
+ * Rows with a blank number are skipped, exactly as in
+ * {@link duplicateProblemNumbers} and for the same reason: `saveMetadata`
+ * discards them before it validates anything, so a stray character left in a row
+ * the contributor is about to delete must not block the save.
+ *
+ * Reported by problem number rather than by row identity so the *server* — whose
+ * records have no row id — can name the offending problem in its error. The
+ * parameter is widened past `ProblemRow` for the same reason: it must stay the
+ * *same* check on both sides.
+ */
+export function invalidMaxScores(
+	problems: readonly { number: string; maxScore: string }[]
+): { number: string; error: string }[] {
+	const invalid: { number: string; error: string }[] = [];
+	for (const problem of problems) {
+		const number = problem.number.trim();
+		if (!number) continue;
+		const parsed = parseMaxScore(problem.maxScore);
+		if (!parsed.ok) invalid.push({ number, error: parsed.error });
+	}
+	return invalid;
 }

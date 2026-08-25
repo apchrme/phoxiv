@@ -36,14 +36,18 @@
 		created: number;
 		filled: number;
 		topicsFilled: number;
+		maxScoresFilled: number;
 		kept: number;
 		yearsCreated: number;
+		/** Unreadable `max_score` cells, dropped rather than failing the import. */
+		badMaxScores: number;
 	};
 	function importSummary(s: ImportStats) {
 		return (
 			`Import complete — ${s.created} created, ${s.filled} titles filled, ` +
-			`${s.topicsFilled} topics filled, ${s.kept} kept` +
-			`${s.yearsCreated ? `, ${s.yearsCreated} years added` : ''}.`
+			`${s.topicsFilled} topics filled, ${s.maxScoresFilled} max scores filled, ${s.kept} kept` +
+			`${s.yearsCreated ? `, ${s.yearsCreated} years added` : ''}` +
+			`${s.badMaxScores ? `, ${s.badMaxScores} max scores ignored` : ''}.`
 		);
 	}
 

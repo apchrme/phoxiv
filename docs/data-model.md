@@ -9,12 +9,14 @@ the single source drizzle-kit generates migrations from.
 ```
 olympiads ──< years ──< year_files
                   └──< problems ──< problem_files
+                             └──< problem_progress >── user
 ```
 
 Every arrow is `ON DELETE CASCADE`, so deleting an olympiad removes its years,
-their files, their problems and those problems' files. **The cascade only reaches
-D1** — the R2 objects behind those rows are not touched. Cleaning up storage is
-each action's own job, and only `deleteYear` currently does it in full.
+their files, their problems, those problems' files **and every user's tracked
+progress on them**. **The cascade only reaches D1** — the R2 objects behind those
+rows are not touched. Cleaning up storage is each action's own job, and only
+`deleteYear` currently does it in full.
 
 ### `olympiads`
 
@@ -64,23 +66,75 @@ it is why the editor flags a colliding label before you upload.
 
 ### `problems`
 
-| Column    | Type       | Notes                                            |
-| --------- | ---------- | ------------------------------------------------ |
-| `id`      | INTEGER PK | autoincrement                                    |
-| `year_id` | INTEGER    | → `years.id`, cascade                            |
-| `number`  | TEXT       | not null; `T1`, `2`, `A3` — free-form, so TEXT   |
-| `title`   | TEXT       | nullable                                         |
-| `topics`  | TEXT       | not null, default `'[]'` — JSON `ProblemTopic[]` |
+| Column      | Type       | Notes                                                       |
+| ----------- | ---------- | ----------------------------------------------------------- |
+| `id`        | INTEGER PK | autoincrement                                               |
+| `year_id`   | INTEGER    | → `years.id`, cascade                                       |
+| `number`    | TEXT       | not null; `T1`, `2`, `A3` — free-form, so TEXT              |
+| `title`     | TEXT       | nullable                                                    |
+| `topics`    | TEXT       | not null, default `'[]'` — JSON `ProblemTopic[]`            |
+| `max_score` | REAL       | nullable — the denominator a tracked score is shown against |
 
 Unique on `(year_id, number)`. **The problem number is the identity** as far as
 the year editor is concerned: `saveMetadata` upserts on that pair and deletes any
 problem whose number is no longer submitted. Renaming a number is therefore a
-delete plus an insert, which cascades the old problem's `problem_files` rows
-away. The editor says so, in as many words, above the problems list.
+delete plus an insert, which cascades the old problem's `problem_files` rows away
+— **and, since problem tracking landed, every user's `problem_progress` row for
+it as well**. The editor says so, in as many words, above the problems list.
+
+That is a deliberate consequence rather than an accepted defect: making a rename
+an in-place `UPDATE` is the real fix (`EditableProblem` already carries the row
+`id`, so the editor could submit it), but it is a behaviour change to the most
+destructive action in the app and belongs in its own change.
 
 Topics are never rendered next to a problem — that would spoil it. They exist
 only to drive the topic filter on the olympiad page, and `/api/search`
 deliberately omits them for the same reason.
+
+`max_score` is `REAL`, not `INTEGER`: a marking scheme's maximum is not always
+whole. It is set per problem in the year editor or in bulk through the
+`max_score` column of `titles.csv`, and it is **not** part of `ProblemEntry` —
+see [`problem_progress`](#problem_progress) below for why.
+
+### `problem_progress`
+
+One signed-in user's record of one problem.
+
+| Column       | Type       | Notes                                                |
+| ------------ | ---------- | ---------------------------------------------------- |
+| `id`         | INTEGER PK | autoincrement                                        |
+| `user_id`    | TEXT       | → `user.id`, **cascade**                             |
+| `problem_id` | INTEGER    | → `problems.id`, **cascade**                         |
+| `score`      | REAL       | nullable — null means "completed, no score recorded" |
+| `created_at` | INTEGER    | not null, `timestamp_ms`                             |
+| `updated_at` | INTEGER    | not null, `timestamp_ms`                             |
+
+Unique on `(user_id, problem_id)`.
+
+**The row's existence _is_ completion.** There is no `completed` column and no
+third state: a problem is untracked or done, and a done problem may or may not
+carry a score. Un-marking deletes the row.
+
+Both foreign keys cascade, matching `session` and `account` rather than
+`activity_log`: progress is the user's own data and should die with the account,
+where an audit trail must outlive it.
+
+`updated_at` carries a `$onUpdate`, which Drizzle only fires for `db.update` — so
+the upsert in [`queries/progress.ts`](../src/lib/server/db/queries/progress.ts)
+sets it explicitly in its `onConflictDoUpdate`.
+
+**Scores are stored exactly as entered** — validated finite and non-negative,
+never rounded. Rounding on the way in would make three partial-credit marks of
+`8.333` sum to `24.99` where the honest total is `25`. `formatScore` in
+[`$lib/progress.ts`](../src/lib/progress.ts) rounds to two decimals for display
+only, and is the single formatter for the cards, the year totals and the CSV, so
+an exported `max_score` always reads back through `parseMaxScore` unchanged.
+
+None of this is ever served from `/api/*`, which is Cloudflare's **shared** cache.
+Progress and `max_score` travel together from
+`GET /olympiads/[olympiad]/progress` instead — outside `/api/` on purpose, with
+`cache-control: private, no-store`. See
+[architecture.md](./architecture.md#why-some-pages-fetch-their-own-data).
 
 ## Auth tables
 
@@ -228,28 +282,36 @@ origin.
 
 ## The `titles.csv` contract
 
-`GET /contribute/<olympiad>/titles.csv` exports every problem title and topic
-set; the `importTitles` action reads the same format back. The two are a
-contract, and the export endpoint says so.
+`GET /contribute/<olympiad>/titles.csv` exports every problem title, topic set
+and maximum score; the `importTitles` action reads the same format back. The two
+are a contract, and the export endpoint says so.
 
 ```
-year,number,title,topics
-2019,T1,Physics of a Slinky,Mechanics;Waves and Optics
-2019,T2,,
+year,number,title,topics,max_score
+2019,T1,Physics of a Slinky,Mechanics;Waves and Optics,10
+2019,T2,,,
 ```
 
-- **Header row** with `year`, `number`, `title` — `topics` is optional, so older
-  CSVs still import. Header names are trimmed and lowercased on import.
+- **Header row** with `year`, `number`, `title` — `topics` and `max_score` are
+  both optional, so every CSV exported before either existed still imports.
+  Header names are trimmed and lowercased on import.
 - **Topics are `;`-separated**, because `,` is the CSV delimiter itself.
   Unrecognised names are dropped rather than failing the import.
+- **`max_score` is snake_case** where the other columns happen to be single
+  words. It has to be: the import lowercases header names, so a `maxScore`
+  column would arrive as `maxscore` and never be read. A cell that is not a
+  number greater than zero is ignored rather than failing the whole import — the
+  same tolerance shown to an unrecognised topic — but it is counted and reported
+  in the summary toast, so a typo is visible instead of silent.
 - **A leading UTF-8 BOM** and **CRLF line endings**, without which Excel misreads
   accented titles.
 - Fields are quoted only when they contain `"`, `,`, CR or LF.
 
 The import is **fill-only by design**: an existing problem is never overwritten,
-only completed. Missing years are created. A re-import therefore cannot clobber
-work done through the year editor, which is what makes the round-trip safe to
-repeat.
+only completed — a maximum score already set through the year editor survives a
+re-import that carries a different one. Missing years are created. A re-import
+therefore cannot clobber work done through the year editor, which is what makes
+the round-trip safe to repeat.
 
 ## Migration workflow
 
