@@ -4,10 +4,13 @@
 	import type { Pending } from '$lib/forms.svelte';
 	import type { ProblemProgress } from '$lib/progress';
 	import ProgressControl from './ProgressControl.svelte';
+	import SignInToTrack from './SignInToTrack.svelte';
 
 	/**
-	 * One problem: its number, optional title, its files, and — for a signed-in
-	 * user — the control that marks it done.
+	 * One problem: its number, optional title, its files, and the control that
+	 * marks it done — live for a signed-in user, and a dimmed stand-in that
+	 * explains itself for everyone else, so the feature is at least discoverable
+	 * without an account.
 	 *
 	 * Topics are deliberately not rendered — knowing a problem's topic would
 	 * spoil it. They exist only to drive the filter.
@@ -49,6 +52,8 @@
 				{entry}
 				{pending}
 			/>
+		{:else}
+			<SignInToTrack number={problem.number} />
 		{/if}
 	</div>
 	<div class="flex flex-wrap gap-2">

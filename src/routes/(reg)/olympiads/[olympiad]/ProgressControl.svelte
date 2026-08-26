@@ -13,7 +13,10 @@
 	 * The tracking control in a problem card's top-right corner: a state icon that
 	 * opens a small form for recording, changing or removing a score.
 	 *
-	 * Rendered only for signed-in users — `ProblemCard` decides that.
+	 * Rendered only for signed-in users — `ProblemCard` decides that, and shows
+	 * `SignInToTrack.svelte` instead for everyone else. That sibling duplicates the
+	 * trigger's position classes below so the circle lands in the same spot either
+	 * way; **change them here and change them there too.**
 	 *
 	 * **A `Popover` from `bits-ui` directly, not from the vendored
 	 * `$lib/components/ui/` tree**, which CLAUDE.md rule 2 puts off limits.

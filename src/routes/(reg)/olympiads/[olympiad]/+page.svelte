@@ -5,6 +5,7 @@
 	import TopicSelect from '$lib/components/TopicSelect.svelte';
 	import SearchEmptyState from '$lib/components/search/SearchEmptyState.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
+	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
 	import BackLink from '$lib/components/BackLink.svelte';
 	import SvelteSeo from 'svelte-seo';
 	import { tick } from 'svelte';
@@ -13,7 +14,13 @@
 	import { formToasts, Pending } from '$lib/forms.svelte';
 	import type { ProgressMap } from '$lib/progress';
 	import YearPanel from './YearPanel.svelte';
-	import { filterYears, hasProblemMatches, showYearLevel, type FilterState } from './filter';
+	import {
+		filterYears,
+		hasProblemMatches,
+		showYearLevel,
+		type FilterState,
+		type ProblemStatus
+	} from './filter';
 
 	let { data, form }: PageProps = $props();
 
@@ -29,6 +36,12 @@
 	let showFullYear = $state(false);
 	/** Topics the user is filtering by. Empty means no topic filter. */
 	let activeTopics = $state<ProblemTopic[]>([]);
+	/**
+	 * Completion state the user is filtering by. Signed-in only — the control is
+	 * not rendered for anonymous visitors, for whom "Done" could only ever be
+	 * empty.
+	 */
+	let status = $state<ProblemStatus>('all');
 
 	/**
 	 * The problems the signed-in user has tracked, keyed by `progressKey`. Empty
@@ -57,6 +70,7 @@
 		loadFailed = false;
 		query = '';
 		activeTopics = [];
+		status = 'all';
 
 		fetch(`/api/olympiads/${id}`)
 			.then((r) => {
@@ -142,9 +156,20 @@
 		else progress[form.key] = form.entry;
 	});
 
-	const filterState = $derived<FilterState>({ query, topics: activeTopics, showFullYear });
-	const filtered = $derived.by(() => filterYears(years, filterState));
-	const canShowFullYear = $derived.by(() => hasProblemMatches(years, filterState));
+	const filterState = $derived<FilterState>({ query, topics: activeTopics, status, showFullYear });
+	/**
+	 * `progress` is an *input* to the filter, not just to the cards, so a problem
+	 * that stops matching leaves the list the moment its state changes: under "To
+	 * do" the page reads as a to-do list that empties as you work. The card
+	 * unmounting takes the portalled popover with it, which is the intended
+	 * feedback rather than a bug.
+	 *
+	 * It costs nothing while no problem-level filter is active — `filter.ts`
+	 * returns early before ever reading the map, so this doesn't re-derive on
+	 * every tracking click.
+	 */
+	const filtered = $derived.by(() => filterYears(years, filterState, progress));
+	const canShowFullYear = $derived.by(() => hasProblemMatches(years, filterState, progress));
 </script>
 
 <SvelteSeo
@@ -183,12 +208,35 @@
 				/>
 			{/snippet}
 			{#snippet filters()}
-				{#if canShowFullYear}
-					<label class="flex cursor-pointer items-center gap-2">
-						<Switch bind:checked={showFullYear} />
-						<span class="text-sm text-nowrap text-muted-foreground">Show full year</span>
-					</label>
-				{/if}
+				<!-- Both controls in one wrapper so they travel together when the row
+				     wraps onto its own line on a phone. -->
+				<div class="flex flex-wrap items-center justify-center gap-3">
+					{#if signedIn}
+						<!-- Anonymous visitors have no progress, so "Done" could only ever be
+						     empty for them — the disabled circle on each problem is what tells
+						     them tracking exists. Same shape as the tag filter on the olympiads
+						     index. -->
+						<ToggleGroup.Root
+							type="single"
+							variant="outline"
+							spacing={2}
+							value={status}
+							aria-label="Filter by progress"
+							onValueChange={(v) => (status = (v as ProblemStatus) || 'all')}
+							class="flex-wrap justify-center sm:flex-nowrap"
+						>
+							<ToggleGroup.Item value="all">All</ToggleGroup.Item>
+							<ToggleGroup.Item value="done">Done</ToggleGroup.Item>
+							<ToggleGroup.Item value="todo">To do</ToggleGroup.Item>
+						</ToggleGroup.Root>
+					{/if}
+					{#if canShowFullYear}
+						<label class="flex cursor-pointer items-center gap-2">
+							<Switch bind:checked={showFullYear} />
+							<span class="text-sm text-nowrap text-muted-foreground">Show full year</span>
+						</label>
+					{/if}
+				</div>
 			{/snippet}
 		</SearchBar>
 	</div>
@@ -221,11 +269,12 @@
 	{:else}
 		<SearchEmptyState
 			message="No results found"
-			hint="Try a different year or problem name, or clear the topic filter."
+			hint="Try a different year or problem name, or clear the topic and progress filters."
 			clearLabel="Clear filters"
 			onClear={() => {
 				query = '';
 				activeTopics = [];
+				status = 'all';
 			}}
 		/>
 	{/if}

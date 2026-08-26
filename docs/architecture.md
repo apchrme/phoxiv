@@ -94,8 +94,9 @@ src/routes/
 │
 ├── (reg)/                      ← private browser cache, nothing else
 │   ├── olympiads/              index; [olympiad]/ detail + YearPanel/ProblemCard/
-│   │                           ProgressControl/filter, and [olympiad]/progress/,
-│   │                           an endpoint that answers private, no-store
+│   │                           ProgressControl/SignInToTrack/filter, and
+│   │                           [olympiad]/progress/, an endpoint that answers
+│   │                           private, no-store
 │   ├── blog/                   index and [slug]/, from $lib/posts/*.svx
 │   ├── resources/              .svx page
 │   ├── privacy/                .svx page
@@ -175,6 +176,20 @@ The tracking action itself, `?/trackProblem`, resolves `problems.id` server-side
 from `(olympiad, year, number)`. That is what lets the page stay ignorant of
 problem ids — so no row id ever has to enter a cached payload — and what lets a
 progress entry be keyed on `(year, number)` at all.
+
+Two things are built on top of that map, both entirely in the browser:
+
+- **The `All / Done / To do` filter** in the page's toolbar is a client-side
+  filter over the map the page already holds — see `filter.ts`, where it joins the
+  topic filter in `visibleProblems`. No new endpoint, no new field, and nothing
+  new on the wire. It is rendered only for signed-in users, since "Done" could
+  only ever be empty without a session.
+- **The tracking affordance itself is rendered for everyone.** A signed-out
+  visitor gets `SignInToTrack.svelte` in the same corner of the same card — the
+  same circle, dimmed and inert, explaining on hover, focus or tap that tracking
+  needs an account. The permission is still enforced server-side by
+  `?/trackProblem`'s `locals.user` check; the disabled circle is discoverability,
+  not a guard.
 
 ## The `$lib/server/` module map
 

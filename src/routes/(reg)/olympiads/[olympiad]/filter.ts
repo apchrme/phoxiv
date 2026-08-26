@@ -1,20 +1,37 @@
 import type { ProblemEntry, ProblemTopic, YearEntry } from '$lib/types';
+import { progressKey, type ProgressMap } from '$lib/progress';
 
 /**
- * The search and topic filtering behind the olympiad page.
+ * The search, topic and progress filtering behind the olympiad page.
  *
  * Pure functions over the fetched year list, kept out of the component so the
  * rules are readable on their own — the interaction between the topic filter,
- * the text query and the "show full year" toggle is the fiddliest logic on the
- * page.
+ * the progress filter, the text query and the "show full year" toggle is the
+ * fiddliest logic on the page.
+ *
+ * Two of the three filters run over public metadata. The progress filter is the
+ * only one that reads per-user data, which is why the {@link ProgressMap} is
+ * passed in to the functions that need it rather than living in
+ * {@link FilterState} beside the things the user actually chose.
  */
 
 /** A year that survived filtering, with the problems that matched. */
 export type FilteredYear = YearEntry & { matchedProblems: ProblemEntry[] };
 
+/**
+ * Which completion states the list should show.
+ *
+ * Page-only UI state, so it lives here rather than in `$lib/progress.ts`, which
+ * is the domain model. `'all'` is a real member rather than `null` because a
+ * single-select `ToggleGroup` emits `''` when its active item is clicked again,
+ * and that has to fall back to something valid.
+ */
+export type ProblemStatus = 'all' | 'done' | 'todo';
+
 export type FilterState = {
 	query: string;
 	topics: ProblemTopic[];
+	status: ProblemStatus;
 	/** Show a matching year's whole problem set, not just the matches. */
 	showFullYear: boolean;
 };
@@ -25,45 +42,82 @@ function matchesQuery(problem: ProblemEntry, q: string): boolean {
 	);
 }
 
-/** A year's problems that satisfy the topic filter — all of them when it's off. */
-function topicMatches(year: YearEntry, topics: ProblemTopic[]): ProblemEntry[] {
-	if (topics.length === 0) return year.problems;
-	return year.problems.filter((p) => p.topics?.some((t) => topics.includes(t)) ?? false);
+/**
+ * True when a filter is narrowing the problem list *itself*, as opposed to the
+ * text query. Only then may a year be dropped for having no matching problems:
+ * a year with no problems at all still has notes, links and files worth showing
+ * when nothing is being filtered.
+ */
+function narrowsProblems({ topics, status }: FilterState): boolean {
+	return topics.length > 0 || status !== 'all';
+}
+
+/**
+ * A year's problems that satisfy the topic *and* progress filters — all of them
+ * when both are off.
+ *
+ * One function rather than one per filter, with every caller going through it:
+ * that is what stops the rendered list and the "show full year" toggle from
+ * disagreeing about what counts as a match.
+ */
+function visibleProblems(
+	year: YearEntry,
+	{ topics, status }: FilterState,
+	progress: ProgressMap
+): ProblemEntry[] {
+	// An early return, and not merely an optimisation: with no problem-level
+	// filter active this never reads `progress`, so the caller's derived list
+	// does not depend on it and marking a problem done doesn't re-filter the
+	// whole olympiad.
+	if (topics.length === 0 && status === 'all') return year.problems;
+
+	return year.problems.filter((problem) => {
+		if (topics.length > 0 && !(problem.topics?.some((t) => topics.includes(t)) ?? false)) {
+			return false;
+		}
+		if (status === 'all') return true;
+		// The key's existence is the completion flag; there is no field to read.
+		const done = progress[progressKey(year.year, problem.number)] !== undefined;
+		return status === 'done' ? done : !done;
+	});
 }
 
 /**
  * The years to render, in the order given.
  *
- * The topic filter always applies; the text query narrows things further. A year
- * whose *number* matches the query keeps its full problem set, since the user
- * asked for the year rather than for a problem.
+ * The topic and progress filters always apply; the text query narrows things
+ * further. A year whose *number* matches the query keeps its full problem set,
+ * since the user asked for the year rather than for a problem — "full" still
+ * meaning the topic- and progress-filtered set, not every problem in the year.
  *
  * `years` may be null while the fetch is in flight.
  */
 export function filterYears(
 	years: YearEntry[] | null,
-	{ query, topics, showFullYear }: FilterState
+	state: FilterState,
+	progress: ProgressMap
 ): FilteredYear[] {
+	const { query, showFullYear } = state;
 	const q = query.trim().toLowerCase();
 	const results: FilteredYear[] = [];
 
 	for (const year of years ?? []) {
-		const inTopics = topicMatches(year, topics);
-		if (topics.length > 0 && inTopics.length === 0) continue;
+		const visible = visibleProblems(year, state, progress);
+		if (narrowsProblems(state) && visible.length === 0) continue;
 
 		if (!q) {
-			results.push({ ...year, matchedProblems: inTopics });
+			results.push({ ...year, matchedProblems: visible });
 			continue;
 		}
 
 		if (String(year.year).includes(q)) {
-			results.push({ ...year, matchedProblems: inTopics });
+			results.push({ ...year, matchedProblems: visible });
 			continue;
 		}
 
-		const queryMatched = inTopics.filter((p) => matchesQuery(p, q));
+		const queryMatched = visible.filter((p) => matchesQuery(p, q));
 		if (queryMatched.length > 0) {
-			results.push({ ...year, matchedProblems: showFullYear ? inTopics : queryMatched });
+			results.push({ ...year, matchedProblems: showFullYear ? visible : queryMatched });
 		}
 	}
 
@@ -76,12 +130,15 @@ export function filterYears(
  */
 export function hasProblemMatches(
 	years: YearEntry[] | null,
-	{ query, topics }: FilterState
+	state: FilterState,
+	progress: ProgressMap
 ): boolean {
-	const q = query.trim().toLowerCase();
+	const q = state.query.trim().toLowerCase();
 	if (!q) return false;
 	return (years ?? []).some(
-		(y) => !String(y.year).includes(q) && topicMatches(y, topics).some((p) => matchesQuery(p, q))
+		(y) =>
+			!String(y.year).includes(q) &&
+			visibleProblems(y, state, progress).some((p) => matchesQuery(p, q))
 	);
 }
 
