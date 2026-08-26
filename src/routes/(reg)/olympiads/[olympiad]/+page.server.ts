@@ -29,10 +29,17 @@ export const actions: Actions = {
 	 * limit tracking to contributors.
 	 *
 	 * The problem is resolved from `(olympiad, year, number)` server-side, which
-	 * is what lets the page stay ignorant of `problems.id` and so keeps the
-	 * publicly cached `/api/olympiads/[olympiad]` payload unchanged. The maximum
-	 * score a submitted score is validated against comes from that row too, never
-	 * from the browser.
+	 * is what lets the page stay ignorant of `problems.id`. The maximum a submitted
+	 * score is validated against comes from that row too, never from the browser —
+	 * even though the browser can now read a maximum out of the public
+	 * `/api/olympiads/[olympiad]` payload, a submitted one is still not trusted.
+	 *
+	 * The result carries the score and nothing else. It deliberately does **not**
+	 * send `maxScore` back, even though the row is right here: the maximum belongs
+	 * to the problem, the page already has it from `/api/olympiads/[olympiad]`, and
+	 * a second copy arriving by a second route is a second thing that can disagree.
+	 * A maximum changes rarely enough that waiting for the shared cache is the right
+	 * trade — see `docs/data-model.md`.
 	 *
 	 * Nothing here is written to `activity_log`: that is the *content* audit
 	 * trail shown on the admin panel, and one row per problem click would bury it.
@@ -53,8 +60,10 @@ export const actions: Actions = {
 
 		if (intent === 'remove') {
 			await clearProblemProgress(locals.db, locals.user.id, problem.id);
-			const entry: ProblemProgress = { maxScore: problem.maxScore, completed: false, score: null };
-			return ok('trackProblem', { key, entry });
+			// `null`, not a hollow entry: "untracked" has exactly one spelling on the
+			// client too — an absent key in the `ProgressMap` — so the page deletes the
+			// key rather than storing a tombstone that would then need checking for.
+			return ok('trackProblem', { key, entry: null });
 		}
 
 		if (intent !== 'save' && intent !== 'complete') {
@@ -71,13 +80,11 @@ export const actions: Actions = {
 		if (!parsed.ok) return actionFail(400, 'trackProblem', parsed.error);
 
 		await setProblemProgress(locals.db, locals.user.id, problem.id, parsed.value);
-		const entry: ProblemProgress = {
-			maxScore: problem.maxScore,
-			completed: true,
-			score: parsed.value
-		};
+		const entry: ProblemProgress = { score: parsed.value };
 		// The canonical entry travels back with the result, so the page can merge
-		// it straight into its map instead of refetching the whole olympiad.
+		// it straight into its map instead of refetching the whole olympiad. Two
+		// `ok('trackProblem', …)` shapes means SvelteKit types `form.entry` as
+		// `ProblemProgress | null`, which narrows on `=== null` — see `forms.ts`.
 		return ok('trackProblem', { key, entry });
 	}
 };

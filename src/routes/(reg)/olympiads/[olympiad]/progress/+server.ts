@@ -3,8 +3,8 @@ import type { RequestHandler } from './$types';
 import { getOlympiadProgress } from '$lib/server/db/queries/progress';
 
 /**
- * The signed-in user's progress on one olympiad, as a `ProgressMap`, plus every
- * problem's configured maximum score.
+ * The problems the signed-in user has tracked in one olympiad, as a
+ * `ProgressMap`.
  *
  * **Deliberately not under `/api/`.** Everything there sets
  * `setSharedCache()` and is held in Cloudflare's shared cache for a day, which
@@ -12,10 +12,11 @@ import { getOlympiadProgress } from '$lib/server/db/queries/progress';
  * outside that directory makes the mistake structurally hard to make; the
  * `no-store` below is the second line of defence.
  *
- * It is also why `maxScore` is *not* on `ProblemEntry`: the tracking UI is the
- * only thing that needs it, only signed-in users see it, and adding it to the
- * shared payload would leave a freshly deployed client reading a day-old body
- * with no maximums in it until someone purged the dashboard.
+ * It carries **only what differs per user**. A problem's maximum score is the
+ * same for every visitor, so it rides on `ProblemEntry` in the shared-cached
+ * `/api/olympiads/[olympiad]` payload instead — which is what leaves this body
+ * with one key per tracked problem and nothing else, so an absent key means
+ * "untracked" and nothing more.
  *
  * Read by a client `fetch` rather than by the page load on purpose.
  * `(reg)/+layout.server.ts` already sets `PRIVATE_CACHE_CONTROL` and SvelteKit

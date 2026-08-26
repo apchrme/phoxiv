@@ -154,9 +154,30 @@ After deploying a change to any `/api/*` **response shape**:
    - `https://phoxiv.org/api/stats`
 3. Reload the site and confirm the new shape is being served.
 
-The four public shapes are effectively frozen for this reason — `OlympiadEntry[]`,
+The four public shapes are near-frozen for this reason — `OlympiadEntry[]`,
 `YearEntry[]`, `SearchItem[]` and the stats triple. A newly deployed client
 paired with a day-old cached payload is the failure mode to think about before
 changing one.
+
+`YearEntry[]`'s problems carry `max_score`, which makes the delay a _content_
+problem and not only a deploy-time one: a contributor raising a problem's maximum
+sees it in the year editor at once, but the olympiad page keeps showing the old
+denominator for up to a day, exactly as it does for an edited title. A purge of
+`https://phoxiv.org/api/olympiads/<id>` is how to expedite it, and there is no
+in-app path that beats it: `?/trackProblem` deliberately does not send the
+maximum back to the page, so that the shared-cached payload stays the one source
+of it.
+
+**A purge does not reach every cache.** Browsers honour the policy's
+`stale-while-revalidate=604800` as well, so a visitor who has loaded the page
+before can be served a week-old payload no matter what you purge; the refresh
+runs in the background, so their _next_ load is current. Purging therefore fixes
+new visitors at once and returning ones on their second load. See
+[architecture.md](./architecture.md#why-some-pages-fetch-their-own-data).
+
+Skipping the purge after a shape change to `YearEntry[]` is survivable rather
+than destructive: a fresh client reading a day-old body renders scores bare, with
+no `/10` and every scored problem counted as `unscaled` in the year ratio. It is
+a stale denominator, not lost data, and it self-heals when the cache turns over.
 
 `/api/auth/[...all]` sets no cache headers at all and must never be given any.

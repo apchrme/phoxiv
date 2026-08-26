@@ -10,15 +10,21 @@
  *
  * A problem is either untracked or completed; a completed problem *may* carry a
  * score. There is no third state — see `problem_progress` in
- * `server/db/schema.ts`, where the row's existence is the completion flag.
+ * `server/db/schema.ts`, where the row's existence is the completion flag. That
+ * invariant holds on the wire too: in a {@link ProgressMap} the *key's*
+ * existence is the completion flag.
  */
 
-/** What the tracking UI knows about one problem. */
+/**
+ * What the tracking UI knows about one problem the user has completed.
+ *
+ * A score and nothing else. There is deliberately no `completed` field and no
+ * maximum: completion is carried by the entry's existence in a
+ * {@link ProgressMap}, and the maximum is the same for every visitor, so it
+ * rides on `ProblemEntry` in the shared-cached `/api/olympiads/[olympiad]` body
+ * rather than travelling per user.
+ */
 export type ProblemProgress = {
-	/** The configured maximum, or null if no contributor has set one. */
-	maxScore: number | null;
-	/** True once the user has marked the problem completed. */
-	completed: boolean;
 	/** The user's score, or null for "completed, no score recorded". */
 	score: number | null;
 };
@@ -26,8 +32,10 @@ export type ProblemProgress = {
 /**
  * Progress for one olympiad, keyed by {@link progressKey}.
  *
- * An absent key means both "no maximum configured" and "untracked", which is why
- * the endpoint may omit a problem entirely rather than sending a hollow entry.
+ * The keys are **exactly** the problems the user has tracked — there are no
+ * hollow entries, and an absent key is the only spelling of "untracked". That
+ * mirrors `problem_progress`, where the row's existence *is* completion, and it
+ * is why a removal has to `delete` the key rather than write a tombstone.
  */
 export type ProgressMap = Record<string, ProblemProgress>;
 
@@ -35,9 +43,9 @@ export type ProgressMap = Record<string, ProblemProgress>;
  * The key a problem is filed under.
  *
  * `(year, number)` rather than `problems.id`: the olympiad page never learns a
- * problem's row id — `/api/olympiads/[olympiad]` does not carry one, and adding
- * it there would change a response shape that lives in Cloudflare's shared cache
- * for a day.
+ * problem's row id, because `?/trackProblem` resolves the problem server-side
+ * from `(olympiad, year, number)`. Nothing on the page has a use for the id, so
+ * nothing puts it on the wire.
  */
 export function progressKey(year: number, number: string): string {
 	return `${year}:${number}`;
@@ -139,12 +147,16 @@ export type YearTotals = {
  *   are counted in `unscaled` instead — the card says so, rather than quietly
  *   under-reporting.
  *
+ * Each maximum is read off the **problem**, not off the progress entry, because
+ * that is where it now lives. So `problems` supplies the denominators as well as
+ * the membership, which makes the next paragraph matter twice over.
+ *
  * Always computed from a year's *whole* problem list, never from the filtered
  * one: a topic or search filter must not change the year's total.
  */
 export function yearTotals(
 	year: number,
-	problems: readonly { number: string }[],
+	problems: readonly { number: string; maxScore?: number }[],
 	progress: ProgressMap
 ): YearTotals {
 	const totals: YearTotals = {
@@ -157,15 +169,16 @@ export function yearTotals(
 
 	for (const problem of problems) {
 		const entry = progress[progressKey(year, problem.number)];
-		if (!entry?.completed) continue;
+		// The key's presence is the completion flag; there is no field to read.
+		if (entry === undefined) continue;
 		totals.completed++;
 		if (entry.score === null) continue;
-		if (entry.maxScore === null) {
+		if (problem.maxScore === undefined) {
 			totals.unscaled++;
 			continue;
 		}
 		totals.score += entry.score;
-		totals.maxScore += entry.maxScore;
+		totals.maxScore += problem.maxScore;
 	}
 
 	return totals;

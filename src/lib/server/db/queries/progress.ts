@@ -13,57 +13,42 @@ import { progressKey, type ProgressMap } from '$lib/progress';
  */
 
 /**
- * Everything the tracking UI needs for one olympiad, in one round trip.
+ * The problems this user has tracked in one olympiad, as a {@link ProgressMap}.
  *
- * Two parallel queries rather than a `problems LEFT JOIN problem_progress`, the
- * same idiom {@link getOlympiadYearEntries} uses. The join would want an index
- * on `(problem_id, user_id)`; as written, the problems query is driven by
- * `years.olympiad_id` and the progress query by `problem_progress.user_id`,
- * which is the leading column of the unique index that already exists — and
- * "every row belonging to this user" is an access path worth keeping.
+ * One query, driven off `problem_progress.user_id` — the leading column of the
+ * `problem_progress_user_problem_idx` unique index that already exists — so both
+ * joins are rowid lookups and the read is O(problems this user tracked) rather
+ * than O(problems in the olympiad).
  *
- * Problems that have neither a maximum nor a progress row are omitted: the map
- * has nothing to say about them, and an absent key already means "no maximum,
- * untracked".
+ * It used to be two parallel queries, and the reason was every problem's
+ * maximum score: that had to come back whether the user had touched the problem
+ * or not, which forced a scan of the whole olympiad. The maximum now travels
+ * with the problem in `/api/olympiads/[olympiad]`, so nothing here needs to know
+ * a problem exists until the user has tracked it.
+ *
+ * The map therefore holds one key per tracked problem and nothing else. An
+ * absent key is the only spelling of "untracked", mirroring the table, where the
+ * row's existence *is* completion.
  */
 export async function getOlympiadProgress(
 	db: DB,
 	olympiadId: string,
 	userId: string
 ): Promise<ProgressMap> {
-	const [problemRows, progressRows] = await Promise.all([
-		db
-			.select({
-				id: problems.id,
-				year: years.year,
-				number: problems.number,
-				maxScore: problems.maxScore
-			})
-			.from(problems)
-			.innerJoin(years, eq(years.id, problems.yearId))
-			.where(eq(years.olympiadId, olympiadId))
-			.all(),
-		db
-			.select({ problemId: problemProgress.problemId, score: problemProgress.score })
-			.from(problemProgress)
-			.where(eq(problemProgress.userId, userId))
-			.all()
-	]);
-
-	// Every problem this user has tracked anywhere, narrowed to this olympiad by
-	// the loop below rather than by SQL — the second query deliberately does not
-	// join back to `years`.
-	const scoreByProblemId = new Map(progressRows.map((row) => [row.problemId, row.score]));
+	const rows = await db
+		.select({ year: years.year, number: problems.number, score: problemProgress.score })
+		.from(problemProgress)
+		// Both joins are inner, so the flat selection form is safe here — the
+		// nesting `queries/content.ts` insists on is only needed to make Drizzle
+		// nullify a LEFT JOIN's group.
+		.innerJoin(problems, eq(problems.id, problemProgress.problemId))
+		.innerJoin(years, eq(years.id, problems.yearId))
+		.where(and(eq(problemProgress.userId, userId), eq(years.olympiadId, olympiadId)))
+		.all();
 
 	const progress: ProgressMap = {};
-	for (const problem of problemRows) {
-		const completed = scoreByProblemId.has(problem.id);
-		if (!completed && problem.maxScore === null) continue;
-		progress[progressKey(problem.year, problem.number)] = {
-			maxScore: problem.maxScore,
-			completed,
-			score: completed ? (scoreByProblemId.get(problem.id) ?? null) : null
-		};
+	for (const row of rows) {
+		progress[progressKey(row.year, row.number)] = { score: row.score };
 	}
 	return progress;
 }
@@ -71,11 +56,11 @@ export async function getOlympiadProgress(
 /**
  * Resolves `(olympiad, year, number)` to the problem row the user is tracking.
  *
- * This lookup is what lets the client stay ignorant of `problems.id` — and so
- * what keeps `ProblemEntry`, and the cached `/api/olympiads/[olympiad]` payload
- * it belongs to, unchanged by problem tracking. `maxScore` comes back with it
- * because the score has to be validated against the *stored* maximum, never
- * against one the browser submitted.
+ * This lookup is what lets the client stay ignorant of `problems.id`, and so
+ * what lets {@link progressKey} file a problem under `(year, number)` at all.
+ * `maxScore` comes back with it because a submitted score has to be validated
+ * against the *stored* maximum — never against the one the browser can now read
+ * out of `/api/olympiads/[olympiad]`.
  */
 export async function findTrackableProblem(
 	db: DB,

@@ -31,8 +31,11 @@
 	let activeTopics = $state<ProblemTopic[]>([]);
 
 	/**
-	 * The signed-in user's tracked problems, and every problem's maximum score.
-	 * Empty for anonymous visitors, who see no tracking UI at all.
+	 * The problems the signed-in user has tracked, keyed by `progressKey`. Empty
+	 * for anonymous visitors, who see no tracking UI at all.
+	 *
+	 * Only their scores: each problem's maximum arrives with the problem itself in
+	 * `years` below, because it is public and the same for every visitor.
 	 */
 	let progress = $state<ProgressMap>({});
 
@@ -43,6 +46,9 @@
 	 * The years, problems and files come from `/api/olympiads/[olympiad]` rather
 	 * than from the page load, so the response is served out of Cloudflare's
 	 * shared cache instead of costing a D1 read per visit.
+	 *
+	 * Plain `fetch`, so the browser caches the payload too — see
+	 * `$lib/server/cache.ts` for how stale that can get and why it is accepted.
 	 */
 	$effect(() => {
 		const id = olympiad.id; // tracked dependency: refetch when navigating between olympiads
@@ -124,9 +130,16 @@
 	 * `form.key` and `form.entry` narrow without any `'x' in form` probing. This
 	 * is why the merge lives here rather than in a `formToasts` handler, which
 	 * only sees the loosely typed envelope.
+	 *
+	 * A removal **deletes** the key instead of writing a tombstone: an absent key
+	 * is the only spelling of "untracked", and a second spelling would have to be
+	 * checked for everywhere the map is read. Svelte 5's `$state` proxy traps
+	 * `deleteProperty`, so the delete is as reactive as the assignment.
 	 */
 	$effect(() => {
-		if (form?.success && form.action === 'trackProblem') progress[form.key] = form.entry;
+		if (!(form?.success && form.action === 'trackProblem')) return;
+		if (form.entry === null) delete progress[form.key];
+		else progress[form.key] = form.entry;
 	});
 
 	const filterState = $derived<FilterState>({ query, topics: activeTopics, showFullYear });

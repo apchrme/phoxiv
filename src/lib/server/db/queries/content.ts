@@ -57,9 +57,14 @@ export type EditableProblem = {
 /**
  * Every year of an olympiad with its notes, links, files and problems.
  *
- * Backs `GET /api/olympiads/[olympiad]`, whose response shape is frozen — it is
- * held in Cloudflare's shared cache for up to a day. In particular `title` is
- * *omitted* rather than set to `null` when a problem has none.
+ * Backs `GET /api/olympiads/[olympiad]`, which is held in Cloudflare's shared
+ * cache for up to a day. The shape is not frozen by fiat, but changing it costs a
+ * manual dashboard purge and a window in which freshly deployed clients read a
+ * day-old body — it has been changed exactly once, to carry `maxScore`. See
+ * `docs/deployment.md` for the procedure.
+ *
+ * Optional fields are *omitted* rather than set to `null` when a problem has
+ * none, `title` and `maxScore` alike.
  */
 export async function getOlympiadYearEntries(db: DB, olympiadId: string): Promise<YearEntry[]> {
 	const [yearRows, problemRows] = await Promise.all([
@@ -87,7 +92,8 @@ export async function getOlympiadYearEntries(db: DB, olympiadId: string): Promis
 					yearId: problems.yearId,
 					number: problems.number,
 					title: problems.title,
-					topics: problems.topics
+					topics: problems.topics,
+					maxScore: problems.maxScore
 				},
 				problem_files: { label: problemFiles.label, url: problemFiles.url }
 			})
@@ -110,6 +116,7 @@ export async function getOlympiadYearEntries(db: DB, olympiadId: string): Promis
 			number: row.problems.number,
 			title: row.problems.title,
 			topics: parseTopics(row.problems.topics),
+			maxScore: row.problems.maxScore,
 			files: [] as FileEntry[]
 		}),
 		(entry, row) => {
@@ -123,6 +130,10 @@ export async function getOlympiadYearEntries(db: DB, olympiadId: string): Promis
 			number: problem.number,
 			...(problem.title ? { title: problem.title } : {}),
 			topics: problem.topics,
+			// `=== null`, not a truthiness check like `title`'s above: `parseMaxScore`
+			// refuses zero, but a hand-edited row holding one should show up as a bad
+			// denominator rather than silently vanish from the payload.
+			...(problem.maxScore === null ? {} : { maxScore: problem.maxScore }),
 			files: problem.files
 		});
 		problemsByYear.set(problem.yearId, list);
@@ -202,7 +213,11 @@ export async function getYearContent(
  * Backs `GET /api/search`. `searchText` is a lowercased join of olympiad id,
  * olympiad name, year, problem number and title **in that order** — uFuzzy
  * matches against it directly, so reordering changes which results rank first.
- * `topics` is deliberately omitted: it would leak hints about the problem.
+ *
+ * `topics` and `maxScore` are both deliberately omitted, for different reasons:
+ * a topic would leak hints about the problem, and a maximum is simply not what
+ * this endpoint is for — it is a fuzzy index, not a metadata feed. Its shape is
+ * therefore untouched by the change that put `maxScore` on `ProblemEntry`.
  */
 export async function getSearchIndex(db: DB): Promise<SearchItem[]> {
 	const rows = await db

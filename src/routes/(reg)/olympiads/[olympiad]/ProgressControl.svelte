@@ -31,6 +31,7 @@
 	let {
 		year,
 		number,
+		maxScore,
 		entry,
 		pending
 	}: {
@@ -38,14 +39,21 @@
 		year: number;
 		/** The problem number, e.g. `T1`. */
 		number: string;
-		/** Progress for this problem, or `undefined` when it has neither mark nor maximum. */
+		/**
+		 * The denominator to show a score against, or `null` when no contributor has
+		 * set one. Comes from the problem rather than from `entry`, because it is the
+		 * same for every visitor — the server still validates against the stored
+		 * value, so nothing here is trusted for anything but display.
+		 */
+		maxScore: number | null;
+		/** Progress for this problem, or `undefined` when the user has not tracked it. */
 		entry: ProblemProgress | undefined;
 		/** The page's single tracker, so the buttons can disable themselves. */
 		pending: Pending;
 	} = $props();
 
-	const completed = $derived(entry?.completed ?? false);
-	const maxScore = $derived(entry?.maxScore ?? null);
+	/** The entry's *existence* is completion; there is no flag on it to read. */
+	const completed = $derived(entry !== undefined);
 	const score = $derived(entry?.score ?? null);
 
 	/** Namespaces this problem's entry in the page-wide `Pending` map. */

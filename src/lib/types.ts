@@ -62,6 +62,17 @@ export type ProblemEntry = {
 	 * Omitted by endpoints that don't need them (e.g. the search index).
 	 */
 	topics?: ProblemTopic[];
+	/**
+	 * The denominator a tracked score is shown against. **Omitted, never null**,
+	 * when no contributor has set one — the same convention `title` follows above,
+	 * and most problems have none.
+	 *
+	 * Public, and therefore in the shared-cached `/api/olympiads/[olympiad]` body:
+	 * a marking scheme's maximum is the same for every visitor, so it belongs with
+	 * the rest of a problem's metadata rather than travelling with the signed-in
+	 * user's own progress. Only the score *against* it is per-user.
+	 */
+	maxScore?: number;
 	files: FileEntry[];
 };
 

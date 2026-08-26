@@ -24,7 +24,7 @@
 		year: FilteredYear;
 		/** Whether the year's own notes/links/files should be shown. */
 		showYearLevel: boolean;
-		/** The signed-in user's progress across the whole olympiad. */
+		/** The signed-in user's tracked problems across the whole olympiad. */
 		progress: ProgressMap;
 		/** The page's single tracker, so each problem's buttons can disable themselves. */
 		pending: Pending;
@@ -36,6 +36,11 @@
 	 * Computed from `year.problems`, **not** `year.matchedProblems`: a topic or
 	 * search filter narrows what is on screen, and must not change what the year
 	 * is worth.
+	 *
+	 * The list now carries the maximums as well as the membership — `yearTotals`
+	 * reads each problem's `maxScore` off it, not off the progress entry — so the
+	 * filtered list would drop a hidden problem's *denominator* too, not just its
+	 * tick, and the ratio would move as the filter changed.
 	 */
 	const totals = $derived(yearTotals(year.year, year.problems, progress));
 </script>

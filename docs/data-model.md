@@ -93,8 +93,26 @@ deliberately omits them for the same reason.
 
 `max_score` is `REAL`, not `INTEGER`: a marking scheme's maximum is not always
 whole. It is set per problem in the year editor or in bulk through the
-`max_score` column of `titles.csv`, and it is **not** part of `ProblemEntry` —
-see [`problem_progress`](#problem_progress) below for why.
+`max_score` column of `titles.csv`.
+
+It **is** part of `ProblemEntry`, omitted rather than nulled when unset, exactly
+like `title`. A maximum is the same for every visitor, so it belongs with the
+problem's other metadata rather than travelling with one user's progress — but
+that also puts it in the shared-cached `/api/olympiads/[olympiad]` body, so
+**editing a maximum takes up to a day to appear publicly**, again exactly like
+editing a title. A purge is how to expedite it; see
+[deployment.md](./deployment.md#purging-the-cache-after-an-api-change).
+
+Nothing short-circuits that wait, on purpose. `?/trackProblem` reads `max_score`
+to validate the submitted score and could cheaply return it, but the result
+deliberately carries only the score: a maximum reaching the page by a second
+route is a second copy that can disagree with the first, and maximums change
+rarely enough that the day is an acceptable price for one source of truth.
+
+The visible consequence is worth knowing. Between setting a maximum and the cache
+turning over, a scored problem is counted in `unscaled` on the year card and its
+mark renders bare, with no `/10`. The score itself is safe — only the denominator
+is missing — and a purge fixes it immediately.
 
 ### `problem_progress`
 
@@ -131,10 +149,16 @@ only, and is the single formatter for the cards, the year totals and the CSV, so
 an exported `max_score` always reads back through `parseMaxScore` unchanged.
 
 None of this is ever served from `/api/*`, which is Cloudflare's **shared** cache.
-Progress and `max_score` travel together from
-`GET /olympiads/[olympiad]/progress` instead — outside `/api/` on purpose, with
-`cache-control: private, no-store`. See
+Progress travels on its own from `GET /olympiads/[olympiad]/progress` — outside
+`/api/` on purpose, with `cache-control: private, no-store`. The maximum a score
+is shown against does not travel with it: it goes out with the problem, as
+`ProblemEntry.maxScore`. See
 [architecture.md](./architecture.md#why-some-pages-fetch-their-own-data).
+
+That endpoint's body is therefore a `ProgressMap` with **one key per tracked
+problem and nothing else**, which is how the row's-existence-is-completion
+invariant reaches the wire: an absent key is the only spelling of "untracked",
+client-side and server-side alike. There is no `completed` field on either.
 
 ## Auth tables
 

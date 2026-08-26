@@ -133,12 +133,28 @@ nothing would drop `user` from every page's `data`.
 The olympiads index, the olympiad detail page and the landing page all `fetch()`
 from `/api/*` on mount instead of using a server `load`. This is deliberate: a
 server load would cost a D1 read per visit, while the `fetch` is answered by
-Cloudflare's shared cache. The four public response shapes are effectively
-frozen for that reason — a changed shape lives in the cache for a day.
+Cloudflare's shared cache.
+
+Be precise about how stale that can get. `max-age=0` does not keep browsers from
+holding their own copy: the policy's `stale-while-revalidate=604800` has no
+shared-cache-only spelling, so a returning visitor can be served a week-old
+payload while the browser refreshes it in the background. A contributor's edit
+therefore tends to land on someone's _second_ load, and a Cloudflare purge cannot
+reach a copy already sitting in a browser. This is accepted rather than
+overlooked: the archive changes rarely, and a payload that is a little behind
+renders as incomplete, never as wrong. Passing `cache: 'no-store'` on these
+`fetch` calls is the fix if that ever stops holding.
+
+The four public response shapes are near-frozen for a related reason — a changed
+shape lives in the cache for a day, and only a manual dashboard purge clears it
+early. `YearEntry[]` has been changed once deliberately, to carry each problem's
+`max_score`;
+[deployment.md](./deployment.md#purging-the-cache-after-an-api-change) holds the
+procedure and the cost of skipping it.
 
 **`/olympiads/[olympiad]/progress` is a `fetch` for the opposite reason.** It
-serves the signed-in user's tracked problems, plus every problem's `max_score`,
-and three things follow from that:
+serves the signed-in user's tracked problems and nothing else, and two things
+follow from that:
 
 - It sits **outside `/api/`** so that nobody reflexively adds `setSharedCache()`
   to it, which would serve one user's answers to every visitor. The header it
@@ -149,14 +165,16 @@ and three things follow from that:
   hours of privately cached `__data.json` would serve stale progress. A
   `+server.ts` runs no layout loads, so neither that header nor `+layout.ts`'s
   legacy redirects apply to it.
-- It is why `max_score` is **not** on `ProblemEntry`. Adding it to the shared
-  `/api/olympiads/[olympiad]` payload would leave a freshly deployed client
-  reading a day-old body with no maximums in it, and only signed-in users ever
-  need the value.
+
+It carries **only** what differs per user. A problem's `max_score` is the same
+for every visitor, so it sits on `ProblemEntry` in the shared payload instead —
+and what comes back here is one key per tracked problem, with no `completed`
+flag, because the key's existence is the flag.
 
 The tracking action itself, `?/trackProblem`, resolves `problems.id` server-side
 from `(olympiad, year, number)`. That is what lets the page stay ignorant of
-problem ids, and so what keeps `ProblemEntry` frozen.
+problem ids — so no row id ever has to enter a cached payload — and what lets a
+progress entry be keyed on `(year, number)` at all.
 
 ## The `$lib/server/` module map
 

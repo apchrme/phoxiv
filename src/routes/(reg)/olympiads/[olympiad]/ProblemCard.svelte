@@ -22,7 +22,7 @@
 		problem: ProblemEntry;
 		/** The competition year, which the tracking action needs to resolve the problem. */
 		year: number;
-		/** This problem's progress, or `undefined` when it has neither a mark nor a maximum. */
+		/** This problem's progress, or `undefined` when the user has not tracked it. */
 		entry: ProblemProgress | undefined;
 		/** The page's single tracker, so the buttons can disable themselves. */
 		pending: Pending;
@@ -39,7 +39,16 @@
 			{/if}
 		</div>
 		{#if signedIn}
-			<ProgressControl {year} number={problem.number} {entry} {pending} />
+			<!-- The maximum comes off the problem, not off `entry`: it is public metadata
+			     that arrives with the rest of the problem, and `?? null` is only the
+			     omitted-vs-nullable translation between `ProblemEntry` and the control. -->
+			<ProgressControl
+				{year}
+				number={problem.number}
+				maxScore={problem.maxScore ?? null}
+				{entry}
+				{pending}
+			/>
 		{/if}
 	</div>
 	<div class="flex flex-wrap gap-2">
