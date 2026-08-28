@@ -22,9 +22,10 @@ export type FilteredYear = YearEntry & { matchedProblems: ProblemEntry[] };
  * Which completion states the list should show.
  *
  * Page-only UI state, so it lives here rather than in `$lib/progress.ts`, which
- * is the domain model. `'all'` is a real member rather than `null` because a
- * single-select `ToggleGroup` emits `''` when its active item is clicked again,
- * and that has to fall back to something valid.
+ * is the domain model. `'all'` is a real member rather than `null` so that "no
+ * progress filter" has exactly one spelling — every read of {@link FilterState}
+ * would otherwise have to handle both — and so the dropdown has a real option to
+ * select for it.
  */
 export type ProblemStatus = 'all' | 'done' | 'todo';
 

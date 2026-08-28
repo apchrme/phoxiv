@@ -22,7 +22,7 @@
 	} = $props();
 </script>
 
-<div class="flex flex-col items-center gap-4 md:flex-row">
+<div class="flex flex-col items-center gap-x-2 gap-y-4 md:flex-row">
 	<div class="flex w-full items-center gap-2">
 		<InputGroup.Root>
 			<InputGroup.Input type="search" {placeholder} bind:value />

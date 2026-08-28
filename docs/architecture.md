@@ -94,8 +94,8 @@ src/routes/
 │
 ├── (reg)/                      ← private browser cache, nothing else
 │   ├── olympiads/              index; [olympiad]/ detail + YearPanel/ProblemCard/
-│   │                           ProgressControl/SignInToTrack/filter, and
-│   │                           [olympiad]/progress/, an endpoint that answers
+│   │                           ProgressControl/SignInToTrack/StatusFilter/filter,
+│   │                           and [olympiad]/progress/, an endpoint that answers
 │   │                           private, no-store
 │   ├── blog/                   index and [slug]/, from $lib/posts/*.svx
 │   ├── resources/              .svx page
@@ -179,11 +179,12 @@ progress entry be keyed on `(year, number)` at all.
 
 Two things are built on top of that map, both entirely in the browser:
 
-- **The `All / Done / To do` filter** in the page's toolbar is a client-side
-  filter over the map the page already holds — see `filter.ts`, where it joins the
-  topic filter in `visibleProblems`. No new endpoint, no new field, and nothing
-  new on the wire. It is rendered only for signed-in users, since "Done" could
-  only ever be empty without a session.
+- **The progress filter** — `StatusFilter.svelte`'s icon-only `All problems /
+Done / To do` dropdown in the toolbar — is a client-side filter over the map the page
+  already holds; see `filter.ts`, where it joins the topic filter in
+  `visibleProblems`. No new endpoint, no new field, and nothing new on the wire.
+  It is rendered only for signed-in users, since "Done" could only ever be empty
+  without a session.
 - **The tracking affordance itself is rendered for everyone.** A signed-out
   visitor gets `SignInToTrack.svelte` in the same corner of the same card — the
   same circle, dimmed and inert, explaining on hover, focus or tap that tracking

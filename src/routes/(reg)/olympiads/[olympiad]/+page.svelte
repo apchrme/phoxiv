@@ -5,7 +5,6 @@
 	import TopicSelect from '$lib/components/TopicSelect.svelte';
 	import SearchEmptyState from '$lib/components/search/SearchEmptyState.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
-	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
 	import BackLink from '$lib/components/BackLink.svelte';
 	import SvelteSeo from 'svelte-seo';
 	import { tick } from 'svelte';
@@ -14,6 +13,7 @@
 	import { formToasts, Pending } from '$lib/forms.svelte';
 	import type { ProgressMap } from '$lib/progress';
 	import YearPanel from './YearPanel.svelte';
+	import StatusFilter from './StatusFilter.svelte';
 	import {
 		filterYears,
 		hasProblemMatches,
@@ -206,30 +206,17 @@
 					iconOnly
 					class="shrink-0"
 				/>
+				{#if signedIn}
+					<!-- Anonymous visitors have no progress, so "Done" could only ever be
+							empty for them — the disabled circle on each problem is what tells
+							them tracking exists. -->
+					<StatusFilter bind:value={status} />
+				{/if}
 			{/snippet}
 			{#snippet filters()}
 				<!-- Both controls in one wrapper so they travel together when the row
 				     wraps onto its own line on a phone. -->
 				<div class="flex flex-wrap items-center justify-center gap-3">
-					{#if signedIn}
-						<!-- Anonymous visitors have no progress, so "Done" could only ever be
-						     empty for them — the disabled circle on each problem is what tells
-						     them tracking exists. Same shape as the tag filter on the olympiads
-						     index. -->
-						<ToggleGroup.Root
-							type="single"
-							variant="outline"
-							spacing={2}
-							value={status}
-							aria-label="Filter by progress"
-							onValueChange={(v) => (status = (v as ProblemStatus) || 'all')}
-							class="flex-wrap justify-center sm:flex-nowrap"
-						>
-							<ToggleGroup.Item value="all">All</ToggleGroup.Item>
-							<ToggleGroup.Item value="done">Done</ToggleGroup.Item>
-							<ToggleGroup.Item value="todo">To do</ToggleGroup.Item>
-						</ToggleGroup.Root>
-					{/if}
 					{#if canShowFullYear}
 						<label class="flex cursor-pointer items-center gap-2">
 							<Switch bind:checked={showFullYear} />
