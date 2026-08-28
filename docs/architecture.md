@@ -49,7 +49,7 @@ two policies, both defined in [`$lib/server/cache.ts`](../src/lib/server/cache.t
 | Policy              | Header                                                     | Where                   |
 | ------------------- | ---------------------------------------------------------- | ----------------------- |
 | `setPrivateCache()` | `max-age=14400, must-revalidate, private`                  | pages under `(reg)`     |
-| `setSharedCache()`  | `max-age=0, s-maxage=86400, stale-while-revalidate=604800` | `/api/*` data endpoints |
+| `setSharedCache()`  | `max-age=0, s-maxage=86400, must-revalidate` | `/api/*` data endpoints |
 
 One route sets its own third policy: `/olympiads/[olympiad]/progress` answers
 `private, no-store`, because it carries one user's answers. See
