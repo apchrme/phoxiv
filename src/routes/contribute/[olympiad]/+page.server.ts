@@ -6,7 +6,7 @@ import { parse } from 'csv-parse/sync';
 import { requireOlympiadEditor } from '$lib/server/guard';
 import { logActivity } from '$lib/server/activity-log';
 import { renderMarkdownOrNull } from '$lib/server/markdown';
-import { requireOlympiad } from '$lib/server/db/queries/olympiads';
+import { getOlympiad, OLYMPIAD_NOT_FOUND, requireOlympiad } from '$lib/server/db/queries/olympiads';
 import { ensureYear, insertYear, listYearNumbers } from '$lib/server/db/queries/years';
 import {
 	actionFail,
@@ -111,6 +111,18 @@ export const actions: Actions = {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
 		const bucket = getBucket(platform);
 		if (!bucket) return actionFail(500, 'uploadIcon', STORAGE_UNAVAILABLE);
+
+		// An action does not run the page load, so the load's 404 does not cover
+		// this, and an admin passes the guard for *any* id: `POST
+		// /contribute/nope?/uploadIcon` used to reach the `put` below with nothing
+		// having checked that `nope` exists. R2 has no foreign keys and nothing
+		// sweeps the bucket, so the object it wrote was unreachable for good — the
+		// `update` matched no row, so no `icon` column ever pointed at it, and
+		// `deleteStaleIcons` only ever runs for an id someone uploads to a second
+		// time. `getOlympiad` and not `requireOlympiad`, per rule 6: a 404 page
+		// would discard the description draft in the other half of this form.
+		const olympiad = await getOlympiad(db, params.olympiad);
+		if (!olympiad) return actionFail(404, 'uploadIcon', OLYMPIAD_NOT_FOUND);
 
 		const data = await request.formData();
 		const validated = validateUpload(fileField(data, 'iconFile'), ICON_UPLOAD);

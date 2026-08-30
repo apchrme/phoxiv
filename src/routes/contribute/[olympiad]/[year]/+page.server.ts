@@ -90,12 +90,6 @@ export const actions: Actions = {
 			.map((label, i) => ({ label: label.trim(), url: (linkUrls[i] ?? '').trim() }))
 			.filter((l) => l.label && l.url);
 
-		await db
-			.update(years)
-			.set({ notes: JSON.stringify(notes), extraLinks: JSON.stringify(extraLinks) })
-			.where(eq(years.id, yearRow.id))
-			.run();
-
 		const rawNumbers = fieldList(data, 'problemNumber').map((n) => n.trim());
 		const rawTitles = fieldList(data, 'problemTitle');
 		const rawTopics = fieldList(data, 'problemTopics');
@@ -132,8 +126,7 @@ export const actions: Actions = {
 		// Checked *after* the blank-number filter above, so a stray character left
 		// in a row the contributor is about to discard cannot block the save. Shares
 		// the editor's helper, like the duplicate check, so the two halves cannot
-		// drift apart. Checked before the first write, too: the upserts below are
-		// not in a transaction, so failing halfway would leave a partial save.
+		// drift apart.
 		const [badMaxScore] = invalidMaxScores(submitted);
 		if (badMaxScore !== undefined) {
 			return actionFail(
@@ -142,6 +135,60 @@ export const actions: Actions = {
 				`Maximum score for problem ${badMaxScore.number}: ${badMaxScore.error}`
 			);
 		}
+
+		// Anything the editor no longer lists was removed by the user — including a
+		// problem whose number was edited, which is a delete plus an insert.
+		//
+		// One condition, built once and used for both statements below, so the
+		// query that finds the files and the query that deletes the rows can never
+		// disagree about which problems went away.
+		const submittedNumbers = submitted.map((p) => p.number);
+		const removed =
+			submittedNumbers.length > 0
+				? and(eq(problems.yearId, yearRow.id), notInArray(problems.number, submittedNumbers))
+				: eq(problems.yearId, yearRow.id);
+
+		// The FK cascade takes the problemFiles rows with the problem, and those
+		// rows are the only record of which R2 keys belong to it — so the objects
+		// have to go first, or they are unreachable garbage in the bucket forever.
+		//
+		// Read here rather than after the upserts, which is the same set either
+		// way: the loop only touches numbers that *are* submitted and never
+		// rewrites a `number`, so nothing it does can move a row in or out of
+		// `removed`. Reading it now is what lets the storage check below happen
+		// before anything has been written.
+		const orphaned = await db
+			.select({ url: problemFiles.url })
+			.from(problemFiles)
+			.innerJoin(problems, eq(problems.id, problemFiles.problemId))
+			.where(removed)
+			.all();
+
+		// Only demand a bucket when something actually has to be deleted, so a
+		// storage outage cannot block the ordinary save that removes nothing — but
+		// demand it now, while refusing is still free.
+		let bucket: R2Bucket | null = null;
+		if (orphaned.length > 0) {
+			bucket = getBucket(platform);
+			if (!bucket) return actionFail(500, 'saveMetadata', STORAGE_UNAVAILABLE);
+		}
+
+		// ── Nothing below this line may fail the save. ──────────────────────────
+		//
+		// None of it is in a transaction, so a `return actionFail` between two
+		// writes commits half of one. Every check this action makes is therefore
+		// above: the year's own fields used to be written up with the form fields
+		// they are parsed from, which put them *before* the problem rows were
+		// validated — so a mistyped maximum score toasted "Maximum score for
+		// problem 3: …" over a year whose notes and links had already changed. It
+		// looked clean at the time, because the rejected page still shows the
+		// contributor's own draft; it surfaced on the next load, as a save they
+		// were told had failed and half of which had not.
+		await db
+			.update(years)
+			.set({ notes: JSON.stringify(notes), extraLinks: JSON.stringify(extraLinks) })
+			.where(eq(years.id, yearRow.id))
+			.run();
 
 		for (const { number, title, topics, maxScore: rawMaxScore } of submitted) {
 			// Cannot fail — `invalidMaxScores` just refused everything that could.
@@ -162,33 +209,7 @@ export const actions: Actions = {
 				.run();
 		}
 
-		// Anything the editor no longer lists was removed by the user — including a
-		// problem whose number was edited, which is a delete plus an insert.
-		//
-		// One condition, built once and used for both statements below, so the
-		// query that finds the files and the query that deletes the rows can never
-		// disagree about which problems went away.
-		const submittedNumbers = submitted.map((p) => p.number);
-		const removed =
-			submittedNumbers.length > 0
-				? and(eq(problems.yearId, yearRow.id), notInArray(problems.number, submittedNumbers))
-				: eq(problems.yearId, yearRow.id);
-
-		// The FK cascade takes the problemFiles rows with the problem, and those
-		// rows are the only record of which R2 keys belong to it — so the objects
-		// have to go first, or they are unreachable garbage in the bucket forever.
-		const orphaned = await db
-			.select({ url: problemFiles.url })
-			.from(problemFiles)
-			.innerJoin(problems, eq(problems.id, problemFiles.problemId))
-			.where(removed)
-			.all();
-
-		// Only demand a bucket when something actually has to be deleted, so a
-		// storage outage cannot block the ordinary save that removes nothing.
-		if (orphaned.length > 0) {
-			const bucket = getBucket(platform);
-			if (!bucket) return actionFail(500, 'saveMetadata', STORAGE_UNAVAILABLE);
+		if (bucket) {
 			await deleteByUrls(
 				bucket,
 				orphaned.map((f) => f.url)
