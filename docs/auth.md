@@ -140,19 +140,19 @@ session user.
 
 ### Which guard each route uses
 
-| Route                                         | Guard                                                                                               |
-| --------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `admin/+layout.server.ts`                     | `requireAdmin`                                                                                      |
-| `admin` — all four actions                    | `requireAdmin`, again                                                                               |
-| `contribute/+layout.server.ts`                | `requireContributor`                                                                                |
-| `contribute` — `selectYear`                   | `canEditOlympiad` on the _submitted_ olympiad id                                                    |
-| `contribute` — `createOlympiad`               | `requireAdmin` — contributors work within olympiads they were assigned, they do not create new ones |
-| `contribute/[olympiad]` — every action        | `requireOlympiadEditor`                                                                             |
-| `contribute/[olympiad]/[year]` — every action | `requireOlympiadEditor`                                                                             |
-| `contribute/[olympiad]/titles.csv`            | `requireOlympiadEditor`                                                                             |
-| `(reg)/login`                                 | redirects to `/profile` when already signed in                                                      |
-| `(reg)/profile`                               | redirects to `/login` when not                                                                      |
-| everything else                               | public                                                                                              |
+| Route                                                  | Guard                                                                                               |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| `admin/+layout.server.ts`                              | `requireAdmin`                                                                                      |
+| `admin` — all four actions                             | `requireAdmin`, again                                                                               |
+| `contribute/+layout.server.ts`                         | `requireContributor`                                                                                |
+| `contribute` — `selectYear`                            | `canEditOlympiad` on the _submitted_ olympiad id                                                    |
+| `contribute` — `createOlympiad`                        | `requireAdmin` — contributors work within olympiads they were assigned, they do not create new ones |
+| `contribute/[olympiad]` — load and every action        | `requireOlympiadEditor`                                                                             |
+| `contribute/[olympiad]/[year]` — load and every action | `requireOlympiadEditor`                                                                             |
+| `contribute/[olympiad]/titles.csv`                     | `requireOlympiadEditor`                                                                             |
+| `(reg)/login`                                          | redirects to `/profile` when already signed in                                                      |
+| `(reg)/profile`                                        | redirects to `/login` when not                                                                      |
+| everything else                                        | public                                                                                              |
 
 **The layout guard is never the only check.** It establishes that the user may
 reach the contribute area at all; it says nothing about _which_ olympiad. Every

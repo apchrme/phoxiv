@@ -36,7 +36,13 @@ import { parseMaxScore } from '$lib/progress';
 const DEFAULT_DISPLAY_ORDER = 9999;
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-	const olympiadRow = await requireOlympiad(locals.db, params.olympiad);
+	// Authorise before reading. The layout guard establishes only that this is a
+	// contributor, not that they may edit *this* olympiad — without this the
+	// editor for any olympiad was a URL away for any contributor, unrendered
+	// `descriptionMd` draft and `displayOrder` included. Permission first,
+	// existence second, matching `titles.csv/+server.ts`.
+	const { db } = requireOlympiadEditor(locals, params.olympiad);
+	const olympiadRow = await requireOlympiad(db, params.olympiad);
 
 	return {
 		// The editor's own view of an olympiad: unlike the public `OlympiadEntry`
@@ -50,7 +56,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			descriptionMd: olympiadRow.descriptionMd ?? '',
 			displayOrder: olympiadRow.displayOrder
 		},
-		years: await listYearNumbers(locals.db, params.olympiad)
+		years: await listYearNumbers(db, params.olympiad)
 	};
 };
 

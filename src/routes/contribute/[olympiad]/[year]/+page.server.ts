@@ -28,6 +28,11 @@ import { duplicateProblemNumbers, invalidMaxScores } from './metadata';
 type Scope = 'year' | 'problem';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
+	// Authorise before reading, for the reason spelled out in `../+page.server.ts`:
+	// the layout guard says this is a contributor, not that they may edit *this*
+	// olympiad. Permission first, existence second.
+	const { db } = requireOlympiadEditor(locals, params.olympiad);
+
 	const yearNum = parseYear(params.year);
 	if (yearNum === null) error(400, 'Invalid year');
 
@@ -35,15 +40,15 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	// olympiad still rejects before the `if (!yearRow)` line — the 404 for the
 	// olympiad keeps winning over the one for the year.
 	const [olympiadRow, yearRow] = await Promise.all([
-		requireOlympiad(locals.db, params.olympiad),
-		getYear(locals.db, params.olympiad, yearNum)
+		requireOlympiad(db, params.olympiad),
+		getYear(db, params.olympiad, yearNum)
 	]);
 	if (!yearRow) error(404, YEAR_NOT_FOUND);
 
 	// Sequential on purpose: this one genuinely needs `yearRow.id`.
 
 	const { yearFiles: yearFileEntries, problems: problemEntries } = await getYearContent(
-		locals.db,
+		db,
 		yearRow.id
 	);
 
@@ -329,9 +334,15 @@ export const actions: Actions = {
 			);
 		}
 
+		// `yearNum`, never the raw `params.year`. `parseYear` is parseInt-based and
+		// there is no route matcher, so `/contribute/ipho/2020abc` resolves the
+		// year-2020 row and would then write the object under `…/2020abc/…`; a
+		// `%2F` in the segment could put it under an arbitrary prefix entirely.
+		// Every well-formed URL emits a byte-identical key, so nothing already
+		// uploaded moves — and per rule 3 `fileKey` itself stays untouched.
 		const key = fileKey(
 			params.olympiad,
-			params.year,
+			yearNum,
 			slugifyLabel(label),
 			ext,
 			scope === 'problem' ? problemNumber : undefined
