@@ -55,14 +55,32 @@ export function progressKey(year: number, number: string): string {
  * A score as it is written on screen: at most two decimals, trailing zeros
  * dropped — `8.5`, `10`, `8.25`.
  *
- * The single formatter for every surface, cards and year totals and the CSV
- * alike, so an exported `max_score` always round-trips back through
- * {@link parseMaxScore} unchanged. Rounding happens *here and nowhere else*:
- * scores are stored exactly as entered, because rounding three marks of `8.333`
- * on the way in would make them sum to `24.99` where the honest answer is `25`.
+ * **Display only.** Anything that gets read back — a form input seeded from a
+ * stored value, a CSV cell that will be re-imported — uses {@link exactScore}
+ * instead, because a rounded number put into a field the user then saves is a
+ * write dressed up as a render.
+ *
+ * Rounding is the whole point here. Scores are stored exactly as entered, so a
+ * year card summing three marks of `8.333` holds `24.999000000000002`; the card
+ * is where that is made presentable, and `25` is the honest answer where
+ * rounding on the way *in* would have given `24.99`.
  */
 export function formatScore(value: number): string {
 	return String(Math.round(value * 100) / 100);
+}
+
+/**
+ * A score written out in full, for the places that parse it again.
+ *
+ * `String(value)` round-trips every double losslessly, so a stored `8.333`
+ * survives being seeded into the year editor, the score popover or a
+ * `titles.csv` cell and saved straight back. {@link formatScore} returns `8.33`
+ * for that, and the next save stores it — which is also how a maximum of `0.001`
+ * became `0` and then jammed the year editor on {@link parseMaxScore}'s
+ * "must be greater than 0", with no way to save the year until it was retyped.
+ */
+export function exactScore(value: number): string {
+	return String(value);
 }
 
 /** Either a parsed value (`null` meaning "left blank") or a message to show. */

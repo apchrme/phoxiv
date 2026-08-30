@@ -7,7 +7,13 @@
 
 	/**
 	 * The signed-out stand-in for `ProgressControl`: the same circle in the same
-	 * corner, dimmed and inert, explaining that tracking needs an account.
+	 * corner, dimmed, linking to `/login` and explaining on hover, focus or tap
+	 * that tracking needs an account.
+	 *
+	 * **The trigger itself is the link.** It reads as inert and it is not a
+	 * tracking control, but it has to be reachable, and the notice alone is not an
+	 * affordance — see the `child` snippet below for what putting the link inside
+	 * the tooltip cost keyboard users.
 	 *
 	 * A sibling of `ProgressControl` rather than a branch inside it. The two are
 	 * deliberately different — no popover, no score, no `entry` or `pending` — and
@@ -48,6 +54,11 @@
 	 *
 	 * The tap must be able to close it as well as open it: an outside tap is not
 	 * a reliable dismissal for a non-modal tooltip on every mobile browser.
+	 *
+	 * Now that the trigger is a link, a touch tap also has to *suppress* the
+	 * navigation, or the notice would never be seen on a phone. That makes the
+	 * flag load-bearing rather than cosmetic, which is why the handler clears it
+	 * on every click — see there.
 	 */
 	let touched = false;
 	let openBeforeTap = false;
@@ -67,31 +78,61 @@
 			// Mirrors ProgressControl's trigger, so the circle sits in the same place
 			// whether or not you are signed in.
 			'-mt-1 -mr-2 shrink-0 px-1.5',
-			// Inert, but never the `disabled` attribute: bits-ui forwards that onto
-			// the <button> (where Chrome and Safari then fire no pointer events at
-			// all) *and* early-returns from every one of the trigger's own handlers,
-			// so the notice would never open. `aria-disabled` keeps it focusable,
-			// which is what lets a keyboard user tab to it and read the notice.
-			'cursor-not-allowed text-muted-foreground/50 hover:bg-transparent hover:text-muted-foreground/50 dark:hover:bg-transparent'
+			// Dimmer than ProgressControl's untracked circle, so signed-out still
+			// reads as "not tracking" — but this is a real link, so it lights up on
+			// hover and keeps the pointer cursor.
+			//
+			// Never the `disabled` attribute, whatever this ends up looking like:
+			// bits-ui forwards it onto the element (where Chrome and Safari then fire
+			// no pointer events at all) *and* early-returns from every one of the
+			// trigger's own handlers, so the notice would never open.
+			'text-muted-foreground/60 hover:text-foreground'
 		)}
-		aria-disabled="true"
 		aria-label="Sign in to track problem {number}"
 		onpointerdown={(e) => {
 			touched = e.pointerType === 'touch';
 			openBeforeTap = open;
 		}}
-		onclick={() => {
-			if (touched) open = !openBeforeTap;
+		onclick={(e) => {
+			// Consumed on every click. A keyboard Enter fires a click with no
+			// pointerdown before it, so a `true` left over from an earlier finger tap
+			// would swallow the navigation and put back the keyboard dead end this
+			// whole shape exists to remove.
+			const wasTouch = touched;
+			touched = false;
+			if (!wasTouch) return;
+			// A tap shows the notice rather than following the link — it is the only
+			// way to open it, per the comment on `touched` — and the bubble's own
+			// "Sign in" is the touch route to /login. `composeHandlers` stops on
+			// `defaultPrevented`, so bits-ui's own onclick never runs.
+			e.preventDefault();
+			open = !openBeforeTap;
 		}}
 	>
-		<!-- `size-4` for the same reason ProgressControl sets it: the `xs` button
-		     size would otherwise force icons down to `size-3`. -->
-		<Circle class="size-4" />
+		{#snippet child({ props })}
+			<!--
+				An <a>, not bits-ui's default <button>. The sign-in link used to live
+				only inside the tooltip, and tooltip content is portalled to <body> with
+				`tabindex="-1"` while the trigger's own `onblur` closes it — so a
+				keyboard user could read the notice and never reach the link. The
+				affordance belongs on the thing you can actually tab to.
+
+				`type={undefined}` because the primitive merges its own `type="button"`
+				default in last, which means nothing on an anchor.
+			-->
+			<a {...props} type={undefined} href={resolve('/login')}>
+				<!-- `size-4` for the same reason ProgressControl sets it: the `xs` button
+				     size would otherwise force icons down to `size-3`. -->
+				<Circle class="size-4" />
+			</a>
+		{/snippet}
 	</Tooltip.Trigger>
 
 	<!-- No native `title` on the trigger — it would double-report alongside this.
 	     The content stays open while hovered (`disableHoverableContent` is off by
-	     default), which is what makes the link clickable. -->
+	     default), which is what makes the link clickable. It stays even though the
+	     trigger is a link too: on touch the trigger deliberately does *not*
+	     navigate, so this is the only way through to /login on a phone. -->
 	<!--
 		Styled as a *surface*, not as the vendored default pill. `tooltip-content`
 		ships `bg-foreground text-background` — an inverted dark chip — and swapping

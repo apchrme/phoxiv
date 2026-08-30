@@ -79,9 +79,11 @@ export async function findTrackableProblem(
 /**
  * Marks a problem completed, with `score` or with `null` for "no score".
  *
- * `updatedAt` is set explicitly: Drizzle's `$onUpdate` only fires for
- * `db.update`, so an upsert that took the conflict branch would otherwise keep
- * the timestamp from when the row was first inserted.
+ * `updatedAt` is named in the `set` although it is redundant: Drizzle builds the
+ * conflict branch's SET with the same helper as `db.update`, so the column's
+ * `$onUpdate` fires here too and an explicit value simply wins over it. It stays
+ * because the refresh belongs where the write is, rather than implied by a
+ * schema three files away.
  */
 export async function setProblemProgress(
 	db: DB,

@@ -1,5 +1,5 @@
 import type { ProblemTopic } from '$lib/types';
-import { formatScore, parseMaxScore } from '$lib/progress';
+import { exactScore, parseMaxScore } from '$lib/progress';
 
 /**
  * The client-side row model behind the year editor's metadata tab.
@@ -72,9 +72,11 @@ export function toProblemRows(
 		number: problem.number,
 		title: problem.title ?? '',
 		topics: [...problem.topics],
-		// Through `formatScore` so a stored `8.50` is seeded as `8.5`, and so a
-		// save that changes nothing else writes the value back unchanged.
-		maxScore: problem.maxScore === null ? '' : formatScore(problem.maxScore)
+		// Through `exactScore` and never `formatScore`: this seeds an input the
+		// contributor saves back, and `saveMetadata` upserts *every* problem row,
+		// so rounding here would re-round every maximum in the year each time
+		// anyone edited a note. A stored `8.333` must come back as `8.333`.
+		maxScore: problem.maxScore === null ? '' : exactScore(problem.maxScore)
 	}));
 }
 

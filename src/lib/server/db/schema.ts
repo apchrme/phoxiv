@@ -261,21 +261,31 @@ export const problemProgress = sqliteTable(
 			.references(() => problems.id, { onDelete: 'cascade' }),
 		// Stored exactly as entered — validated finite and non-negative, never
 		// rounded. Rounding on the way in would make three marks of 8.333 sum to
-		// 24.99 where the honest total is 25; `formatScore` rounds for display only.
+		// 24.99 where the honest total is 25. `formatScore` rounds for the cards
+		// and the year totals; anything that seeds an input uses `exactScore`.
 		score: real('score'),
 		createdAt: integer('created_at', { mode: 'timestamp_ms' })
 			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 			.notNull(),
-		// `$onUpdate` only fires for `db.update`, so the upsert in
-		// `queries/progress.ts` has to set this explicitly in its `onConflictDoUpdate`.
+		// `onConflictDoUpdate` builds its SET with the same helper as `db.update`,
+		// so this `$onUpdate` already fires on the conflict branch. The upsert in
+		// `queries/progress.ts` names `updatedAt` anyway — an explicit value wins
+		// over the fn, and it keeps the refresh visible where the write is.
 		updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
 			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 			.$onUpdate(() => new Date())
 			.notNull()
 	},
 	// A surrogate `id` plus a unique index, never a composite primary key — the
-	// pattern every other child table here uses. No second index: this one's
-	// leading `user_id` already serves the "all of one user's rows" read that
-	// `getOlympiadProgress` issues.
-	(t) => [uniqueIndex('problem_progress_user_problem_idx').on(t.userId, t.problemId)]
+	// pattern every other child table here uses. Two indexes, one per foreign
+	// key: the composite's leading `user_id` serves both the "all of one user's
+	// rows" read `getOlympiadProgress` issues and the cascade from `user`, but the
+	// cascade from `problems` seeks on `problem_id` alone, which a
+	// (user_id, problem_id) B-tree cannot answer — SQLite falls back to scanning
+	// the whole index, once per deleted problem. Every `saveMetadata` that renames
+	// a problem number deletes a problem, and deleting a year deletes all of them.
+	(t) => [
+		uniqueIndex('problem_progress_user_problem_idx').on(t.userId, t.problemId),
+		index('problem_progress_problem_idx').on(t.problemId)
+	]
 );

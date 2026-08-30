@@ -137,16 +137,23 @@ Both foreign keys cascade, matching `session` and `account` rather than
 `activity_log`: progress is the user's own data and should die with the account,
 where an audit trail must outlive it.
 
-`updated_at` carries a `$onUpdate`, which Drizzle only fires for `db.update` — so
-the upsert in [`queries/progress.ts`](../src/lib/server/db/queries/progress.ts)
-sets it explicitly in its `onConflictDoUpdate`.
+`updated_at` carries a `$onUpdate`, and Drizzle builds an `on conflict … do
+update` SET with the same helper as `db.update` — so the timestamp refreshes on
+the conflict branch too. The upsert in
+[`queries/progress.ts`](../src/lib/server/db/queries/progress.ts) still sets it
+explicitly, which wins over the `$onUpdate`, so the refresh is visible at the
+call site rather than implied by the schema.
 
 **Scores are stored exactly as entered** — validated finite and non-negative,
 never rounded. Rounding on the way in would make three partial-credit marks of
 `8.333` sum to `24.99` where the honest total is `25`. `formatScore` in
-[`$lib/progress.ts`](../src/lib/progress.ts) rounds to two decimals for display
-only, and is the single formatter for the cards, the year totals and the CSV, so
-an exported `max_score` always reads back through `parseMaxScore` unchanged.
+[`$lib/progress.ts`](../src/lib/progress.ts) rounds to two decimals for the cards
+and the year totals, and for nothing else: a value that will be read back — a
+form input seeded from the database, a `titles.csv` cell — goes through
+`exactScore` instead, so an exported `max_score` reads back through
+`parseMaxScore` unchanged. Seeding an input through the rounding formatter is a
+write, not a render; it is how a maximum of `8.333` used to become `8.33` on the
+next save of the year.
 
 None of this is ever served from `/api/*`, which is Cloudflare's **shared** cache.
 Progress travels on its own from `GET /olympiads/[olympiad]/progress` — outside

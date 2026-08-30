@@ -7,7 +7,7 @@
 	import { Circle, CircleCheck, Trash2 } from '@lucide/svelte';
 	import { cn } from '$lib/utils.js';
 	import type { Pending } from '$lib/forms.svelte';
-	import { formatScore, progressKey, type ProblemProgress } from '$lib/progress';
+	import { exactScore, formatScore, progressKey, type ProblemProgress } from '$lib/progress';
 
 	/**
 	 * The tracking control in a problem card's top-right corner: a state icon that
@@ -71,16 +71,20 @@
 	let draft = $state('');
 
 	/**
-	 * Re-seeds the box whenever the popover opens *and* whenever a save lands,
-	 * so what is shown is always the value the server actually stored — `8.500`
-	 * comes back as `8.5`, and a removal empties the box rather than leaving a
-	 * number behind that a second click would silently re-save.
+	 * Re-seeds the box whenever the popover opens *and* whenever a save lands, so
+	 * what is shown is the value the server actually stored, and so a removal
+	 * empties the box rather than leaving a number behind that a second click
+	 * would silently re-save.
+	 *
+	 * Through `exactScore` and never `formatScore`: this is an input the user
+	 * saves back, so rounding it would mean reopening the popover and pressing
+	 * Save turned their `8.333` into `8.33`.
 	 *
 	 * Runs before paint, so there is no flash of an empty input.
 	 */
 	$effect(() => {
 		if (!open) return;
-		draft = score === null ? '' : formatScore(score);
+		draft = score === null ? '' : exactScore(score);
 	});
 
 	const triggerLabel = $derived.by(() => {

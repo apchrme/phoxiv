@@ -4,7 +4,7 @@ import { problems, years } from '$lib/server/db';
 import { requireOlympiadEditor } from '$lib/server/guard';
 import { requireOlympiad } from '$lib/server/db/queries/olympiads';
 import { formatTopicsCsvCell, parseTopics } from '$lib/utils/topics';
-import { formatScore } from '$lib/progress';
+import { exactScore } from '$lib/progress';
 
 /**
  * UTF-8 byte-order mark. Written as a char code rather than a literal so it
@@ -55,9 +55,10 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				csvField(row.number),
 				csvField(row.title ?? ''),
 				csvField(formatTopicsCsvCell(parseTopics(row.topics))),
-				// Through `formatScore`, the same formatter the cards use, so an
-				// exported value always reads back through `parseMaxScore` unchanged.
-				row.maxScore === null ? '' : formatScore(row.maxScore)
+				// Through `exactScore` and never `formatScore`: this cell is re-parsed
+				// on import, so rounding it to two decimals here would make the
+				// round-trip lossy — a stored `8.333` would come back as `8.33`.
+				row.maxScore === null ? '' : exactScore(row.maxScore)
 			].join(',')
 		);
 	}

@@ -52,6 +52,22 @@
 	 */
 	let progress = $state<ProgressMap>({});
 
+	/**
+	 * Problems tracked or removed while the progress fetch below was still in
+	 * flight. The action's answer is newer than the snapshot, so it wins key by
+	 * key when the snapshot finally lands.
+	 *
+	 * A set of keys rather than a `{ ...fetched, ...progress }` spread: a removal
+	 * is spelled as an *absent* key, so a spread would let the snapshot's copy of
+	 * a just-removed problem come back from the dead.
+	 *
+	 * Deliberately not `$state`. It is bookkeeping about writes that have already
+	 * happened, and making it reactive would re-run the very effect that writes
+	 * it — the same reason `formToasts` keeps its `lastSeen` off the graph.
+	 */
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity -- a SvelteSet is exactly what this must not be
+	let touched = new Set<string>();
+
 	/** In-flight submissions, one entry per problem — see `ProgressControl`. */
 	const pending = new Pending();
 
@@ -80,6 +96,11 @@
 				return r.json() as Promise<YearEntry[]>;
 			})
 			.then(async (fetched) => {
+				// Discard a response the user has already navigated away from. The
+				// component is reused between olympiads, so a slow first response can
+				// otherwise land after a faster second one and leave one olympiad's
+				// years sitting under another olympiad's name until a reload.
+				if (olympiad.id !== id) return;
 				years = fetched;
 				loading = false;
 
@@ -87,10 +108,16 @@
 				const hash = window.location.hash;
 				if (hash) {
 					await tick();
+					// Re-checked after the tick: year ids are bare numbers, so a
+					// navigation during it would scroll to a plausible wrong panel.
+					if (olympiad.id !== id) return;
 					document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' });
 				}
 			})
 			.catch(() => {
+				// Guarded for the same reason, and `loading` with it: a stale failure
+				// must not paint "couldn't load" over an olympiad that loaded fine.
+				if (olympiad.id !== id) return;
 				loading = false;
 				loadFailed = true;
 			});
@@ -113,6 +140,7 @@
 		const id = olympiad.id;
 		const userId = data.user?.id;
 		progress = {};
+		touched = new Set();
 		if (!userId) return;
 
 		fetch(`/olympiads/${id}/progress`)
@@ -121,11 +149,24 @@
 				return r.json() as Promise<ProgressMap>;
 			})
 			.then((fetched) => {
-				// Discard a response the user has already navigated away from. (The
-				// years fetch above has no such guard — a slow first response can
-				// still overwrite a faster second one. Pre-existing, and left alone
-				// here rather than fixed in passing.)
+				// Discard a response the user has already navigated away from, as the
+				// years fetch above does.
 				if (olympiad.id !== id) return;
+
+				// Anything tracked or removed since this request went out is newer than
+				// the snapshot about to replace the map, so re-apply those keys on top
+				// — a `delete` for a removal, because an absent key is the only
+				// spelling of "untracked".
+				//
+				// Not left to the merge effect below. That effect *does* re-run here,
+				// since it reads `progress` and this assignment invalidates it, but
+				// `form` only ever holds the last result — so two problems tracked
+				// while this was in flight would come back as one.
+				for (const key of touched) {
+					const entry = progress[key];
+					if (entry === undefined) delete fetched[key];
+					else fetched[key] = entry;
+				}
 				progress = fetched;
 			})
 			.catch(() => {
@@ -154,6 +195,9 @@
 	 */
 	$effect(() => {
 		if (!(form?.success && form.action === 'trackProblem')) return;
+		// Recorded so a progress snapshot still in flight cannot undo this — see
+		// `touched` above.
+		touched.add(form.key);
 		if (form.entry === null) delete progress[form.key];
 		else progress[form.key] = form.entry;
 	});
@@ -216,16 +260,17 @@
 				{/if}
 			{/snippet}
 			{#snippet filters()}
-				<!-- Both controls in one wrapper so they travel together when the row
-				     wraps onto its own line on a phone. -->
-				<div class="flex flex-wrap items-center justify-center gap-3">
-					{#if canShowFullYear}
-						<label class="flex cursor-pointer items-center gap-2">
-							<Switch bind:checked={showFullYear} />
-							<span class="text-sm text-nowrap text-muted-foreground">Show full year</span>
-						</label>
-					{/if}
-				</div>
+				<!-- The `{#if}` is outside the element, not inside it: `SearchBar` renders
+				     this snippet unconditionally, so anything always-present here is a
+				     flex item that earns its `gap-y-4` even while empty — which is the
+				     default state, since `canShowFullYear` is false until the query
+				     matches a *problem*. -->
+				{#if canShowFullYear}
+					<label class="flex cursor-pointer items-center gap-2">
+						<Switch bind:checked={showFullYear} />
+						<span class="text-sm text-nowrap text-muted-foreground">Show full year</span>
+					</label>
+				{/if}
 			{/snippet}
 		</SearchBar>
 	</div>

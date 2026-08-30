@@ -1,0 +1,1 @@
+CREATE INDEX `problem_progress_problem_idx` ON `problem_progress` (`problem_id`);
