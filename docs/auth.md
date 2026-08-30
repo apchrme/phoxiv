@@ -21,7 +21,10 @@ them at import time, when there is no request and no bindings.
 [`hooks.server.ts`](../src/hooks.server.ts) therefore builds one instance per
 request and hangs it on `locals.auth`. This is the real Cloudflare accommodation
 in the auth layer — `api/auth/[...all]/+server.ts` itself is ten lines that
-forward to `locals.auth.handler`, as the default SvelteKit handler does not work on Cloudflare Workers: see [this blog post](https://medium.com/@dasfacc/sveltekit-better-auth-using-cloudflare-d1-and-drizzle-91d9d9a6d0b4).
+forward to `locals.auth.handler`. BetterAuth's own SvelteKit helper cannot be
+used for the same reason: `toSvelteKitHandler(auth)` closes over a module-level
+instance, which is precisely what a Worker cannot have.
+[Background reading.](https://medium.com/@dasfacc/sveltekit-better-auth-using-cloudflare-d1-and-drizzle-91d9d9a6d0b4)
 
 ### The CLI escape hatch
 

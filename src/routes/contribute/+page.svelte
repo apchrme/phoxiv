@@ -25,7 +25,7 @@
 
 <Title
 	title="Contribute"
-	description="This is Houston. Right here, you can edit almost every piece of content on the olympiads page. Note that due to caching, your changes may only be reflected on the corresponding olympiad pages after a day or so. If you want to see your changes immediately, perform a hard reload with Ctrl+F5."
+	description="This is Houston. Right here, you can edit almost every piece of content on the olympiads page. Note that due to caching, your changes may only be reflected on the corresponding olympiad pages after a day or so. Reloading will not expedite it — the delay is in Cloudflare's shared cache, which only an admin can purge early."
 />
 
 <Tabs.Root class="mx-auto max-w-xl gap-5" bind:value={tab}>

@@ -13,9 +13,11 @@ const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 export default defineConfig(
 	includeIgnoreFile(gitignorePath),
 	{
-		// Vendored or generated code that is never hand-edited, so lint findings in
-		// it are noise: `ui/` comes from the shadcn-svelte CLI (re-run it to update),
-		// and worker-configuration.d.ts comes from `bun run cf-typegen`.
+		// Vendored or generated code, where lint findings in upstream's formatting
+		// are noise: `ui/` came from the shadcn-svelte CLI and has been customised
+		// by hand ever since (never re-run the CLI over it — CLAUDE.md rule 2), and
+		// worker-configuration.d.ts comes from `bun run cf-typegen`. Note `ui/` is
+		// excluded from prettier too, so an edit there is checked by nothing.
 		ignores: ['src/lib/components/ui/**', 'src/worker-configuration.d.ts']
 	},
 	js.configs.recommended,

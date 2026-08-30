@@ -159,9 +159,19 @@ page with the error template, discarding whatever the contributor had typed.
 
 ### shadcn-svelte components are vendored
 
-`src/lib/components/ui/` comes from the shadcn-svelte CLI and is excluded from
-linting. Re-run the CLI to update a component rather than hand-editing it; a
-hand edit is silently reverted the next time anyone does.
+`src/lib/components/ui/` came from the shadcn-svelte CLI, but **never re-run the
+CLI over it** — see rule 2 in [CLAUDE.md](../CLAUDE.md). `components.json` points
+at an unpinned live registry, so a re-add pulls whatever upstream looks like
+today and discards everything that has been customised since: the backdrop-blur
+overrides, the sheet overlay, `input.svelte`'s `data-slot` handling, and
+`tooltip-content.svelte`'s `arrowClasses` and `portalProps` props, which upstream
+does not expose and
+[`SignInToTrack.svelte`](<../src/routes/(reg)/olympiads/[olympiad]/SignInToTrack.svelte>)
+depends on.
+
+Edit the vendored file directly, and say in the commit message why. The directory
+is excluded from eslint **and** prettier, so a reformat or a lint tidy-up there
+passes both gates unseen — nothing will catch a regression for you.
 
 ### Migrations are generated
 

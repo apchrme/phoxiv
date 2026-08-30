@@ -60,8 +60,10 @@
 	 * than from the page load, so the response is served out of Cloudflare's
 	 * shared cache instead of costing a D1 read per visit.
 	 *
-	 * Plain `fetch`, so the browser caches the payload too — see
-	 * `$lib/server/cache.ts` for how stale that can get and why it is accepted.
+	 * Plain `fetch`. `max-age=0, must-revalidate` means the browser revalidates
+	 * before reusing anything it stored, so Cloudflare's shared cache is the only
+	 * place this can go stale — see `$lib/server/cache.ts` for how long, and why
+	 * that is accepted.
 	 */
 	$effect(() => {
 		const id = olympiad.id; // tracked dependency: refetch when navigating between olympiads

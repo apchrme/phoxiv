@@ -46,9 +46,9 @@ round-trip. `App.Locals` is declared in [`src/app.d.ts`](../src/app.d.ts):
 The shape of `src/routes/` is driven almost entirely by **caching**. There are
 two policies, both defined in [`$lib/server/cache.ts`](../src/lib/server/cache.ts):
 
-| Policy              | Header                                                     | Where                   |
-| ------------------- | ---------------------------------------------------------- | ----------------------- |
-| `setPrivateCache()` | `max-age=14400, must-revalidate, private`                  | pages under `(reg)`     |
+| Policy              | Header                                       | Where                   |
+| ------------------- | -------------------------------------------- | ----------------------- |
+| `setPrivateCache()` | `max-age=14400, must-revalidate, private`    | pages under `(reg)`     |
 | `setSharedCache()`  | `max-age=0, s-maxage=86400, must-revalidate` | `/api/*` data endpoints |
 
 One route sets its own third policy: `/olympiads/[olympiad]/progress` answers
@@ -62,8 +62,9 @@ are cached for four hours in the visitor's own browser; `private` keeps them out
 of any shared cache, because a page can embed the signed-in user's name and
 avatar.
 
-`/api/*` goes the other way. `max-age=0` stops browsers holding a private copy,
-so a "Purge cache" in the Cloudflare dashboard reaches every visitor at once;
+`/api/*` goes the other way. `max-age=0` plus `must-revalidate` lets a browser
+store a copy but never reuse one without revalidating, so a "Purge cache" in the
+Cloudflare dashboard reaches every visitor on their next request;
 `s-maxage=86400` means Cloudflare's shared cache hits D1 at most once a day.
 The trade is that **a wrong payload persists for up to a day and needs a manual
 purge** — see [deployment.md](./deployment.md).
@@ -136,20 +137,20 @@ from `/api/*` on mount instead of using a server `load`. This is deliberate: a
 server load would cost a D1 read per visit, while the `fetch` is answered by
 Cloudflare's shared cache.
 
-Be precise about how stale that can get. `max-age=0` does not keep browsers from
-holding their own copy: the policy's `stale-while-revalidate=604800` has no
-shared-cache-only spelling, so a returning visitor can be served a week-old
-payload while the browser refreshes it in the background. A contributor's edit
-therefore tends to land on someone's _second_ load, and a Cloudflare purge cannot
-reach a copy already sitting in a browser. This is accepted rather than
+Be precise about how stale that can get. `max-age=0` does not keep a browser from
+holding its own copy — that directive governs reuse, not storage — but
+`must-revalidate` forbids reusing a held copy without a successful revalidation,
+so every load asks the edge. The staleness that remains is Cloudflare's own copy:
+up to 24 hours, identical for a first-time visitor and a returning one, and
+cleared for both by a purge. A contributor's edit therefore appears when the edge
+refreshes rather than on someone's _second_ load. This is accepted rather than
 overlooked: the archive changes rarely, and a payload that is a little behind
-renders as incomplete, never as wrong. Passing `cache: 'no-store'` on these
-`fetch` calls is the fix if that ever stops holding.
+renders as incomplete, never as wrong.
 
 The four public response shapes are near-frozen for a related reason — a changed
 shape lives in the cache for a day, and only a manual dashboard purge clears it
 early. `YearEntry[]` has been changed once deliberately, to carry each problem's
-`max_score`;
+`maxScore`;
 [deployment.md](./deployment.md#purging-the-cache-after-an-api-change) holds the
 procedure and the cost of skipping it.
 
@@ -167,7 +168,7 @@ follow from that:
   `+server.ts` runs no layout loads, so neither that header nor `+layout.ts`'s
   legacy redirects apply to it.
 
-It carries **only** what differs per user. A problem's `max_score` is the same
+It carries **only** what differs per user. A problem's `maxScore` is the same
 for every visitor, so it sits on `ProblemEntry` in the shared payload instead —
 and what comes back here is one key per tracked problem, with no `completed`
 flag, because the key's existence is the flag.

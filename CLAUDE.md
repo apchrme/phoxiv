@@ -88,7 +88,9 @@ plugin is pinned to `adminRoles: ['admin']` and knows nothing about it. Only
 8. **Comment the _why_.** Several comments in this codebase record real
    incidents — an infinite submit loop in the admin panel, a data-loss bug in the
    olympiad editor. Do not delete one without understanding what it protects.
-9. If the API response shape is modified, make sure to warn me beforehand, so that I am able to purge the shared cache.
+9. **Warn me before changing an `/api/*` response shape.** The old body sits in
+   Cloudflare's shared cache for up to a day, so I need to purge it — see
+   [deployment.md](./docs/deployment.md#purging-the-cache-after-an-api-change).
 
 # Svelte usage
 

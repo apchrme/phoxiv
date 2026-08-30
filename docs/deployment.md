@@ -136,13 +136,14 @@ invisible; a row pointing at a missing object is a dead link.
 This is the step that is easy to forget.
 
 `/api/*` responses are held in **Cloudflare's shared cache** with
-`s-maxage=86400` and `stale-while-revalidate=604800`. A wrong or changed payload
-therefore persists for up to a day, and can be served stale for a week after
-that. Editing content through `/contribute` has the same delay — the contribute
-page says so in its own description.
+`s-maxage=86400`. A wrong or changed payload therefore persists for up to a day.
+Editing content through `/contribute` has the same delay — the contribute page
+says so in its own description.
 
-`max-age=0` on those responses is deliberate: browsers keep no private copy, so a
-dashboard purge reaches every visitor immediately.
+That day is the whole of it. `max-age=0, must-revalidate` on those responses is
+deliberate: a browser may still store a copy, but it may not reuse one without
+revalidating first, so a dashboard purge reaches every visitor on their next
+request — returning visitors included.
 
 After deploying a change to any `/api/*` **response shape**:
 
@@ -159,7 +160,7 @@ The four public shapes are near-frozen for this reason — `OlympiadEntry[]`,
 paired with a day-old cached payload is the failure mode to think about before
 changing one.
 
-`YearEntry[]`'s problems carry `max_score`, which makes the delay a _content_
+`YearEntry[]`'s problems carry `maxScore`, which makes the delay a _content_
 problem and not only a deploy-time one: a contributor raising a problem's maximum
 sees it in the year editor at once, but the olympiad page keeps showing the old
 denominator for up to a day, exactly as it does for an edited title. A purge of
@@ -168,11 +169,11 @@ in-app path that beats it: `?/trackProblem` deliberately does not send the
 maximum back to the page, so that the shared-cached payload stays the one source
 of it.
 
-**A purge does not reach every cache.** Browsers honour the policy's
-`stale-while-revalidate=604800` as well, so a visitor who has loaded the page
-before can be served a week-old payload no matter what you purge; the refresh
-runs in the background, so their _next_ load is current. Purging therefore fixes
-new visitors at once and returning ones on their second load. See
+**A purge reaches every visitor on their next request.** `must-revalidate`
+stops a browser serving a copy it already holds without checking with the edge
+first, so there is no returning-visitor lag to wait out and no second load to
+account for. Once the purge has landed there is nothing else holding the old
+payload. See
 [architecture.md](./architecture.md#why-some-pages-fetch-their-own-data).
 
 Skipping the purge after a shape change to `YearEntry[]` is survivable rather
