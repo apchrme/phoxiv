@@ -1,5 +1,6 @@
 {
 	"enabledPlugins": {
-		"svelte@svelte": true
+		"svelte@svelte": true,
+		"gsap-skills@gsap-skills": true
 	}
 }
