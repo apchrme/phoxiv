@@ -153,6 +153,11 @@ each:
   - In file search: 1, 2 and 3 characters → nothing, nothing, results. `???` →
     an empty list, not an error. Try `"black hole"`, the unclosed `"black hol`,
     `foo OR bar`, `-NEAR(a b)`, `e=mc^2` and a 300-character paste. **None may 500.**
+  - Switch to file search **with the box empty**, and clear the box after a
+    search: both must show the explainer, never "Couldn't search inside files."
+    `DeepSearch` uses `null` and not `''` for "nothing failed / nothing in
+    flight" precisely because `''` is also a legitimate query value, and with
+    `''` this state claimed a failure before a key had been pressed.
   - A term that appears in a year-level PDF _and_ in a problem PDF gives two
     rows, one of them badged "Whole year". A term inside a PDF attached to
     several problems gives **one** row listing several problem numbers.

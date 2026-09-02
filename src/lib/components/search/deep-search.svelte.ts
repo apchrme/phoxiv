@@ -53,10 +53,20 @@ export class DeepSearch {
 	 * render a stale marker — {@link isLoading}, {@link hasFailed},
 	 * {@link isStale} — compares against the *live* key instead, so a marker left
 	 * over from a query the user has moved on from can never appear.
+	 *
+	 * **`null` is the "none" sentinel, not `''`, and that is a fixed bug rather
+	 * than a style choice.** The empty string is also the value of `deepQuery`
+	 * when the input is empty, so with `''` here `hasFailed('')` and
+	 * `isLoading('')` both answered *true* the moment files mode opened, and the
+	 * panel led with "Couldn't search inside files." before a key had been
+	 * pressed. A query below `MIN_DEEP_QUERY_LENGTH` is never fetched, so none of
+	 * these three may ever name one — `null` makes that unrepresentable, where a
+	 * guard in each predicate only makes it something every future reader has to
+	 * remember. `isStale` carried such a guard; the other two did not.
 	 */
-	#landed = $state('');
-	#inFlight = $state('');
-	#failed = $state('');
+	#landed: string | null = $state(null);
+	#inFlight: string | null = $state(null);
+	#failed: string | null = $state(null);
 	/** Bumped by "Try again", so the effect can re-fire the identical query. */
 	#attempt = $state(0);
 
@@ -73,19 +83,24 @@ export class DeepSearch {
 		return this.#attempt;
 	}
 
+	/** The body on screen, if anything is. */
+	get #current(): FileSearchResponse | undefined {
+		return this.#landed === null ? undefined : this.#cache.get(this.#landed);
+	}
+
 	/** Best-first hits for whatever last landed, or the shared empty array. */
 	get results(): readonly FileSearchResult[] {
-		return this.#cache.get(this.#landed)?.results ?? NO_RESULTS;
+		return this.#current?.results ?? NO_RESULTS;
 	}
 
 	/** More files matched than were returned, for the footer. */
 	get truncated(): boolean {
-		return this.#cache.get(this.#landed)?.truncated ?? false;
+		return this.#current?.truncated ?? false;
 	}
 
 	/** The index holds nothing at all — "still indexing", not "no matches". */
 	get indexEmpty(): boolean {
-		return this.#cache.get(this.#landed)?.indexEmpty ?? false;
+		return this.#current?.indexEmpty ?? false;
 	}
 
 	/** Whether `query` has already been fetched this session. Not reactive. */
@@ -93,7 +108,12 @@ export class DeepSearch {
 		return this.#cache.has(query);
 	}
 
-	/** Whether `query` is the one currently on the wire. */
+	/**
+	 * Whether `query` is the one currently on the wire.
+	 *
+	 * `query` is always a string and the cell is `null` when idle, so an empty
+	 * input matches nothing here without a length check of its own.
+	 */
 	isLoading(query: string): boolean {
 		return this.#inFlight === query;
 	}
@@ -105,30 +125,30 @@ export class DeepSearch {
 
 	/** Whether what is on screen belongs to an older query than `query`. */
 	isStale(query: string): boolean {
-		return this.#landed !== '' && this.#landed !== query;
+		return this.#landed !== null && this.#landed !== query;
 	}
 
 	/** Shows an already-cached query synchronously. Never a network event. */
 	show(query: string): void {
 		if (!this.#cache.has(query)) return;
 		this.#token++;
-		this.#inFlight = '';
-		this.#failed = '';
+		this.#inFlight = null;
+		this.#failed = null;
 		this.#landed = query;
 	}
 
 	/** Re-fires the current query after a failure. */
 	retry(): void {
-		this.#failed = '';
+		this.#failed = null;
 		this.#attempt++;
 	}
 
 	/** Clears what is on screen but **keeps the cache**, so a reopen costs nothing. */
 	reset(): void {
 		this.#token++;
-		this.#landed = '';
-		this.#inFlight = '';
-		this.#failed = '';
+		this.#landed = null;
+		this.#inFlight = null;
+		this.#failed = null;
 	}
 
 	#remember(query: string, body: FileSearchResponse): void {
@@ -156,7 +176,7 @@ export class DeepSearch {
 	async run(query: string, signal: AbortSignal): Promise<void> {
 		const token = ++this.#token;
 		this.#inFlight = query;
-		this.#failed = '';
+		this.#failed = null;
 
 		try {
 			const res = await fetch(`/api/search/files?q=${encodeURIComponent(query)}`, { signal });
@@ -170,7 +190,7 @@ export class DeepSearch {
 			if (token !== this.#token) return;
 			this.#failed = query;
 		} finally {
-			if (token === this.#token) this.#inFlight = '';
+			if (token === this.#token) this.#inFlight = null;
 		}
 	}
 }

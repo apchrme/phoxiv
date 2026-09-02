@@ -25,7 +25,7 @@
 // ── Query bounds ────────────────────────────────────────────────────────────
 
 /** Below this, no D1 read happens at all. A ⌘K box is nothing but prefixes. */
-export const MIN_DEEP_QUERY_LENGTH = 3;
+export const MIN_DEEP_QUERY_LENGTH = 5;
 
 /** Refused before D1, and before the cache header goes on. */
 export const MAX_DEEP_QUERY_LENGTH = 200;
