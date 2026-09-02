@@ -6,6 +6,7 @@
 	import { formToasts, Pending } from '$lib/forms.svelte';
 	import UsersTable from './UsersTable.svelte';
 	import ActivityLogTable from './ActivityLogTable.svelte';
+	import IndexPanel from './IndexPanel.svelte';
 
 	let { data, form }: PageProps = $props();
 
@@ -25,7 +26,10 @@
 		setRole: 'Role updated',
 		setAssignedOlympiads: 'Assignments saved',
 		banUser: 'User banned',
-		unbanUser: 'User unbanned'
+		unbanUser: 'User unbanned',
+		ensureIndex: 'Search index rebuilt',
+		optimizeIndex: 'Index segments merged',
+		pruneIndex: 'Orphaned index rows removed'
 	});
 </script>
 
@@ -37,6 +41,7 @@
 	<Tabs.List>
 		<Tabs.Trigger value="users">Users</Tabs.Trigger>
 		<Tabs.Trigger value="log">Log</Tabs.Trigger>
+		<Tabs.Trigger value="index">Index</Tabs.Trigger>
 	</Tabs.List>
 
 	<Tabs.Content value="users">
@@ -50,5 +55,9 @@
 
 	<Tabs.Content value="log">
 		<ActivityLogTable log={data.log} />
+	</Tabs.Content>
+
+	<Tabs.Content value="index">
+		<IndexPanel fileText={data.fileText} {pending} />
 	</Tabs.Content>
 </Tabs.Root>

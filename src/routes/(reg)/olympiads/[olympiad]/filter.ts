@@ -1,5 +1,12 @@
-import type { ProblemEntry, ProblemTopic, YearEntry } from '$lib/types';
+import type { ProblemEntry, YearEntry } from '$lib/types';
 import { progressKey, type ProgressMap } from '$lib/progress';
+import {
+	isFiltering,
+	matchesStatus,
+	matchesTopics,
+	type ProblemFilter,
+	type ProblemStatus
+} from '$lib/filters';
 
 /**
  * The search, topic and progress filtering behind the olympiad page.
@@ -9,30 +16,32 @@ import { progressKey, type ProgressMap } from '$lib/progress';
  * the progress filter, the text query and the "show full year" toggle is the
  * fiddliest logic on the page.
  *
+ * The topic and progress predicates themselves live in
+ * [`$lib/filters.ts`](../../../../lib/filters.ts), shared with the ⌘K dialog so
+ * the two screens cannot disagree about what "Done" or "Relativity" means. What
+ * stays here is everything the *page* adds on top: the text query, the
+ * year-versus-problem distinction and the "show full year" toggle, none of which
+ * the dialog has.
+ *
  * Two of the three filters run over public metadata. The progress filter is the
  * only one that reads per-user data, which is why the {@link ProgressMap} is
  * passed in to the functions that need it rather than living in
- * {@link FilterState} beside the things the user actually chose.
+ * {@link FilterState} beside the things the user actually chose. It stays a
+ * *per-olympiad* map, not the dialog's nested `GlobalProgressMap`: the page has
+ * one olympiad and has no business learning the wider type.
  */
 
 /** A year that survived filtering, with the problems that matched. */
 export type FilteredYear = YearEntry & { matchedProblems: ProblemEntry[] };
 
-/**
- * Which completion states the list should show.
- *
- * Page-only UI state, so it lives here rather than in `$lib/progress.ts`, which
- * is the domain model. `'all'` is a real member rather than `null` so that "no
- * progress filter" has exactly one spelling — every read of {@link FilterState}
- * would otherwise have to handle both — and so the dropdown has a real option to
- * select for it.
- */
-export type ProblemStatus = 'all' | 'done' | 'todo';
+// Re-exported so the page and its children keep importing the status union from
+// the module that owns the rest of their filter state, rather than reaching past
+// it. The declaration itself moved to `$lib/filters.ts` when the ⌘K dialog
+// gained the same control — a `$lib` component cannot import from a route.
+export type { ProblemStatus };
 
-export type FilterState = {
+export type FilterState = ProblemFilter & {
 	query: string;
-	topics: ProblemTopic[];
-	status: ProblemStatus;
 	/** Show a matching year's whole problem set, not just the matches. */
 	showFullYear: boolean;
 };
@@ -41,16 +50,6 @@ function matchesQuery(problem: ProblemEntry, q: string): boolean {
 	return (
 		problem.number.toLowerCase().includes(q) || (problem.title?.toLowerCase().includes(q) ?? false)
 	);
-}
-
-/**
- * True when a filter is narrowing the problem list *itself*, as opposed to the
- * text query. Only then may a year be dropped for having no matching problems:
- * a year with no problems at all still has notes, links and files worth showing
- * when nothing is being filtered.
- */
-function narrowsProblems({ topics, status }: FilterState): boolean {
-	return topics.length > 0 || status !== 'all';
 }
 
 /**
@@ -72,15 +71,12 @@ function visibleProblems(
 	// whole olympiad.
 	if (topics.length === 0 && status === 'all') return year.problems;
 
-	return year.problems.filter((problem) => {
-		if (topics.length > 0 && !(problem.topics?.some((t) => topics.includes(t)) ?? false)) {
-			return false;
-		}
-		if (status === 'all') return true;
-		// The key's existence is the completion flag; there is no field to read.
-		const done = progress[progressKey(year.year, problem.number)] !== undefined;
-		return status === 'done' ? done : !done;
-	});
+	return year.problems.filter(
+		(problem) =>
+			matchesTopics(problem.topics, topics) &&
+			// The key's existence is the completion flag; there is no field to read.
+			matchesStatus(progress[progressKey(year.year, problem.number)] !== undefined, status)
+	);
 }
 
 /**
@@ -104,7 +100,7 @@ export function filterYears(
 
 	for (const year of years ?? []) {
 		const visible = visibleProblems(year, state, progress);
-		if (narrowsProblems(state) && visible.length === 0) continue;
+		if (isFiltering(state) && visible.length === 0) continue;
 
 		if (!q) {
 			results.push({ ...year, matchedProblems: visible });

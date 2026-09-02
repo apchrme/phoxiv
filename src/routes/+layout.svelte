@@ -30,7 +30,7 @@
 </svelte:head>
 
 <ModeWatcher />
-<GlobalSearch bind:open={searchOpen} />
+<GlobalSearch bind:open={searchOpen} userId={data.user?.id} />
 <Toaster richColors closeButton position="top-center" />
 
 <Sidebar.Provider>

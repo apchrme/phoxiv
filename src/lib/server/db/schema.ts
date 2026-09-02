@@ -39,7 +39,14 @@ export const yearFiles = sqliteTable(
 		label: text('label').notNull(),
 		url: text('url').notNull()
 	},
-	(t) => [uniqueIndex('year_files_year_label_idx').on(t.yearId, t.label)]
+	(t) => [
+		uniqueIndex('year_files_year_label_idx').on(t.yearId, t.label),
+		// Every deep-search hit joins back on `url`, and the backfill's candidate
+		// query left-joins `file_text` on it — without this each is a full scan of
+		// this table. Not unique: two labels in one parent may legitimately name one
+		// object, which is exactly what `collidingLabel` exists to catch.
+		index('year_files_url_idx').on(t.url)
+	]
 );
 
 export const problems = sqliteTable(
@@ -75,7 +82,11 @@ export const problemFiles = sqliteTable(
 		label: text('label').notNull(),
 		url: text('url').notNull()
 	},
-	(t) => [uniqueIndex('problem_files_problem_label_idx').on(t.problemId, t.label)]
+	(t) => [
+		uniqueIndex('problem_files_problem_label_idx').on(t.problemId, t.label),
+		// See `year_files_url_idx` — same join, same reason, same non-uniqueness.
+		index('problem_files_url_idx').on(t.url)
+	]
 );
 
 // `user.email` and `session.token` are unique via an explicit `uniqueIndex`
@@ -223,7 +234,11 @@ export const activityLog = sqliteTable(
 				'save_metadata',
 				'upload_file',
 				'delete_file',
-				'import_titles'
+				'import_titles',
+				// One row per posted batch from `bun run index:backfill`, never one per
+				// file: `upload_file` already covers the single-file event, and per-file
+				// rows would flood the log the first time the corpus is indexed.
+				'index_files'
 			]
 		}).notNull(),
 		olympiadId: text('olympiad_id'),
@@ -288,4 +303,91 @@ export const problemProgress = sqliteTable(
 		uniqueIndex('problem_progress_user_problem_idx').on(t.userId, t.problemId),
 		index('problem_progress_problem_idx').on(t.problemId)
 	]
+);
+
+/**
+ * Extracted plain text for one uploaded document, and the state of its
+ * extraction.
+ *
+ * # Keyed by the whole CDN url
+ *
+ * `url` is byte-identical to the string `year_files.url` / `problem_files.url`
+ * already hold, and that is the decisive property: it is **already the join key
+ * of both file tables**, so the deep-search read joins straight back to them and
+ * a row whose url is no longer referenced becomes *invisible rather than wrong*.
+ * Correctness therefore never depends on cleanup running.
+ *
+ * Not a row id: renaming a problem number is a delete plus an insert in
+ * `saveMetadata`, which cascades `problem_files` away and would throw out an
+ * extraction for a file whose bytes never moved. Not a content hash: that needs
+ * 50 MB read *and* hashed before we can decide to skip it, for no user-visible
+ * gain.
+ *
+ * # Why a separate table
+ *
+ * The text is not a column on `year_files`/`problem_files` because both are read
+ * with a bare `db.select()` by `getYearContent` and fanned out over LEFT JOINs by
+ * `getOlympiadYearEntries` and `getSearchIndex` — the exact shape that once
+ * dragged `olympiads.description_md` onto every row of the corpus. A 40 kB blob
+ * on that path would be far worse.
+ *
+ * # Why no foreign key
+ *
+ * `url` is not unique in either file table — two labels in one parent may name
+ * one object — so a foreign key is not expressible. That is also why every
+ * cleanup below is explicit, and why the read path is written to tolerate a
+ * stale row instead of trusting one.
+ */
+export const fileText = sqliteTable(
+	'file_text',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		/**
+		 * The full CDN url, byte-identical to the `url` column it mirrors.
+		 *
+		 * `id` is an `integer primary key autoincrement`, hence a rowid alias, which
+		 * is what lets the FTS5 index declare `content_rowid='id'`.
+		 */
+		url: text('url').notNull(),
+		status: text('status', { enum: ['pending', 'ok', 'empty', 'skipped', 'error'] })
+			.notNull()
+			.default('pending'),
+		/**
+		 * Normalised plain text, capped at `TEXT_CHAR_CAP`. NULL unless `ok`.
+		 *
+		 * **No endpoint may select this column.** Only `snippet()` reads it, inside
+		 * the FTS5 query, and what leaves the server is a bounded excerpt. Exposing
+		 * a query function that returns it would make the whole corpus text
+		 * downloadable, which is a copyright question for third-party papers.
+		 */
+		text: text('text'),
+		chars: integer('chars').notNull().default(0),
+		truncated: integer('truncated', { mode: 'boolean' }).notNull().default(false),
+		/**
+		 * The object's ETag and size, for change detection — nullable and often
+		 * null, because the browser upload path has no reason to read R2 and the
+		 * Worker deliberately never does. Only the backfill script fills these, from
+		 * the `ETag`/`Content-Length` the CDN returns; that is enough, since a
+		 * re-upload under the same label is refused by `collidingLabel` and a
+		 * delete-then-re-upload resets the row outright.
+		 */
+		etag: text('etag'),
+		bytes: integer('bytes'),
+		/** Lowercase extension, no dot. Decides whether extraction is attempted. */
+		ext: text('ext').notNull().default(''),
+		/** Bumping `EXTRACTOR_VERSION` re-queues every row with no migration. */
+		extractorVersion: integer('extractor_version').notNull().default(0),
+		engine: text('engine').notNull().default(''),
+		error: text('error'),
+		/** Bounded, so one poison file cannot block the backfill queue forever. */
+		attempts: integer('attempts').notNull().default(0),
+		createdAt: integer('created_at', { mode: 'timestamp_ms' })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull(),
+		updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.$onUpdate(() => new Date())
+			.notNull()
+	},
+	(t) => [uniqueIndex('file_text_url_idx').on(t.url), index('file_text_status_idx').on(t.status)]
 );

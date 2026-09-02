@@ -214,10 +214,23 @@ export async function getYearContent(
  * olympiad name, year, problem number and title **in that order** — uFuzzy
  * matches against it directly, so reordering changes which results rank first.
  *
- * `topics` and `maxScore` are both deliberately omitted, for different reasons:
- * a topic would leak hints about the problem, and a maximum is simply not what
- * this endpoint is for — it is a fuzzy index, not a metadata feed. Its shape is
- * therefore untouched by the change that put `maxScore` on `ProblemEntry`.
+ * **`topics` travels; `searchText` still excludes it.** The two are not in
+ * tension. Topics are already public in the shared-cached
+ * `/api/olympiads/[olympiad]` body — that is what the olympiad page's own topic
+ * filter reads — so withholding them here bought nothing except a ⌘K dialog that
+ * could not offer the same filter. The invariant they are guarded by is "never
+ * *rendered* next to a problem", not "never on the wire". Folding a topic name
+ * into the haystack would be a different thing entirely: it would break the
+ * ranking contract above *and* let a visitor infer a problem's topic by typing
+ * "Relativity" and seeing what surfaces, which is the actual spoiler the
+ * original omission was reaching for.
+ *
+ * `maxScore` stays omitted, on its own unchanged reasoning: it is simply not
+ * what this endpoint is for — a fuzzy index, not a metadata feed.
+ *
+ * `problems.id` does not travel either. The topic filter needs `topics`, the
+ * status filter needs `(olympiadId, year, number)`, and navigation is
+ * `#<year>` — so no row id has to enter a cached payload.
  */
 export async function getSearchIndex(db: DB): Promise<SearchItem[]> {
 	const rows = await db
@@ -229,7 +242,12 @@ export async function getSearchIndex(db: DB): Promise<SearchItem[]> {
 		// group when the selection path is two levels deep, and `if
 		// (row.problem_files)` below depends on that.
 		.select({
-			problems: { id: problems.id, number: problems.number, title: problems.title },
+			problems: {
+				id: problems.id,
+				number: problems.number,
+				title: problems.title,
+				topics: problems.topics
+			},
 			years: { year: years.year },
 			olympiads: { id: olympiads.id, name: olympiads.name, icon: olympiads.icon },
 			problem_files: { label: problemFiles.label, url: problemFiles.url }
@@ -238,9 +256,25 @@ export async function getSearchIndex(db: DB): Promise<SearchItem[]> {
 		.innerJoin(years, eq(years.id, problems.yearId))
 		.innerJoin(olympiads, eq(olympiads.id, years.olympiadId))
 		.leftJoin(problemFiles, eq(problemFiles.problemId, problems.id))
-		// Ordered by a column that is no longer selected. Valid SQLite, unchanged
-		// SQL — but load-bearing, so it must survive any further trimming.
-		.orderBy(asc(problemFiles.id))
+		// Ordered by columns that are mostly not selected. Valid SQLite, and the
+		// nested arrays' order is the only thing the SQL ORDER BY fixes — so this
+		// is load-bearing and must survive any further trimming.
+		//
+		// The top-level ordering is new and deliberate: the array has never had
+		// one, which did not show while `rank()` reordered everything it returned.
+		// The dialog now lists `filteredIndex` directly when the query is empty and
+		// a filter is set, and without this that list would come back in
+		// `problems.id` order — meaningless across olympiads.
+		//
+		// `problems.id` must precede `problemFiles.id`, or one problem's file rows
+		// would not be contiguous and `groupJoined` would split the problem in two.
+		.orderBy(
+			asc(olympiads.displayOrder),
+			asc(olympiads.id),
+			desc(years.year),
+			asc(problems.id),
+			asc(problemFiles.id)
+		)
 		.all();
 
 	return groupJoined(
@@ -263,6 +297,13 @@ export async function getSearchIndex(db: DB): Promise<SearchItem[]> {
 			problem: {
 				number: row.problems.number,
 				...(row.problems.title ? { title: row.problems.title } : {}),
+				// **Always** an array, never omitted-when-empty like `title` above.
+				// That is what makes `topics === undefined` mean exactly one thing on
+				// the client: "this body was cached before topics shipped". Omitting
+				// `[]` would make "untagged problem" and "stale payload"
+				// indistinguishable, and the dialog's topic filter would silently
+				// empty the result list for a day after deploy.
+				topics: parseTopics(row.problems.topics),
 				files: []
 			}
 		}),

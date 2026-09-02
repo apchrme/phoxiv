@@ -68,6 +68,11 @@
 	</Tabs.Content>
 
 	<Tabs.Content value="files">
-		<FilesTab yearFiles={data.yearFiles} problems={data.problems} {pending} />
+		<FilesTab
+			yearFiles={data.yearFiles}
+			problems={data.problems}
+			fileTextStatus={data.fileTextStatus}
+			{pending}
+		/>
 	</Tabs.Content>
 </Tabs.Root>

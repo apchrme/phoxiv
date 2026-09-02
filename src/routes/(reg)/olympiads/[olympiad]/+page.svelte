@@ -13,7 +13,7 @@
 	import { formToasts, Pending } from '$lib/forms.svelte';
 	import type { ProgressMap } from '$lib/progress';
 	import YearPanel from './YearPanel.svelte';
-	import StatusFilter from './StatusFilter.svelte';
+	import StatusFilter from '$lib/components/StatusFilter.svelte';
 	import {
 		filterYears,
 		hasProblemMatches,

@@ -1,28 +1,46 @@
 <script lang="ts">
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import { buttonVariants } from '$lib/components/ui/button/index.js';
+	import { buttonVariants, type ButtonSize } from '$lib/components/ui/button/index.js';
 	import { Circle, CircleCheck, CircleDashed } from '@lucide/svelte';
 	import { cn } from '$lib/utils.js';
-	import type { ProblemStatus } from './filter';
+	import type { ProblemStatus } from '$lib/filters';
 
 	/**
-	 * The olympiad page's progress filter: `All problems`, `Done` or `To do`.
+	 * The progress filter: `All problems`, `Done` or `To do`.
 	 *
 	 * An icon-only dropdown, not the segmented `ToggleGroup` this started as: all
 	 * three labels sit in the toolbar at once in that form, which is most of a
 	 * phone's width for a control sharing its row with the topic filter and the
 	 * "show full year" switch. This is deliberately `TopicSelect`'s `iconOnly`
-	 * trigger — same square, same fill-while-filtering rule — so the page's two
-	 * filters read as a pair.
+	 * trigger — same square, same fill-while-filtering rule — so the two filters
+	 * read as a pair.
 	 *
-	 * Rendered only for signed-in users; `+page.svelte` decides that, since "Done"
+	 * Shared by the olympiad page's toolbar and the ⌘K dialog's input row, which
+	 * is why it sits in `$lib/components/` beside `TopicSelect.svelte` rather than
+	 * beside the olympiad route: a `$lib` component cannot import from a route
+	 * directory, and duplicating it would give the two filters two chances to
+	 * disagree. It imports only `ProblemStatus`, so nothing route-shaped came with
+	 * it.
+	 *
+	 * Rendered only for signed-in users; the caller decides that, since "Done"
 	 * could only ever be empty without a session.
 	 *
 	 * A `DropdownMenu.RadioGroup` and not a `Select`: radio items give the active
 	 * option a check without the listbox machinery a `Select` brings, and it is
 	 * the primitive `TopicSelect` already uses.
 	 */
-	let { value = $bindable('all') }: { value?: ProblemStatus } = $props();
+	let {
+		value = $bindable('all'),
+		size = 'icon'
+	}: {
+		value?: ProblemStatus;
+		/**
+		 * Trigger size, mirroring `TopicSelect`. Defaults to the olympiad page's
+		 * `'icon'`; the ⌘K dialog asks for `'icon-sm'`, where four controls share
+		 * the input's row and 36px squares overflow it on a phone.
+		 */
+		size?: ButtonSize;
+	} = $props();
 
 	/**
 	 * The icons are `ProgressControl`'s, deliberately: the circle a signed-in user
@@ -52,7 +70,7 @@
 
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger
-		class={cn(buttonVariants({ variant: triggerVariant, size: 'icon' }), 'shrink-0')}
+		class={cn(buttonVariants({ variant: triggerVariant, size }), 'shrink-0')}
 		title="Filter by progress: {current.label}"
 	>
 		<!-- Uncoloured on purpose, for `TopicSelect`'s reason: it has to inherit

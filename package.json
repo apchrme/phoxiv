@@ -20,7 +20,8 @@
 		"db:studio": "drizzle-kit studio",
 		"cf-typegen": "wrangler types ./src/worker-configuration.d.ts",
 		"cf-typegen:check": "wrangler types ./src/worker-configuration.d.ts --check",
-		"db:generate-auth": "bun x auth@latest generate --config src/lib/server/auth-cli.ts"
+		"db:generate-auth": "bun x auth@latest generate --config src/lib/server/auth-cli.ts",
+		"index:backfill": "bun run src/lib/server/reindex-cli.ts"
 	},
 	"dependencies": {
 		"@better-auth/drizzle-adapter": "^1.7.1",
@@ -61,14 +62,17 @@
 		"eslint": "^10.9.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.23.0",
+		"fflate": "^0.8.3",
 		"globals": "^17.11.0",
 		"mdsvex": "^0.12.8",
+		"pdfjs-dist": "^6.3.289",
 		"prettier": "^3.9.6",
 		"prettier-plugin-svelte": "^4.1.1",
 		"prettier-plugin-tailwindcss": "^0.8.1",
 		"svelte-check": "^4.7.6",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.67.0",
+		"unpdf": "^1.8.1",
 		"vite": "^8.2.2",
 		"wrangler": "^4.125.0"
 	}

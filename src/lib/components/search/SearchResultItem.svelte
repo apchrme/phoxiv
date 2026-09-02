@@ -23,6 +23,7 @@
 	let {
 		item,
 		query,
+		index,
 		focused,
 		onactivate,
 		onhover
@@ -30,6 +31,14 @@
 		item: SearchItem;
 		/** The live query, used to mark the characters that matched. */
 		query: string;
+		/**
+		 * This row's position in the rendered list, mirrored onto the `<li>` as
+		 * `data-result-index`. The shell scrolls the focused row into view by that
+		 * attribute rather than by `querySelectorAll('li')[i]`, so a live region, a
+		 * filter summary or any future non-result `<li>` in the same scroll
+		 * container cannot shift every index and land the highlight on the wrong row.
+		 */
+		index: number;
 		/** Whether this is the row the keyboard is on. */
 		focused: boolean;
 		onactivate: () => void;
@@ -37,7 +46,7 @@
 	} = $props();
 </script>
 
-<li>
+<li data-result-index={index}>
 	<a
 		href={resolve(`/olympiads/${item.olympiadId}#${item.year}`)}
 		onclick={(e) => {

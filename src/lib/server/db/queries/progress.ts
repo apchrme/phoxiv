@@ -1,15 +1,16 @@
 import { and, eq } from 'drizzle-orm';
 import { problemProgress, problems, years, type DB } from '../index';
-import { progressKey, type ProgressMap } from '$lib/progress';
+import { progressKey, type GlobalProgressMap, type ProgressMap } from '$lib/progress';
 
 /**
  * Reads and writes for `problem_progress` — one signed-in user's record of the
  * problems they have done.
  *
  * None of this is ever served from `/api/*`: those responses live in
- * Cloudflare's **shared** cache, and per-user data must never enter it. The one
- * read below backs `GET /olympiads/[olympiad]/progress`, which sits outside
- * `/api/` for exactly that reason and answers `no-store`.
+ * Cloudflare's **shared** cache, and per-user data must never enter it. The two
+ * reads below back `GET /olympiads/[olympiad]/progress` and `GET /progress`,
+ * both of which sit outside `/api/` for exactly that reason and answer
+ * `no-store`.
  */
 
 /**
@@ -49,6 +50,47 @@ export async function getOlympiadProgress(
 	const progress: ProgressMap = {};
 	for (const row of rows) {
 		progress[progressKey(row.year, row.number)] = { score: row.score };
+	}
+	return progress;
+}
+
+/**
+ * Every problem this user has tracked, across every olympiad, as a
+ * {@link GlobalProgressMap}.
+ *
+ * {@link getOlympiadProgress} minus the `eq(years.olympiadId, …)` predicate,
+ * plus that column in the projection — so it is still driven off
+ * `problem_progress.user_id`, the leading column of
+ * `problem_progress_user_problem_idx`, and still costs O(rows this user tracked)
+ * rather than O(problems in the archive).
+ *
+ * `getOlympiadProgress` is deliberately **not** reimplemented on top of this:
+ * that would read every olympiad's rows to answer a question about one.
+ *
+ * Backs `GET /progress`, which the ⌘K dialog fetches once per session so its
+ * status filter can span the archive. The nesting is what keeps IPhO 2019 T1 and
+ * APhO 2019 T1 apart — see {@link GlobalProgressMap}.
+ */
+export async function getAllProgress(db: DB, userId: string): Promise<GlobalProgressMap> {
+	const rows = await db
+		.select({
+			olympiadId: years.olympiadId,
+			year: years.year,
+			number: problems.number,
+			score: problemProgress.score
+		})
+		.from(problemProgress)
+		// Both joins are inner, so the flat selection form is safe here, exactly as
+		// above — the nesting `queries/content.ts` insists on is only needed to make
+		// Drizzle nullify a LEFT JOIN's group.
+		.innerJoin(problems, eq(problems.id, problemProgress.problemId))
+		.innerJoin(years, eq(years.id, problems.yearId))
+		.where(eq(problemProgress.userId, userId))
+		.all();
+
+	const progress: GlobalProgressMap = {};
+	for (const row of rows) {
+		(progress[row.olympiadId] ??= {})[progressKey(row.year, row.number)] = { score: row.score };
 	}
 	return progress;
 }

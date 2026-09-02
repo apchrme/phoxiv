@@ -18,7 +18,8 @@ export const ACTION_LABELS: Record<string, string> = {
 	save_metadata: 'Saved year metadata',
 	upload_file: 'Uploaded file',
 	delete_file: 'Deleted file',
-	import_titles: 'Imported problem titles'
+	import_titles: 'Imported problem titles',
+	index_files: 'Indexed file text'
 };
 
 /** `ACTION_LABELS[action]`, falling back to the raw name for unknown actions. */

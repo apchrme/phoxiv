@@ -22,6 +22,12 @@ import { collidingLabel, DOCUMENT_UPLOAD } from '$lib/uploads';
 import { parseLabelledUrls, parseStringArray } from '$lib/utils/json';
 import { parseTopics, serializeTopics } from '$lib/utils/topics';
 import { parseMaxScore } from '$lib/progress';
+import {
+	deleteFileTextForUrl,
+	deleteFileTextForUrls,
+	getFileTextStatuses,
+	putFileText
+} from '$lib/server/db/queries/files';
 import { duplicateProblemNumbers, invalidMaxScores } from './metadata';
 
 /** Whether a file belongs to the year as a whole or to one problem. */
@@ -52,6 +58,17 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		yearRow.id
 	);
 
+	// The extraction status of every file on this page, for the quiet badges in
+	// `FileSection`. Read here rather than folded into `getYearContent`, which is
+	// the tree assembly `content.ts` describes itself as: the text index is a
+	// different concern and lives behind `queries/files.ts`, which is also why
+	// this cannot drag `file_text.text` along by accident. `/contribute` is
+	// uncached, so the extra read is free.
+	const fileTextStatus = await getFileTextStatuses(db, [
+		...yearFileEntries.map((f) => f.url),
+		...problemEntries.flatMap((p) => p.files.map((f) => f.url))
+	]);
+
 	return {
 		olympiad: { id: olympiadRow.id, name: olympiadRow.name },
 		year: {
@@ -61,7 +78,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			extraLinks: parseLabelledUrls(yearRow.extraLinks)
 		},
 		yearFiles: yearFileEntries,
-		problems: problemEntries
+		problems: problemEntries,
+		fileTextStatus
 	};
 };
 
@@ -218,6 +236,14 @@ export const actions: Actions = {
 
 		await db.delete(problems).where(removed).run();
 
+		// Below the "nothing may fail the save" line, and best-effort with it. The
+		// same url list the orphan-object delete above already read, so the two
+		// cannot disagree about which files went away.
+		await deleteFileTextForUrls(
+			db,
+			orphaned.map((f) => f.url)
+		).catch(() => {});
+
 		await logActivity(
 			db,
 			user,
@@ -263,6 +289,14 @@ export const actions: Actions = {
 
 		// Cascades to `problems`, `yearFiles`, `problemFiles` via FK onDelete: 'cascade'
 		await db.delete(years).where(eq(years.id, yearRow.id)).run();
+
+		// Best-effort, below the deletes it follows. No `NOT EXISTS` guard is
+		// needed: the R2 key layout namespaces urls by olympiad and year, so no
+		// other year can share one of these.
+		await deleteFileTextForUrls(db, [
+			...yearFileRows.map((f) => f.url),
+			...problemFileRows.map((f) => f.url)
+		]).catch(() => {});
 
 		await logActivity(db, user, 'delete_year', `Deleted year ${yearNum}`, {
 			olympiadId: params.olympiad,
@@ -385,6 +419,20 @@ export const actions: Actions = {
 				.run();
 		}
 
+		// ── Nothing below this line may fail the upload. ────────────────────────
+		//
+		// The rule `saveMetadata` states above its own writes, for the same reason:
+		// the object is in R2 and the row is in D1, so an `actionFail` here would
+		// tell the contributor their upload failed when it did not. A missing,
+		// oversized or unparseable `extractedText` therefore lands as a `pending`
+		// row for the backfill sweep to pick up — never as a failed upload.
+		//
+		// `extractedText` is produced by `$lib/pdf-text.ts` in the contributor's own
+		// browser on file-pick, which is why storing it is one more D1 write and not
+		// a parse. `putFileText` re-runs `normalizeExtracted` over it and applies a
+		// hard size gate; see the four containments spelled out there.
+		await putFileText(db, url, ext, field(data, 'extractedText')).catch(() => {});
+
 		await logActivity(
 			db,
 			user,
@@ -422,6 +470,8 @@ export const actions: Actions = {
 			// a crafted value could otherwise delete an arbitrary object.
 			await deleteByUrl(bucket, record.url);
 			await db.delete(yearFiles).where(eq(yearFiles.id, record.id)).run();
+			// Best-effort hygiene; see the problem-scoped delete below.
+			await deleteFileTextForUrl(db, record.url).catch(() => {});
 		} else {
 			const problem = await db
 				.select()
@@ -439,6 +489,11 @@ export const actions: Actions = {
 
 			await deleteByUrl(bucket, record.url);
 			await db.delete(problemFiles).where(eq(problemFiles.id, record.id)).run();
+			// Hygiene only, and best-effort for that reason: `searchFiles` INNER
+			// JOINs back to this table, so a row whose file is gone is unreachable
+			// rather than wrong. Failing the delete here would report a failure for
+			// a deletion that has already happened.
+			await deleteFileTextForUrl(db, record.url).catch(() => {});
 		}
 
 		await logActivity(

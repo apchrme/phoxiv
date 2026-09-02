@@ -15,10 +15,13 @@
 	let {
 		yearFiles,
 		problems,
+		fileTextStatus,
 		pending
 	}: {
 		yearFiles: PageData['yearFiles'];
 		problems: PageData['problems'];
+		/** Extraction status per file url, for the quiet badges. */
+		fileTextStatus: PageData['fileTextStatus'];
 		/** The page's single tracker, so the buttons can disable themselves. */
 		pending: Pending;
 	} = $props();
@@ -34,7 +37,7 @@
 			</Card.Description>
 		</Card.Header>
 		<Card.Content>
-			<FileSection scope="year" existingFiles={yearFiles} {pending} />
+			<FileSection scope="year" existingFiles={yearFiles} {fileTextStatus} {pending} />
 		</Card.Content>
 	</Card.Root>
 
@@ -59,6 +62,7 @@
 						scope="problem"
 						existingFiles={problem.files}
 						problemNumber={problem.number}
+						{fileTextStatus}
 						{pending}
 					/>
 				</Card.Content>

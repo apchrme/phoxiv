@@ -1,6 +1,7 @@
 {
 	"enabledPlugins": {
 		"svelte@svelte": true,
-		"gsap-skills@gsap-skills": true
+		"gsap-skills@gsap-skills": true,
+		"cloudflare@cloudflare": true
 	}
 }

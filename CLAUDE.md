@@ -40,17 +40,21 @@ src/routes/
 │                  …except olympiads/[olympiad]/progress/, an endpoint that sets
 │                  its own `private, no-store` — it serves per-user progress
 ├── admin/         deliberately outside (reg) — must never be cached
+├── progress/      also outside (reg); one GlobalProgressMap for the ⌘K dialog,
+│                  `private, no-store` — the status filter spans the archive
 ├── contribute/    also outside (reg); [olympiad]/ and [olympiad]/[year]/ editors
 └── api/           Cloudflare's SHARED cache (s-maxage=86400) …
-                   olympiads/, olympiads/[olympiad]/, search/, stats/
+                   olympiads/, olympiads/[olympiad]/, search/, search/files/, stats/
                    …except auth/[...all]/, which sets no cache headers
 ```
 
 `src/lib/server/` has one module per concern: `auth`, `auth-cli`, `guard`,
-`cache`, `forms`, `uploads`, `storage`, `markdown`, `activity-log`, and `db/`
-(`schema.ts` plus `queries/{olympiads,years,content,progress}.ts`). Client-safe
+`cache`, `forms`, `uploads`, `storage`, `markdown`, `activity-log`, `reindex-cli`,
+and `db/`
+(`schema.ts` plus `queries/{olympiads,years,content,progress,files}.ts`). Client-safe
 shared code sits directly under `src/lib/`: `types`, `uploads`, `constants`,
-`nav`, `posts`, `activity`, `progress`, `forms.svelte`, `auth-client`,
+`nav`, `posts`, `activity`, `progress`, `filters`, `search`, `pdf-text`,
+`forms.svelte`, `auth-client`,
 `utils/{date,flag,fuzzy,json,topics}`.
 
 **Roles are `user`, `contributor` and `admin`.** `contributor` is real and
@@ -62,7 +66,11 @@ plugin is pinned to `adminRoles: ['admin']` and knows nothing about it. Only
 ## Rules
 
 1. **Never hand-edit `src/lib/server/db/migrations/`.** Change `schema.ts`, then
-   `bun run db:generate`.
+   `bun run db:generate`. There is **one documented exception**, the FTS5 virtual
+   table and its triggers — see
+   [data-model.md](./docs/data-model.md#the-full-text-index), which also records
+   why `db:generate` can never drop them and why **`db:push` now must never be
+   pointed at anything real**.
 2. **Never re-run the shadcn-svelte CLI over `src/lib/components/ui/`.** Those
    files came from the CLI but have been customised since — glass styles, the
    sheet overlay, `input.svelte` — across ~40 commits, and `components.json`

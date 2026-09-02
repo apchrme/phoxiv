@@ -40,6 +40,24 @@ export type ProblemProgress = {
 export type ProgressMap = Record<string, ProblemProgress>;
 
 /**
+ * One user's progress across **every** olympiad: a {@link ProgressMap} per
+ * olympiad id.
+ *
+ * Nested rather than flat, and the nesting is the point. {@link progressKey} is
+ * `(year, number)` only, so a flat cross-archive map would file IPhO 2019 T1 and
+ * APhO 2019 T1 under one key and silently confuse the two. Nesting also keeps
+ * exactly one spelling of "the key a problem is filed under" in the codebase — a
+ * flat `olympiad:year:number` key would be a second one, and `filter.ts`,
+ * `ProgressControl` and the `key` that `?/trackProblem` returns as `form.key`
+ * would all then have to agree with it.
+ *
+ * A read costs one extra lookup — `global[olympiadId]?.[progressKey(y, n)]` —
+ * and `global[id] ?? {}` is a ready-made argument for anything that already
+ * takes a per-olympiad map. Backs `GET /progress`.
+ */
+export type GlobalProgressMap = Record<string, ProgressMap>;
+
+/**
  * The key a problem is filed under.
  *
  * `(year, number)` rather than `problems.id`: the olympiad page never learns a

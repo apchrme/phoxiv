@@ -69,23 +69,24 @@ link will 404 locally — expected, and not worth working around.
 
 ## Scripts
 
-| Script                      | When to run it                                                               |
-| --------------------------- | ---------------------------------------------------------------------------- |
-| `bun run dev`               | development server                                                           |
-| `bun run build`             | production build (also the first half of `preview` and `deploy`)             |
-| `bun run preview`           | build, then serve it through `wrangler dev` — the closest thing to prod      |
-| `bun run check`             | `svelte-check` over the whole project. **Must be 0 errors**                  |
-| `bun run check:watch`       | the same, incrementally                                                      |
-| `bun run lint`              | `prettier --check` + `eslint`. **Must be 0 errors**                          |
-| `bun run format`            | `prettier --write` — run this before `lint`                                  |
-| `bun run deploy`            | build and push to Cloudflare. See [deployment.md](./deployment.md)           |
-| `bun run db:generate`       | after editing `schema.ts` — writes a new migration                           |
-| `bun run db:migrate`        | apply migrations to the **local** D1                                         |
-| `bun run db:migrate-remote` | apply migrations to the **production** D1                                    |
-| `bun run db:push`           | throwaway local schema sync. Never for a change you intend to ship           |
-| `bun run db:studio`         | drizzle-kit's database browser                                               |
-| `bun run db:generate-auth`  | after changing `authOptions` — regenerates BetterAuth's tables               |
-| `bun run cf-typegen`        | after editing `wrangler.jsonc` — regenerates `src/worker-configuration.d.ts` |
+| Script                      | When to run it                                                                                                                                                                   |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun run dev`               | development server                                                                                                                                                               |
+| `bun run build`             | production build (also the first half of `preview` and `deploy`)                                                                                                                 |
+| `bun run preview`           | build, then serve it through `wrangler dev` — the closest thing to prod                                                                                                          |
+| `bun run check`             | `svelte-check` over the whole project. **Must be 0 errors**                                                                                                                      |
+| `bun run check:watch`       | the same, incrementally                                                                                                                                                          |
+| `bun run lint`              | `prettier --check` + `eslint`. **Must be 0 errors**                                                                                                                              |
+| `bun run format`            | `prettier --write` — run this before `lint`                                                                                                                                      |
+| `bun run deploy`            | build and push to Cloudflare. See [deployment.md](./deployment.md)                                                                                                               |
+| `bun run db:generate`       | after editing `schema.ts` — writes a new migration                                                                                                                               |
+| `bun run db:migrate`        | apply migrations to the **local** D1                                                                                                                                             |
+| `bun run db:migrate-remote` | apply migrations to the **production** D1                                                                                                                                        |
+| `bun run db:push`           | throwaway local schema sync. Never for a change you intend to ship — and since the FTS5 migration it will offer to **drop the search index**, so never point it at anything real |
+| `bun run db:studio`         | drizzle-kit's database browser                                                                                                                                                   |
+| `bun run db:generate-auth`  | after changing `authOptions` — regenerates BetterAuth's tables                                                                                                                   |
+| `bun run cf-typegen`        | after editing `wrangler.jsonc` — regenerates `src/worker-configuration.d.ts`                                                                                                     |
+| `bun run index:backfill`    | sweeps every already-uploaded file into the text index; see [deployment.md](./deployment.md#backfilling-the-text-index)                                                          |
 
 ## The gates
 
@@ -95,6 +96,12 @@ entire safety net, which makes both non-negotiable:
 ```sh
 bun run format && bun run check && bun run lint && bun run build
 ```
+
+One more gate applies to any change near `$lib/pdf-text.ts` or the vendored
+build: the **server-bundle check** in
+[deployment.md](./deployment.md#the-bundle-check). pdf.js leaking into the Worker
+breaks nothing visibly — everything still works — so it needs a number rather
+than a glance.
 
 Run that before every commit, and exercise whatever route you touched under
 `bun run dev`. The routes worth clicking through, and what regresses silently on
@@ -109,8 +116,68 @@ each:
   number (must be blocked client-side), reorder and remove rows then save and
   confirm the right records changed, upload a file, delete a file, delete the year.
 - **`/contribute`** — select an existing olympiad, create a new one.
-- **⌘K search** — type, hover a result then press Enter (must navigate to the
-  hovered row), close and reopen and confirm **no second `/api/search` request**.
+- **⌘K search** — the dialog carries the most manual-only behaviour in the app,
+  so it gets its own list:
+  - Type, hover a result then press **Enter** — it must navigate to the _hovered_
+    row, not the last one the arrows were on.
+  - Close and reopen: **no second `/api/search` request**. Signed in, close and
+    reopen: **no second `/progress` request** either. Both caches are
+    session-long, and the reset-on-open only clears what the user chose.
+  - Press **Escape**, then reopen with the _desktop nav button_: the query must
+    be empty and every filter cleared. Three ways in and four ways out, and only
+    two of them run code of ours — this is what that reset exists for.
+  - Open it with **caps lock on**. `e.key` is `'K'`, and the naive comparison
+    this replaced silently stopped ⌘K working at all.
+  - Signed out: the topic filter is present and the progress filter is absent.
+    Signed in: `done`/`todo` must agree with the olympiad page for the same
+    problem — mark one done there, reopen ⌘K, and the `todo` list has dropped it.
+  - Apply a filter with a query long enough to hit `MAX_RESULTS`, to confirm
+    filtering happens **before** ranking rather than over the ranked 50.
+  - Clear the query with a filter still set: the first 50 filtered problems must
+    list, ordered by olympiad then year descending.
+  - No topic label may be rendered in a result row, ever.
+  - Open the topic dropdown _inside_ the dialog and arrow through it: the result
+    list underneath must not move. Escape closes the menu; Escape again closes
+    the dialog.
+  - At **375px**, signed in, with a topic filter set: all four controls fit, the
+    close button is not clipped and the input is still usable. This is the
+    `min-w-0` check and it is the one most likely to be missed, because it only
+    appears once three controls share the row.
+  - `curl -i http://localhost:5173/progress` while signed out → `401` with
+    `cache-control: private, no-store`.
+  - Switch to **file search** (the `FileSearch` button, or ⌘⇧F). Type a phrase,
+    backspace one character and retype it: **no second `/api/search/files`
+    request** for the repeated query, and the list must not blank between
+    keystrokes. One request per settled query, and the visible results always
+    match the current input.
+  - In file search: 1, 2 and 3 characters → nothing, nothing, results. `???` →
+    an empty list, not an error. Try `"black hole"`, the unclosed `"black hol`,
+    `foo OR bar`, `-NEAR(a b)`, `e=mc^2` and a 300-character paste. **None may 500.**
+  - A term that appears in a year-level PDF _and_ in a problem PDF gives two
+    rows, one of them badged "Whole year". A term inside a PDF attached to
+    several problems gives **one** row listing several problem numbers.
+  - Enter opens the focused file in a new tab and **leaves the dialog open**;
+    middle-click and ⌘-click work too. Switching back to problem mode restores
+    the filters that were set before.
+  - A PDF whose text contains `<script>alert(1)</script>` must render as text.
+
+- **The extraction pipeline** — most of it runs under `bun run dev`, since
+  nothing needs a binding the Worker does not already have:
+  - Pick a text PDF in the year editor: the form reports pages and characters
+    **before** the upload. Submit → searchable immediately, row `ok`.
+  - Pick a **scanned** PDF: the form says "no text found" _before_ the upload.
+    Submit anyway → the upload succeeds and the row is `empty`, counted in the
+    admin panel's Index tab.
+  - Pick a `.zip` → "isn't searchable", upload succeeds, row `skipped`, no error.
+  - **Disable JavaScript and upload** (or delete `static/vendor/pdfjs/` to
+    simulate a 404): the upload must still succeed and the row must land
+    `pending`, not `error`.
+  - **Forge the field**: submit an `extractedText` containing U+0002/U+0003 and
+    `<script>alert(1)</script>`, then search for a word in it — the sentinels are
+    gone (no spurious highlight) and the tag renders as text.
+  - Delete a file → it stops appearing, and **Prune orphans** reports the row.
+    Delete and re-upload the same label → one row, with the new text.
+  - **Rebuild index** → results unchanged. The index is disposable.
 
 ## Conventions
 

@@ -18,7 +18,12 @@ export default defineConfig(
 		// by hand ever since (never re-run the CLI over it — CLAUDE.md rule 2), and
 		// worker-configuration.d.ts comes from `bun run cf-typegen`. Note `ui/` is
 		// excluded from prettier too, so an edit there is checked by nothing.
-		ignores: ['src/lib/components/ui/**', 'src/worker-configuration.d.ts']
+		//
+		// `static/vendor/**` is the pdf.js build the year editor dynamic-imports by
+		// URL. It is minified upstream output copied verbatim (see the README beside
+		// it), so linting it reports thousands of findings about Mozilla's code and
+		// hides ours. Prettier already skips all of `/static/`.
+		ignores: ['src/lib/components/ui/**', 'src/worker-configuration.d.ts', 'static/vendor/**']
 	},
 	js.configs.recommended,
 	...ts.configs.recommended,

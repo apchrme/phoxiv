@@ -86,6 +86,28 @@ export const DOCUMENT_UPLOAD = spec(
 /** The problem-titles CSV consumed by the `importTitles` action. */
 export const CSV_UPLOAD = spec({ csv: 'text/csv' }, 1 * MB, 'CSV', '1 MB');
 
+/**
+ * The document extensions the **browser** can extract text from, beside the
+ * `DOCUMENT_UPLOAD` spec so the year editor and the server read one table —
+ * exactly as `slugifyLabel` is shared.
+ *
+ * PDF is the overwhelming majority of the corpus; `.htm`/`.html` come along free
+ * as a two-line `DOMParser` tag-strip in the same module. Everything else in
+ * `DOCUMENT_UPLOAD` is stored `skipped`:
+ *
+ * - `.zip` and legacy `.doc` are not extractable at all, and stay that way.
+ * - `.docx`/`.xlsx` **are** zips of XML, so the local backfill script can read
+ *   them with a devDependency at zero shipping cost. They are a script feature,
+ *   not a Worker one, which is why they are absent from this list and present in
+ *   `reindex-cli.ts`'s own.
+ */
+export const EXTRACTABLE_EXTS = ['pdf', 'htm', 'html'] as const;
+
+/** True when the browser extractor will attempt `ext`. */
+export function isExtractable(ext: string): boolean {
+	return (EXTRACTABLE_EXTS as readonly string[]).includes(ext);
+}
+
 /** Lowercase extension of `fileName`, without the dot; `''` if it has none. */
 export function extensionOf(fileName: string): string {
 	const parts = fileName.split('.');

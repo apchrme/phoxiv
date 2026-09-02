@@ -5,6 +5,12 @@ import { isProtectedSuperadmin, requireAdmin } from '$lib/server/guard';
 import { listOlympiadOptions } from '$lib/server/db/queries/olympiads';
 import { actionFail, field, fieldList, fieldOrNull, ok } from '$lib/server/forms';
 import { ASSIGNABLE_ROLES } from '$lib/activity';
+import {
+	ensureFileTextIndex,
+	getFileTextStats,
+	optimizeFileTextIndex,
+	pruneFileText
+} from '$lib/server/db/queries/files';
 
 /** How many activity-log entries the panel shows. */
 const LOG_LIMIT = 100;
@@ -21,9 +27,9 @@ const ACCEPTED_ROLES: readonly string[] = [...ASSIGNABLE_ROLES, ''];
 export const load: PageServerLoad = async ({ locals }) => {
 	const { db } = requireAdmin(locals);
 
-	// Three independent reads — one of them used to hide inside the return object,
+	// Four independent reads — one of them used to hide inside the return object,
 	// which is why this read like two sequential awaits rather than three.
-	const [users, olympiads, log] = await Promise.all([
+	const [users, olympiads, log, fileText] = await Promise.all([
 		db
 			.select({
 				id: user.id,
@@ -40,10 +46,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.orderBy(user.createdAt)
 			.all(),
 		listOlympiadOptions(db),
-		db.select().from(activityLog).orderBy(desc(activityLog.createdAt)).limit(LOG_LIMIT).all()
+		db.select().from(activityLog).orderBy(desc(activityLog.createdAt)).limit(LOG_LIMIT).all(),
+		getFileTextStats(db)
 	]);
 
-	return { users, olympiads, log };
+	return { users, olympiads, log, fileText };
 };
 
 export const actions: Actions = {
@@ -126,5 +133,44 @@ export const actions: Actions = {
 		await db.update(user).set({ banned: false, banReason: null }).where(eq(user.id, userId)).run();
 
 		return ok('unbanUser');
+	},
+
+	/**
+	 * Re-runs the FTS5 DDL idempotently, then rebuilds the index from `file_text`.
+	 *
+	 * The recovery path for the one hand-written migration. Because the index is
+	 * **external content**, a rebuild reconstructs it from the stored text with no
+	 * re-extraction at all — which is what makes losing the FTS objects (to a stray
+	 * `db:push`, say) an inconvenience rather than a re-index of the whole corpus.
+	 */
+	ensureIndex: async ({ locals }) => {
+		const { db } = requireAdmin(locals);
+		await ensureFileTextIndex(db);
+		return ok('ensureIndex');
+	},
+
+	/**
+	 * Merges the index's segments. Worth one run after a large backfill.
+	 *
+	 * Bounded work per call rather than a single `('optimize')`, which is
+	 * unbounded and would risk D1's 30-second query cap on a large corpus. Run it
+	 * again if it has more to do.
+	 */
+	optimizeIndex: async ({ locals }) => {
+		const { db } = requireAdmin(locals);
+		await optimizeFileTextIndex(db);
+		return ok('optimizeIndex');
+	},
+
+	/**
+	 * Drops `file_text` rows whose url no longer appears in either file table.
+	 *
+	 * Hygiene only. `searchFiles` INNER JOINs back to those tables, so an orphan
+	 * row is unreachable rather than wrong — this reclaims the bytes, it does not
+	 * fix a bug.
+	 */
+	pruneIndex: async ({ locals }) => {
+		const { db } = requireAdmin(locals);
+		return ok('pruneIndex', { pruned: await pruneFileText(db) });
 	}
 };

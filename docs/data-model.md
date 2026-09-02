@@ -87,9 +87,24 @@ an in-place `UPDATE` is the real fix (`EditableProblem` already carries the row
 `id`, so the editor could submit it), but it is a behaviour change to the most
 destructive action in the app and belongs in its own change.
 
-Topics are never rendered next to a problem — that would spoil it. They exist
-only to drive the topic filter on the olympiad page, and `/api/search`
-deliberately omits them for the same reason.
+Topics are never rendered next to a problem — that would spoil it. **That is the
+invariant, and it is about rendering, not about the wire.** They travel on both
+public payloads: `/api/olympiads/[olympiad]`, which the olympiad page's topic
+filter reads, and `/api/search`, which the ⌘K dialog's does. Both filters run
+entirely in the browser over a body it already holds, so withholding them from
+one of the two bought nothing but a dialog that could not offer the same filter.
+
+What `/api/search` still excludes is the _haystack_: `searchText` is a join of
+olympiad id, name, year, problem number and title, and a topic name has no place
+in it. Folding one in would break the documented ranking order and let a visitor
+infer a problem's topic by typing "Relativity" and seeing what surfaces — which
+is the actual spoiler the original omission was reaching for.
+
+`getSearchIndex` emits `topics: []` for an untagged problem rather than omitting
+the key. That is deliberate: it makes `topics === undefined` on the client mean
+exactly one thing — "this body was cached before topics shipped" — so the dialog
+can hide its topic filter for the day the old payload lingers at the edge instead
+of silently matching nothing.
 
 `max_score` is `REAL`, not `INTEGER`: a marking scheme's maximum is not always
 whole. It is set per problem in the year editor or in bulk through the
@@ -167,6 +182,147 @@ problem and nothing else**, which is how the row's-existence-is-completion
 invariant reaches the wire: an absent key is the only spelling of "untracked",
 client-side and server-side alike. There is no `completed` field on either.
 
+`GET /progress` answers the same shape one scope wider, as a
+`GlobalProgressMap` — a `ProgressMap` per olympiad id — for the ⌘K dialog, whose
+status filter spans the archive. **The nesting is load-bearing, not tidy.**
+`progressKey` is `(year, number)` only, so flattening the archive onto those keys
+would file IPhO 2019 T1 and APhO 2019 T1 under one key and mark the wrong
+problems done, silently and with no visible symptom.
+
+### `file_text`
+
+Extracted plain text for one uploaded document, and the state of its extraction.
+
+| Column               | Type       | Notes                                                                       |
+| -------------------- | ---------- | --------------------------------------------------------------------------- |
+| `id`                 | INTEGER PK | autoincrement — a rowid alias, which the FTS5 index needs                   |
+| `url`                | TEXT       | not null, **unique**; the whole CDN url, byte-identical to the file tables' |
+| `status`             | TEXT       | one of the five below                                                       |
+| `text`               | TEXT       | nullable; normalised, capped at 512 000 chars. NULL unless `ok`             |
+| `chars`, `truncated` | —          | how much was stored, and whether it was cut short                           |
+| `etag`, `bytes`      | —          | nullable; only the backfill script fills these                              |
+| `ext`                | TEXT       | lowercase, no dot. Decides whether extraction is attempted                  |
+| `extractor_version`  | INTEGER    | bump the constant to re-queue every row with no migration                   |
+| `engine`             | TEXT       | `browser-pdfjs` or `cli-unpdf`, so a mixed corpus is explicable             |
+| `error`, `attempts`  | —          | why it failed, and how many goes it has had                                 |
+
+| status    | meaning                                                                                                      |
+| --------- | ------------------------------------------------------------------------------------------------------------ |
+| `pending` | queued; written inline by `uploadFile` as the durability anchor                                              |
+| `ok`      | text extracted and stored                                                                                    |
+| `empty`   | conversion succeeded and produced nothing — **a scanned PDF**. A first-class, _visible_ state, not a failure |
+| `skipped` | extension not extractable (`zip`, legacy `doc`, and `docx`/`xlsx` in the browser)                            |
+| `error`   | converter failed; `error` says why, `attempts` bounds the retries                                            |
+
+**Keyed by the whole CDN url, not by a row id.** Renaming a problem number is a
+delete plus an insert in `saveMetadata`, which cascades `problem_files` away and
+would throw out an extraction for a file whose bytes never moved. Not a content
+hash either: that needs 50 MB read _and_ hashed before we can decide to skip it,
+for no user-visible gain. The url wins for one decisive reason — it is **already
+the join key of both file tables**, so the read path joins straight back and a
+row whose url is no longer referenced becomes _invisible rather than wrong_.
+
+**Correctness therefore never depends on cleanup.** `searchFiles` INNER JOINs
+`file_text.url` back to `year_files.url` ∪ `problem_files.url`, so a row whose
+object is gone is unreachable: it can never produce a result, only waste bytes.
+The three cleanup sites — `deleteFile`, `deleteYear` and `saveMetadata`'s orphan
+sweep — are hygiene, and all three are best-effort and sit below their action's
+"nothing below this line may fail" line.
+
+**There is deliberately no foreign key.** `url` is not unique in either file
+table — two labels in one parent may name one object, which is what
+`collidingLabel` exists to catch — so a foreign key is not expressible. That is
+also why every cleanup is explicit and why the read tolerates a stale row.
+
+The one case where cleanup _would_ matter is **delete-then-re-upload with the
+same label and extension**: identical key, identical url, same identity but
+different bytes. That is handled by the upsert resetting the row's state, not by
+the cleanup having run.
+
+**The text is not a column on `year_files`/`problem_files`**, and that is the
+reason for the separate table. Both are read with a bare `db.select()` by
+`getYearContent` and fanned out over LEFT JOINs by `getOlympiadYearEntries` and
+`getSearchIndex` — the exact shape that once dragged `olympiads.description_md`
+onto every row of the corpus. A 40 kB blob on that path would be far worse.
+
+`year_files` and `problem_files` each gained a non-unique `url` index for this.
+Without them, every deep search and every backfill sweep is a full scan of both
+tables.
+
+**No endpoint may select `file_text.text`.** Only `snippet()` reads it, inside
+the FTS5 query, and what leaves the server is a bounded excerpt as plain text
+plus match offsets. Keeping that true is what stops the corpus becoming bulk
+downloadable, which is a copyright question for third-party papers — and it is
+enforced by simply never exposing a query function that returns the column.
+
+### The full-text index
+
+`file_text_fts` is an **FTS5 virtual table**, created by
+`20260901125216_file_text_fts/migration.sql` — **the one hand-written migration
+in the repository, and the single standing exception to CLAUDE.md rule 1.**
+
+```sql
+CREATE VIRTUAL TABLE file_text_fts USING fts5(
+  text, content='file_text', content_rowid='id',
+  tokenize='unicode61 remove_diacritics 2', prefix='2 3'
+);
+```
+
+Every choice in it is load-bearing:
+
+- **External content**, not contentless and not plain. Contentless cannot return
+  column values, so `snippet()` would be unavailable — that alone rules it out. A
+  plain FTS5 table stores a _second_ copy of every text. External content stores
+  the index only and reads the column back from `file_text`, which also makes a
+  later tokenizer change a `DROP`/`CREATE`/`'rebuild'` with **zero
+  re-extraction**.
+- **Three triggers, not application-maintained rows.**
+  [deployment.md](./deployment.md#ad-hoc-sql) documents `wrangler d1 execute` as
+  the supported way to make a bulk correction, and any such hand-edit would
+  desync an app-maintained index. A trigger is correct regardless of the writer.
+- **`coalesce(…, '')` unconditionally, never a `WHEN` guard.** With external
+  content the delete-side value must match what is in the index, or the index
+  silently corrupts. Asymmetric guards are exactly how that happens.
+- **`prefix='2 3'`** so `gravit*` is an index seek — a ⌘K box is nothing but
+  prefix queries. It costs 30–50 % of index size.
+- **`remove_diacritics 2`** folds accents, which matters for translated papers.
+
+Both of the last two were confirmed to be accepted by D1's SQLite by applying
+this migration; the fallbacks, had they not been, were `1` and dropping `prefix`.
+
+#### Why `db:generate` cannot see it, and why `db:push` must never run
+
+The folder was created with `drizzle-kit generate --custom`, which writes the
+`snapshot.json` beside the migration itself — a chained copy of the previous one.
+The FTS objects are therefore absent from **every** snapshot _and_ from
+`schema.ts`, and `bun run db:generate` diffs exactly those two and **never reads
+the database**. It can never emit a `DROP` for them. Run it after applying this
+migration and it reports no changes; if it does not, stop.
+
+**`bun run db:push` is the exception to the exception.** It _does_ introspect the
+live database, and it will want to drop the virtual table and all three triggers.
+Never point it at anything real once this migration is applied.
+
+#### Recovery
+
+The index is disposable. Re-run the DDL and then:
+
+```sql
+INSERT INTO file_text_fts(file_text_fts) VALUES('rebuild');
+```
+
+Because the index is external-content, that reconstructs it from `file_text` with
+**no re-extraction at all**. The admin panel's **Rebuild index** button does both
+steps idempotently (`CREATE … IF NOT EXISTS`, then `'rebuild'`).
+
+#### What keeps everything in step
+
+Four separate mechanisms, and it is worth naming them in one place: the
+**triggers** keep the index in step with `file_text` for every writer;
+**`extractor_version`** keeps `file_text` in step with the pipeline;
+**`etag`/`bytes`** keep it in step with R2; and the **url join in the read query**
+keeps results in step with the file tables, with no cleanup dependency at all.
+
 ## Auth tables
 
 `user`, `session`, `account` and `verification` are BetterAuth's, generated by
@@ -203,7 +359,7 @@ The admin panel's audit trail, written by `logActivity()`.
 | ------------- | -------------------------------------------------------------------------- |
 | `user_id`     | → `user.id`, **`ON DELETE SET NULL`** — the log outlives the account       |
 | `user_name`   | not null; a _snapshot_ of the name at the time of the action               |
-| `action`      | one of ten enum values; `LogAction` is derived from this column            |
+| `action`      | one of eleven enum values; `LogAction` is derived from this column         |
 | `olympiad_id` | plain TEXT, **not** a foreign key — deleting an olympiad keeps its history |
 | `year`        | nullable                                                                   |
 | `detail`      | not null, default `''`; the human-readable sentence                        |
@@ -360,10 +516,18 @@ find that layout on its own, which is why the `DB` binding sets
 `migrations_pattern` as well as `migrations_dir`; see
 [deployment.md](./deployment.md#migrations-against-production).
 
-**Never hand-edit anything under `src/lib/server/db/migrations/`.** The
+**Never hand-edit anything under `src/lib/server/db/migrations/`** — with **one
+documented exception**, the FTS5 virtual table and its triggers. The
 `migration.sql` and the `snapshot.json` beside it are generated together; editing
 one leaves drizzle-kit's idea of the schema out of step with the database's, and
 the next generated migration will be wrong.
+
+The exception is contained rather than granted. `drizzle-kit generate --custom`
+creates the folder _and_ writes a correct chained `snapshot.json` itself, so only
+the SQL body is hand-authored and the invariant the rule protects — drizzle's
+idea of the schema staying in step with the database's — is preserved. See
+[The full-text index](#the-full-text-index) for the whole argument, including
+**the `db:push` hazard**.
 
 Two columns look like they should carry `.unique()` and deliberately do not —
 `user.email` and `session.token` are declared with an explicit `uniqueIndex`
@@ -374,7 +538,10 @@ change.
 
 `bun run db:push` exists for throwaway local experiments. It skips the migration
 files entirely, so anything it does is invisible to the deployed database — do
-not use it on a schema change you intend to ship.
+not use it on a schema change you intend to ship. **Since the FTS5 migration it
+is worse than that**: `db:push` introspects the live database, sees a virtual
+table and three triggers that appear in no snapshot, and offers to drop them.
+Never point it at anything you care about.
 
 If the schema change touched an auth table, regenerate BetterAuth's half first
 (`bun run db:generate-auth`), then run `db:generate`.

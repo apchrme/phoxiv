@@ -51,9 +51,9 @@ two policies, both defined in [`$lib/server/cache.ts`](../src/lib/server/cache.t
 | `setPrivateCache()` | `max-age=14400, must-revalidate, private`    | pages under `(reg)`     |
 | `setSharedCache()`  | `max-age=0, s-maxage=86400, must-revalidate` | `/api/*` data endpoints |
 
-One route sets its own third policy: `/olympiads/[olympiad]/progress` answers
-`private, no-store`, because it carries one user's answers. See
-[below](#why-some-pages-fetch-their-own-data).
+Two routes set their own third policy: `/olympiads/[olympiad]/progress` and
+`/progress` both answer `private, no-store`, because each carries one user's
+answers. See [below](#why-some-pages-fetch-their-own-data).
 
 `(reg)` is a route _group_ — it adds nothing to the URL. Its only member is
 [`(reg)/+layout.server.ts`](<../src/routes/(reg)/+layout.server.ts>), which calls
@@ -69,7 +69,7 @@ Cloudflare dashboard reaches every visitor on their next request;
 The trade is that **a wrong payload persists for up to a day and needs a manual
 purge** — see [deployment.md](./deployment.md).
 
-Three things sit outside `(reg)` on purpose:
+Four things sit outside `(reg)` on purpose:
 
 - **`/`** — the landing page could have lived inside the group; it sits at the
   route root instead and applies the same header itself, in
@@ -78,6 +78,10 @@ Three things sit outside `(reg)` on purpose:
   emits no `cache-control` of its own for a server-rendered page and Cloudflare
   does not cache HTML by default, so "no header" really does mean "not cached".
 - **`/contribute`** — same reasoning: it renders unsaved editor state.
+- **`/progress`** — the ⌘K dialog's cross-olympiad progress endpoint. It sets
+  `private, no-store` itself, and it is outside the group because a `+server.ts`
+  never receives a layout's header anyway; sitting beside `admin/` and
+  `contribute/` is what makes "deliberately uncached" legible at a glance.
 
 And within `/api`, **`/api/auth/[...all]` sets no cache headers**, which it must
 not: it carries `Set-Cookie` and session state.
@@ -95,7 +99,7 @@ src/routes/
 │
 ├── (reg)/                      ← private browser cache, nothing else
 │   ├── olympiads/              index; [olympiad]/ detail + YearPanel/ProblemCard/
-│   │                           ProgressControl/SignInToTrack/StatusFilter/filter,
+│   │                           ProgressControl/SignInToTrack/filter,
 │   │                           and [olympiad]/progress/, an endpoint that answers
 │   │                           private, no-store
 │   ├── blog/                   index and [slug]/, from $lib/posts/*.svx
@@ -108,6 +112,9 @@ src/routes/
 │   ├── columns.ts              TanStack column model
 │   └── UsersTable.svelte, UserRowActions.svelte, ActivityLogTable.svelte
 │
+├── progress/                   ← outside (reg); one GlobalProgressMap for the ⌘K
+│                               dialog, private, no-store
+│
 ├── contribute/                 ← outside (reg); requireContributor in +layout.server.ts
 │   ├── SelectYearForm.svelte, NewOlympiadForm.svelte
 │   └── [olympiad]/             olympiad metadata editor (4 colocated components)
@@ -118,6 +125,7 @@ src/routes/
     ├── olympiads/              OlympiadEntry[]
     ├── olympiads/[olympiad]/   YearEntry[]
     ├── search/                 SearchItem[] — the whole corpus, matched in the browser
+    ├── search/files/           FileSearchResponse — deep search, matched in D1 by FTS5
     ├── stats/                  the three landing-page counters
     └── auth/[...all]/          …except this one, which sets no cache headers
 ```
@@ -147,10 +155,10 @@ refreshes rather than on someone's _second_ load. This is accepted rather than
 overlooked: the archive changes rarely, and a payload that is a little behind
 renders as incomplete, never as wrong.
 
-The four public response shapes are near-frozen for a related reason — a changed
+The public response shapes are near-frozen for a related reason — a changed
 shape lives in the cache for a day, and only a manual dashboard purge clears it
 early. `YearEntry[]` has been changed once deliberately, to carry each problem's
-`maxScore`;
+`maxScore`, and `SearchItem[]` once, to carry each problem's `topics`;
 [deployment.md](./deployment.md#purging-the-cache-after-an-api-change) holds the
 procedure and the cost of skipping it.
 
@@ -178,12 +186,30 @@ from `(olympiad, year, number)`. That is what lets the page stay ignorant of
 problem ids — so no row id ever has to enter a cached payload — and what lets a
 progress entry be keyed on `(year, number)` at all.
 
+**`/progress` is the same endpoint one scope wider.** The ⌘K dialog's status
+filter spans the archive, so it cannot use the per-olympiad route, and it answers
+a `GlobalProgressMap` — a `ProgressMap` per olympiad id. The nesting is
+load-bearing rather than tidy: `progressKey` is `(year, number)` only, so
+flattening the archive onto those keys would file IPhO 2019 T1 and APhO 2019 T1
+under one key and mark the wrong problems done, silently. It reads **nothing**
+from the URL — its only input is `locals.user.id` — so there is no id to confuse,
+and a future `?user=` would be wrong on its face. It sits at the route root
+rather than at `/olympiads/progress`, where a static segment would win over
+`olympiads/[olympiad]` and permanently shadow an olympiad whose id happened to be
+`progress`.
+
 Two things are built on top of that map, both entirely in the browser:
 
 - **The progress filter** — `StatusFilter.svelte`'s icon-only `All problems /
-Done / To do` dropdown in the toolbar — is a client-side filter over the map the page
+Done / To do` dropdown — is a client-side filter over the map the page
   already holds; see `filter.ts`, where it joins the topic filter in
   `visibleProblems`. No new endpoint, no new field, and nothing new on the wire.
+  It is rendered only for signed-in users, since "Done" could only ever be empty
+  without a session. The component lives in `$lib/components/` beside
+  `TopicSelect.svelte` and is **shared with the ⌘K dialog**, which offers the same
+  two filters over the whole archive: a `$lib` component cannot import from a
+  route directory, and the predicates behind both — `$lib/filters.ts` — are shared
+  for the same reason, so the two screens cannot disagree about what "Done" means.
   It is rendered only for signed-in users, since "Done" could only ever be empty
   without a session.
 - **The tracking affordance itself is rendered for everyone.** A signed-out
@@ -198,28 +224,33 @@ Done / To do` dropdown in the toolbar — is a client-side filter over the map t
 Server-only code. SvelteKit refuses to bundle anything under `$lib/server/` into
 the client, so this boundary is enforced by the build, not by convention.
 
-| Module            | Responsibility                                                                                 |
-| ----------------- | ---------------------------------------------------------------------------------------------- |
-| `auth.ts`         | the BetterAuth configuration, as a function of `(database, env)`                               |
-| `auth-cli.ts`     | a module-level instance for the schema generator only — never imported by app code             |
-| `guard.ts`        | `requireAdmin` / `requireContributor` / `requireOlympiadEditor`, each returning `{ db, user }` |
-| `cache.ts`        | the two cache policies described above                                                         |
-| `forms.ts`        | form-field parsing and the action-result envelope                                              |
-| `uploads.ts`      | server-side enforcement of the upload rules declared in `$lib/uploads.ts`                      |
-| `storage.ts`      | every R2 read and write, and the object-key layout                                             |
-| `markdown.ts`     | the _only_ place Markdown is rendered and sanitised                                            |
-| `activity-log.ts` | `logActivity`, writing the admin panel's audit trail                                           |
-| `db/index.ts`     | re-exports the schema and aliases the `DB` handle type                                         |
-| `db/schema.ts`    | the Drizzle schema — the source drizzle-kit generates migrations from                          |
-| `db/queries/`     | `olympiads.ts`, `years.ts`, `content.ts`, `progress.ts`: every query, one module per concern   |
+| Module            | Responsibility                                                                                           |
+| ----------------- | -------------------------------------------------------------------------------------------------------- |
+| `auth.ts`         | the BetterAuth configuration, as a function of `(database, env)`                                         |
+| `auth-cli.ts`     | a module-level instance for the schema generator only — never imported by app code                       |
+| `guard.ts`        | `requireAdmin` / `requireContributor` / `requireOlympiadEditor`, each returning `{ db, user }`           |
+| `cache.ts`        | the two cache policies described above                                                                   |
+| `forms.ts`        | form-field parsing and the action-result envelope                                                        |
+| `uploads.ts`      | server-side enforcement of the upload rules declared in `$lib/uploads.ts`                                |
+| `storage.ts`      | every R2 read and write, and the object-key layout                                                       |
+| `markdown.ts`     | the _only_ place Markdown is rendered and sanitised                                                      |
+| `activity-log.ts` | `logActivity`, writing the admin panel's audit trail                                                     |
+| `reindex-cli.ts`  | the backfill driver, run by `bun run index:backfill` — never imported by app code                        |
+| `db/index.ts`     | re-exports the schema and aliases the `DB` handle type                                                   |
+| `db/schema.ts`    | the Drizzle schema — the source drizzle-kit generates migrations from                                    |
+| `db/queries/`     | `olympiads.ts`, `years.ts`, `content.ts`, `progress.ts`, `files.ts`: every query, one module per concern |
 
 Client-safe modules sit directly under `$lib/`: `types.ts`, `uploads.ts`,
-`constants.ts`, `nav.ts`, `posts.ts`, `activity.ts`, `progress.ts`,
+`constants.ts`, `nav.ts`, `posts.ts`, `activity.ts`, `progress.ts`, `filters.ts`,
+`search.ts`, `pdf-text.ts`,
 `forms.svelte.ts`, `auth-client.ts` and `utils/{date,flag,fuzzy,json,topics}.ts`.
 Several of them exist specifically so a rule is stated once and consumed from
-both sides — the upload allow-list is the clearest example, and `progress.ts` is
-the newest: the year editor, the CSV import, the `trackProblem` action and the
-problem cards all validate and format scores through it.
+both sides — the upload allow-list is the clearest example, `progress.ts` carries
+the score rules the year editor, the CSV import, the `trackProblem` action and
+the problem cards all go through, and `filters.ts` is the newest: it holds the
+topic and progress predicates that the olympiad page's toolbar and the ⌘K dialog
+both apply, which is what stops the two screens disagreeing about what "Done" or
+"Relativity" selects.
 
 ## The colocation convention
 
@@ -269,3 +300,46 @@ contract, and the two files change together:
   as a plain prop; per-component instances leave every button permanently enabled.
 
 Actions that end in `redirect()` never return, and so never appear in the union.
+
+## Where PDF text comes from, and why not from the Worker
+
+Deep search matches **files, not problems**, and that is a deliberate limit
+rather than a shortcut: a year-level PDF routinely contains every problem of that
+year, so a problem-level hit would claim "IPhO 2019 T2" on the strength of text
+belonging to T1. Making the file the result unit removes the ambiguity — the row
+says _this document contains your phrase_, which is exactly what the index knows.
+
+The parser runs in the **contributor's browser**, and the Worker never sees a
+PDF. The reason is measured, not aesthetic: the whole server bundle is about
+0.40 MB gzipped, and pdf.js is roughly +0.5 MB gzipped, so a Worker-side parser
+would be larger than the entire application and would be charged to cold-start
+parse time on _every_ route, to serve a path that runs a few times a month. It
+would fit inside the 10 MB limit; it is simply disproportionate.
+
+|                                    | where it runs                           | cost to the Worker |
+| ---------------------------------- | --------------------------------------- | ------------------ |
+| New uploads                        | the contributor's browser, on file-pick | **0 bytes**        |
+| Existing files (one-time backfill) | a local `bun` script                    | **0 bytes**        |
+| Storing, indexing, searching       | the Worker                              | unchanged          |
+
+Three consequences follow, and each is handled where it lands:
+
+- **`extractedText` is a client-submitted form field.** Contained by four things:
+  only `requireOlympiadEditor` reaches the action, so this widens an existing
+  capability rather than granting a new one; the server re-runs
+  `normalizeExtracted`, which is what strips the snippet sentinels; a hard size
+  gate sits before the write; and the text never becomes HTML.
+- **The vendored build is a static asset**, in `static/vendor/pdfjs/`, reached by
+  a **runtime string URL** so Vite cannot resolve it at build time and Rollup
+  cannot emit it into the server build. The guard against regressing that is the
+  one-command bundle check in [deployment.md](./deployment.md).
+- **The feedback arrives before the upload, not after it.** Extraction runs on
+  `change`, so the year editor can say "no text found — this looks like a scanned
+  PDF" while the contributor can still swap the file. A server-side design could
+  only ever have reported that to an admin, later, as a counter.
+
+`GET /api/search/files` is shared-cached like everything else under `/api/`, and
+takes **one parameter**. No `limit`, no `topics`, no `olympiad`, no `status`:
+every accepted parameter multiplies cache keys, `status` is per-user and must
+never touch `/api/`, and `topics`/`olympiad` are meaningless against a file that
+covers a whole year. The handler reads no cookie and never touches `locals.user`.
