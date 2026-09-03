@@ -22,10 +22,14 @@ and deployed with wrangler.
 | `DB`     | D1     | database `phoxiv`; `migrations_dir` points at `src/lib/server/db/migrations`, with `migrations_pattern` for Drizzle v1's per-migration folders |
 | `FILES`  | R2     | bucket `phoxiv-files`                                                                                                                          |
 
-The headline, when full-text search landed, is that **this table did not change**.
-No new binding, no `wrangler.jsonc` edit, and no `cf-typegen` run: the PDF parser
-lives in the browser and the backfill script runs on a maintainer's machine. See
-[Why the PDF parser is not in the Worker](#why-the-pdf-parser-is-not-in-the-worker).
+**Three bindings, and the shortness of that list is a standing design
+constraint rather than an accident.** Full-text search — the most infrastructural
+feature in the app — added none of them: the PDF parser lives in the browser and
+the backfill script runs on a maintainer's machine, so it needed no binding, no
+`wrangler.jsonc` edit and no `cf-typegen` run. Reach for a plain library, a
+browser-side step or a local script before a fourth binding; see
+[Why the PDF parser is not in the Worker](#why-the-pdf-parser-is-not-in-the-worker)
+for what that trade looked like with real numbers.
 
 The app reads these off `platform.env`. `DB` is reached through `locals.db`
 (built once per request in `hooks.server.ts`); `FILES` through `getBucket()` in

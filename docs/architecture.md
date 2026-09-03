@@ -110,7 +110,10 @@ src/routes/
 │
 ├── admin/                      ← deliberately outside (reg); requireAdmin in +layout.server.ts
 │   ├── columns.ts              TanStack column model
-│   └── UsersTable.svelte, UserRowActions.svelte, ActivityLogTable.svelte
+│   ├── reindex/                the backfill's two halves; calls requireAdmin ITSELF,
+│   │                           because a +server.ts runs no layout loads
+│   └── UsersTable.svelte, UserRowActions.svelte, ActivityLogTable.svelte,
+│       IndexPanel.svelte
 │
 ├── progress/                   ← outside (reg); one GlobalProgressMap for the ⌘K
 │                               dialog, private, no-store
@@ -210,8 +213,7 @@ Done / To do` dropdown — is a client-side filter over the map the page
   two filters over the whole archive: a `$lib` component cannot import from a
   route directory, and the predicates behind both — `$lib/filters.ts` — are shared
   for the same reason, so the two screens cannot disagree about what "Done" means.
-  It is rendered only for signed-in users, since "Done" could only ever be empty
-  without a session.
+  See [search.md](./search.md#the-filters-and-why-they-vanish).
 - **The tracking affordance itself is rendered for everyone.** A signed-out
   visitor gets `SignInToTrack.svelte` in the same corner of the same card — the
   same circle, dimmed and inert, explaining on hover, focus or tap that tracking
@@ -238,12 +240,24 @@ the client, so this boundary is enforced by the build, not by convention.
 | `reindex-cli.ts`  | the backfill driver, run by `bun run index:backfill` — never imported by app code                        |
 | `db/index.ts`     | re-exports the schema and aliases the `DB` handle type                                                   |
 | `db/schema.ts`    | the Drizzle schema — the source drizzle-kit generates migrations from                                    |
+| `db/relations.ts` | Drizzle's relational definitions, kept separate from the table declarations                              |
 | `db/queries/`     | `olympiads.ts`, `years.ts`, `content.ts`, `progress.ts`, `files.ts`: every query, one module per concern |
+
+What each query module is for, since the names only half say it:
+
+| Module         | Reads / writes                                                                                                                             |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `olympiads.ts` | the olympiad list and one olympiad's metadata; the create/edit/delete writes                                                               |
+| `years.ts`     | years within an olympiad, and the year-level notes, links and files                                                                        |
+| `content.ts`   | the joined reads that assemble years, problems and their files — the frozen public shapes and the year editor. `getSearchIndex` lives here |
+| `progress.ts`  | one user's tracked problems, per olympiad and across the archive                                                                           |
+| `files.ts`     | the full-text index: sanitising a query, reading it, writing it, keeping it tidy                                                           |
 
 Client-safe modules sit directly under `$lib/`: `types.ts`, `uploads.ts`,
 `constants.ts`, `nav.ts`, `posts.ts`, `activity.ts`, `progress.ts`, `filters.ts`,
-`search.ts`, `pdf-text.ts`,
-`forms.svelte.ts`, `auth-client.ts` and `utils/{date,flag,fuzzy,json,topics}.ts`.
+`search.ts`, `pdf-text.ts`, `forms.svelte.ts`, `auth-client.ts`, `utils.ts` (just
+`cn`), `utils/{date,flag,fuzzy,json,topics}.ts`, `hooks/is-mobile.svelte.ts` and
+`prose.svelte`.
 Several of them exist specifically so a rule is stated once and consumed from
 both sides — the upload allow-list is the clearest example, `progress.ts` carries
 the score rules the year editor, the CSV import, the `trackProblem` action and
@@ -301,45 +315,29 @@ contract, and the two files change together:
 
 Actions that end in `redirect()` never return, and so never appear in the union.
 
-## Where PDF text comes from, and why not from the Worker
+## Work the Worker deliberately does not do
 
-Deep search matches **files, not problems**, and that is a deliberate limit
-rather than a shortcut: a year-level PDF routinely contains every problem of that
-year, so a problem-level hit would claim "IPhO 2019 T2" on the strength of text
-belonging to T1. Making the file the result unit removes the ambiguity — the row
-says _this document contains your phrase_, which is exactly what the index knows.
+Two jobs that would naturally sit in the Worker are pushed out of it, and both
+are worth knowing as architecture rather than as feature detail.
 
-The parser runs in the **contributor's browser**, and the Worker never sees a
-PDF. The reason is measured, not aesthetic: the whole server bundle is about
-0.40 MB gzipped, and pdf.js is roughly +0.5 MB gzipped, so a Worker-side parser
-would be larger than the entire application and would be charged to cold-start
-parse time on _every_ route, to serve a path that runs a few times a month. It
-would fit inside the 10 MB limit; it is simply disproportionate.
+**The Worker never parses a PDF.** Text extraction for deep search runs in the
+contributor's browser, and the one-time backfill runs in a local `bun` script.
+The reason is measured, not aesthetic: the whole server bundle is about 0.43 MB
+gzipped and pdf.js is roughly +0.5 MB, so a Worker-side parser would be **larger
+than the entire application** and would be charged to cold-start parse time on
+_every_ route, to serve a path that runs a few times a month. It would fit inside
+the 10 MB limit; it is simply disproportionate. The vendored build in
+`static/vendor/pdfjs/` is therefore a static asset served by `ASSETS`, reached
+through a **runtime string URL** so neither Vite nor Rollup can pull it into the
+server bundle — guarded by the one-command bundle check in
+[deployment.md](./deployment.md#the-bundle-check).
 
-|                                    | where it runs                           | cost to the Worker |
-| ---------------------------------- | --------------------------------------- | ------------------ |
-| New uploads                        | the contributor's browser, on file-pick | **0 bytes**        |
-| Existing files (one-time backfill) | a local `bun` script                    | **0 bytes**        |
-| Storing, indexing, searching       | the Worker                              | unchanged          |
+**The Worker never matches a problem search.** `/api/search` ships the whole
+corpus once per session and the ⌘K dialog matches it in the browser, so typing
+costs no D1 read at all. Only deep search queries the server, once per settled
+query, and its endpoint takes **one parameter** — every accepted parameter
+multiplies cache keys, and it reads no cookie and never touches `locals.user`,
+which is what makes its body safe in the shared cache.
 
-Three consequences follow, and each is handled where it lands:
-
-- **`extractedText` is a client-submitted form field.** Contained by four things:
-  only `requireOlympiadEditor` reaches the action, so this widens an existing
-  capability rather than granting a new one; the server re-runs
-  `normalizeExtracted`, which is what strips the snippet sentinels; a hard size
-  gate sits before the write; and the text never becomes HTML.
-- **The vendored build is a static asset**, in `static/vendor/pdfjs/`, reached by
-  a **runtime string URL** so Vite cannot resolve it at build time and Rollup
-  cannot emit it into the server build. The guard against regressing that is the
-  one-command bundle check in [deployment.md](./deployment.md).
-- **The feedback arrives before the upload, not after it.** Extraction runs on
-  `change`, so the year editor can say "no text found — this looks like a scanned
-  PDF" while the contributor can still swap the file. A server-side design could
-  only ever have reported that to an admin, later, as a counter.
-
-`GET /api/search/files` is shared-cached like everything else under `/api/`, and
-takes **one parameter**. No `limit`, no `topics`, no `olympiad`, no `status`:
-every accepted parameter multiplies cache keys, `status` is per-user and must
-never touch `/api/`, and `topics`/`olympiad` are meaningless against a file that
-covers a whole year. The handler reads no cookie and never touches `locals.user`.
+Both pipelines, the two search modes and everything between an uploaded PDF and a
+highlighted snippet are documented end to end in [search.md](./search.md).

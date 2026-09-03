@@ -86,7 +86,9 @@ link will 404 locally — expected, and not worth working around.
 | `bun run db:studio`         | drizzle-kit's database browser                                                                                                                                                   |
 | `bun run db:generate-auth`  | after changing `authOptions` — regenerates BetterAuth's tables                                                                                                                   |
 | `bun run cf-typegen`        | after editing `wrangler.jsonc` — regenerates `src/worker-configuration.d.ts`                                                                                                     |
-| `bun run index:backfill`    | sweeps every already-uploaded file into the text index; see [deployment.md](./deployment.md#backfilling-the-text-index)                                                          |
+| `bun run cf-typegen:check`  | verifies that file is up to date without writing it                                                                                                                              |
+| `bun run index:backfill`    | sweeps every already-uploaded file into the text index; see [search.md](./search.md#operating-the-index) and [deployment.md](./deployment.md#backfilling-the-text-index)         |
+| `prepare`                   | `svelte-kit sync`, run by `bun install`. Never run by hand — it is what generates `./$types`, so a missing `.svelte-kit/` is why an editor suddenly cannot resolve them          |
 
 ## The gates
 
@@ -150,14 +152,15 @@ each:
     request** for the repeated query, and the list must not blank between
     keystrokes. One request per settled query, and the visible results always
     match the current input.
-  - In file search: 1, 2 and 3 characters → nothing, nothing, results. `???` →
-    an empty list, not an error. Try `"black hole"`, the unclosed `"black hol`,
-    `foo OR bar`, `-NEAR(a b)`, `e=mc^2` and a 300-character paste. **None may 500.**
+  - In file search, walk up to `MIN_DEEP_QUERY_LENGTH` (5) one character at a
+    time: 4 characters must show "type at least 5 characters" and fire **no**
+    request; 5 must search. `???` → an empty list, not an error. Try
+    `"black hole"`, the unclosed `"black hol`, `foo OR bar`, `-NEAR(a b)`,
+    `e=mc^2` and a 300-character paste. **None may 500.**
   - Switch to file search **with the box empty**, and clear the box after a
     search: both must show the explainer, never "Couldn't search inside files."
-    `DeepSearch` uses `null` and not `''` for "nothing failed / nothing in
-    flight" precisely because `''` is also a legitimate query value, and with
-    `''` this state claimed a failure before a key had been pressed.
+    See [search.md](./search.md#the-deepsearch-class) for why the sentinel is
+    `null` rather than `''`.
   - A term that appears in a year-level PDF _and_ in a problem PDF gives two
     rows, one of them badged "Whole year". A term inside a PDF attached to
     several problems gives **one** row listing several problem numbers.
@@ -228,6 +231,78 @@ every child that submits. The full contract is in
 
 Prefer `actionFail()` over `error()` inside an action: `error()` replaces the
 page with the error template, discarding whatever the contributor had typed.
+
+### Client-side state
+
+Svelte 5 runes throughout. Four choices recur, and picking the wrong one has
+caused real bugs, so they are worth stating rather than inferring:
+
+| Use                              | When                                                                                                                                                                                                                                                                                     |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$state`                         | ordinary reactive cells that drive markup                                                                                                                                                                                                                                                |
+| `$state.raw`                     | a collection **replaced wholesale and never mutated** that is read on a hot path. A deep proxy puts a trap on every element read; `index` and `progress` in the ⌘K dialog are read on every keystroke, so both are raw. It also makes an identity check exact rather than proxy-mediated |
+| a plain `let`                    | a flag that **gates a fetch but drives no markup**. Making it reactive is not merely wasteful — if the effect that writes it also reads it, reactivity **loops**. `indexFetched`, `progressFetchedFor` and the olympiad page's `touched` are all plain                                   |
+| a class in a `.svelte.ts` module | several cells that belong together and must **survive an unmount**. `Pending` in `$lib/forms.svelte.ts` and `DeepSearch` in the search folder are the two                                                                                                                                |
+
+Two rules about effects, both learned the hard way:
+
+- **Read every dependency synchronously, at the top.** Svelte registers only what
+  the body reads synchronously, so anything read after an `await` or inside a
+  `setTimeout` is _not_ a dependency — which is usually what you want. In the deep
+  search effect it is load-bearing: if the fetch created a dependency, landing a
+  response would re-trigger the request that produced it.
+- **A teardown is a cancellation point.** The deep-search debounce _is_ the
+  effect's teardown — `clearTimeout` plus `abort()`, no timer state and no wrapper
+  — because the teardown runs immediately before every re-run. See
+  [search.md](./search.md#the-debounce-is-the-effects-teardown).
+
+Fetch-once guards are set **only on success**, so a failure retries on the next
+open rather than leaving the session permanently broken. And an explicit
+`res.ok` check is mandatory before `res.json()`: an error response with an HTML
+body makes `json()` throw, which escapes as an unhandled rejection and leaves the
+UI claiming there is no data rather than reporting a failure.
+
+### Styling and theming
+
+Tailwind v4, configured entirely in CSS — there is no `tailwind.config.js`.
+[`src/app.css`](../src/app.css) is the entry point and holds the design tokens;
+`src/styles/` holds `base.css`, `prose.css` and `theme.css`.
+
+The palette is **Catppuccin** — Latte for light, Mocha for dark — written as
+`oklch()` with the source hex in a trailing comment on every line. Keep that
+comment when editing a token: it is the only trace of which Catppuccin colour a
+value came from. Tokens are declared on `:root` and overridden under `.dark`, then
+re-exported to Tailwind through `@theme inline`, so utilities like `bg-card` and
+`text-muted-foreground` resolve in both themes with no `dark:` variant needed.
+**Prefer a semantic token over a literal colour** for that reason.
+
+Dark mode is [`mode-watcher`](https://github.com/svecosystem/mode-watcher) toggling
+a `.dark` class on `<html>`, with `@custom-variant dark (&:where(.dark, .dark *))`
+so the variant follows the class rather than the media query. `html` and
+`html.dark` carry their own background, distinct from `--background`, so the page
+behind the app has no flash of the wrong colour.
+
+Three shared surface treatments are `@utility` rules rather than components, and
+the file says why: **the same decoration is applied to structurally different
+elements** — a `<nav>`, a `<div>`, a dialog panel — so a component would not fit.
+Anything that repeats its _markup_ as well should be a component instead.
+
+| Utility          | What it is                                                       |
+| ---------------- | ---------------------------------------------------------------- |
+| `glass`          | the frosted panel used by the nav pills and the landing stat bar |
+| `glass-hairline` | the divider between rows inside a `glass` panel                  |
+| `file-input`     | a bare `<input type="file">` styled to match the button language |
+
+There is also a set of `data-*` custom variants (`data-open`, `data-closed`,
+`data-checked`, `data-selected`, `data-disabled`, `data-active`,
+`data-horizontal`, `data-vertical`) that normalise bits-ui's two spellings —
+`[data-state='open']` and a bare `[data-open]` — into one. Use those rather than
+matching either attribute directly.
+
+Fonts are DM Sans and JetBrains Mono, self-hosted through `@fontsource-variable`.
+**Mono is meaningful, not decorative**: it marks a year or a problem number.
+
+Anything animated gets `motion-reduce:transition-none`.
 
 ### shadcn-svelte components are vendored
 

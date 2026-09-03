@@ -65,6 +65,45 @@ Drizzle table for a related reason: BetterAuth returns `undefined` for absent
 optional columns where Drizzle's `InferSelectModel` promises `null`, so the
 Drizzle model is not assignable to what `getSession` actually hands back.
 
+## What is configured, and what is left at its default
+
+`authOptions` is short, and the shortness is worth reading as a statement: **the
+list below is the whole of it.** Anything not here is BetterAuth's default, so
+there is no third place to look.
+
+| Option                  | Value                                                            |
+| ----------------------- | ---------------------------------------------------------------- |
+| `secret`                | `BETTER_AUTH_SECRET`                                             |
+| `trustedOrigins`        | `TRUSTED_ORIGINS`, comma-split; `[]` if unset                    |
+| `database`              | `drizzleAdapter` over the four auth tables, `provider: 'sqlite'` |
+| `socialProviders`       | `github` only — there is no email/password path at all           |
+| `user.additionalFields` | `assignedOlympiads`, with `input: false`                         |
+| `plugins`               | `admin({ adminRoles: ['admin'] })`                               |
+
+**No session lifetime is configured**, so BetterAuth's own defaults govern
+expiry and refresh. Do not go looking for a constant; there isn't one. Sign-out is
+BetterAuth's own endpoint, reached through `$lib/auth-client.ts`, and the
+`session` row cascades away with the user.
+
+**The session cookie's name differs between environments**, which catches people
+out well beyond auth itself. BetterAuth prefixes it with `__Secure-` whenever it
+believes it is in production:
+
+| Origin                  | Cookie                               |
+| ----------------------- | ------------------------------------ |
+| `https://phoxiv.org`    | `__Secure-better-auth.session_token` |
+| `http://localhost:5173` | `better-auth.session_token`          |
+
+A token is only valid for the origin that issued it, so a localhost session means
+nothing to `phoxiv.org`. This is the trap behind the backfill script's
+`PHOXIV_SESSION`, where a wrongly-named cookie fails **in a way that looks like a
+permission problem** — the Worker sees no session at all and `requireAdmin`
+answers with the same 403 it gives a signed-in non-admin. See
+[deployment.md](./deployment.md#backfilling-the-text-index).
+
+`api/auth/[...all]` is the only route under `/api/` that reads a cookie, and it
+**must never be given cache headers**: it carries `Set-Cookie` and session state.
+
 ## How an account is identified
 
 BetterAuth 1.7 changed the identity of an external account. Where 1.6 matched on
@@ -105,10 +144,44 @@ olympiad ids. BetterAuth is told about the field with `input: false`, so it can
 never be written through BetterAuth's own update-user endpoint; only the admin
 panel writes it, directly via Drizzle.
 
+## What the admin panel actually does
+
+Seven form actions, all of them `requireAdmin`, and they divide into two groups
+that are worth keeping apart because only the first group touches accounts.
+
+| Action                 | Effect                                                | Refuses when                                                                |
+| ---------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------- |
+| `setRole`              | sets `role` to `user`, `contributor`, `admin` or `''` | the target is you, or a superadmin, or the role is not in the accepted list |
+| `setAssignedOlympiads` | rewrites `assigned_olympiads` as a JSON array         | the target is you, or a superadmin                                          |
+| `banUser`              | BetterAuth's ban, with a reason                       | the target is you, or a superadmin                                          |
+| `unbanUser`            | lifts it                                              | the target is a superadmin                                                  |
+| `ensureIndex`          | re-runs the FTS5 DDL, then `'rebuild'`                | —                                                                           |
+| `optimizeIndex`        | `('merge', 500)` on the text index                    | —                                                                           |
+| `pruneIndex`           | drops `file_text` rows with no owning file row        | —                                                                           |
+
+**Three of the four account actions refuse to target the actor.** An admin cannot
+demote themselves, reassign their own olympiads, or ban themselves — which is what
+stops the last admin locking everyone out by accident. `unbanUser` needs no such
+check: you cannot ban yourself, so you can never be the banned self you would
+unban.
+
+**The superadmin check appears in all four independently**, including
+`unbanUser` — unbanning is a modification of a protected account like any other,
+and leaving it out would have made the protection asymmetric.
+
+The three index actions carry no account checks because they name no account. They
+are documented in [search.md](./search.md#operating-the-index).
+
+Everything an action does is written to `activity_log` by `logActivity`, which is
+why the guards return `{ db, user }` — the caller needs a **non-nullable** user to
+attribute the row to. See [data-model.md](./data-model.md#activity_log).
+
 ## The superadmin
 
-A superadmin is an admin who **cannot be demoted, banned or unbanned** from the
-admin panel. `isProtectedSuperadmin()` is called by all four admin actions.
+A superadmin is an admin who **cannot be demoted, reassigned, banned or
+unbanned** from the admin panel. `isProtectedSuperadmin()` is called by all four
+of the actions that target another account — the three index-maintenance actions
+target no user and do not consult it.
 
 - Matched **by email**, against `SUPERADMIN_EMAIL`, because the variable is
   configuration written before the account exists.
@@ -143,8 +216,9 @@ session user.
 | Route                                                  | Guard                                                                                               |
 | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
 | `admin/+layout.server.ts`                              | `requireAdmin`                                                                                      |
-| `admin` — all four actions                             | `requireAdmin`, again                                                                               |
-| `contribute/+layout.server.ts`                         | `requireContributor`                                                                                |
+| `admin` — all **seven** actions                        | `requireAdmin`, again, in every one                                                                 |
+| `admin/reindex/+server.ts` — `GET` and `POST`          | **`requireAdmin`, called by the endpoint itself** — see below                                       |
+| `contribute/+layout.server.ts`                         | `requireContributor`, **then `requireOlympiadEditor`** when the path names an olympiad              |
 | `contribute` — `selectYear`                            | `canEditOlympiad` on the _submitted_ olympiad id                                                    |
 | `contribute` — `createOlympiad`                        | `requireAdmin` — contributors work within olympiads they were assigned, they do not create new ones |
 | `contribute/[olympiad]` — load and every action        | `requireOlympiadEditor`                                                                             |
@@ -152,7 +226,31 @@ session user.
 | `contribute/[olympiad]/titles.csv`                     | `requireOlympiadEditor`                                                                             |
 | `(reg)/login`                                          | redirects to `/profile` when already signed in                                                      |
 | `(reg)/profile`                                        | redirects to `/login` when not                                                                      |
+| `(reg)/olympiads/[olympiad]` — `?/trackProblem`        | a plain `locals.user` check — **not** a `guard.ts` function; see below                              |
+| `(reg)/olympiads/[olympiad]/progress`                  | `error(401)` when signed out, header set **before** the guard                                       |
+| `progress/+server.ts`                                  | `error(401)` when signed out, same ordering                                                         |
+| everything under `/api/`                               | public — no handler there reads a cookie except `api/auth/[...all]`                                 |
 | everything else                                        | public                                                                                              |
+
+**A `+server.ts` runs no layout loads**, so `admin/+layout.server.ts` does not
+cover `admin/reindex`. It calls `requireAdmin` itself, and so does
+`contribute/[olympiad]/titles.csv` — the two endpoints that sit under a guarded
+layout and are not protected by it. Any new endpoint added under `admin/` or
+`contribute/` must do the same; the layout is not a perimeter.
+
+**Tracking a problem is not an editing permission.** `?/trackProblem` guards with
+a bare `locals.user` check because **any** signed-in user may track **any**
+problem; routing it through `requireOlympiadEditor` would limit progress tracking
+to contributors. The action resolves `problems.id` from
+`(olympiad, year, number)` server-side, and validates a submitted score against
+the `max_score` on that row — never against a value from the browser, even though
+the browser can now read a maximum out of the public payload.
+
+The two progress endpoints set `cache-control: private, no-store` **before** the
+401, so a signed-out response cannot be cached either. Neither reads anything
+from the URL beyond the olympiad id, and `/progress` reads nothing at all — its
+only input is `locals.user.id`, which is what makes a future `?user=` wrong on its
+face.
 
 **The layout guard is never the only check.** It establishes that the user may
 reach the contribute area at all; it says nothing about _which_ olympiad. Every

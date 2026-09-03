@@ -7,13 +7,14 @@ Full documentation lives in [`docs/`](./docs). Read the relevant one before
 changing anything in that area — each records invariants that are not obvious
 from the code:
 
-| Doc                                       | Read it before…                                              |
-| ----------------------------------------- | ------------------------------------------------------------ |
-| [architecture.md](./docs/architecture.md) | touching routes, caching, `$lib/server/`, or form plumbing   |
-| [data-model.md](./docs/data-model.md)     | touching the schema, the R2 key layout, or `titles.csv`      |
-| [auth.md](./docs/auth.md)                 | touching auth, roles, or any permission check                |
-| [contributing.md](./docs/contributing.md) | running the project, or writing code in it                   |
-| [deployment.md](./docs/deployment.md)     | deploying, migrating production, or changing an API response |
+| Doc                                       | Read it before…                                                |
+| ----------------------------------------- | -------------------------------------------------------------- |
+| [architecture.md](./docs/architecture.md) | touching routes, caching, `$lib/server/`, or form plumbing     |
+| [data-model.md](./docs/data-model.md)     | touching the schema, the R2 key layout, or `titles.csv`        |
+| [search.md](./docs/search.md)             | touching either search mode, PDF extraction, or the FTS5 index |
+| [auth.md](./docs/auth.md)                 | touching auth, roles, or any permission check                  |
+| [contributing.md](./docs/contributing.md) | running the project, or writing code in it                     |
+| [deployment.md](./docs/deployment.md)     | deploying, migrating production, or changing an API response   |
 
 ## Stack
 
@@ -40,6 +41,8 @@ src/routes/
 │                  …except olympiads/[olympiad]/progress/, an endpoint that sets
 │                  its own `private, no-store` — it serves per-user progress
 ├── admin/         deliberately outside (reg) — must never be cached
+│                  …including reindex/, which calls requireAdmin ITSELF: a
+│                  +server.ts runs no layout loads, so the layout guard misses it
 ├── progress/      also outside (reg); one GlobalProgressMap for the ⌘K dialog,
 │                  `private, no-store` — the status filter spans the archive
 ├── contribute/    also outside (reg); [olympiad]/ and [olympiad]/[year]/ editors
@@ -50,12 +53,12 @@ src/routes/
 
 `src/lib/server/` has one module per concern: `auth`, `auth-cli`, `guard`,
 `cache`, `forms`, `uploads`, `storage`, `markdown`, `activity-log`, `reindex-cli`,
-and `db/`
-(`schema.ts` plus `queries/{olympiads,years,content,progress,files}.ts`). Client-safe
-shared code sits directly under `src/lib/`: `types`, `uploads`, `constants`,
-`nav`, `posts`, `activity`, `progress`, `filters`, `search`, `pdf-text`,
-`forms.svelte`, `auth-client`,
-`utils/{date,flag,fuzzy,json,topics}`.
+and `db/` (`schema.ts`, `relations.ts`, `index.ts`, plus
+`queries/{olympiads,years,content,progress,files}.ts`). Client-safe shared code
+sits directly under `src/lib/`: `types`, `uploads`, `constants`, `nav`, `posts`,
+`activity`, `progress`, `filters`, `search`, `pdf-text`, `forms.svelte`,
+`auth-client`, `utils` (just `cn`), `utils/{date,flag,fuzzy,json,topics}`,
+`hooks/is-mobile.svelte`, and `prose.svelte`.
 
 **Roles are `user`, `contributor` and `admin`.** `contributor` is real and
 load-bearing: contributors may edit the olympiads listed in their
