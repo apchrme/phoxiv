@@ -285,6 +285,54 @@ FTS5 index is 30–60 % of the source text, and `prefix='2 3'` adds 30–50 % of
 that. So roughly 70 kB per 40 kB file — **1 000 files ≈ 70 MB, 5 000 files ≈
 350 MB**. Free D1 is 500 MB; paid is 10 GB and effectively unbounded.
 
+## Staying inside D1's daily quotas
+
+Free D1 allows **5,000,000 rows read** and **100,000 rows written** per day, and
+since 2026-09-01 Cloudflare _enforces_ them rather than merely metering: once a
+limit is hit, queries **fail until midnight UTC**. On this project a quota
+overrun is a total outage, not a slow afternoon, which is what justifies leaving
+generous headroom.
+
+Reads are not the meter to watch. Steady-state traffic sits at **180,000–330,000
+rows read per day** — around 5 % of the ceiling, and flat — on roughly 1,500
+olympiad page views per day.
+
+**Rows written is the tighter of the two.** One full re-index sweep of ~2,250
+files wrote **14,228 rows, 14 % of the daily write cap**, because every
+`file_text` write fans out through the FTS triggers. Two or three sweeps in a day
+— an `EXTRACTOR_VERSION` bump, a tokenizer change, a couple of index rebuilds —
+would approach the write limit long before the read limit came into view. Spread
+them across days, and prefer one sweep that covers everything to several narrow
+ones.
+
+Ask the numbers rather than estimating them. The GraphQL analytics API answers
+both meters per day:
+
+```sh
+curl -s https://api.cloudflare.com/client/v4/graphql \
+  -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+  -H 'Content-Type: application/json' \
+  --data '{"query":"query($account:String!,$from:Date!,$to:Date!){viewer{accounts(filter:{accountTag:$account}){d1AnalyticsAdaptiveGroups(limit:100,filter:{date_geq:$from,date_leq:$to},orderBy:[date_DESC]){dimensions{date databaseId} sum{readQueries writeQueries rowsRead rowsWritten}}}}}","variables":{"account":"<account id>","from":"2026-08-18","to":"2026-09-05"}}'
+```
+
+Swap `d1AnalyticsAdaptiveGroups` for `d1QueriesAdaptiveGroups` to get the same
+window broken down **per query**, which is how the deep-search snippet cost in
+[search.md](./search.md) was found — it reported 2,243 rows per call against an
+estimate of "a few hundred". Two fields that look like they should exist do not:
+`queryBatchTimeMs` and `queryHash` are not on either dataset.
+
+For a single query, `wrangler d1 execute --remote --json` reports `rows_read` in
+its `meta`, which is the cheapest way to check a change before shipping it —
+compare the two variants directly instead of reasoning about the plan.
+
+**The paid plan is the backstop, not the plan.** Workers Paid is $5/month and
+includes about 25 billion rows/month, so if rows read run sustained above
+**~3,500,000/day** or rows written above **~70,000/day**, upgrade rather than
+optimise further; the archive going dark is worth more than $5. At current
+volumes that trigger is a long way off, and the free-tier quotas are treated as
+engineering constraints in the meantime — the same posture as the
+[three-binding limit](#bindings).
+
 ## Purging the cache after an API change
 
 This is the step that is easy to forget.

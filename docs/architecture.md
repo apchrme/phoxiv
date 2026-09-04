@@ -69,6 +69,29 @@ Cloudflare dashboard reaches every visitor on their next request;
 The trade is that **a wrong payload persists for up to a day and needs a manual
 purge** — see [deployment.md](./deployment.md).
 
+Two things about that shared cache are worth knowing before reasoning about load,
+because both are counter-intuitive and will otherwise be rediscovered:
+
+- **Tiered Cache is already on** at the zone, with Smart topology, and on the
+  Free plan it is not editable — so the per-PoP fill multiplier is already
+  collapsed as far as it goes. There is no lever there to pull.
+- **`s-maxage=86400` is an upper bound, not a description.** At this traffic
+  level fills are driven by **LRU eviction, not TTL expiry**: `/api/stats` was
+  measured filling ~30 times a day and `/api/olympiads/[olympiad]` ~350 times a
+  day across 33 keys, because a low-traffic site's rarely-requested objects get
+  evicted from a busy PoP long before a day passes. **Raising `s-maxage` therefore
+  buys much less than the arithmetic suggests.** If an endpoint's D1 cost
+  matters, make the query cheap rather than trying to cache it harder — which is
+  exactly what happened to deep search in [search.md](./search.md).
+
+Below the shared cache there is one more layer that is easy to miss:
+`adapter-cloudflare`'s own `files/worker.js` wraps the Worker in
+`caches.default`, so a hit is returned **before `hooks.server.ts` runs**. It is
+data-center-local and does not participate in Tiered Cache, and adding a second
+Cache API layer of our own would be redundant. It is also visible under
+`bun run preview`, where miniflare persists it in `.wrangler/state/v3/cache` —
+worth clearing when a preview seems to be serving a stale body.
+
 Four things sit outside `(reg)` on purpose:
 
 - **`/`** — the landing page could have lived inside the group; it sits at the

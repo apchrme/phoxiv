@@ -156,12 +156,22 @@ async function whoami(): Promise<{ email?: string; role?: string } | null> {
 	return body?.user ?? null;
 }
 
-/** One page of work, plus how much is left across the whole archive. */
-async function fetchCandidates(): Promise<{ candidates: Candidate[]; remaining: number }> {
-	const url = `${BASE}/admin/reindex?limit=${FETCH_BATCH}&exts=${EXTS.join(',')}`;
+/**
+ * One page of work, and with `withCount` how much is left across the archive.
+ *
+ * The count is asked for **once per sweep**, on the first page: it is a whole-union
+ * `count(*)` on the server, far dearer than the page of candidates beside it, and
+ * it feeds nothing but the progress line below. See `selectIndexCandidates`.
+ */
+async function fetchCandidates(
+	withCount = false
+): Promise<{ candidates: Candidate[]; remaining?: number }> {
+	const url =
+		`${BASE}/admin/reindex?limit=${FETCH_BATCH}&exts=${EXTS.join(',')}` +
+		(withCount ? '&count=1' : '');
 	const res = await fetch(url, { headers: authHeaders() });
 	if (!res.ok) throw new Error(`GET /admin/reindex → ${await describe(res)}`);
-	return res.json() as Promise<{ candidates: Candidate[]; remaining: number }>;
+	return res.json() as Promise<{ candidates: Candidate[]; remaining?: number }>;
 }
 
 async function postResults(results: Result[]): Promise<{ written: number }> {
@@ -318,9 +328,25 @@ async function main() {
 
 	console.log(`Backfilling ${BASE} as ${me.email ?? 'admin'} …`);
 	let done = 0;
+	let counted = false;
+	/**
+	 * The progress countdown, asked of the server **once** and decremented here.
+	 *
+	 * Approximate on purpose, which is why it prints with a `~`: a retryable
+	 * failure re-enters the queue, so the true figure can fall more slowly than
+	 * this does. The loop's termination never depends on it — `candidates.length`
+	 * is the only authority on whether work is left — so drift costs nothing but
+	 * the precision of a log line, and it saves a whole-union `count(*)` per page.
+	 */
+	let left: number | undefined;
 
 	for (;;) {
-		const { candidates, remaining } = await fetchCandidates();
+		const { candidates, remaining } = await fetchCandidates(!counted);
+		if (!counted) {
+			left = remaining;
+			counted = true;
+		}
+
 		if (candidates.length === 0) {
 			console.log(`Nothing left to index. ${done} files processed this run.`);
 			return;
@@ -332,12 +358,14 @@ async function main() {
 			done += written;
 		}
 
+		if (left !== undefined) left = Math.max(left - candidates.length, 0);
+
 		const tally = results.reduce<Record<string, number>>((acc, r) => {
 			acc[r.status] = (acc[r.status] ?? 0) + 1;
 			return acc;
 		}, {});
 		console.log(
-			`${done} done, ~${Math.max(remaining - candidates.length, 0)} remaining — ` +
+			`${done} done${left === undefined ? '' : `, ~${left} remaining`} — ` +
 				Object.entries(tally)
 					.map(([s, n]) => `${n} ${s}`)
 					.join(', ')

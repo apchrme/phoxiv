@@ -65,11 +65,19 @@ function asStatus(value: unknown): Status {
 }
 
 /**
- * The candidates the caller should extract next, plus how many are left overall.
+ * The candidates the caller should extract next, and — only if asked — how many
+ * are left overall.
  *
  * `exts` is the caller's **own** extractable list, which is what lets a wider
  * extractor pick up rows a narrower one marked `skipped` — see
  * {@link selectIndexCandidates}.
+ *
+ * **`?count=1` is opt-in, and defaults off, because the count costs ~4,500 D1
+ * rows read while the page of candidates costs a bounded scan.** A sweep wants it
+ * once, for its progress line; asking per page made the bookkeeping cost more
+ * than the work. `remaining` is therefore absent from the body unless requested —
+ * a caller must drive its loop off `candidates.length`, which is the only
+ * authority on whether there is anything left.
  */
 export const GET: RequestHandler = async ({ url, locals }) => {
 	const { db } = requireAdmin(locals);
@@ -83,9 +91,11 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		? Math.min(Math.max(Math.trunc(requested), 1), MAX_CANDIDATES)
 		: DEFAULT_CANDIDATES;
 
+	const withCount = url.searchParams.get('count') === '1';
+
 	return json({
 		extractorVersion: EXTRACTOR_VERSION,
-		...(await selectIndexCandidates(db, { exts, limit }))
+		...(await selectIndexCandidates(db, { exts, limit, withCount }))
 	});
 };
 

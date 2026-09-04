@@ -216,31 +216,108 @@ type FtsHit = { url: string; snippet: string };
  * change to this function and nothing more. The contract is three things: a
  * `url` byte-identical to the file tables', a best-first ordering, and a `LIMIT`.
  *
- * The CTE is not decoration. The `LIMIT` must be applied **before** the join, or
- * a broad query re-reads hundreds of 40 kB texts to build snippets it will then
- * throw away.
+ * # Two passes, and why it is not one
  *
- * `rank` is carried out of the CTE as `score` and used as the outer `ORDER BY`.
- * Ordering the outer query by anything else — `h.id`, say — silently discards
- * bm25 and returns insertion order, which would quietly falsify the "the array
- * order IS the rank" contract the response shape rests on.
+ * This used to be a single CTE that selected `snippet()` alongside `rank`. It
+ * read **2,124 + 3 × `limit`** D1 rows per call — measured, not estimated — and
+ * that 2,124 is exactly the number of `status = 'ok'` rows in `file_text`. The
+ * fixed term is **independent of the query**: a term matching two documents cost
+ * 2,130 rows, and two different queries matching 402 and 469 documents both cost
+ * exactly 2,186. `snippet()` on an **external-content** FTS5 table, evaluated in
+ * the same statement as an unconstrained `MATCH`, walks the whole content table
+ * once, whatever the `LIMIT` — the `LIMIT` bounds the rows returned, not that
+ * walk. It made deep search the single most expensive query in the app, ~26% of
+ * all rows read.
+ *
+ * Splitting it removes the fixed term entirely, because the second pass
+ * constrains the cursor to known rowids and so seeks instead of walking:
+ *
+ * | | rows read |
+ * | --- | --- |
+ * | one statement, `snippet()` beside `rank` | ~2,186 |
+ * | pass 1, rowids in rank order, no `snippet()` | ~41 |
+ * | pass 2, `snippet()` constrained by `rowid IN (…)` | ~63 |
+ *
+ * ~104 against ~2,186, for byte-identical snippets and ordering — about **21×**.
+ * Do not fold these back into one statement to save a round trip; the round trip
+ * costs ~3 ms and the fold costs ~2,100 rows.
+ *
+ * # Pass 1 must not select `snippet()`
+ *
+ * That is the entire point, and it is the one edit that would silently undo
+ * this: adding `snippet()` back to the ranking query reintroduces the full walk
+ * even though the results would not change.
+ *
+ * # `status = 'ok'` is filtered in pass 1, *before* the `LIMIT`
+ *
+ * It used to be a `JOIN` in the outer half of a CTE — i.e. **after** the `LIMIT`
+ * — so a non-`ok` row inside the top `limit` shrank the result set instead of
+ * being skipped over. That, and not the dedupe its comment claimed, is what the
+ * old ×3 over-fetch was really compensating for; the ×3 merely made the shortfall
+ * unlikely rather than impossible, and would still have under-filled had more
+ * than two thirds of a window been non-`ok`. Filtering before the `LIMIT` returns
+ * exactly `limit` eligible rows and is what makes {@link searchFiles}' `+ 1`
+ * sound.
+ *
+ * The join costs ~21 rows over the bare index scan, which is the price of not
+ * depending on a distant invariant — today no non-`ok` row *can* match, because
+ * {@link writeFileText} nulls `text` on any non-`ok` write and the trigger
+ * indexes `coalesce(text, '')`, but nothing here would notice if that changed,
+ * and this module's contract explicitly admits writers as blunt as a hand-run
+ * `wrangler d1 execute`.
+ *
+ * # Rank order comes from pass 1 only
+ *
+ * Pass 2 is constrained by rowid and returns rows in **rowid order**, which is
+ * not rank order, so its rows are folded into a map and re-emitted in pass 1's
+ * sequence. Ordering the result by anything else — `id`, or pass 2's natural
+ * order — silently discards bm25 and returns insertion order, which would
+ * quietly falsify the "the array order IS the rank" contract the response shape
+ * rests on. `rank` is therefore never carried past pass 1: the sequence *is* the
+ * score.
+ *
+ * # A row in pass 1 but not pass 2 is dropped
+ *
+ * Which is the same outcome the old `JOIN … AND ft.status = 'ok'` produced, and
+ * the same degradation {@link searchFiles} already documents for a url with no
+ * owning row: fewer results, never a wrong one. The two passes are separate D1
+ * statements rather than one transaction, so a concurrent write between them can
+ * also drop a row — harmless for the same reason.
+ *
+ * Pass 2 binds one parameter per rowid plus the match, so it inherits
+ * {@link resolveOwners}' constraint: fine at `DEEP_SEARCH_LIMIT` = 20, but
+ * **raising the limit past ~90 means chunking** against D1's 100-parameter cap.
  */
 async function selectFtsHits(db: DB, match: string, limit: number): Promise<FtsHit[]> {
-	return db.all<FtsHit>(sql`
-		WITH hits AS (
-			SELECT rowid AS id,
-			       rank AS score,
-			       snippet(file_text_fts, 0, char(2), char(3), '…', 16) AS snippet
-			FROM file_text_fts
-			WHERE file_text_fts MATCH ${match}
-			ORDER BY rank
-			LIMIT ${limit}
-		)
-		SELECT ft.url AS url, h.snippet AS snippet
-		FROM hits h
-		JOIN file_text ft ON ft.id = h.id AND ft.status = 'ok'
-		ORDER BY h.score
+	const ranked = await db.all<{ id: number }>(sql`
+		SELECT file_text_fts.rowid AS id
+		FROM file_text_fts
+		JOIN file_text ft ON ft.id = file_text_fts.rowid AND ft.status = 'ok'
+		WHERE file_text_fts MATCH ${match}
+		ORDER BY rank
+		LIMIT ${limit}
 	`);
+	if (ranked.length === 0) return [];
+
+	const ids = ranked.map((row) => row.id);
+	const rows = await db.all<FtsHit & { id: number }>(sql`
+		SELECT ft.id AS id,
+		       ft.url AS url,
+		       snippet(file_text_fts, 0, char(2), char(3), '…', 16) AS snippet
+		FROM file_text_fts
+		JOIN file_text ft ON ft.id = file_text_fts.rowid AND ft.status = 'ok'
+		WHERE file_text_fts MATCH ${match}
+		  AND file_text_fts.rowid IN (${sql.join(
+				ids.map((id) => sql`${id}`),
+				sql`, `
+			)})
+	`);
+
+	const byId = new Map(rows.map((row) => [row.id, row]));
+	return ids
+		.map((id) => byId.get(id))
+		.filter((row): row is FtsHit & { id: number } => row !== undefined)
+		.map(({ url, snippet }) => ({ url, snippet }));
 }
 
 type Owner = Omit<FileSearchResult, 'snippet' | 'matches'>;
@@ -261,8 +338,8 @@ type Owner = Omit<FileSearchResult, 'snippet' | 'matches'>;
  *
  * Each query binds one parameter per url. At `DEEP_SEARCH_LIMIT` = 20 that is
  * nowhere near D1's 100-parameter cap — but **raising the limit past ~90 means
- * chunking**, which is why the caller must dedupe and truncate *before* calling
- * and never pass the over-fetched list.
+ * chunking**, here and in {@link selectFtsHits}' snippet pass alike, which is why
+ * the caller must dedupe and truncate *before* calling.
  */
 async function resolveOwners(db: DB, urls: string[]): Promise<Map<string, Owner>> {
 	const [problemRows, yearRows] = await Promise.all([
@@ -342,12 +419,37 @@ async function resolveOwners(db: DB, urls: string[]): Promise<Map<string, Owner>
 /**
  * Files whose extracted text matches `query`, best first.
  *
- * Three D1 queries on a hit: the index, then the two owner reads in parallel. A
- * query that sanitises to nothing costs **no D1 read at all**.
+ * Four D1 queries on a hit: {@link selectFtsHits}' two passes in sequence, then
+ * the two owner reads in parallel — around 200 rows read in total, of which the
+ * owner resolution is now the larger half. A query that sanitises to nothing
+ * costs **no D1 read at all**.
  *
- * The index is over-fetched ×3 and then deduped by url in rank order, because
- * the row count is not the hit count: a file attached to two problems fans out
- * to two rows, and a file whose url has been orphaned yields zero.
+ * The index is fetched **one row past the limit**, and that one row is the whole
+ * reason to fetch past it: `truncated` below has to distinguish "exactly
+ * `DEEP_SEARCH_LIMIT`" from "more than that", and nothing else needs the surplus.
+ *
+ * It used to over-fetch ×3, and its comment justified that by the row count not
+ * being the hit count — which was never true here: `file_text.url` is `UNIQUE`
+ * and {@link selectFtsHits} returns one row per `file_text` row, so the dedupe
+ * below collapses nothing, and `kept` is sliced *before* {@link resolveOwners},
+ * so the surplus could not backfill an orphaned url either.
+ *
+ * The surplus **was** doing something, just not that: `status = 'ok'` used to be
+ * filtered after the `LIMIT`, so the over-fetch backfilled rows the filter
+ * dropped. Cutting it to `+ 1` is only sound because {@link selectFtsHits} now
+ * filters before the `LIMIT` — the two changes go together, and reverting either
+ * alone silently shortens result sets. Verified by diffing this endpoint's bodies
+ * across both, including with rows deliberately demoted out of `ok`.
+ *
+ * The map is still built by url rather than by rowid, because it is also what
+ * carries each snippet to the assembly loop, and because it keeps this correct
+ * if `file_text.url` ever stops being unique.
+ *
+ * None of this bounds the **bm25 scan**: `ORDER BY rank` makes FTS5 score every
+ * matching document whatever the `LIMIT`, and `MAX_DEEP_QUERY_TOKENS` is still
+ * the only control on that. It is, however, cheap in D1's billing — the ranking
+ * pass reads the FTS index, not the content table, and measured at ~20 rows for
+ * a query matching 402 documents.
  *
  * A url in the index with **no owning row is dropped, not rendered**: D1 is the
  * authority on what exists, so a stale index degrades to fewer results rather
@@ -366,7 +468,7 @@ export async function searchFiles(db: DB, query: string): Promise<FileSearchResp
 	// false without asking.
 	if (!match) return { query: echo, results: [], truncated: false, indexEmpty: false };
 
-	const hits = await selectFtsHits(db, match, DEEP_SEARCH_LIMIT * 3);
+	const hits = await selectFtsHits(db, match, DEEP_SEARCH_LIMIT + 1);
 
 	const snippetByUrl = new Map<string, string>();
 	for (const hit of hits) {
@@ -661,6 +763,15 @@ export type IndexCandidate = { url: string; ext: string };
  *
  * `ORDER BY url` makes batch boundaries reproducible when debugging.
  *
+ * **`withCount` is opt-in because the count is the expensive half.** The `LIMIT`
+ * bounds the rows returned but not the scan, and the `count(*)` twin has no
+ * `LIMIT` at all — it materialises the whole `year_files ∪ problem_files` union
+ * and probes `file_text` once per url, which at the current corpus is ~4,500 D1
+ * rows read *per call*. It answers nothing the backfill needs per page: its only
+ * consumer is one approximate progress line, so `reindex-cli.ts` asks for it on
+ * the first page of a sweep and counts down locally from there. Left unconditional
+ * it was the single largest cost of a backfill run after the extraction itself.
+ *
  * The `status = 'skipped'` clause is what lets a *wider* extractor pick up what a
  * narrower one passed on. The browser skips `.docx`/`.xlsx`; the local script can
  * read them, so it passes its own extension list here and those rows re-enter the
@@ -669,8 +780,8 @@ export type IndexCandidate = { url: string; ext: string };
  */
 export async function selectIndexCandidates(
 	db: DB,
-	opts: { extractorVersion?: number; exts: readonly string[]; limit: number }
-): Promise<{ candidates: IndexCandidate[]; remaining: number }> {
+	opts: { extractorVersion?: number; exts: readonly string[]; limit: number; withCount?: boolean }
+): Promise<{ candidates: IndexCandidate[]; remaining?: number }> {
 	const version = opts.extractorVersion ?? EXTRACTOR_VERSION;
 	const exts = opts.exts.length > 0 ? opts.exts : [''];
 
@@ -688,15 +799,19 @@ export async function selectIndexCandidates(
 		   OR (t.status = 'skipped' AND t.ext IN ${exts})               -- a wider extractor
 	`;
 
+	// `undefined` rather than a second branch: `Promise.all` passes a non-promise
+	// straight through, so the two stay parallel when the count *is* wanted.
 	const [rows, total] = await Promise.all([
 		db.all<{ url: string }>(sql`${where} ORDER BY f.url LIMIT ${opts.limit}`),
-		db.get<{ n: number }>(sql`SELECT count(*) AS n FROM (${where})`)
+		opts.withCount ? db.get<{ n: number }>(sql`SELECT count(*) AS n FROM (${where})`) : undefined
 	]);
 
-	return {
-		candidates: rows.map((r) => ({ url: r.url, ext: extensionOf(r.url) })),
-		remaining: total?.n ?? rows.length
-	};
+	const candidates = rows.map((r) => ({ url: r.url, ext: extensionOf(r.url) }));
+
+	// The key is *omitted* when it was not asked for, rather than sent as 0 or as
+	// `candidates.length`: "I did not count" and "there are none left" are
+	// different answers, and the caller drives its loop off `candidates.length`.
+	return opts.withCount ? { candidates, remaining: total?.n ?? candidates.length } : { candidates };
 }
 
 /**

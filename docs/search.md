@@ -356,34 +356,90 @@ There is deliberately **no `try/catch` swallowing an FTS error to `[]`** — tha
 would put an empty body for a query that should work into the shared cache for a
 day. The sanitiser is the defence; observability is where a bug should surface.
 
-### Three D1 queries, and the CTE that keeps it to three
+### Four D1 queries, and why `snippet()` gets one to itself
 
 `selectFtsHits` is **the only function in the codebase that knows the index's
 shape.** Everything above it consumes `FtsHit[]`, so swapping FTS5 for something
 else is a change to that one function.
 
+It runs **two passes**. First the ranking, which selects rowids and nothing else:
+
 ```sql
-WITH hits AS (
-  SELECT rowid AS id, rank AS score,
-         snippet(file_text_fts, 0, char(2), char(3), '…', 16) AS snippet
-  FROM file_text_fts WHERE file_text_fts MATCH ?1
-  ORDER BY rank LIMIT ?2
-)
-SELECT ft.url AS url, h.snippet AS snippet
-FROM hits h JOIN file_text ft ON ft.id = h.id AND ft.status = 'ok'
-ORDER BY h.score;
+SELECT file_text_fts.rowid AS id
+FROM file_text_fts
+JOIN file_text ft ON ft.id = file_text_fts.rowid AND ft.status = 'ok'
+WHERE file_text_fts MATCH ?1
+ORDER BY rank LIMIT ?2;
 ```
 
-**The CTE is not decoration.** The `LIMIT` must be applied _before_ the join, or a
-broad query re-reads hundreds of 40 kB texts to build snippets it will then throw
-away. And `rank` is carried out as `score` for the outer `ORDER BY`: ordering the
-outer query by anything else — `h.id`, say — silently discards bm25 and returns
-insertion order, **quietly falsifying the "the array order IS the rank" contract**
-the whole response shape rests on.
+Then the snippets, for exactly those rowids:
 
-The index is **over-fetched ×3 and then deduped by url in rank order**, because the
-row count is not the hit count: a file attached to two problems fans out to two
-rows, and a file whose url has been orphaned yields zero.
+```sql
+SELECT ft.id AS id, ft.url AS url,
+       snippet(file_text_fts, 0, char(2), char(3), '…', 16) AS snippet
+FROM file_text_fts
+JOIN file_text ft ON ft.id = file_text_fts.rowid AND ft.status = 'ok'
+WHERE file_text_fts MATCH ?1 AND file_text_fts.rowid IN (?2, ?3, …);
+```
+
+**Pass 1 must never select `snippet()`, and that is the whole point.** This used
+to be one CTE that took `snippet()` alongside `rank`, and in that form it read
+**2,124 + 3 × limit** D1 rows per call — where 2,124 was exactly the number of
+`status = 'ok'` rows in `file_text`. The fixed term was _independent of the
+query_: a term matching two documents cost 2,130 rows, and two queries matching
+402 and 469 documents both cost exactly 2,186. `snippet()` on an
+**external-content** FTS5 table, evaluated in the same statement as an
+unconstrained `MATCH`, walks the whole content table once whatever the `LIMIT` —
+the `LIMIT` bounds the rows returned, not that walk. It made deep search the
+single most expensive query in the archive, around a quarter of all rows read.
+
+Constraining the cursor to known rowids makes fts5 seek instead of walk, and the
+fixed term disappears:
+
+|                                                    | rows read |
+| -------------------------------------------------- | --------: |
+| one statement, `snippet()` beside `rank`           |    ~2,186 |
+| pass 1 — rowids in rank order, no `snippet()`      |       ~41 |
+| pass 2 — `snippet()` constrained by `rowid IN (…)` |       ~63 |
+
+~104 against ~2,186, for byte-identical snippets and ordering: about **21×**. Do
+not fold these back into one statement to save a round trip — the round trip
+costs ~3 ms and the fold costs ~2,100 rows.
+
+`ORDER BY rank` still makes FTS5 score **every** matching document whatever the
+`LIMIT`, and `MAX_DEEP_QUERY_TOKENS` remains the only control on that. But that
+scan reads the FTS index rather than the content table, and D1 bills it as ~20
+rows for a query matching 402 documents, so it is not where the money went.
+
+**Rank order comes from pass 1 only.** Pass 2 is constrained by rowid and returns
+rows in _rowid_ order, so its rows are folded into a map and re-emitted in pass
+1's sequence; `rank` is never carried past pass 1, because the sequence _is_ the
+score. Ordering the result by anything else — `id`, or pass 2's natural order —
+silently discards bm25 and returns insertion order, **quietly falsifying the "the
+array order IS the rank" contract** the whole response shape rests on.
+
+**`status = 'ok'` is filtered in pass 1, before the `LIMIT`.** It used to be a
+join in the outer half of the CTE — i.e. _after_ the `LIMIT` — so a non-`ok` row
+inside the top window shrank the result set instead of being skipped over. That,
+and not the dedupe its comment claimed, is what the old **×3 over-fetch** was
+really compensating for: the ×3 made a shortfall unlikely rather than impossible,
+and would still have under-filled had more than two thirds of a window been
+non-`ok`. Filtering before the `LIMIT` returns exactly `limit` eligible rows, so
+the index is now fetched **one row past the limit and no further** — that one row
+exists only so `truncated` can tell "exactly 20" from "more than 20".
+
+The join in pass 1 costs ~21 rows over a bare index scan, which is the price of
+not depending on a distant invariant. Today no non-`ok` row _can_ match, because
+`writeFileText` nulls `text` on any non-`ok` write and the trigger indexes
+`coalesce(text, '')` — but nothing in the query would notice if that changed, and
+the index's contract explicitly admits writers as blunt as a hand-run
+`wrangler d1 execute`.
+
+A row that appears in pass 1 but not pass 2 is **dropped**, which is what the old
+join produced too, and the same degradation a url with no owning row already
+gets: fewer results, never a wrong one. The two passes are separate statements
+rather than one transaction, so a concurrent write between them can also drop a
+row — harmless for the same reason.
 
 `resolveOwners` then turns the kept urls into rows with **two parallel queries
 folded into a map, not a `UNION`**. The two sides genuinely differ in shape — the
@@ -394,10 +450,11 @@ regardless, to collapse a multi-problem file into one hit. **Problem rows are
 folded first**, so a url that is somehow both problem- and year-level keeps the
 more specific label.
 
-Each of those queries binds one parameter per url. At a limit of 20 that is
-nowhere near D1's 100-parameter cap — but **raising the limit past ~90 means
-chunking**, which is why the caller dedupes and truncates _before_ calling and
-never passes the over-fetched list.
+Each of those queries binds one parameter per url, and the snippet pass binds one
+per rowid. At a limit of 20 both are nowhere near D1's 100-parameter cap — but
+**raising the limit past ~90 means chunking**, in the snippet pass as well as
+here, which is why the caller dedupes and truncates _before_ calling
+`resolveOwners`.
 
 **A url in the index with no owning row is dropped, not rendered.** D1 is the
 authority on what exists, so a stale index degrades to fewer results rather than to
@@ -464,14 +521,14 @@ not the index.
 
 In the order they bite:
 
-| Control                 | Value | Effect                                                                                                                                        |
-| ----------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MIN_DEEP_QUERY_LENGTH` | 5     | no D1 read below it; enforced on both sides                                                                                                   |
-| `MAX_DEEP_QUERY_LENGTH` | 200   | refused before D1 _and_ before the cache header                                                                                               |
-| `MAX_DEEP_QUERY_TOKENS` | 8     | **the real control** — each token is an index probe ANDed with the rest, and this is what keeps a pathological query inside D1's 30 s ceiling |
-| `DEEP_SEARCH_LIMIT`     | 20    | with a ×3 over-fetch before dedupe                                                                                                            |
-| `normalizeDeepQuery`    | —     | `?q=Gravitation` and `?q=gravitation ` become one cache key                                                                                   |
-| `DEEP_DEBOUNCE_MS`      | 250   | client-side; the first debounce in the codebase                                                                                               |
+| Control                 | Value | Effect                                                                                                                                                         |
+| ----------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MIN_DEEP_QUERY_LENGTH` | 5     | no D1 read below it; enforced on both sides                                                                                                                    |
+| `MAX_DEEP_QUERY_LENGTH` | 200   | refused before D1 _and_ before the cache header                                                                                                                |
+| `MAX_DEEP_QUERY_TOKENS` | 8     | **the real control on the bm25 scan** — each token is an index probe ANDed with the rest, and this is what keeps a pathological query inside D1's 30 s ceiling |
+| `DEEP_SEARCH_LIMIT`     | 20    | fetched **one row past**, never further; the shape of the snippet pass is what actually bounds rows read                                                       |
+| `normalizeDeepQuery`    | —     | `?q=Gravitation` and `?q=gravitation ` become one cache key                                                                                                    |
+| `DEEP_DEBOUNCE_MS`      | 250   | client-side; the first debounce in the codebase                                                                                                                |
 
 Both bounds are refused **before any D1 work and before the cache header goes
 on** — the same ordering `/api/olympiads/[olympiad]` uses for its 404. A 400 held

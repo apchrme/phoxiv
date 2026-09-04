@@ -21,6 +21,15 @@ import { progressKey, type GlobalProgressMap, type ProgressMap } from '$lib/prog
  * joins are rowid lookups and the read is O(problems this user tracked) rather
  * than O(problems in the olympiad).
  *
+ * That is O(problems tracked **across every olympiad**), not in this one alone.
+ * `EXPLAIN QUERY PLAN` gives this and {@link getAllProgress} the same plan: the
+ * index seek is on
+ * `user_id` alone, and `years.olympiad_id` is filtered *after* the join, so
+ * splitting the two functions saves no rows read. It is worth ~0.8 % of the
+ * archive's D1 reads either way, and the split is kept for the narrower response
+ * shape rather than for cost — do not "optimise" it on the strength of the
+ * sentence above.
+ *
  * It used to be two parallel queries, and the reason was every problem's
  * maximum score: that had to come back whether the user had touched the problem
  * or not, which forced a scan of the whole olympiad. The maximum now travels
