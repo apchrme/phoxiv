@@ -92,6 +92,14 @@
 			<span>{hit.olympiadName}</span>
 			<span aria-hidden="true">·</span>
 			<span class="font-mono">{hit.year}</span>
+			{#if hit.problems.length != 0}
+				<span aria-hidden="true">·</span>
+				<span class="font-mono">
+					{shownProblems.map((p) => p.number).join(', ')}{extraProblems > 0
+						? ` +${extraProblems}`
+						: ''}
+				</span>
+			{/if}
 		</div>
 
 		<!-- The file, then what it covers -->
@@ -100,21 +108,6 @@
 				<FileText class="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
 				{hit.file.label}
 			</span>
-			{#if hit.problems.length === 0}
-				<!-- An empty `problems` list *is* the year-level flag, and it is spelled
-				     out because an absent list would just look like missing data. -->
-				<span
-					class="rounded-full border border-white/50 px-2 py-0.5 text-xs text-muted-foreground dark:border-white/10"
-				>
-					Whole year
-				</span>
-			{:else}
-				<span class="font-mono text-xs font-semibold text-primary">
-					{shownProblems.map((p) => p.number).join(', ')}{extraProblems > 0
-						? ` +${extraProblems}`
-						: ''}
-				</span>
-			{/if}
 		</div>
 
 		<p class="line-clamp-2 text-xs text-muted-foreground">
