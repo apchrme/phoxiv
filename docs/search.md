@@ -4,17 +4,17 @@ phoXiv has **two** searches, and they share one ⌘K dialog. They agree on almos
 nothing — not what they match, not where they run, not what a result row means —
 and keeping them distinct is what makes each of them explicable.
 
-|                  | **Problem mode**                                  | **Files mode** (deep search)                        |
-| ---------------- | ------------------------------------------------- | --------------------------------------------------- |
-| A result is      | a problem                                         | **a file**                                          |
-| Matches against  | olympiad id, name, year, problem number and title | the **text inside** the document                    |
-| Where it runs    | the browser, over the whole corpus                | D1, over an FTS5 index                              |
-| Endpoint         | `GET /api/search`, once per session               | `GET /api/search/files?q=…`, once per settled query |
-| Matcher          | uFuzzy, typo-tolerant                             | FTS5 `MATCH`, prefix-extended                       |
-| Ranking          | uFuzzy's ordinal order                            | bm25 (`rank`)                                       |
-| Cap              | `MAX_RESULTS` = 50                                | `DEEP_SEARCH_LIMIT` = 20                            |
-| Filters          | topic and progress apply                          | **neither applies**                                 |
-| Activating a row | navigates to the year anchor                      | opens the file in a new tab                         |
+|                  | **Problem mode**                                  | **Files mode** (deep search)                          |
+| ---------------- | ------------------------------------------------- | ----------------------------------------------------- |
+| A result is      | a problem                                         | **a file**                                            |
+| Matches against  | olympiad id, name, year, problem number and title | the **text inside** the document                      |
+| Where it runs    | the browser, over the whole corpus                | D1, over an FTS5 index                                |
+| Endpoint         | `GET /api/search`, once per session               | `GET /api/search/files?q=…`, once per settled query   |
+| Matcher          | uFuzzy, typo-tolerant                             | a ladder of FTS5 `MATCH` expressions, prefix-extended |
+| Ranking          | uFuzzy's ordinal order                            | bm25 (`rank`)                                         |
+| Cap              | `MAX_RESULTS` = 50                                | `DEEP_SEARCH_LIMIT` = 20                              |
+| Filters          | topic and progress apply                          | **neither applies**                                   |
+| Activating a row | navigates to the year anchor                      | opens the file in a new tab                           |
 
 The two scores are **incomparable** — a bm25 float and an ordinal fuzzy rank
 cannot be interleaved — which is the underlying reason deep search is a _mode_
@@ -175,12 +175,38 @@ static asset and not Worker script size. The one-command bundle check that keeps
 this honest is in
 [deployment.md](./deployment.md#the-bundle-check).
 
-Two smaller decisions in that module are easy to undo by accident:
+The **types** come from `pdfjs-dist` — a devDependency pinned to the version the
+vendored build was copied from — through `import type`, which is erased at
+compile time and so leaves both bundles exactly as they were. It earns its place
+because the module itself arrives by runtime URL: hand-written structural types
+are free to describe methods the real build does not have, and that is precisely
+how a call to `PDFDocumentProxy.destroy()` — removed in pdf.js 6, cleanup having
+moved to the loading task — passed `svelte-check` while throwing a **synchronous**
+`TypeError` in every browser, for every PDF. Rename `task.destroy` to
+`task.destroyy` and `bun run check` fails with "Property 'destroyy' does not exist
+on type 'PDFDocumentLoadingTask'", which is the whole point of the import. They
+remain a _promise_ about the vendored build rather than proof of it — nothing
+checks the file on disk against the `.d.ts` — which is why the item join still
+guards with a runtime `'str' in item` test.
 
-- **pdf.js is loaded once per page, not once per file** — the worker is expensive
-  to spin up — and every parsed document is `destroy()`ed in a `finally`, without
-  which a contributor picking six files in a row leaks six parsed documents into
-  the tab.
+Three smaller decisions in that module are easy to undo by accident:
+
+- **Two caches, because the module alone is not enough.** One holds the ES
+  module, the other the `PDFWorker` — `getDocument` starts a **fresh** worker for
+  every call it is not handed one, so caching only the module left a contributor
+  who picks six files spinning up six workers, each fetching, parsing and
+  compiling pdf.js's 1.2 MB worker build. The cached worker is replaced whenever
+  it reports `destroyed`, because `getDocument` handed a dead one rejects the
+  loading task with `Worker was destroyed`, so a single stray `destroy()` would
+  otherwise break every remaining extraction for the life of the page.
+- **Each extraction destroys its own loading task** — not the document, and not
+  the worker. `PDFDocumentLoadingTask.destroy()` is what releases that document
+  and its page cache, and it tears down only a worker it created itself, so the
+  shared one survives every pick. The call sits in a `try/catch` of its own
+  inside the `finally`, which is not padding: **a throw in a `finally` destroys a
+  _result_, not just a resource**, escaping past the value the `try` block has
+  already computed and taking the extracted text with it. Leak the worker rather
+  than lose the text.
 - **`hasEOL` becomes a real newline**, not a space, because the de-hyphenation
   step below keys on `-\n`. Without the newline a line-broken `gravita-\ntion`
   indexes as two tokens.
@@ -189,9 +215,21 @@ Two smaller decisions in that module are easy to undo by accident:
 vendored build, a browser too old for the dynamic import — comes back as
 `{status: 'error'}`, because the caller's job is to upload the file anyway and let
 the row land `pending` for the backfill sweep. An exception here must never be the
-reason an upload does not happen. A 900-page document bails out of the page loop
-once it is comfortably past the cap rather than holding the editor for a minute to
-produce text that would be thrown away.
+reason an upload does not happen.
+
+The caveat is that a catch that wide swallows **our own** bugs too, and it did:
+the `TypeError` thrown out of `extractPdf`'s teardown was caught here and turned
+into `{status: 'error'}` for every otherwise successful extraction, so the
+pipeline reported unreadable PDFs while the text had in fact been computed and
+thrown away. Swallowing is the contract; discarding the evidence never was part of
+it. So the caught value is `console.error`ed with the file's name — the real name,
+message and stack, pointing at the line — and `error` carries the parser's own
+message to the contributor beside the friendly sentence, muted and monospaced so
+it reads as machine output rather than as more prose.
+
+A 900-page document bails out of the page loop once it is comfortably past the cap
+rather than holding the editor for a minute to produce text that would be thrown
+away.
 
 ### Normalisation, and why the order of its steps is fixed
 
@@ -325,15 +363,75 @@ unquoted. No escaping is needed inside the quotes, because `tokenize` has alread
 dropped everything that is not a letter, a digit or (inside a phrase) a space — a
 `"` cannot survive into a token.
 
-| typed                  | `match`                                               |
-| ---------------------- | ----------------------------------------------------- |
-| `gravitation`          | `"gravitation"*`                                      |
-| `mc^2 relativ`         | `"mc" AND "2" AND "relativ"*`                         |
-| `"black hole" entropy` | `"black hole" AND "entropy"*`                         |
-| `"black hol`           | `"black hol"` — open phrase, not extended             |
-| `foo OR bar`           | `"foo" AND "or" AND "bar"*` — `or` is a literal token |
-| `-NEAR(a b)`           | `"near" AND "a" AND "b"*`                             |
-| `???`                  | `''` → skip the query entirely, empty results         |
+#### One query, a ladder of expressions
+
+A query does not become one expression but an ordered **ladder** of them, most
+precise first, which `searchFiles` walks until a rung returns a row. Precision and
+recall get a rung each, because a single expression has to be both at once and can
+only ever be one of them:
+
+| rung     | expression                                  | built when                                                                         |
+| -------- | ------------------------------------------- | ---------------------------------------------------------------------------------- |
+| 1 phrase | `"w1 w2 … wN"`, `*` on the last word        | ≥ 2 tokens and none of them quoted by the user; capped at `MAX_PHRASE_TOKENS` = 32 |
+| 2 `AND`  | `"w1" AND … AND "wN"`, `*` on the last word | any token at all; capped at `MAX_DEEP_QUERY_TOKENS` = 24                           |
+| 3 `OR`   | `"w1" OR … OR "wN"`, no `*`                 | ≥ 3 tokens — two would only restate rung 2 under a weaker operator; same cap       |
+
+**Rung 1 is dropped the moment the user quotes something themselves.** An explicit
+`"…"` is them saying where the phrase is, and re-grouping the whole query around a
+phrase of our own would ignore that. Stopping at the first rung that matches is
+the ranking rather than an optimisation: every rung is looser than the one above
+it, so a phrase hit must never be diluted by the near misses the `OR` rung would
+have added.
+
+**Raising the token cap on its own is the obvious fix and the measurably wrong
+one.** `two water reservoirs are separated by a vertical wall mn` is eleven
+tokens. Cap one expression at eight and it stops narrowing: those first eight
+words match five files from five different olympiads, none of them the one the
+sentence was copied out of, where the whole sentence in quotes matches that one
+file and nothing else. But ANDing the whole sentence matches **nothing at all**,
+because the file it came from indexes `figure` as `gure` — the PDF emits U+0000
+for the `fi` ligature and `normalizeExtracted` strips it with the rest of the
+control characters. Every extra ANDed term is one more chance to hit a hole like
+that, and one hole takes the result set to zero. The cap can therefore sit at 24
+rather than 8 only **because over-constraining is recoverable** — the `OR` rung
+catches it — where under-constraining never was.
+
+**The trailing `*` on a phrase is a real prefix token**, and that piece of grammar
+was checked against SQLite 3.53's FTS5 rather than assumed: `"two water reserv"*`
+matches `two water reservoirs …`, where `"two water reserv"` matches nothing. It
+is what keeps search-as-you-type from blanking on every keystroke in the middle of
+a word.
+
+**Rung 3 is not the desperate rung it looks like**, because bm25 ranks by coverage
+and does it strongly. On that same sentence — where rungs 1 and 2 both come back
+empty — the file it was copied out of ranks first at `-4.96` against the archive,
+with `-0.73`, `-0.33` and `-0.000008` for the near misses: the right file, first,
+by a wide margin, in exactly the case the narrower rungs cannot answer.
+
+Those are scores against the **real corpus**, and the qualifier matters if anyone
+re-measures. bm25 weights a term by how rare it is across the collection, so the
+same query on a handful of documents produces different numbers with the same
+_shape_ — a wide margin over the near misses. It is the margin that is the
+argument, not the figure.
+
+#### What a query becomes
+
+One row per plan; a blank first cell continues the query above it.
+
+| typed                  | plan                                                    |
+| ---------------------- | ------------------------------------------------------- |
+| `gravitation`          | `"gravitation"*`                                        |
+| `mc^2 relativ`         | `"mc 2 relativ"*`                                       |
+|                        | `"mc" AND "2" AND "relativ"*`                           |
+|                        | `"mc" OR "2" OR "relativ"`                              |
+| `"black hole" entropy` | `"black hole" AND "entropy"*` — quoted, so no rung 1    |
+| `"black hol`           | `"black hol"` — open phrase, not extended               |
+| `foo OR bar`           | `"foo or bar"*`                                         |
+|                        | `"foo" AND "or" AND "bar"*` — `or` is a literal token   |
+|                        | `"foo" OR "or" OR "bar"`                                |
+| `-NEAR("a" b)`         | `"near" AND "a" AND "b"` — no `*`, `b` is one character |
+|                        | `"near" OR "a" OR "b"`                                  |
+| `???`                  | no plans at all → skip the query, empty results         |
 
 Four details in there are deliberate:
 
@@ -343,11 +441,13 @@ Four details in there are deliberate:
 - **Bare words split on anything that is not a letter or digit**, which is what
   `unicode61` does anyway — so `e=mc^2` yields `e`, `mc`, `2` here exactly as it
   does in the index.
-- **The token cap keeps the _first_ 8**, not the last, so the expression stays
-  stable as the user keeps typing.
-- **The trailing prefix `*` goes on the last bare word only** — not on a closed
-  phrase, and not on a single character, since `a*` probes a large slice of the
-  index for almost no signal.
+- **Every cap keeps the _first_ N tokens**, not the last, so a plan stays stable
+  as the user keeps typing.
+- **The trailing prefix `*` goes on the last token only**, never on a single
+  character — `a*` probes a large slice of the index for almost no signal — and
+  never on a phrase the _user_ closed, because they said where it ended. That is a
+  different thing from the `*` rung 1 puts on the phrase it builds itself, whose
+  last word is bare by construction.
 
 `AND` is written explicitly even though FTS5's implicit operator between two
 strings is already AND, so the expression does not depend on that default.
@@ -406,10 +506,25 @@ fixed term disappears:
 not fold these back into one statement to save a round trip — the round trip
 costs ~3 ms and the fold costs ~2,100 rows.
 
+The ladder changes how many statements a search costs, but not that shape, and it
+is cheap for one reason: **a rung that matches nothing costs one statement, not
+two**, because `selectFtsHits` returns before its snippet pass when the ranking
+pass comes back empty — and a ranking pass measured ~20 rows for a query matching
+402 documents. So the best case, a phrase hit, is the four queries above. The
+**modal** case for a multi-word query is five, and it is worth naming rather than
+reading the best case as typical: rung 1 asks for the words _adjacent_, which most
+real queries are not, so the usual shape is one empty ranking pass, then rung 2's
+two, then the two owner reads. The worst case, a query matching nothing at any
+rung, is three ranking passes — ~60 rows — on top of the `hasFileText` read a
+total miss already paid for its empty state.
+
 `ORDER BY rank` still makes FTS5 score **every** matching document whatever the
-`LIMIT`, and `MAX_DEEP_QUERY_TOKENS` remains the only control on that. But that
-scan reads the FTS index rather than the content table, and D1 bills it as ~20
-rows for a query matching 402 documents, so it is not where the money went.
+`LIMIT`, and `MAX_DEEP_QUERY_TOKENS` remains the only control on that. Rung 3 is
+the one rung where that matters — an `OR` matches far more documents than the
+`AND` of the same words does — which is exactly why it runs last, and only once
+the two narrower rungs have found nothing. Either way the scan reads the FTS index
+rather than the content table, and D1 bills it as ~20 rows for a query matching
+402 documents, so it is not where the money went.
 
 **Rank order comes from pass 1 only.** Pass 2 is constrained by rowid and returns
 rows in _rowid_ order, so its rows are folded into a map and re-emitted in pass
@@ -467,9 +582,19 @@ FTS5's `snippet()` wraps matches in markers of your choosing but **does not esca
 the surrounding text** — and that text is extracted from contributor-uploaded
 PDFs. Sending `<mark>`-marked HTML and rendering it through `{@html}` would be
 **stored XSS on our own origin**: a PDF containing `<img onerror=…>` would execute.
-The existing `highlight()` `{@html}` path is defended by "the text comes from our
-own database", which covers short contributor-typed titles; a PDF's body text does
-not qualify.
+
+The other marking path, `highlight()` in `fuzzy.ts`, _does_ reach `{@html}`, and
+the two are safe for genuinely different reasons — which is the distinction to
+hold on to, because "the text comes from our own database" is not one of them.
+Those titles are typed by **contributors**, a real non-admin role; `sanitize-html`
+runs only over olympiad descriptions, on the server; and `/api/search` sits in the
+shared cache for a day. `highlight()` is the only thing between a title and the
+DOM, so it **escapes every slice it emits and only then wraps the matched ones** —
+on all three of its paths, the two that mark nothing included, because a field
+does not have to match anything to be delivered. The escaping happens inside
+uFuzzy's own walk rather than before the call, since the ranges index the
+unescaped string and escaping first would shift every offset past the first `&`.
+The snippet path needs none of that: it never produces markup at all.
 
 So FTS5 marks with **ASCII STX/ETX** (`char(2)`/`char(3)`) and `splitSnippet`
 turns them into `{snippet, matches}`:
@@ -485,23 +610,40 @@ turns them into `{snippet, matches}`:
 - An unclosed range can only be a truncated snippet, so it is closed at the end.
 
 On the client, `splitMarks` in `fuzzy.ts` turns those ranges into parts, and
-**every range is validated rather than trusted**: anything reversed, out of order,
-overlapping a range already emitted, or out of bounds is _skipped_. The offsets
-crossed the wire, so a server-side change must degrade to unmarked text — never to
-lost or duplicated characters, and never to a throw. Because the parts are real
-elements, the template renders `<mark>` through the compiler and nothing reaches
-`{@html}` at all.
+**the container is validated as carefully as its contents**, both having crossed
+the same wire: a `ranges` that is not an array degrades to one unmarked part,
+because `for (const range of undefined)` throws inside a `$derived` and takes down
+the whole result list rather than the one snippet it belongs to. Within it,
+anything reversed, out of order, overlapping a range already emitted, or out of
+bounds is _skipped_.
+
+**A bad range is rejected, never repaired**, and those are not the same thing. A
+start clamped forward to the cursor looks like a harmless no-op, but whatever
+survives the clamp still gets marked — so a range that failed validation would go
+on colouring characters as "this is what you searched for", claiming a match that
+did not happen. Only the end is still clamped, downwards, because shortening a
+range can only ever _unmark_ characters. The offsets crossed the wire, so a
+server-side change must degrade to unmarked text — never to lost or duplicated
+characters, never to a mark that was not earned, and never to a throw. Because the
+parts are real elements, the template renders `<mark>` through the compiler and
+nothing reaches `{@html}` at all.
 
 ### The response shape
 
 ```ts
 type FileSearchResponse = {
-	query: string; // normalised and capped: what the UI should echo
+	query: string; // the whole normalised query, phrases re-quoted, nothing dropped
 	results: FileSearchResult[]; // best first. The array order IS the rank
 	truncated: boolean;
 	indexEmpty: boolean;
 };
 ```
+
+**`query` echoes the question, not the expression that answered it.** It is the
+whole normalised query with phrases re-quoted and nothing capped, because a ladder
+leaves no single expression to name — and echoing whichever rung happened to hit
+would tell the user that words had been dropped when every word they typed is
+still part of the question.
 
 **There is no `rank` field, deliberately.** A bm25 float is an artefact of which
 index was chosen — negative, unbounded, and meaningless if the index is ever
@@ -521,20 +663,32 @@ not the index.
 
 In the order they bite:
 
-| Control                 | Value | Effect                                                                                                                                                         |
-| ----------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MIN_DEEP_QUERY_LENGTH` | 5     | no D1 read below it; enforced on both sides                                                                                                                    |
-| `MAX_DEEP_QUERY_LENGTH` | 200   | refused before D1 _and_ before the cache header                                                                                                                |
-| `MAX_DEEP_QUERY_TOKENS` | 8     | **the real control on the bm25 scan** — each token is an index probe ANDed with the rest, and this is what keeps a pathological query inside D1's 30 s ceiling |
-| `DEEP_SEARCH_LIMIT`     | 20    | fetched **one row past**, never further; the shape of the snippet pass is what actually bounds rows read                                                       |
-| `normalizeDeepQuery`    | —     | `?q=Gravitation` and `?q=gravitation ` become one cache key                                                                                                    |
-| `DEEP_DEBOUNCE_MS`      | 250   | client-side; the first debounce in the codebase                                                                                                                |
+| Control                 | Value | Effect                                                                                                                                                                                |
+| ----------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MIN_DEEP_QUERY_LENGTH` | 5     | no D1 read below it; enforced on both sides                                                                                                                                           |
+| `MAX_DEEP_QUERY_LENGTH` | 200   | refused before D1 _and_ before the cache header; enforced on both sides as well                                                                                                       |
+| `MAX_DEEP_QUERY_TOKENS` | 24    | **the real control on the bm25 scan** — each token is one more index probe, and this is what keeps a pathological query inside D1's 30 s ceiling. It bites on the `OR` rung above all |
+| `MAX_PHRASE_TOKENS`     | 32    | the phrase rung's own cap, deliberately looser: a longer phrase can only match _fewer_ documents, so what that rung asks of the index shrinks as the query grows                      |
+| `DEEP_SEARCH_LIMIT`     | 20    | fetched **one row past**, never further; the shape of the snippet pass is what actually bounds rows read                                                                              |
+| `normalizeDeepQuery`    | —     | `?q=Gravitation` and `?q=gravitation ` become one cache key                                                                                                                           |
+| `DEEP_DEBOUNCE_MS`      | 250   | client-side; the first debounce in the codebase                                                                                                                                       |
 
 Both bounds are refused **before any D1 work and before the cache header goes
 on** — the same ordering `/api/olympiads/[olympiad]` uses for its 404. A 400 held
 in the shared cache for a day would outlive the client bug that caused it. And
 `setSharedCache` is called **after** the query succeeds, deliberately: an FTS
 syntax error or a missing index table throws, and a 500 must not be cached.
+
+The **upper** bound is mirrored on the client for a reason the lower one does not
+have. The server answers an over-long query with a 400, and a 400 is a state the
+panel can only render as "Couldn't search inside files.", beside a **Try again**
+that re-fires the identical query and therefore can never succeed. An over-long
+paste has to be answered by the dialog itself, in as many words, with the limit
+and the length typed. The mirror **deliberately does not truncate** to the limit:
+the cut would land mid-word, and a deep query's last token is prefix-extended in
+the `MATCH`, so half a word would become a spurious `hal*` term and quietly change
+which files come back. Refusing to ask is honest; asking a different question is
+not.
 
 `GET /api/search/files` takes **one parameter, `q`**, and every omission has its
 own reason. Every accepted parameter multiplies cache keys; `status` is per-user
@@ -547,8 +701,10 @@ It is `GET`, not `POST`, because Cloudflare's cache key includes the query strin
 and a POST is uncacheable, which would turn every keystroke into a D1 read.
 
 > **Its bodies are keyed by query string, so purge-by-URL cannot reach them.**
-> Changing this endpoint's response shape means **Purge Everything** — there is no
-> finite list of URLs to enumerate. Plan for that rather than discovering it; see
+> Changing this endpoint's response shape means **Purge Everything** — and so does
+> changing which files a query comes back with, which is a body change without a
+> shape change and just as stale in the edge cache. There is no finite list of URLs
+> to enumerate. Plan for that rather than discovering it; see
 > [deployment.md](./deployment.md#purging-the-cache-after-an-api-change).
 
 `AbortController` on the client saves bandwidth and ordering, not Worker work. The
@@ -571,6 +727,27 @@ Three network resources, three fetch-once rules: the problem index on first open
 deep-search cache once per distinct normalised query, ever. Each guard is only set
 on **success**, so a failure retries on the next open rather than leaving the
 session permanently unsearchable.
+
+Success is not the only thing worth remembering, though, so each guard also
+consults an **in-flight** flag. The "fetched" guards are set when a response
+lands, so three ⌘K presses in quick succession re-ran the effects before the first
+response arrived and fired `/api/search` three times over and `/progress` three
+times with it — and `/progress` is `private, no-store` precisely so it is never
+cached, which makes every one of those a real D1 read. Retry after a failure still
+works, because both flags are false again by the time the `finally` has run. The
+progress one holds a **user id** rather than a boolean, so a different user's map
+is still fetched while one is in flight, where a boolean would have made it wait
+for the next open.
+
+**Those flags are plain non-reactive `let`s, and deliberately not the `$state`
+loading cells that look like they would do the same job.** Both functions are
+called synchronously from an `$effect`, so every `$state` cell they read becomes a
+dependency of that effect — and the loading cells are written by the very function
+the guard protects. Guarding on one would re-run the effect when the request
+settled, and on the **failure** path nothing would stop the next run: the
+"fetched" guard is still unset and the loading cell is false again, so the effect
+would refetch, fail and refetch for as long as the dialog stayed open. The loading
+cells stay `$state` because the markup reads them; the guards read the plain ones.
 
 `userId` arrives **as a prop** from `+layout.svelte` rather than being read from
 `$app/state`: `data` is a `$props()` read and so already reactive, and reading
@@ -602,10 +779,29 @@ Three cells track what is on screen, in flight and failed, and **`null` is the
 empty string is also the value of `deepQuery` when the input is empty, so with
 `''` here `hasFailed('')` and `isLoading('')` both answered _true_ the moment
 files mode opened, and the panel led with "Couldn't search inside files." before a
-key had been pressed. A query below the minimum length is never fetched, so none
-of the three predicates may ever name one — `null` makes that unrepresentable,
-where a guard in each predicate only makes it something every future reader has to
-remember.
+key had been pressed. A query the driving effect refuses to send — below the
+minimum length, or above the maximum — is never fetched and never scheduled
+either, so none of the three predicates may ever name one; `null` makes that
+unrepresentable, where a guard in each predicate only makes it something every
+future reader has to remember.
+
+**The pending cell covers the debounce as well as the fetch**, which is what
+`schedule(query)` and `unschedule(query)` are for. Setting it inside `run()`
+alone would set it 250 ms late, because `run()` is what the debounce timer calls
+— and for the whole time a first query is being typed there is then nothing
+landed and nothing in flight, so the branch order below falls straight past
+"Searching inside files…" into "No files contain that phrase.": an answer
+asserted before the question has been asked. That shape hides itself well,
+because once any non-empty list has landed that list is rendered instead.
+`schedule` is called immediately above the `setTimeout`, and clears the failure
+marker with it, because a failure must not outlive the decision to ask again;
+`unschedule` is called from the same teardown as `clearTimeout`/`abort`, and
+again from `run()`'s `finally`. **Both are identity-guarded**, and that guard is
+the point rather than defensiveness: the teardown runs immediately before the
+re-run that schedules the _next_ key, so an unconditional clear would wipe the
+newer query's pending state and flash exactly the premature emptiness the pair
+exists to prevent. `#token` cannot stand in for it, because a query still inside
+its debounce has not taken a token yet.
 
 `#landed` **deliberately trails the live query while a newer request is in
 flight.** That is the whole anti-flicker mechanism: the panel keeps the last landed
@@ -633,16 +829,19 @@ $effect(() => {
 	const key = deepQuery;
 	const _attempt = deep.attempt; // tracked: lets "Try again" re-fire the same query
 	if (key.length < MIN_DEEP_QUERY_LENGTH) return;
+	if (key.length > MAX_DEEP_QUERY_LENGTH) return; // refused, never truncated
 	if (deep.has(key)) {
 		deep.show(key);
 		return;
 	} // a cache hit is not a network event
 
+	deep.schedule(key); // pending from here, not from inside the timer
 	const controller = new AbortController();
 	const timer = setTimeout(() => void deep.run(key, controller.signal), DEEP_DEBOUNCE_MS);
 	return () => {
 		clearTimeout(timer);
 		controller.abort();
+		deep.unschedule(key);
 	};
 });
 ```
@@ -654,38 +853,48 @@ that had not gone out yet and `abort()` supersedes one that had.
 **Every tracked read is synchronous and above the `setTimeout`.** Svelte only
 registers dependencies read synchronously in the body, which is exactly what is
 wanted — the fetch itself must create none, or landing a response would re-trigger
-the request that produced it.
+the request that produced it. `schedule()` and `unschedule()` are safe under that
+same rule for the opposite reason: they only _write_ `DeepSearch`'s cells and read
+none of them here, so they add no dependency and cannot re-trigger the effect.
 
 ### What the panel can show
 
-**Non-flickering states are expressed by branch order, not flags:** failed →
-too-short → (empty and loading) → genuinely empty → the list. So the loading
-state can only appear when there is nothing worth keeping, and a newer in-flight
-query merely _dims_ the last landed list (`opacity-60`, with
+**Non-flickering states are expressed by branch order, not flags:** too long →
+failed → too short → (empty and loading) → genuinely empty → the list. So the
+loading state can only appear when there is nothing worth keeping, and a newer
+in-flight query merely _dims_ the last landed list (`opacity-60`, with
 `motion-reduce:transition-none`) rather than emptying it.
 
-| State                 | Driven by                   | What shows                                                                    |
-| --------------------- | --------------------------- | ----------------------------------------------------------------------------- |
-| Failed                | `deep.hasFailed(deepQuery)` | "Couldn't search inside files." + **Try again**                               |
-| Idle / too short      | `deepQuery.length < MIN`    | the explainer, plus "type at least 5 characters" once anything has been typed |
-| Loading, nothing kept | `deepLoading` and no rows   | "Searching inside files…"                                                     |
-| Still indexing        | `deep.indexEmpty`           | "No files have been indexed yet — this is still catching up."                 |
-| No matches            | rows empty, index non-empty | "No files contain that phrase."                                               |
-| Results               | otherwise                   | the list, dimmed while stale                                                  |
-| Truncated             | `deep.truncated`            | "Showing the 20 best-matching files"                                          |
+**"Too long" sits above "failed" deliberately.** It is the one state that is never
+sent, so it has to win over any marker a query that _was_ sent left behind —
+otherwise the panel goes on reporting a failure for a question it has since
+decided not to ask.
+
+| State                 | Driven by                   | What shows                                                                     |
+| --------------------- | --------------------------- | ------------------------------------------------------------------------------ |
+| Too long              | `deepTooLong`               | "That's too long to search inside files.", with the length typed and the limit |
+| Failed                | `deep.hasFailed(deepQuery)` | "Couldn't search inside files." + **Try again**                                |
+| Idle / too short      | `deepQuery.length < MIN`    | the explainer, plus "type at least 5 characters" once anything has been typed  |
+| Loading, nothing kept | `deepLoading` and no rows   | "Searching inside files…", from the keystroke rather than 250 ms after it      |
+| Still indexing        | `deep.indexEmpty`           | "No files have been indexed yet — this is still catching up."                  |
+| No matches            | rows empty, index non-empty | "No files contain that phrase."                                                |
+| Results               | otherwise                   | the list, dimmed while stale                                                   |
+| Truncated             | `deep.truncated`            | "Showing the 20 best-matching files"                                           |
 
 The spinner **replaces** the magnifier in the input row rather than joining it: the
 row has no width to spare.
 
 `visibleDeepResults` is **not** simply `deep.results`. The two diverge in the
-states that render something else instead — a failure, and a query backspaced
-below the minimum. `deep.results` still holds the last landed list in both,
-deliberately, because that is the cache and re-typing must not cost a request; but
-nothing is rendered from it, so **the keyboard must not address it either.**
-Without that, ArrowDown would move a highlight over rows that are not there and
-Enter would open a file the user cannot see. `resultCount` is derived from what is
-_rendered_, in both modes, which is the invariant that keeps `focusedIndex`
-addressable.
+three states that render something else instead: a failure, a query backspaced
+below the minimum, and a query pasted over the maximum. `deep.results` still holds
+the last landed list in all of them, deliberately, because that is the cache and
+re-typing must not cost a request; but nothing is rendered from it, so **the
+keyboard must not address it either.** Without that, ArrowDown would move a
+highlight over rows that are not there and Enter would open a file the user cannot
+see. `resultCount` is derived from what is _rendered_, in both modes, which is the
+invariant that keeps `focusedIndex` addressable — and the three conditions are
+written in the panel's branch order on purpose, because the two have to agree and
+reading them side by side is the cheapest way to keep them agreeing.
 
 ### Keyboard, activation and reset
 
@@ -702,6 +911,30 @@ inputEl` returns early). Without that, an open filter dropdown moves _its_
   hover-then-Enter contract is unaffected.
 - ArrowDown clamps with `Math.max(resultCount - 1, 0)`: an empty list gives `-1`,
   which would park the index there until an ArrowUp recovered it.
+- **The focused row is clamped on read, never written back.** `focused` is
+  `resultCount === 0 ? 0 : Math.min(focusedIndex, resultCount - 1)`, and both
+  lists' `focused=` props, the scroll-into-view, the Enter activation and both
+  arrow expressions go through it; only hover, the arrows and the reset write
+  `focusedIndex` itself. The list can shrink _under_ the index between the moment
+  it is set and the moment it is used — hover row 18 of a stale twenty-row list,
+  let a two-row response land, and Enter did nothing while ArrowUp needed
+  seventeen presses to reach a real row, because the reset effect fires on
+  `query`/`mode`/filter changes and a _response_ arriving for the query already
+  typed goes through none of them. Clamping by writing `focusedIndex` back from an
+  effect would be a derived-driven write to state that same derived reads, which
+  is how the loops this file keeps warning about start; a clamp on read cannot
+  loop, and cannot be forgotten by whoever adds the next branch that empties the
+  list. Because the write target is still the raw index, a position parked beyond
+  a briefly-short list is restored rather than destroyed when the list grows back.
+- **`e.isComposing` returns early**, beside the `e.target !== inputEl` guard and
+  **below** the two chords. While an IME is composing, Enter and the arrows belong
+  to the candidate list: unguarded, the handler activates a result and closes the
+  dialog on a keystroke that was only committing a word, and candidate arrows move
+  both highlights at once. This archive's audience is international, so that is
+  not an edge case. The placement is the rule — composition never involves
+  ⌘/Ctrl, so no chord can be part of picking a candidate, and ⌘K in particular is
+  how the dialog is closed again, so taking it away mid-composition would trap the
+  user in the very state the guard exists to make usable.
 - Rows are found by **`[data-result-index]`**, not `querySelectorAll('li')[i]`. The
   scroll container also holds a live region, a filter summary, the
   filters-don't-apply note and a footer, and any future non-result `<li>` would
@@ -804,6 +1037,10 @@ than an omission:
   problem in the archive — a breaking shape change, and not needed yet.
 - **Only one kind of result is on screen at a time**, because bm25 and uFuzzy's
   ordinal rank are incomparable.
+- **A `<mark>` can land a character out on an exotic title.** uFuzzy computes its
+  ranges against `text.toLowerCase()`, which is not length-preserving for every
+  Unicode case pair. Cosmetic, and independent of the escaping that makes the
+  `{@html}` around it safe.
 - **The full ARIA combobox pattern is not implemented** —
   `role="combobox"` with `aria-expanded`/`aria-controls`/`aria-activedescendant`
   and rows as `role="option"`. It touches both item components, changes the `<ul>`

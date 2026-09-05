@@ -22,6 +22,7 @@
 	import {
 		DEEP_DEBOUNCE_MS,
 		DEEP_SEARCH_LIMIT,
+		MAX_DEEP_QUERY_LENGTH,
 		MIN_DEEP_QUERY_LENGTH,
 		normalizeDeepQuery
 	} from '$lib/search';
@@ -82,6 +83,8 @@
 	let indexLoading = $state(false);
 	let indexFailed = $state(false);
 	let indexFetched = false;
+	/** Whether a request is out right now. See `fetchIndex` for why it is not `indexLoading`. */
+	let indexInFlight = false;
 
 	/**
 	 * `indexFetched` is only set on success, so a failed attempt is retried the
@@ -89,12 +92,33 @@
 	 * unsearchable. A plain `let` rather than `$state`: it gates a fetch, it does
 	 * not drive markup.
 	 *
+	 * # Why the guard also consults `indexInFlight`
+	 *
+	 * Success is not the only thing worth remembering. `indexFetched` is set when
+	 * the response lands, so pressing ⌘K three times in quick succession re-ran the
+	 * effect below three times before the first response arrived and fired
+	 * `/api/search` three times over. **Retry after a failure still works**: both
+	 * flags are false again by the time the `finally` has run, so the next open
+	 * tries exactly once more, which is the behaviour the paragraph above
+	 * describes.
+	 *
+	 * `indexInFlight` is a plain `let` for a stronger reason than `indexFetched`'s.
+	 * This function is called synchronously from an `$effect`, so every `$state` it
+	 * reads becomes a dependency of that effect — and `indexLoading` is written by
+	 * this very function. Guarding on `indexLoading` would therefore re-run the
+	 * effect when the request settles, and on the *failure* path nothing would stop
+	 * the next run: `indexFetched` is still false and the flag is false again, so
+	 * it would refetch, fail and refetch for as long as the dialog stayed open.
+	 * `indexLoading` stays `$state` because the markup reads it; the guard reads
+	 * this one.
+	 *
 	 * The explicit `ok` check matters: an error response with an HTML body makes
 	 * `res.json()` throw, which used to escape as an unhandled rejection and left
 	 * the dialog claiming "No results found" as though the archive were empty.
 	 */
 	async function fetchIndex() {
-		if (indexFetched) return;
+		if (indexFetched || indexInFlight) return;
+		indexInFlight = true;
 		indexLoading = true;
 		indexFailed = false;
 		try {
@@ -105,6 +129,7 @@
 		} catch {
 			indexFailed = true;
 		} finally {
+			indexInFlight = false;
 			indexLoading = false;
 		}
 	}
@@ -127,8 +152,26 @@
 	 * reactive would loop. Precedent: `touched` on the olympiad page.
 	 */
 	let progressFetchedFor: string | undefined = undefined;
+	/**
+	 * The user whose map is on the wire right now — `indexInFlight`'s guard, keyed
+	 * by user because `progressFetchedFor` is. Three ⌘K presses before the first
+	 * response landed used to fire three `/progress` requests, and that endpoint is
+	 * `private, no-store` precisely so it is never cached: each one is a real D1
+	 * read. Keyed rather than a bare boolean so that a *different* user's map is
+	 * still fetched while this one is in flight, which a boolean would have made
+	 * wait for the next open.
+	 *
+	 * Plain, non-reactive, and that is load-bearing here rather than a preference.
+	 * `progressLoading` is `$state`, so guarding the effect on it would make the
+	 * effect depend on a cell `fetchProgress` writes — and after a failure
+	 * `progressFetchedFor` is still unset, so every settled request would schedule
+	 * the next one and `/progress` would be hit in a loop for as long as the dialog
+	 * stayed open. `progressLoading` stays `$state` because the hint line reads it.
+	 */
+	let progressInFlightFor: string | undefined = undefined;
 
 	async function fetchProgress(id: string) {
+		progressInFlightFor = id;
 		progressLoading = true;
 		try {
 			const res = await fetch('/progress');
@@ -141,8 +184,12 @@
 		} catch {
 			// Tracking is an enhancement, so no toast — the same handling as the
 			// olympiad page. `progressFetchedFor` stays unset, so the next open
-			// retries rather than leaving the session permanently unfiltered.
+			// retries rather than leaving the session permanently unfiltered — and
+			// clearing the in-flight key below is what keeps that retry possible.
 		} finally {
+			// Guarded, for `DeepSearch.unschedule`'s reason: a request for a user who
+			// has since been superseded must not clear the newer one's key.
+			if (progressInFlightFor === id) progressInFlightFor = undefined;
 			progressLoading = false;
 		}
 	}
@@ -157,10 +204,11 @@
 			progress = {};
 			progressLoading = false;
 			progressFetchedFor = undefined;
+			progressInFlightFor = undefined;
 			status = 'all';
 			return;
 		}
-		if (!open || progressFetchedFor === id) return;
+		if (!open || progressFetchedFor === id || progressInFlightFor === id) return;
 		fetchProgress(id);
 	});
 
@@ -257,6 +305,18 @@
 	 */
 	const deepQuery = $derived(normalizeDeepQuery(query));
 	const deepTooShort = $derived(deepQuery.length > 0 && deepQuery.length < MIN_DEEP_QUERY_LENGTH);
+	/**
+	 * `deepTooShort`'s mirror at the top end, and a fix for a reported failure
+	 * rather than a hypothetical one.
+	 *
+	 * `MAX_DEEP_QUERY_LENGTH` was enforced only on the server, so pasting a long
+	 * passage in — the exact reproduction — got a 400 `{"message":"Search query too
+	 * long"}` (confirmed against the live endpoint with a 259-character query). The
+	 * panel could render that only as "Couldn't search inside files.", beside a
+	 * "Try again" that re-fires the identical query and so **can never succeed**.
+	 * Answering it here costs nothing and says what is actually wrong.
+	 */
+	const deepTooLong = $derived(deepQuery.length > MAX_DEEP_QUERY_LENGTH);
 
 	/**
 	 * The debounce **is** the teardown.
@@ -274,12 +334,23 @@
 	 * is wanted here — the fetch itself must create none, or landing a response
 	 * would re-trigger the request that produced it. `deep.has()` reads a plain
 	 * `Map` for that reason; see the comment on it.
+	 *
+	 * `deep.schedule()` and `deep.unschedule()` are safe under that same rule for
+	 * the opposite reason: they only *write* `DeepSearch`'s cells and read none of
+	 * them here, so they add no dependency and cannot re-trigger this effect.
 	 */
 	$effect(() => {
 		if (mode !== 'files') return;
 		const key = deepQuery;
 		const _attempt = deep.attempt; // tracked: lets "Try again" re-fire the same query
 		if (key.length < MIN_DEEP_QUERY_LENGTH) return;
+		// The server's upper bound, mirrored so an over-long paste never goes out at
+		// all; `deepTooLong` explains what it used to cost. **Deliberately not a
+		// truncation to the limit**: the cut would land mid-word, and a deep query's
+		// last token is prefix-extended in the `MATCH`, so half a word would become a
+		// spurious `hal*` term and quietly change which files came back. Refusing to
+		// ask is honest; asking a different question is not.
+		if (key.length > MAX_DEEP_QUERY_LENGTH) return;
 
 		// A cache hit is not a network event at all: shown synchronously, so
 		// backspacing through a query already run never shows a spinner.
@@ -288,11 +359,19 @@
 			return;
 		}
 
+		// Pending from *here*, not from inside the timer: the 250 ms a first query
+		// spends being typed is time the panel must not spend claiming an answer.
+		// See `DeepSearch.schedule`.
+		deep.schedule(key);
 		const controller = new AbortController();
 		const timer = setTimeout(() => void deep.run(key, controller.signal), DEEP_DEBOUNCE_MS);
 		return () => {
 			clearTimeout(timer);
 			controller.abort();
+			// Guarded inside `unschedule`, because this teardown runs immediately
+			// before the re-run that schedules the *next* key — and on an abort, after
+			// it. Clearing unconditionally would blank the newer query's pending state.
+			deep.unschedule(key);
 		};
 	});
 
@@ -303,10 +382,14 @@
 	const inFiles = $derived(mode === 'files');
 
 	/**
-	 * Non-flickering states are expressed by **branch order, not flags**: failed →
-	 * (empty and loading) → genuinely empty → the list. So the loading state can
-	 * only appear when there is nothing worth keeping, and a newer in-flight query
+	 * Non-flickering states are expressed by **branch order, not flags**: too long →
+	 * failed → (empty and loading) → genuinely empty → the list. So the loading
+	 * state can only appear when there is nothing worth keeping, and a newer query
 	 * merely dims the last landed list rather than emptying it.
+	 *
+	 * `deepLoading` covers the debounce as well as the request itself — see
+	 * `DeepSearch.schedule`, which is what stopped the panel announcing "No files
+	 * contain that phrase." during the 250 ms before it had asked anything.
 	 */
 	const deepFailed = $derived(inFiles && deep.hasFailed(deepQuery));
 	const deepLoading = $derived(inFiles && deep.isLoading(deepQuery));
@@ -316,15 +399,19 @@
 	 * The file rows actually on screen — **not** simply `deep.results`.
 	 *
 	 * The two diverge in the states that render something else instead: a failure,
-	 * and a query the user has backspaced below the minimum length. `deep.results`
-	 * still holds the last landed list in both (deliberately — that is the cache,
-	 * and re-typing must not cost a request), but nothing is rendered from it, so
-	 * the keyboard must not address it either. Without this, ArrowDown would move a
-	 * highlight over rows that are not there and Enter would open a file the user
-	 * cannot see.
+	 * and a query outside the length bounds — backspaced below the minimum, or
+	 * pasted over the maximum. `deep.results` still holds the last landed list in
+	 * all of them (deliberately — that is the cache, and re-typing must not cost a
+	 * request), but nothing is rendered from it, so the keyboard must not address
+	 * it either. Without this, ArrowDown would move a highlight over rows that are
+	 * not there and Enter would open a file the user cannot see.
+	 *
+	 * The conditions are in the panel's branch order on purpose: the two have to
+	 * agree, and the cheapest way to keep them agreeing is to be able to read them
+	 * side by side.
 	 */
 	const visibleDeepResults = $derived(
-		deepFailed || deepQuery.length < MIN_DEEP_QUERY_LENGTH ? NO_HITS : deep.results
+		deepTooLong || deepFailed || deepQuery.length < MIN_DEEP_QUERY_LENGTH ? NO_HITS : deep.results
 	);
 
 	/**
@@ -333,6 +420,27 @@
 	 * every branch that renders no `<ul>` also reports zero here.
 	 */
 	const resultCount = $derived(inFiles ? visibleDeepResults.length : results.length);
+
+	/**
+	 * The row the keyboard is actually on.
+	 *
+	 * **Clamped on read, never written back**, because the list can shrink *under*
+	 * `focusedIndex` between the moment it is set and the moment it is used: hover
+	 * row 18 of a stale twenty-row list, let a two-row response land, and Enter did
+	 * nothing while ArrowUp needed seventeen presses to reach a real row. The reset
+	 * effect below only fires on `query`/`mode`/filter changes, so a *response*
+	 * arriving for the query already typed never went through it.
+	 *
+	 * Clamping by writing `focusedIndex` back from an effect would be a
+	 * derived-driven write to state that same derived reads — which is how the
+	 * loops this file keeps warning about start. A clamp on read cannot loop, and
+	 * it cannot be forgotten by whoever adds the next branch that empties the list.
+	 *
+	 * Writes still target `focusedIndex` — hover, the arrows, the reset — so an
+	 * index parked beyond a briefly-short list is restored, not destroyed, if the
+	 * list grows back.
+	 */
+	const focused = $derived(resultCount === 0 ? 0 : Math.min(focusedIndex, resultCount - 1));
 
 	// Reset the keyboard highlight to the top whenever what is listed changes.
 	$effect(() => {
@@ -400,14 +508,16 @@
 	 * should land on the same result list.
 	 */
 	function activateFocused() {
+		// `focused`, not `focusedIndex`: the row the user can see is the clamped one,
+		// and it is the only one Enter may open.
 		if (inFiles) {
-			const hit = visibleDeepResults[focusedIndex];
+			const hit = visibleDeepResults[focused];
 			if (!hit) return;
 			const opened = window.open(hit.file.url, '_blank', 'noopener,noreferrer');
 			if (!opened) window.location.href = hit.file.url;
 			return;
 		}
-		const item = results[focusedIndex];
+		const item = results[focused];
 		if (item) navigateTo(item);
 	}
 
@@ -422,8 +532,10 @@
 	 * the highlight on the wrong row. The rows own their index.
 	 */
 	function scrollFocusedIntoView() {
+		// `focused` again: no row carries a `data-result-index` past the last one, so
+		// scrolling to an unclamped index would simply find nothing.
 		resultsEl
-			?.querySelector(`[data-result-index="${focusedIndex}"]`)
+			?.querySelector(`[data-result-index="${focused}"]`)
 			?.scrollIntoView({ block: 'nearest' });
 	}
 
@@ -459,16 +571,33 @@
 		// key. Hovering a row does not move focus, so the documented
 		// hover-then-Enter contract is unaffected.
 		if (e.target !== inputEl) return;
+
+		// While an IME is composing, Enter and the arrows belong to the candidate
+		// list, not to us: an unguarded handler activates a result and closes the
+		// dialog on the keystroke that was only *committing a word*, and candidate
+		// arrows move both highlights at once. This archive's audience is
+		// international — Japanese, Chinese and Korean input is a normal way to reach
+		// it, not an edge case.
+		//
+		// **Below the chords, deliberately.** Composition never involves ⌘/Ctrl, so
+		// no chord can be part of picking a candidate, and ⌘K in particular is how
+		// the dialog is closed again — taking that away mid-composition would trap
+		// the user in the very state this guard exists to make usable. Everything an
+		// IME genuinely owns is past this line.
+		if (e.isComposing) return;
+
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
+			// From `focused`, not `focusedIndex`, so a step down from a list that has
+			// shrunk starts at the row on screen rather than somewhere past the end.
 			// `Math.max(…, 0)`: an empty list gives -1, which parks the index there
 			// until an ArrowUp recovers it.
-			focusedIndex = Math.min(focusedIndex + 1, Math.max(resultCount - 1, 0));
+			focusedIndex = Math.min(focused + 1, Math.max(resultCount - 1, 0));
 			scrollFocusedIntoView();
 		}
 		if (e.key === 'ArrowUp') {
 			e.preventDefault();
-			focusedIndex = Math.max(focusedIndex - 1, 0);
+			focusedIndex = Math.max(focused - 1, 0);
 			scrollFocusedIntoView();
 		}
 		if (e.key === 'Enter') activateFocused();
@@ -578,7 +707,20 @@
 					</p>
 
 					{#if inFiles}
-						{#if deepFailed}
+						{#if deepTooLong}
+							<!-- Above `deepFailed` on purpose: this is the one state that is never
+							     sent, so it has to win over any marker a query that *was* sent left
+							     behind. It renders no `<ul>`, and `visibleDeepResults` is empty on
+							     the same condition — the `resultCount` invariant. -->
+							<div class="m-auto flex flex-col gap-2 px-5">
+								<p class="text-center text-sm text-muted-foreground">
+									That's too long to search inside files.
+								</p>
+								<p class="text-center text-xs text-muted-foreground">
+									{deepQuery.length} characters — the limit is {MAX_DEEP_QUERY_LENGTH}.
+								</p>
+							</div>
+						{:else if deepFailed}
 							<div class="m-auto flex flex-col items-center gap-2 px-5">
 								<p class="text-center text-sm text-destructive">Couldn't search inside files.</p>
 								<Button variant="outline" size="sm" onclick={() => deep.retry()}>Try again</Button>
@@ -632,7 +774,7 @@
 									<FileResultItem
 										{hit}
 										index={i}
-										focused={i === focusedIndex}
+										focused={i === focused}
 										onhover={() => (focusedIndex = i)}
 									/>
 								{/each}
@@ -695,7 +837,7 @@
 									{item}
 									{query}
 									index={i}
-									focused={i === focusedIndex}
+									focused={i === focused}
 									onactivate={() => navigateTo(item)}
 									onhover={() => (focusedIndex = i)}
 								/>

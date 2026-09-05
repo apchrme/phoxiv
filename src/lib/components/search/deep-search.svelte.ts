@@ -59,10 +59,12 @@ export class DeepSearch {
 	 * when the input is empty, so with `''` here `hasFailed('')` and
 	 * `isLoading('')` both answered *true* the moment files mode opened, and the
 	 * panel led with "Couldn't search inside files." before a key had been
-	 * pressed. A query below `MIN_DEEP_QUERY_LENGTH` is never fetched, so none of
-	 * these three may ever name one — `null` makes that unrepresentable, where a
-	 * guard in each predicate only makes it something every future reader has to
-	 * remember. `isStale` carried such a guard; the other two did not.
+	 * pressed. A query the driving effect refuses to send — shorter than
+	 * `MIN_DEEP_QUERY_LENGTH`, or longer than `MAX_DEEP_QUERY_LENGTH` — is never
+	 * scheduled either, so none of these three may ever name one; `null` makes
+	 * that unrepresentable, where a guard in each predicate only makes it
+	 * something every future reader has to remember. `isStale` carried such a
+	 * guard; the other two did not.
 	 */
 	#landed: string | null = $state(null);
 	#inFlight: string | null = $state(null);
@@ -109,7 +111,8 @@ export class DeepSearch {
 	}
 
 	/**
-	 * Whether `query` is the one currently on the wire.
+	 * Whether `query` is the one the panel is waiting on — **either sitting out
+	 * the debounce or actually on the wire**; see {@link schedule}.
 	 *
 	 * `query` is always a string and the cell is `null` when idle, so an empty
 	 * input matches nothing here without a length check of its own.
@@ -126,6 +129,43 @@ export class DeepSearch {
 	/** Whether what is on screen belongs to an older query than `query`. */
 	isStale(query: string): boolean {
 		return this.#landed !== null && this.#landed !== query;
+	}
+
+	/**
+	 * Marks `query` as pending **before** the debounce timer starts.
+	 *
+	 * `#inFlight` used to be set only inside {@link run}, which the driving effect
+	 * calls `DEEP_DEBOUNCE_MS` (250 ms) after the last keystroke — so while a first
+	 * query was being typed `isLoading()` was false with nothing landed, and the
+	 * panel's branch order fell past "Searching inside files…" straight into "No
+	 * files contain that phrase.": an answer asserted before the question had been
+	 * asked. The pending state therefore covers the debounce as well as the fetch.
+	 * It hid itself well, because once any non-empty list has landed that list is
+	 * rendered instead.
+	 *
+	 * `#failed` is cleared here rather than only in `run()` for the same reason: a
+	 * failure marker must not outlive the decision to ask again.
+	 */
+	schedule(query: string): void {
+		this.#inFlight = query;
+		this.#failed = null;
+	}
+
+	/**
+	 * Drops the pending marker {@link schedule} set — **only if `query` is still
+	 * the pending one**.
+	 *
+	 * The guard is the whole point, not defensiveness. The driving effect's
+	 * teardown runs immediately before its re-run, so an unconditional clear would
+	 * wipe the *newer* query's pending state that the re-run is about to set, and
+	 * the panel would flash exactly the premature "No files contain that phrase."
+	 * this pair exists to prevent. `run()`'s `finally` clears through here for the
+	 * same reason: an abort rejects a microtask *after* the next query has been
+	 * scheduled, and `#token` cannot see that, because a query still inside its
+	 * debounce has not taken a token yet.
+	 */
+	unschedule(query: string): void {
+		if (this.#inFlight === query) this.#inFlight = null;
 	}
 
 	/** Shows an already-cached query synchronously. Never a network event. */
@@ -175,6 +215,8 @@ export class DeepSearch {
 	 */
 	async run(query: string, signal: AbortSignal): Promise<void> {
 		const token = ++this.#token;
+		// Normally a no-op: the driving effect has already scheduled this key. Kept
+		// so `run()` is correct on its own rather than only in that one caller.
 		this.#inFlight = query;
 		this.#failed = null;
 
@@ -190,7 +232,10 @@ export class DeepSearch {
 			if (token !== this.#token) return;
 			this.#failed = query;
 		} finally {
-			if (token === this.#token) this.#inFlight = null;
+			// Through `unschedule` rather than a bare assignment: the token alone
+			// cannot tell that a newer query is already pending inside its debounce,
+			// having taken no token yet. See that method.
+			if (token === this.#token) this.unschedule(query);
 		}
 	}
 }

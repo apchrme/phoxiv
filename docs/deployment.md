@@ -77,6 +77,13 @@ bun run deploy                                    # build + wrangler deploy
 Cloudflare. `preview` is the same build served through `wrangler dev`, which is
 the only local mode that exercises the real Worker runtime and the real bindings.
 
+Two things routinely outlive the deploy itself, and both are easier to plan for
+than to discover. A change to what an `/api/*` endpoint returns needs a
+[cache purge](#purging-the-cache-after-an-api-change). And a change anywhere near
+extraction needs a [backfill sweep](#backfilling-the-text-index), because rows
+that landed `pending` stay `pending` — shipping the code that would have read
+those files does not go back and read them.
+
 ## Migrations against production
 
 Migration files are generated locally, committed, and applied to the remote
@@ -169,10 +176,26 @@ bun run build && find .svelte-kit/output/server -name '*.js' -print0 \
   | xargs -0 cat | gzip -9 -c | wc -c
 ```
 
-**≈ 425 000 bytes is right. ≈ 900 000 means pdf.js was resolved into the server
-build** — the dynamic import got resolved at build time and must go back to the
-runtime-URL form. Everything still _works_ when that happens, which is exactly
-why it needs a number rather than a glance.
+**A little over 430 000 bytes is right. ≈ 900 000 means pdf.js was resolved into
+the server build** — the dynamic import got resolved at build time and must go
+back to the runtime-URL form. Everything still _works_ when that happens, which is
+exactly why it needs a number rather than a glance.
+
+Read that as an order of magnitude, not a threshold to match. The figure drifts
+by a percent or two with any ordinary change and is not worth chasing; what the
+check is looking for is a doubling. The two greps below are the exact form of the
+same question, and they are the ones to trust when the number is ambiguous.
+
+The number survives `$lib/pdf-text.ts` importing pdf.js's own
+`PDFDocumentLoadingTask`, `PDFDocumentProxy`, `PDFPageProxy` and `PDFWorker` from
+the `pdfjs-dist` devDependency, because that is an **`import type`** and
+TypeScript erases it: no `pdfjs-dist` code is emitted into either bundle, and the
+runtime string URL below stays the only way the parser is ever loaded. Dropping
+the `type` keyword, or reaching for a runtime value out of the same module, puts
+the parser in the Worker while looking like a tidy-up — which is what the number
+is there to catch. And the types are not decoration: hand-written structural ones
+are what let a call to a method pdf.js 6 had removed pass `svelte-check` while
+turning every successful extraction into an error, in every browser.
 
 Two supporting checks when it looks wrong:
 
@@ -209,7 +232,11 @@ a worker whose version does not match the API's.
 
 ## Backfilling the text index
 
-New uploads are indexed as they arrive. Everything already in R2 is swept up by:
+New uploads are indexed as they arrive — **when the contributor's browser
+managed to read them**. Extraction runs there, so a browser with JavaScript off,
+a 404 on the vendored parser and a parser that throws all end the same way: the
+file uploads and the row lands `pending`. Everything already in R2, and every one
+of those, is swept up by:
 
 ```sh
 PHOXIV_URL=https://phoxiv.org PHOXIV_SESSION='<cookie>' bun run index:backfill
@@ -259,6 +286,22 @@ The script loops until nothing is left, so re-running it is always safe:
 - The script reads `.docx` and `.xlsx` as well as PDF and HTML — locally,
   dependency weight is free, so `unpdf` and `fflate` are devDependencies and
   never enter either bundle.
+
+So a spell of failed browser-side extraction is repaired by **one run of the
+script and nothing else**: a `pending` row is inside `selectIndexCandidates`'
+retry window until `attempts` reaches 3, so it is still a candidate, and the
+sweep reads the bytes and writes the text the browser never produced. Nothing has
+to be re-uploaded and no row has to be deleted first.
+
+**Do not bump `EXTRACTOR_VERSION` to force that.** The bump exists for a change
+in what extraction _produces_, and it re-queues the entire archive: one full
+sweep of ~2,250 files writes 14,228 rows, 14 % of the daily write cap (see
+[Staying inside D1's daily quotas](#staying-inside-d1s-daily-quotas)), to
+reproduce text that is already correct. The retry window is the mechanism; the
+version bump is the sledgehammer beside it.
+
+The admin panel's **Index** tab is how to tell the run landed: `pending` falls to
+whatever genuinely cannot be read, and `ok` rises by the same amount.
 
 Results travel over HTTP rather than `wrangler d1 execute`, and that is not a
 style choice: D1 caps a _statement_ at 100 KB, which a 40 kB–500 kB text blows
@@ -347,7 +390,8 @@ deliberate: a browser may still store a copy, but it may not reuse one without
 revalidating first, so a dashboard purge reaches every visitor on their next
 request — returning visitors included.
 
-After deploying a change to any `/api/*` **response shape**:
+After deploying a change to what any `/api/*` endpoint **returns** — a new shape,
+or the same shape carrying different values:
 
 1. Cloudflare dashboard → the `phoxiv.org` zone → **Caching → Configuration**.
 2. **Purge Everything**, or purge by URL for the affected endpoints:
@@ -355,12 +399,17 @@ After deploying a change to any `/api/*` **response shape**:
    - `https://phoxiv.org/api/olympiads/<id>` (one per olympiad)
    - `https://phoxiv.org/api/search`
    - `https://phoxiv.org/api/stats`
-3. Reload the site and confirm the new shape is being served.
+3. Reload the site and confirm the new payload is being served.
 
 **`/api/search/files` can only be cleared by Purge Everything.** Its bodies are
 keyed by query string, so there is no finite list of URLs to enumerate and
-purge-by-URL cannot reach them. If you change that endpoint's response shape,
-Purge Everything is the only option — plan for it rather than discovering it.
+purge-by-URL cannot reach them. Read the trigger as **any change to what that
+endpoint answers**, not only to the shape it answers in: a change to how a query
+becomes a `MATCH` expression leaves `FileSearchResponse` exactly as it was and
+still makes every cached body a stale answer to its own url, for a day. Taking
+the rule narrowly is how a fix that works locally looks like it never deployed.
+Purge Everything is the only option either way — plan for it rather than
+discovering it.
 
 The public shapes are near-frozen for this reason — `OlympiadEntry[]`,
 `YearEntry[]`, `SearchItem[]`, `FileSearchResponse` and the stats triple. A newly

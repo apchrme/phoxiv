@@ -31,11 +31,37 @@ export const MIN_DEEP_QUERY_LENGTH = 5;
 export const MAX_DEEP_QUERY_LENGTH = 200;
 
 /**
- * The real cost control. Each token is an index probe ANDed with the rest, so
- * this — rather than the character cap — is what keeps a pathological query
- * inside D1's 30-second ceiling.
+ * The cost control on the `AND` and `OR` rungs of `sanitizeFtsQuery`'s ladder:
+ * each token there is one more index probe, so this — rather than the character
+ * cap — is what keeps a pathological query inside D1's 30-second ceiling.
+ *
+ * **Raised 8 → 24 when deep search became a ladder**, and the ladder is what made
+ * raising it safe. At 8 this was the only control on the only expression, so it
+ * had to be two things at once and failed at both: a long query silently stopped
+ * narrowing — an 11-word sentence ran as its first 8 words and returned five
+ * files from five different olympiads, none of them the one it was quoted from —
+ * while raising the cap on its own trades that for the opposite failure, since
+ * every extra ANDed term is one more chance to hit a hole in the extracted text
+ * and take the result set to zero. Over-constraining is now **recoverable**,
+ * because the `OR` rung below catches it; under-constraining never was. Both
+ * halves of that are measured in `sanitizeFtsQuery`.
  */
-export const MAX_DEEP_QUERY_TOKENS = 8;
+export const MAX_DEEP_QUERY_TOKENS = 24;
+
+/**
+ * The cap on the phrase rung, deliberately looser than
+ * {@link MAX_DEEP_QUERY_TOKENS}: a longer phrase can only match **fewer**
+ * documents, so what that rung asks of the index shrinks as the query grows,
+ * where an `OR` over the same words grows with it.
+ *
+ * Belt and braces rather than a bound that bites often.
+ * {@link MAX_DEEP_QUERY_LENGTH} already refuses anything over 200 characters,
+ * which holds 32 tokens only if they average under 5.3 characters each — so a
+ * pasted sentence of short words is the only thing that reaches this at all, and
+ * the 11-word, 56-character sentence that motivated the ladder is nowhere near
+ * it.
+ */
+export const MAX_PHRASE_TOKENS = 32;
 
 /** How many file hits a deep search returns. The array order *is* the rank. */
 export const DEEP_SEARCH_LIMIT = 20;

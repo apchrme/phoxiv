@@ -7,6 +7,7 @@ import {
 	EXTRACTOR_ENGINE,
 	EXTRACTOR_VERSION,
 	MAX_DEEP_QUERY_TOKENS,
+	MAX_PHRASE_TOKENS,
 	MAX_SUBMITTED_TEXT_CHARS,
 	MIN_EXTRACTED_CHARS,
 	normalizeExtracted
@@ -62,14 +63,23 @@ const MARK_END = '\u0003';
 
 export type SanitizedQuery = {
 	/**
-	 * The FTS5 `MATCH` expression. **Empty means "nothing searchable"** — the
-	 * caller must then skip the query rather than run an empty `MATCH`.
+	 * The FTS5 `MATCH` expressions to try, **most precise first**: the caller runs
+	 * them in order and stops at the first that returns a row.
+	 *
+	 * **Empty means "nothing searchable"** — the caller must then skip the query
+	 * rather than run an empty `MATCH`.
 	 */
-	match: string;
-	/** The query echoed to the client: normalised, capped, phrases re-quoted. */
+	plans: string[];
+	/**
+	 * The query echoed to the client: the **whole** normalised query, phrases
+	 * re-quoted, nothing capped.
+	 *
+	 * It deliberately describes no single plan. There is no longer one expression
+	 * to echo, and echoing the rung that happened to hit would tell the user that
+	 * words had been dropped when they had not — which is what the old echo did,
+	 * truncating to the eight tokens the one expression ran.
+	 */
 	echo: string;
-	/** The bare terms, for JS-side use by a caller that wants them. */
-	terms: string[];
 };
 
 type Token = { text: string; phrase: boolean };
@@ -108,8 +118,8 @@ function tokenize(query: string): Token[] {
 }
 
 /**
- * A user's query, turned into an FTS5 `MATCH` expression that cannot be a syntax
- * error.
+ * A user's query, turned into a **ladder** of FTS5 `MATCH` expressions, none of
+ * which can be a syntax error.
  *
  * Nothing user-typed reaches `MATCH` as SQL — the expression is a bound
  * parameter — so this is not an injection risk. It is a **grammar** risk: FTS5
@@ -123,40 +133,115 @@ function tokenize(query: string): Token[] {
  * {@link tokenize} has already dropped everything that is not a letter, a digit
  * or (inside a phrase) a space — a `"` cannot survive into a token.
  *
- * | typed | `match` |
+ * # Why a ladder, and not one expression
+ *
+ * There used to be exactly one: every token ANDed, capped at eight. Both halves
+ * of that were wrong, and in opposite directions.
+ *
+ * The cap **stopped the query narrowing**. `two water reservoirs are separated
+ * by a vertical wall mn` ran as its first eight words and returned five files
+ * from five different olympiads; the same sentence typed inside quotes returned
+ * the one file it had been copied out of, and nothing else.
+ *
+ * Raising the cap on its own would have been worse, and that was measured rather
+ * than guessed: **that** file indexes `figure` as `gure`, because the PDF emits
+ * U+0000 for the `fi` ligature and `normalizeExtracted` strips it with the rest
+ * of the control characters. Every ANDed term is another chance to hit a hole
+ * like that, and one hole takes the whole result set to zero — ANDing the full
+ * sentence matches nothing at all. More words would have traded too many results
+ * for none.
+ *
+ * So precision and recall get a rung each, tried in order, and {@link searchFiles}
+ * stops at the first that returns a row:
+ *
+ * | rung | expression | built when |
+ * | --- | --- | --- |
+ * | 1 phrase | `"w1 w2 … wN"`, `*` on the last word | ≥2 tokens, none quoted |
+ * | 2 and | `"w1" AND … AND "wN"`, `*` on the last | any token at all |
+ * | 3 or | `"w1" OR … OR "wN"`, no `*` | ≥3 tokens |
+ *
+ * Rung 1 is dropped the moment the user quotes something themselves: an explicit
+ * `"…"` is them saying what the phrase is, and re-grouping the whole query around
+ * it would ignore that.
+ *
+ * The **trailing `*` on a phrase** is what keeps search-as-you-type alive, and
+ * the grammar it rests on was checked against SQLite 3.53's FTS5 rather than
+ * assumed: `"two water reserv"*` matches `two water reservoirs …`, where
+ * `"two water reserv"` matches nothing. Without it the panel would go blank on
+ * every keystroke in the middle of a word.
+ *
+ * Rung 3 is not the desperate rung it looks like, because bm25 **ranks by
+ * coverage, and strongly**. On the sentence above, the file it had been copied
+ * out of scored `-4.96` against `-0.73`, `-0.33` and `-0.000008` for the near
+ * misses — the right file first by a wide margin, in exactly the case where
+ * rung 2 returns nothing.
+ *
+ * # What a query becomes
+ *
+ * One row per plan; a blank first cell continues the query above it.
+ *
+ * | typed | plan |
  * | --- | --- |
  * | `gravitation` | `"gravitation"*` |
- * | `mc^2 relativ` | `"mc" AND "2" AND "relativ"*` |
- * | `"black hole" entropy` | `"black hole" AND "entropy"*` |
+ * | `mc^2 relativ` | `"mc 2 relativ"*` |
+ * |  | `"mc" AND "2" AND "relativ"*` |
+ * |  | `"mc" OR "2" OR "relativ"` |
+ * | `"black hole" entropy` | `"black hole" AND "entropy"*` — quoted, so no rung 1 |
  * | `"black hol` | `"black hol"` — open phrase, not extended |
- * | `foo OR bar` | `"foo" AND "or" AND "bar"*` |
- * | `-NEAR("a" b)` | `"near" AND "a" AND "b"*` |
- * | `???` | `''` → skip the query, empty results |
+ * | `foo OR bar` | `"foo or bar"*` |
+ * |  | `"foo" AND "or" AND "bar"*` |
+ * |  | `"foo" OR "or" OR "bar"` |
+ * | `-NEAR("a" b)` | `"near" AND "a" AND "b"` — no `*`, `b` is one character |
+ * |  | `"near" OR "a" OR "b"` |
+ * | `???` | no plans at all → skip the query, empty results |
  *
  * `AND` is written explicitly even though FTS5's implicit operator between two
  * strings is already AND, so the expression does not depend on that default.
  *
- * The cap keeps the **first** `MAX_DEEP_QUERY_TOKENS`, not the last, so the
- * expression stays stable as the user keeps typing. The trailing prefix `*` goes
- * on the last **bare word** only: not on a closed phrase, and not on a single
- * character, since `a*` probes a large slice of the index for almost no signal.
+ * Each cap keeps the **first** N tokens, not the last, so a plan stays stable as
+ * the user keeps typing.
+ *
+ * The prefix `*` marks the word the user is still in the middle of, so it goes on
+ * the **last token only**, and never on a single character, since `a*` probes a
+ * large slice of the index for almost no signal. It is never added to a phrase the
+ * *user* closed — they said where it ended — which is a different thing from the
+ * `*` rung 1 puts on the phrase it builds itself, whose last word is bare by
+ * construction.
  */
 export function sanitizeFtsQuery(query: string): SanitizedQuery {
-	const tokens = tokenize(query).slice(0, MAX_DEEP_QUERY_TOKENS);
-	const last = tokens.length - 1;
+	const tokens = tokenize(query);
+	const echo = tokens.map((t) => (t.phrase ? `"${t.text}"` : t.text)).join(' ');
 
-	const match = tokens
-		.map((t, i) => {
-			const quoted = `"${t.text}"`;
-			return i === last && !t.phrase && t.text.length > 1 ? `${quoted}*` : quoted;
-		})
-		.join(' AND ');
+	const quoted = (t: Token) => `"${t.text}"`;
+	const prefixed = (t: Token) => (!t.phrase && t.text.length > 1 ? `${quoted(t)}*` : quoted(t));
 
-	return {
-		match,
-		echo: tokens.map((t) => (t.phrase ? `"${t.text}"` : t.text)).join(' '),
-		terms: tokens.map((t) => t.text)
-	};
+	const plans: string[] = [];
+
+	if (tokens.length >= 2 && !tokens.some((t) => t.phrase)) {
+		const words = tokens.slice(0, MAX_PHRASE_TOKENS).map((t) => t.text);
+		const lastWord = words[words.length - 1];
+		plans.push(`"${words.join(' ')}"${lastWord.length > 1 ? '*' : ''}`);
+	}
+
+	// Guarded on emptiness rather than pushed unconditionally: with no tokens the
+	// join is `''`, which is not a plan but an empty `MATCH` waiting to be run.
+	const anded = tokens.slice(0, MAX_DEEP_QUERY_TOKENS);
+	const lastIndex = anded.length - 1;
+	if (anded.length > 0) {
+		plans.push(anded.map((t, i) => (i === lastIndex ? prefixed(t) : quoted(t))).join(' AND '));
+	}
+
+	// Two tokens would only restate rung 2's inputs under a weaker operator, so
+	// this starts at three.
+	if (tokens.length >= 3) {
+		plans.push(tokens.slice(0, MAX_DEEP_QUERY_TOKENS).map(quoted).join(' OR '));
+	}
+
+	// A dedupe that cannot fire as the rungs are built above — rung 1's `>= 2` is
+	// what rules out the one collision there is, a single token, where rungs 1 and
+	// 2 would both be `"word"*`. It stays because it is one call: a fourth rung, or
+	// a lower cap, must not silently pay twice for the same scan.
+	return { plans: [...new Set(plans)], echo };
 }
 
 /**
@@ -419,10 +504,30 @@ async function resolveOwners(db: DB, urls: string[]): Promise<Map<string, Owner>
 /**
  * Files whose extracted text matches `query`, best first.
  *
- * Four D1 queries on a hit: {@link selectFtsHits}' two passes in sequence, then
- * the two owner reads in parallel — around 200 rows read in total, of which the
- * owner resolution is now the larger half. A query that sanitises to nothing
- * costs **no D1 read at all**.
+ * The query arrives as a **ladder** of `MATCH` expressions — see
+ * {@link sanitizeFtsQuery} — and this walks it, stopping at the first that
+ * returns a row. Stopping early is not an optimisation but the ranking itself:
+ * every rung is looser than the one above it, so a phrase hit must never be
+ * diluted by the near misses the `OR` rung would have added.
+ *
+ * Four D1 queries when the first plan hits, exactly as before the ladder:
+ * {@link selectFtsHits}' two passes in sequence, then the two owner reads in
+ * parallel — around 200 rows read in total, of which the owner resolution is the
+ * larger half. A query that sanitises to nothing costs **no D1 read at all**.
+ *
+ * A plan that matches nothing costs **one** statement rather than two, because
+ * {@link selectFtsHits} returns before its snippet pass when the ranking pass
+ * comes back empty — and a ranking pass measured ~20 rows for a query matching
+ * 402 documents. So the ladder's worst case, a query that matches nothing at any
+ * rung, is three ranking passes instead of one: ~60 rows, on top of the
+ * {@link hasFileText} read a total miss already paid for its empty state.
+ *
+ * The **modal** case for a multi-word query is neither of those two, and it is
+ * worth naming rather than reading the best case as typical: rung 1 asks for the
+ * words *adjacent*, which most real queries are not, so the usual shape is one
+ * empty ranking pass followed by rung 2's two — five statements, one ~20-row
+ * pass more than before the ladder. That is what buys the phrase hit in the case
+ * where it exists, and it is the price the whole design is set against.
  *
  * The index is fetched **one row past the limit**, and that one row is the whole
  * reason to fetch past it: `truncated` below has to distinguish "exactly
@@ -447,9 +552,11 @@ async function resolveOwners(db: DB, urls: string[]): Promise<Map<string, Owner>
  *
  * None of this bounds the **bm25 scan**: `ORDER BY rank` makes FTS5 score every
  * matching document whatever the `LIMIT`, and `MAX_DEEP_QUERY_TOKENS` is still
- * the only control on that. It is, however, cheap in D1's billing — the ranking
- * pass reads the FTS index, not the content table, and measured at ~20 rows for
- * a query matching 402 documents.
+ * the only control on that. Rung 3 is the one rung where that matters — an `OR`
+ * matches far more documents than the `AND` of the same words does — which is
+ * exactly why it runs last, and only once the two narrower rungs have found
+ * nothing. It stays cheap in D1's billing either way, because a ranking pass
+ * reads the FTS index and not the content table.
  *
  * A url in the index with **no owning row is dropped, not rendered**: D1 is the
  * authority on what exists, so a stale index degrades to fewer results rather
@@ -461,14 +568,20 @@ async function resolveOwners(db: DB, urls: string[]): Promise<Map<string, Owner>
  * surface.
  */
 export async function searchFiles(db: DB, query: string): Promise<FileSearchResponse> {
-	const { match, echo } = sanitizeFtsQuery(query);
+	const { plans, echo } = sanitizeFtsQuery(query);
 
 	// Nothing searchable — `???`, or punctuation only. No D1 read: the reason
 	// there are no results is the query, not the index, so `indexEmpty` stays
 	// false without asking.
-	if (!match) return { query: echo, results: [], truncated: false, indexEmpty: false };
+	if (plans.length === 0) return { query: echo, results: [], truncated: false, indexEmpty: false };
 
-	const hits = await selectFtsHits(db, match, DEEP_SEARCH_LIMIT + 1);
+	// Down the ladder. `hits` holds the last rung tried, which is empty only if
+	// every one of them came back empty.
+	let hits: FtsHit[] = [];
+	for (const match of plans) {
+		hits = await selectFtsHits(db, match, DEEP_SEARCH_LIMIT + 1);
+		if (hits.length > 0) break;
+	}
 
 	const snippetByUrl = new Map<string, string>();
 	for (const hit of hits) {
@@ -557,18 +670,6 @@ export async function writeFileText(db: DB, w: FileTextWrite): Promise<void> {
 			}
 		})
 		.run();
-}
-
-/**
- * Queues a file for extraction, **resetting** any state a previous object under
- * the same url left behind.
- *
- * The one case where cleanup would otherwise matter is delete-then-re-upload
- * with the same label and extension: identical key, identical url, same identity
- * but different bytes. This upsert is what handles it — not the cleanup running.
- */
-export async function enqueueFileText(db: DB, url: string, ext: string): Promise<void> {
-	await writeFileText(db, { url, ext, status: 'pending' });
 }
 
 /**

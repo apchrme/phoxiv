@@ -1,5 +1,13 @@
 import { capExtracted, MIN_EXTRACTED_CHARS, normalizeExtracted, TEXT_CHAR_CAP } from '$lib/search';
 import { extensionOf, isExtractable } from '$lib/uploads';
+// `import type` only — erased at compile time, so pdf.js stays out of BOTH
+// bundles exactly as before, and the runtime string URL below is unchanged. It
+// exists so `bun run check` sees the real API surface. This file used to
+// hand-write its own structural types for pdf.js, and that is precisely how a
+// call to `PDFDocumentProxy.destroy()` — a method pdf.js 6 removed — passed
+// `svelte-check` while turning every successful extraction into
+// `{status: 'error'}` in every browser. See {@link extractPdf}.
+import type { PDFDocumentLoadingTask, PDFDocumentProxy, PDFPageProxy, PDFWorker } from 'pdfjs-dist';
 
 /**
  * Text extraction, **in the contributor's browser**.
@@ -44,20 +52,28 @@ import { extensionOf, isExtractable } from '$lib/uploads';
 const PDFJS_URL = '/vendor/pdfjs/pdf.min.mjs';
 const PDFJS_WORKER_URL = '/vendor/pdfjs/pdf.worker.min.mjs';
 
-/** The subset of pdf.js's surface this module uses. */
-type PdfTextItem = { str?: string; hasEOL?: boolean };
-type PdfPage = { getTextContent(): Promise<{ items: unknown[] }> };
-type PdfDocument = {
-	numPages: number;
-	getPage(n: number): Promise<PdfPage>;
-	destroy(): Promise<void>;
-};
-type PdfjsModule = {
-	GlobalWorkerOptions: { workerSrc: string };
-	getDocument(src: { data: ArrayBuffer; isEvalSupported: boolean }): {
-		promise: Promise<PdfDocument>;
-	};
-};
+/**
+ * The parser's own module type, not a hand-written approximation of it.
+ *
+ * `pdfjs-dist` is a devDependency at 6.3.289 — the same version the vendored
+ * build in `static/vendor/pdfjs/` was copied from, and the README beside those
+ * files is what keeps the two in step. Even so, these types are a **promise
+ * about that build, not proof of it**: the module arrives through a runtime
+ * string URL, so nothing on either side checks that the file on disk matches the
+ * `.d.ts`. That is why {@link joinItems} still guards at runtime.
+ */
+type PdfjsModule = typeof import('pdfjs-dist');
+
+/**
+ * What `getTextContent()` hands back, derived rather than imported.
+ *
+ * `pdfjs-dist`'s entry point (`types/src/pdf.d.ts`) re-exports the page proxy but
+ * **not** `TextItem`, so there is no such name to import — reaching for one does
+ * not resolve. Going through the exported proxy reaches the same type by a route
+ * that exists. The element is `TextItem | TextMarkedContent`, and only the former
+ * has `str`.
+ */
+type TextContentItems = Awaited<ReturnType<PDFPageProxy['getTextContent']>>['items'];
 
 /**
  * The result of one extraction attempt. There is no `throw` path — see
@@ -69,8 +85,37 @@ export type Extraction =
 	| { status: 'skipped' }
 	| { status: 'error'; error: string };
 
-/** Loaded once per page, not once per file: the worker is expensive to spin up. */
+/**
+ * The parser and its worker, both cached for the life of the page.
+ *
+ * # Two caches, because the module alone is not enough
+ *
+ * `pdfjsPromise` caches the ES module. `getDocument` still starts a **fresh**
+ * `Worker` for every call it is not handed one, so caching only the module left a
+ * contributor who picks six files spinning up six workers, each fetching,
+ * parsing and compiling pdf.js's 1.2 MB worker build. `sharedWorker` is the half
+ * that makes "the worker is expensive to spin up" actually pay.
+ *
+ * # Why one worker survives many documents
+ *
+ * `PDFDocumentLoadingTask.destroy()` destroys only a worker it created itself: it
+ * assigns `task._worker` in the branch that constructs one, and leaves it `null`
+ * when `getDocument` was passed a `worker`, so the `this._worker?.destroy()` at
+ * the end of `destroy()` is a no-op for ours. Measured against pdfjs-dist@6.3.289
+ * with a 3-page archive PDF:
+ *
+ * ```
+ * shared worker ready; destroyed = false
+ * doc1 pages 3
+ * after task1.destroy(); shared worker destroyed = false
+ * doc2 pages 3 = reuse WORKS
+ * ```
+ *
+ * So each extraction still destroys its own **task**, which is what releases that
+ * document and its page cache, while the worker stays up for the next pick.
+ */
 let pdfjsPromise: Promise<PdfjsModule> | null = null;
+let sharedWorker: PDFWorker | null = null;
 
 function loadPdfjs(): Promise<PdfjsModule> {
 	pdfjsPromise ??= import(/* @vite-ignore */ PDFJS_URL).then((mod) => {
@@ -82,17 +127,42 @@ function loadPdfjs(): Promise<PdfjsModule> {
 }
 
 /**
+ * The shared worker, replacing it if the cached one has been destroyed.
+ *
+ * The `destroyed` check is not defensive padding: handed a dead worker,
+ * `getDocument`'s setup rejects the loading task with `Worker was destroyed`, so
+ * caching one blindly would let a single `destroy()` fail *every* remaining
+ * extraction for the life of the page, with no way back short of a reload.
+ * Verified against pdfjs-dist@6.3.289: destroying the shared worker by hand and
+ * extracting again recovers, because this replaces it.
+ *
+ * Takes the already-resolved module rather than awaiting it, which is what
+ * guarantees `GlobalWorkerOptions.workerSrc` is set before the worker is built.
+ * `PDFWorker`'s constructor reads `workerSrc` *outside* its own try block, so
+ * constructing one first throws synchronously rather than rejecting a promise
+ * somebody downstream could catch.
+ */
+function sharedPdfWorker(pdfjs: PdfjsModule): PDFWorker {
+	if (!sharedWorker || sharedWorker.destroyed) sharedWorker = new pdfjs.PDFWorker();
+	return sharedWorker;
+}
+
+/**
  * Every text item of every page, joined.
  *
  * `hasEOL` becomes a real newline rather than a space, because
  * `normalizeExtracted`'s de-hyphenation step keys on `-\n` — without the newline
  * a line-broken "gravita-\ntion" would index as two tokens.
+ *
+ * The `'str' in item` test does two jobs at once. It narrows away
+ * `TextMarkedContent`, which the array can hold and which has no `str`; and it is
+ * the **runtime** guard behind the types above, which describe a build reached by
+ * runtime URL and so only promise this shape rather than prove it.
  */
-function joinItems(items: unknown[]): string {
+function joinItems(items: TextContentItems): string {
 	let out = '';
-	for (const raw of items) {
-		const item = raw as PdfTextItem;
-		if (typeof item.str !== 'string') continue;
+	for (const item of items) {
+		if (!('str' in item) || typeof item.str !== 'string') continue;
 		out += item.str;
 		out += item.hasEOL ? '\n' : ' ';
 	}
@@ -111,12 +181,25 @@ function extractHtml(source: string): string {
 
 async function extractPdf(file: File): Promise<{ raw: string; pages: number }> {
 	const pdfjs = await loadPdfjs();
-	// `isEvalSupported: false` because the app is served under a CSP-shaped
-	// posture and pdf.js's font fast-path is not worth an eval; text extraction
-	// does not use it.
-	const doc = await pdfjs.getDocument({ data: await file.arrayBuffer(), isEvalSupported: false })
-		.promise;
+	// There used to be an `isEvalSupported: false` here, for the app's CSP-shaped
+	// posture. **Do not put it back.** pdf.js 6 deleted both the option and the
+	// thing it disabled: `isEvalSupported` appears 0 times in either vendored file
+	// and 0 times in pdfjs-dist@6.3.289's types and build, and `new Function(`
+	// appears 0 times in the worker build — the font fast-path it guarded is gone.
+	// `getDocument` destructures named properties, so the key was silently ignored
+	// rather than rejected, and the second the types below became real it showed up
+	// as the dead letter it had been. Nothing about the CSP posture changed.
+	//
+	// `file.arrayBuffer()` has to stay inline here. pdf.js **detaches** the buffer
+	// it is handed as `data`, so it is single-use: harmless today because every
+	// pick reads the File afresh, but hoisting or caching that read would hand the
+	// second extraction a zero-length buffer.
+	const task: PDFDocumentLoadingTask = pdfjs.getDocument({
+		data: await file.arrayBuffer(),
+		worker: sharedPdfWorker(pdfjs)
+	});
 	try {
+		const doc: PDFDocumentProxy = await task.promise;
 		let raw = '';
 		for (let n = 1; n <= doc.numPages; n++) {
 			const page = await doc.getPage(n);
@@ -128,9 +211,26 @@ async function extractPdf(file: File): Promise<{ raw: string; pages: number }> {
 		}
 		return { raw, pages: doc.numPages };
 	} finally {
-		// Releases the worker's copy of the document. Without it a contributor who
-		// picks six files in a row leaks six parsed documents into the tab.
-		await doc.destroy().catch(() => {});
+		// The **task**, not the document, and two things about that:
+		//
+		// 1. pdf.js 6 removed `PDFDocumentProxy.destroy()` — cleanup moved to the
+		//    loading task. The call that used to be here threw a *synchronous*
+		//    `TypeError`, which the trailing `.catch()` could not touch because
+		//    there was no promise to catch on. It escaped the `finally` and
+		//    discarded the text the `try` had just finished computing, so every
+		//    successful extraction surfaced as `{status: 'error'}`, in every
+		//    browser, for every PDF.
+		// 2. A throw in here therefore destroys a *result*, not just a resource.
+		//    Leak the worker rather than lose the text.
+		//
+		// Safe on the failure path too: `_setupCapability` is resolved from a
+		// `.finally()` on the setup chain, so `destroy()` still settles even when
+		// `task.promise` rejected.
+		try {
+			await task.destroy();
+		} catch {
+			/* empty */
+		}
 	}
 }
 
@@ -160,6 +260,13 @@ export async function extractText(file: File): Promise<Extraction> {
 		const { text, truncated } = capExtracted(normalized);
 		return { status: 'ok', text, chars: text.length, truncated, pages };
 	} catch (e) {
+		// Logged, not merely summarised. `{status: 'error'}` reaches the UI as one
+		// friendly sentence, so for the whole life of the `doc.destroy()` bug above
+		// the real `TypeError` — name, message and stack, pointing at the exact
+		// line — existed only inside this catch, and was thrown away right here.
+		// Keeping it in the console is what turns the next one into a one-minute
+		// diagnosis; `error` below carries the message to the contributor as well.
+		console.error('[pdf-text] extraction failed for', file.name, e);
 		return { status: 'error', error: e instanceof Error ? e.message : 'Extraction failed' };
 	}
 }

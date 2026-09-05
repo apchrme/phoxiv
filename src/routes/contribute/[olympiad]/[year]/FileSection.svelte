@@ -145,8 +145,22 @@
 	 */
 	const extractedText = $derived(extracted?.status === 'ok' ? extracted.text : '');
 
+	/**
+	 * A friendly sentence, and — on a failure only — the parser's own words.
+	 *
+	 * `detail` is kept apart from `text` rather than concatenated into it so the
+	 * two can be styled differently: the sentence in the note's own tone, the raw
+	 * message muted and monospaced, so it reads as machine output rather than as
+	 * more prose. It exists at all because the error branch below used to drop
+	 * `extracted.error` on the floor, which is how a `TypeError` thrown inside
+	 * `extractText` reached the contributor as nothing but "couldn't read the
+	 * text" — and reached the console as nothing at all. Its other half is the
+	 * `console.error` in `$lib/pdf-text.ts`.
+	 */
+	type ExtractionNote = { tone: 'muted' | 'warn' | 'ok'; text: string; detail?: string };
+
 	/** How the pick is described under the file input. */
-	const extractionNote = $derived.by(() => {
+	const extractionNote: ExtractionNote | null = $derived.by(() => {
 		if (extracting) return { tone: 'muted', text: 'Reading text…' };
 		if (!extracted) return null;
 		if (extracted.status === 'skipped') {
@@ -161,7 +175,8 @@
 		if (extracted.status === 'error') {
 			return {
 				tone: 'warn',
-				text: "Couldn't read the text. The file will still upload, and indexing will be retried later."
+				text: "Couldn't read the text. The file will still upload, and indexing will be retried later.",
+				detail: extracted.error
 			};
 		}
 		const pages = extracted.pages === 1 ? '1 page' : `${extracted.pages} pages`;
@@ -326,6 +341,12 @@
 				)}
 			>
 				{extractionNote.text}
+				{#if extractionNote.detail}
+					<!-- The parser's own message, carried through rather than swallowed: it
+					     is the difference between "couldn't read the text" and "The API
+					     version does not match the Worker version", which names the fix. -->
+					<span class="ml-1 font-mono text-muted-foreground">{extractionNote.detail}</span>
+				{/if}
 			</p>
 		{/if}
 	</form>

@@ -168,7 +168,17 @@ export type FileSearchResult = {
  * shows one kind of result at a time.
  */
 export type FileSearchResponse = {
-	/** The query actually run, normalised and capped: what the UI should echo. */
+	/**
+	 * The query as the server understood it: normalised, phrases re-quoted,
+	 * **nothing dropped**.
+	 *
+	 * It names no single expression, because there is no longer a single one to
+	 * name — `sanitizeFtsQuery` builds a ladder and `searchFiles` stops at the
+	 * first rung that matches. It used to echo the capped eight tokens that the
+	 * one expression ran, which told the user words had been discarded; now the
+	 * caps bound only what each rung probes, and every word the user typed is
+	 * still part of the question.
+	 */
 	query: string;
 	/** Best first. */
 	results: FileSearchResult[];

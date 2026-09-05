@@ -122,14 +122,26 @@ each:
   so it gets its own list:
   - Type, hover a result then press **Enter** — it must navigate to the _hovered_
     row, not the last one the arrows were on.
+  - Hover a row **far down** a long list, then narrow the query until a short
+    list lands, and press **Enter**: it must open a row that is on screen, never
+    nothing at all. The focused index is clamped where it is _read_, so a hover
+    left behind by a list that has since shrunk cannot point past the end of it.
   - Close and reopen: **no second `/api/search` request**. Signed in, close and
     reopen: **no second `/progress` request** either. Both caches are
-    session-long, and the reset-on-open only clears what the user chose.
+    session-long, and the reset-on-open only clears what the user chose. Then do
+    it three times in a row, **faster than the first response lands**: still one
+    of each. The fetch-once guards are set only on success, so the in-flight
+    check beside them is all that stands between an impatient ⌘K and three real
+    D1 reads — `/progress` is `private, no-store` and is never served from a cache.
   - Press **Escape**, then reopen with the _desktop nav button_: the query must
     be empty and every filter cleared. Three ways in and four ways out, and only
     two of them run code of ours — this is what that reset exists for.
   - Open it with **caps lock on**. `e.key` is `'K'`, and the naive comparison
     this replaced silently stopped ⌘K working at all.
+  - With a Japanese, Chinese or Korean IME, the **Enter that commits a candidate**
+    must not open a result — and ⌘K must still close the dialog mid-composition,
+    which is why the composition guard sits below the chords rather than above
+    them.
   - Signed out: the topic filter is present and the progress filter is absent.
     Signed in: `done`/`todo` must agree with the olympiad page for the same
     problem — mark one done there, reopen ⌘K, and the `todo` list has dropped it.
@@ -152,11 +164,36 @@ each:
     request** for the repeated query, and the list must not blank between
     keystrokes. One request per settled query, and the visible results always
     match the current input.
+  - Watch the panel through the **first** query of a session, while the 250 ms
+    debounce is still running: it must read "Searching inside files…" and must
+    never read "No files contain that phrase." before a response has landed. It
+    has to be a _first_ query — once any list has landed the panel dims that list
+    rather than emptying it, which is what hides this state from every subsequent
+    keystroke. The pending marker covers the debounce, not only the fetch.
   - In file search, walk up to `MIN_DEEP_QUERY_LENGTH` (5) one character at a
     time: 4 characters must show "type at least 5 characters" and fire **no**
     request; 5 must search. `???` → an empty list, not an error. Try
-    `"black hole"`, the unclosed `"black hol`, `foo OR bar`, `-NEAR(a b)`,
-    `e=mc^2` and a 300-character paste. **None may 500.**
+    `"black hole"`, the unclosed `"black hol`, `foo OR bar`, `-NEAR(a b)` and
+    `e=mc^2`. **None may 500.**
+  - A **300-character paste** has an exact expected outcome rather than merely a
+    survivable one: the panel says it is too long and names both
+    `MAX_DEEP_QUERY_LENGTH` (200) and the query's own length, and **no request is
+    sent**. Not "Couldn't search inside files." — that panel offers **Try again**,
+    which re-fires the identical query and so could never succeed, which is why
+    the limit is the client's as well as the server's.
+  - Paste a **whole sentence copied out of a PDF the archive holds**, a dozen
+    words, ligatures and all: that PDF must come back, and first. Extracted text
+    has holes — one indexed file carries `figure` as `gure`, because the PDF emits
+    U+0000 for the `fi` ligature and normalisation strips it with the other
+    control characters — so ANDing every word of a real sentence matches nothing
+    at all. The `OR` rung underneath is what recovers the file, and bm25's
+    coverage ranking is what puts it on top. A long paste that finds nothing is
+    this check failing.
+  - Then a sentence whose words genuinely **are adjacent** in one document: it
+    must return that one file, not a spread from several olympiads that merely
+    share its words. That is the phrase rung, and a long query is meant to reach
+    it. Backspace into the middle of the last word while it stands: the list must
+    keep matching rather than blanking, which is the trailing `*`.
   - Switch to file search **with the box empty**, and clear the box after a
     search: both must show the explainer, never "Couldn't search inside files."
     See [search.md](./search.md#the-deepsearch-class) for why the sentinel is
@@ -168,11 +205,25 @@ each:
     middle-click and ⌘-click work too. Switching back to problem mode restores
     the filters that were set before.
   - A PDF whose text contains `<script>alert(1)</script>` must render as text.
+  - The same in **problem** mode, which is the mode that renders
+    contributor-typed fields: give a problem a title holding
+    `<img src=x onerror=alert(1)>`, then search for it — the tag must render as
+    literal text, with `<mark>` still wrapping the part that matched. Every
+    displayed field reaches the DOM through `{@html highlight(…)}`, a field does
+    not have to match anything to be delivered, and `/api/search` sits in a shared
+    cache for a day.
 
 - **The extraction pipeline** — most of it runs under `bun run dev`, since
   nothing needs a binding the Worker does not already have:
-  - Pick a text PDF in the year editor: the form reports pages and characters
-    **before** the upload. Submit → searchable immediately, row `ok`.
+  - Pick an **ordinary text PDF** in the year editor: the form must report the
+    page count and the character count and say **searchable**, before the upload
+    — not the amber "Couldn't read the text". That amber note is the whole of what
+    a dead parser looks like from outside: the upload still succeeds, the row
+    still lands `pending`, and nothing anywhere else says a word. One minute here
+    is the difference between catching that and shipping it. When it _is_ a real
+    failure the note carries the parser's own message in mono beside the friendly
+    sentence, and `extractText` `console.error`s the thrown value, so the console
+    is the second place to look. Submit → searchable immediately, row `ok`.
   - Pick a **scanned** PDF: the form says "no text found" _before_ the upload.
     Submit anyway → the upload succeeds and the row is `empty`, counted in the
     admin panel's Index tab.
@@ -257,7 +308,14 @@ Two rules about effects, both learned the hard way:
   [search.md](./search.md#the-debounce-is-the-effects-teardown).
 
 Fetch-once guards are set **only on success**, so a failure retries on the next
-open rather than leaving the session permanently broken. And an explicit
+open rather than leaving the session permanently broken — which is exactly why
+each needs a second, in-flight flag beside it, or three quick ⌘K opens fire three
+`/api/search` **and** three `/progress` requests before the first answers. Those
+in-flight flags are plain `let`s for the reason in the table above, and
+emphatically not the `$state` loading cells the markup reads: both guards are
+called synchronously from an `$effect`, so a reactive one would make the effect
+depend on what it writes and, on the failure path, refetch and fail again for as
+long as the dialog stayed open. And an explicit
 `res.ok` check is mandatory before `res.json()`: an error response with an HTML
 body makes `json()` throw, which escapes as an unhandled rejection and leaves the
 UI claiming there is no data rather than reporting a failure.
