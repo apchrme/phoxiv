@@ -76,7 +76,8 @@ plugin is pinned to `adminRoles: ['admin']` and knows nothing about it. Only
    pointed at anything real**.
 2. **Never re-run the shadcn-svelte CLI over `src/lib/components/ui/`.** Those
    files came from the CLI but have been customised since — glass styles, the
-   sheet overlay, `input.svelte` — across ~40 commits, and `components.json`
+   sheet overlay, `input.svelte`, `tabs-trigger.svelte`'s dark active state —
+   across ~40 commits, and `components.json`
    points at a _live_ registry, so a re-add pulls today's upstream and discards
    all of it. Edit the vendored file, and say in the commit message why. The
    directory is excluded from eslint _and_ prettier, so a tidy-up there is

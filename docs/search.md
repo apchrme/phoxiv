@@ -150,7 +150,9 @@ In the dialog:
   keeps `StatusFilter`'s **trigger** — an icon-only square that fills while a
   filter is set — because with ~22 olympiads a labelled button or a segmented
   `ToggleGroup` would take most of a phone's width. Files mode therefore shows
-  **three** controls beside the input, still fewer than problem mode's four.
+  **one** control beside the input and problem mode at most **two**; the mode
+  switch itself is not one of them, and [the tabs](#the-mode-switch-is-tabs-not-a-filter)
+  explain why.
 - **Behind that trigger it is a combobox, not a menu**, and that is the one place
   the three filters diverge. `StatusFilter` picks from three options and
   `TopicSelect` from a fixed handful, so a `DropdownMenu.RadioGroup` suits both;
@@ -886,6 +888,71 @@ key, the per-session cache and `s-maxage` at the edge.
 
 ## The client
 
+### The mode switch is tabs, not a filter
+
+The dialog is three stacked rows inside one `Tabs.Root`: a **mode row**
+(`SearchModeTabs.svelte` plus the close button), the **input row**, and the two
+`Tabs.Content` panels. The keyboard-hint footer sits outside the tabs, because it
+belongs to the dialog rather than to either search.
+
+This used to be a single 32px icon-only button in the input row — a `FileSearch`
+glyph that filled while files mode was on — sitting immediately beside
+`TopicSelect`, `StatusFilter` and `OlympiadFilter` and built from the identical
+`buttonVariants({ variant: active ? 'default' : 'outline', size: 'icon-sm' })`
+recipe. It was therefore indistinguishable in kind from a filter and spoke the
+same "filled means on" language, yet it is **the one control in that row that
+changes what a result is**. This document opens by saying phoXiv has two searches
+that agree on almost nothing; that row said it had one search with four filters.
+Tabs state the two-searches fact in the one vocabulary nobody has to be taught,
+and moving the switch out of the input row hands that row back the width the
+square was taking on a phone.
+
+The triggers carry **labels, not icons**. The old button's glyph was `FileSearch`
+rather than `Telescope` or `TextSearch` precisely because it was the only one that
+named the _result kind_ — the single most important thing to understand about this
+mode, since the rows are files and not problems. Words do that better than any
+glyph, and the magnifier sits in the input row directly below, so a second search
+icon would be noise.
+
+**The input row is shared, so it lives outside both panels.** One query, one
+`inputEl`, one spinner: duplicating it per panel would mean two inputs to keep in
+sync and a focus ring that jumped on every mode change. The count-only live region
+sits above the panels for the same reason — it reports `resultCount`, which is
+already mode-aware.
+
+**Each panel guards its own body on the mode, and that `{#if}` is load-bearing.**
+bits-ui keeps the inactive `Tabs.Content`'s children **mounted** and merely sets
+`hidden` on it. Without the guard the problems panel would go on reading the
+`results` derived — a full uFuzzy `rank()` over the whole index — on every
+keystroke typed in files mode, and it would break the `resultCount` invariant that
+only what is _rendered_ may be addressed by the keyboard.
+
+The scroller is an inner `<div>` rather than the panel itself. It needs `flex
+flex-col` (the empty states centre with `m-auto`, and "No files contain that
+phrase." uses `flex-1`), and a `display` utility would fight the `hidden`
+attribute the inactive panel carries; the panel keeps only `min-h-0` on top of the
+`flex-1` its base class already has. That leaves **two scrollers**, so `resultsEl`
+is a derived over the two refs and `scrollFocusedIntoView` stays mode-blind —
+which works only because rows are found by `[data-result-index]` rather than by
+position.
+
+`Tabs.Root` takes `value=` plus `onValueChange` rather than `bind:value`:
+`TabsPrimitive.RootProps` types `value` as a bare `string`, so binding it to
+`$state<SearchMode>` does not type-check, and one cast at the boundary is the
+honest version. `mode` stays the single source of truth, so the reset effect and
+the ⌘⇧F chord go on writing it and the tabs follow.
+
+**Refocusing the input hangs off the triggers, not off `onValueChange`.**
+Activation is `automatic` (the bits-ui default), so arrowing between the two tabs
+already changes the mode; refocusing from `onValueChange` would yank focus out of
+the tablist on the first arrow press and leave a keyboard user unable to arrow
+back. A click, and an Enter or Space on an already-focused trigger — "done, let me
+type" — are the only two cases that want the input. Enter needs its own `onkeydown`
+rather than riding the click a `<button>` would normally synthesise, because
+bits-ui's trigger `preventDefault()`s Enter and Space so no click is ever
+generated; `mergeProps` composes ours before bits-ui's, so ours must not
+`preventDefault()` in turn or it would cancel the activation it is following.
+
 ### Why every piece of state lives in the shell
 
 `Dialog.Content` sits inside bits-ui's `{#if shouldRender}`, so **its whole
@@ -1101,8 +1168,8 @@ reading them side by side is the cheapest way to keep them agreeing.
   or shift held — `e.key` is `'K'`, and the plain `=== 'k'` this replaced silently
   stopped ⌘K working at all.
 - **⌘⇧F** toggles the mode and returns focus to the input. Unbound in Chrome,
-  Safari and Firefox — unlike ⌘⇧K, which is Firefox's Web Console — and the toggle
-  button is Tab-reachable, so the chord is a convenience and never the only route.
+  Safari and Firefox — unlike ⌘⇧K, which is Firefox's Web Console — and the mode
+  tabs are Tab-reachable, so the chord is a convenience and never the only route.
 - **Arrows drive the list only while focus is in the input** (`e.target !==
 inputEl` returns early). Without that, an open filter dropdown moves _its_
   highlight and ours at the same time: `DropdownMenu` and `Dialog` both portal at
@@ -1138,9 +1205,11 @@ inputEl` returns early). Without that, an open filter dropdown moves _its_
   how the dialog is closed again, so taking it away mid-composition would trap the
   user in the very state the guard exists to make usable.
 - Rows are found by **`[data-result-index]`**, not `querySelectorAll('li')[i]`. The
-  scroll container also holds a live region, a filter summary, the
-  filters-don't-apply note and a footer, and any future non-result `<li>` would
-  silently shift every index and land the highlight on the wrong row.
+  scroll container also holds a filter summary, the filters-don't-apply note and a
+  footer, and any future non-result `<li>` would silently shift every index and
+  land the highlight on the wrong row. It is also what made it safe to hoist the
+  live region out of both scrollers and share it above the panels — a
+  position-based lookup would have shifted by one when it left.
 - **A file row's anchor is left completely alone** — `href` is the absolute CDN
   url with `target="_blank" rel="noopener noreferrer"`, and there is no
   `preventDefault` and no handler. The target is not an internal navigation, so the
@@ -1160,8 +1229,10 @@ inputEl` returns early). Without that, an open filter dropdown moves _its_
   must never start out hitting the network.** It resets what the user asked for and
   nothing they paid for — all three caches are untouched.
 
-One coarse `role="status" aria-live="polite"` line carries a **count only**. A live
-region echoing row contents would read the whole list out again on every keystroke.
+One coarse `role="status" aria-live="polite"` line carries a **count only**, and it
+sits above both panels rather than inside either scroller, so it is announced once
+per keystroke rather than duplicated per mode. A live region echoing row contents
+would read the whole list out again on every keystroke.
 
 ## Operating the index
 

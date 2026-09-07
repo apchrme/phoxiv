@@ -19,7 +19,7 @@
 	<span><Kbd.Root>↵</Kbd.Root> {mode === 'files' ? 'open file' : 'go to year'}</span>
 	<span><Kbd.Root>Esc</Kbd.Root> close</span>
 	<!-- A fourth group wraps at 768px, so this one waits for the room. The chord is
-	     a convenience either way: the toggle button is Tab-reachable. -->
+	     a convenience either way: the mode tabs are Tab-reachable. -->
 	<span class="hidden lg:inline-flex lg:items-center lg:gap-1">
 		<Kbd.Root>⌘</Kbd.Root><Kbd.Root>⇧</Kbd.Root><Kbd.Root>F</Kbd.Root>
 		<span class="ml-1">files</span>

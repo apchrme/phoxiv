@@ -153,13 +153,23 @@ each:
   - Open the topic dropdown _inside_ the dialog and arrow through it: the result
     list underneath must not move. Escape closes the menu; Escape again closes
     the dialog.
-  - At **375px**, signed in, with a topic filter set: all four controls fit, the
-    close button is not clipped and the input is still usable. This is the
-    `min-w-0` check and it is the one most likely to be missed, because it only
-    appears once three controls share the row.
+  - **Tab to the mode tabs, then ArrowLeft/ArrowRight**: the mode switches and
+    focus **stays on the tabs**, so the arrows can bring it back. Enter or Space
+    then moves to the input. Clicking a tab goes straight to the input. bits-ui
+    activates on focus, so refocusing from `onValueChange` would have trapped a
+    keyboard user after one arrow press.
+  - Type a multi-word query in **files** mode with the problem index loaded: the
+    hidden problems panel must contain **no** `[data-result-index]` rows in
+    DevTools. bits-ui leaves the inactive panel mounted, so the `{#if}` inside it
+    is the only thing keeping a full uFuzzy `rank()` off every keystroke.
+  - At **375px**, signed in, with a topic filter set: the mode row and the input
+    row both fit, the close button is not clipped and the input is still usable
+    with both filters beside it. This is the `min-w-0` check and it is the one
+    most likely to be missed, because it only appears once the filters share the
+    row with a real query.
   - `curl -i http://localhost:5173/progress` while signed out → `401` with
     `cache-control: private, no-store`.
-  - Switch to **file search** (the `FileSearch` button, or ⌘⇧F). Type a phrase,
+  - Switch to **file search** (the **Files** tab, or ⌘⇧F). Type a phrase,
     backspace one character and retype it: **no second `/api/search/files`
     request** for the repeated query, and the list must not blank between
     keystrokes. One request per settled query, and the visible results always
@@ -412,11 +422,22 @@ Anything animated gets `motion-reduce:transition-none`.
 CLI over it** — see rule 2 in [CLAUDE.md](../CLAUDE.md). `components.json` points
 at an unpinned live registry, so a re-add pulls whatever upstream looks like
 today and discards everything that has been customised since: the backdrop-blur
-overrides, the sheet overlay, `input.svelte`'s `data-slot` handling, and
-`tooltip-content.svelte`'s `arrowClasses` and `portalProps` props, which upstream
-does not expose and
+overrides, the sheet overlay, `input.svelte`'s `data-slot` handling,
+`tabs-trigger.svelte`'s dark active state, and `tooltip-content.svelte`'s
+`arrowClasses` and `portalProps` props, which upstream does not expose and
 [`SignInToTrack.svelte`](<../src/routes/(reg)/olympiads/[olympiad]/SignInToTrack.svelte>)
 depends on.
+
+The tabs one is the instructive case, because it is what a **palette** mismatch
+looks like rather than a missing feature. Upstream's dark active pill is `--input`
+at 30% over a track `tabs-list` paints with `--muted`; Catppuccin Mocha maps both
+to Surface 1, so the fill composited straight back to the track and the selected
+tab had no background of its own in dark mode. Light mode was fine, because there
+the active pill is Base over a Surface 0 track. The lesson generalises: this
+palette collapses several tokens upstream assumes are distinct — in dark mode
+`--muted`, `--accent`, `--border` and `--input` are all Surface 1 — so **any
+vendored component that layers two of them has to be checked in dark mode
+specifically**, and the light-mode rendering proves nothing about it.
 
 Edit the vendored file directly, and say in the commit message why. The directory
 is excluded from eslint **and** prettier, so a reformat or a lint tidy-up there

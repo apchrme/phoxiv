@@ -12,7 +12,8 @@
 	import SearchResultItem from './SearchResultItem.svelte';
 	import FileResultItem from './FileResultItem.svelte';
 	import SearchHints from './SearchHints.svelte';
-	import SearchModeToggle from './SearchModeToggle.svelte';
+	import SearchModeTabs from './SearchModeTabs.svelte';
+	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { DeepSearch, deepCacheKey } from './deep-search.svelte';
 	import TopicSelect from '$lib/components/TopicSelect.svelte';
 	import StatusFilter from '$lib/components/StatusFilter.svelte';
@@ -41,9 +42,14 @@
 	 *
 	 * # Two modes, one list
 	 *
-	 * Deep search is a **mode**, not a second panel, so there is only ever one list
-	 * on screen: no header rows, no cross-kind index arithmetic. Arrows and Enter
-	 * operate over one array; only the count and the activation branch on mode.
+	 * The two searches are two `Tabs.Content` panels, but only ever **one list**:
+	 * no header rows, no cross-kind index arithmetic. Arrows and Enter operate over
+	 * one array; only the count and the activation branch on mode.
+	 *
+	 * That is a fact the reader has to be told, because bits-ui keeps the inactive
+	 * panel's children **mounted** and merely sets `hidden` on it. Each panel
+	 * therefore guards its body on the mode as well — see the `{#if}` inside each
+	 * one, which is load-bearing rather than belt-and-braces.
 	 *
 	 * **Four** network resources, four fetch-once rules: the problem index on first
 	 * open, `/progress` on first open when signed in and again when `userId`
@@ -244,7 +250,13 @@
 
 	let focusedIndex = $state(0);
 	let inputEl: HTMLInputElement | undefined = $state();
-	let resultsEl: HTMLDivElement | undefined = $state();
+	/**
+	 * One scroller per `Tabs.Content`, since each mode now owns a panel.
+	 * `scrollFocusedIntoView` reads whichever the current mode renders into — see
+	 * `resultsEl` below, which is what keeps that function unchanged.
+	 */
+	let problemsPanelEl: HTMLDivElement | undefined = $state();
+	let filesPanelEl: HTMLDivElement | undefined = $state();
 
 	/**
 	 * Created once in the shell, so the deep-search cache survives every open and
@@ -491,6 +503,9 @@
 
 	const inFiles = $derived(mode === 'files');
 
+	/** The scroller the visible rows are in, so the scroll helper stays mode-blind. */
+	const resultsEl = $derived(inFiles ? filesPanelEl : problemsPanelEl);
+
 	/**
 	 * Non-flickering states are expressed by **branch order, not flags**: too long →
 	 * failed → (empty and loading) → genuinely empty → the list. So the loading
@@ -644,10 +659,14 @@
 	 *
 	 * Reaches into the DOM rather than holding element references, since the rows
 	 * are rendered by a child — but by `[data-result-index]` rather than by
-	 * `querySelectorAll('li')[i]`. The scroll container also holds a live region,
-	 * a filter summary, the "filters don't apply to files" note and a footer now,
-	 * and any future non-result `<li>` would silently shift every index, landing
-	 * the highlight on the wrong row. The rows own their index.
+	 * `querySelectorAll('li')[i]`. The scroll container also holds a filter
+	 * summary, the "filters don't apply to files" note and a footer, and any
+	 * future non-result `<li>` would silently shift every index, landing the
+	 * highlight on the wrong row. The rows own their index.
+	 *
+	 * That is also what makes it safe to hoist the live region *out* of both
+	 * scrollers and share it above the panels: a position-based lookup would have
+	 * shifted by one when it left.
 	 */
 	function scrollFocusedIntoView() {
 		// `focused` again: no row carries a `data-result-index` past the last one, so
@@ -674,8 +693,8 @@
 		if (!open) return;
 
 		// ⌘⇧F toggles the mode. Unbound in Chrome, Safari and Firefox — unlike ⌘⇧K,
-		// which is Firefox's Web Console — and the toggle button is Tab-reachable,
-		// so the chord is a convenience and never the only route.
+		// which is Firefox's Web Console — and the tabs are Tab-reachable, so the
+		// chord is a convenience and never the only route.
 		if ((e.metaKey || e.ctrlKey) && e.shiftKey && key === 'f') {
 			e.preventDefault();
 			mode = inFiles ? 'problems' : 'files';
@@ -752,86 +771,104 @@
 					{inFiles ? 'Search inside files' : 'Search problems'}
 				</Dialog.Title>
 
-				<!-- Input row.
-				     `min-w-0` on the input is load-bearing: a flex item's automatic
-				     minimum size is its content's, and an `<input>`'s intrinsic width is
-				     about twenty characters, so with three controls beside it the row
-				     *overflows* instead of the input shrinking — and `Dialog.Content` is
-				     `overflow-hidden`, so the visible symptom is a clipped close button.
-				     Every control is `icon-sm` (32px) for the same budget: at 390px there
-				     are 326px inside the padding, leaving ~154px of input. -->
-				<div class="flex items-center gap-2 border-b glass-hairline px-4 py-3">
-					{#if deepLoading}
-						<!-- The spinner **replaces** the magnifier rather than joining it: the
-						     row has no width to spare. -->
-						<Spinner class="size-4 shrink-0 text-muted-foreground" />
-					{:else}
-						<Search class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-					{/if}
-					<input
-						bind:this={inputEl}
-						bind:value={query}
-						type="search"
-						placeholder={inFiles ? 'Search inside files…' : 'Search for problems… (fuzzy)'}
-						autocomplete="off"
-						autocapitalize="off"
-						spellcheck="false"
-						enterkeyhint="go"
-						class="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-					/>
-					<div class="flex shrink-0 items-center gap-1">
-						<!-- The problem filters vanish in files mode rather than greying out. A
-						     disabled `TopicSelect` keeps the `default` fill it had in problem
-						     mode, so it would go on *claiming* a filter is active while it
-						     isn't — worse than absent. The olympiad filter is the mirror image,
-						     present only in files mode, since it is the only one of the three a
-						     file can carry. Nothing is discarded either way; switching back
-						     restores all three.
-
-						     Files mode therefore shows **three** controls, not the five the
-						     width comment above warns about: the two problem filters leave as
-						     this one arrives, so the busiest row is still problem mode's four. -->
-						{#if inFiles}
-							<!-- Absent until `/api/olympiads` lands, rather than an empty panel:
-							     the fetch starts on entry into this mode, so the gap is one round
-							     trip, and a filter offering nothing to filter by is worse than a
-							     control that appears a moment later. -->
-							{#if olympiads.length > 0}
-								<OlympiadFilter bind:value={olympiadFilter} {olympiads} {currentOlympiad} />
-							{/if}
-						{:else}
-							{#if indexHasTopics}
-								<TopicSelect
-									bind:value={activeTopics}
-									label="All topics"
-									heading="Filter by topic"
-									align="end"
-									size="icon-sm"
-									iconOnly
-								/>
-							{/if}
-							{#if signedIn}
-								<!-- Signed-in only, the same rule as the olympiad page: "Done"
-								     could only ever be empty without a session. -->
-								<StatusFilter bind:value={status} size="icon-sm" />
-							{/if}
-						{/if}
-
-						<SearchModeToggle bind:mode />
+				<!-- `value=` + `onValueChange`, not `bind:value`: `TabsPrimitive.RootProps`
+				     types `value` as a bare `string`, so binding it to `$state<SearchMode>`
+				     does not type-check. One cast at the boundary is the honest version, and
+				     it keeps `mode` the single source of truth — the reset effect and the ⌘⇧F
+				     chord go on writing `mode`, and the tabs follow. -->
+				<Tabs.Root
+					value={mode}
+					onValueChange={(v) => (mode = v as SearchMode)}
+					class="min-h-0 flex-1 gap-0"
+				>
+					<!-- Mode row. The switch gets a row of its own rather than a fourth square
+					     in the input row below — see `SearchModeTabs` for why — and the close
+					     button comes up here with it, which is what hands the input back the
+					     width it was costing on a phone. -->
+					<div class="flex items-center gap-2 border-b glass-hairline px-3 py-2">
+						<SearchModeTabs onactivate={() => inputEl?.focus()} />
 						<Dialog.Close
 							class={cn(
 								buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
-								'border border-white/50 bg-white/30 hover:bg-white/50 dark:border-white/10 dark:bg-white/5'
+								'ml-auto border border-white/50 bg-white/30 hover:bg-white/50 dark:border-white/10 dark:bg-white/5'
 							)}
 							aria-label="Close search"
 						>
 							<XIcon class="size-4" />
 						</Dialog.Close>
 					</div>
-				</div>
 
-				<!-- Results -->
-				<div bind:this={resultsEl} class="flex min-h-0 flex-1 flex-col overflow-y-auto">
+					<!-- Input row.
+					     `min-w-0` on the input is load-bearing: a flex item's automatic
+					     minimum size is its content's, and an `<input>`'s intrinsic width is
+					     about twenty characters, so with filters beside it the row *overflows*
+					     instead of the input shrinking — and `Dialog.Content` is
+					     `overflow-hidden`, so the visible symptom used to be a clipped close
+					     button. The row now carries at most **two** controls, both `icon-sm`
+					     (32px), since the mode switch and the close button moved to the row
+					     above: at 390px there are 326px inside the padding, leaving ~226px of
+					     input rather than the ~154px four controls left. That is more room,
+					     not a reason to drop the guard — an olympiad name in a filter chip
+					     would eat it again. -->
+					<div class="flex items-center gap-2 border-b glass-hairline px-4 py-3">
+						{#if deepLoading}
+							<!-- The spinner **replaces** the magnifier rather than joining it: the
+							     row has no width to spare. -->
+							<Spinner class="size-4 shrink-0 text-muted-foreground" />
+						{:else}
+							<Search class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+						{/if}
+						<input
+							bind:this={inputEl}
+							bind:value={query}
+							type="search"
+							placeholder={inFiles ? 'Search inside files…' : 'Search for problems… (fuzzy)'}
+							autocomplete="off"
+							autocapitalize="off"
+							spellcheck="false"
+							enterkeyhint="go"
+							class="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+						/>
+						<div class="flex shrink-0 items-center gap-1">
+							<!-- The problem filters vanish in files mode rather than greying out. A
+							     disabled `TopicSelect` keeps the `default` fill it had in problem
+							     mode, so it would go on *claiming* a filter is active while it
+							     isn't — worse than absent. The olympiad filter is the mirror image,
+							     present only in files mode, since it is the only one of the three a
+							     file can carry. Nothing is discarded either way; switching back
+							     restores all three.
+
+							     Files mode therefore shows **one** control here and problem mode at
+							     most two, never three: the two problem filters leave as this one
+							     arrives. -->
+							{#if inFiles}
+								<!-- Absent until `/api/olympiads` lands, rather than an empty panel:
+								     the fetch starts on entry into this mode, so the gap is one round
+								     trip, and a filter offering nothing to filter by is worse than a
+								     control that appears a moment later. -->
+								{#if olympiads.length > 0}
+									<OlympiadFilter bind:value={olympiadFilter} {olympiads} {currentOlympiad} />
+								{/if}
+							{:else}
+								{#if indexHasTopics}
+									<TopicSelect
+										bind:value={activeTopics}
+										label="All topics"
+										heading="Filter by topic"
+										align="end"
+										size="icon-sm"
+										iconOnly
+									/>
+								{/if}
+								{#if signedIn}
+									<!-- Signed-in only, the same rule as the olympiad page: "Done"
+									     could only ever be empty without a session. -->
+									<StatusFilter bind:value={status} size="icon-sm" />
+								{/if}
+							{/if}
+						</div>
+					</div>
+
 					<!-- One coarse live region, carrying a **count only**. A region echoing
 					     row contents would read the whole list out again on every keystroke. -->
 					<p class="sr-only" role="status" aria-live="polite">
@@ -839,171 +876,209 @@
 						{resultCount === 1 ? 'result' : 'results'}
 					</p>
 
-					{#if inFiles}
-						{#if deepTooLong}
-							<!-- Above `deepFailed` on purpose: this is the one state that is never
-							     sent, so it has to win over any marker a query that *was* sent left
-							     behind. It renders no `<ul>`, and `visibleDeepResults` is empty on
-							     the same condition — the `resultCount` invariant. -->
-							<div class="m-auto flex flex-col gap-2 px-5">
-								<p class="text-center text-sm text-muted-foreground">
-									That's too long to search inside files.
-								</p>
-								<p class="text-center text-xs text-muted-foreground">
-									{deepQuery.length} characters — the limit is {MAX_DEEP_QUERY_LENGTH}.
-								</p>
-							</div>
-						{:else if deepFailed}
-							<div class="m-auto flex flex-col items-center gap-2 px-5">
-								<p class="text-center text-sm text-destructive">Couldn't search inside files.</p>
-								<Button variant="outline" size="sm" onclick={() => deep.retry()}>Try again</Button>
-							</div>
-						{:else if deepQuery.length < MIN_DEEP_QUERY_LENGTH}
-							<div class="m-auto flex flex-col gap-2 px-5">
-								<p class="text-center text-sm text-muted-foreground">
-									Search the text inside every uploaded document.
-								</p>
-								<!-- The hints bar is `hidden md:flex`, so the *meaning* of this
-								     mode has to live here, where a phone can see it. -->
-								<p class="text-center text-sm text-muted-foreground">
-									Results are files, not problems — one year's PDF often holds every problem of that
-									year.
-								</p>
-								{#if deepTooShort}
-									<p class="text-center text-xs text-muted-foreground">
-										Type at least {MIN_DEEP_QUERY_LENGTH} characters.
-									</p>
-								{/if}
-							</div>
-						{:else if visibleDeepResults.length === 0 && deepLoading}
-							<div class="m-auto">
-								<p class="text-center text-sm text-muted-foreground">Searching inside files…</p>
-							</div>
-						{:else if visibleDeepResults.length === 0}
-							<p
-								class="flex flex-1 items-center justify-center px-5 text-center text-sm text-muted-foreground"
-							>
-								<!-- `indexEmpty` is a claim about the whole pipeline and stays
-								     global under a filter — see `searchFiles`. Naming the olympiad
-								     in the other branch is this side's half of that bargain: the
-								     server does not narrow the field, so the client, which knows its
-								     own filter, words the sentence. -->
-								{#if deep.indexEmpty}
-									No files have been indexed yet — this is still catching up.
-								{:else if filteredOlympiadName !== null}
-									No {filteredOlympiadName} files contain that phrase.
+					<!-- Two panels, and the `{#if}` inside each one is **load-bearing**.
+					     bits-ui keeps the inactive `Tabs.Content`'s children mounted and merely
+					     sets `hidden` on it, so without the guard the problems panel would read
+					     the `results` derived — a full uFuzzy `rank()` over the whole index —
+					     on every keystroke typed in files mode, and it would break the
+					     `resultCount` invariant that only what is rendered may be addressed by
+					     the keyboard.
+
+					     The scroller is the inner `<div>`, not the panel itself: it needs `flex
+					     flex-col` (the empty states centre with `m-auto`, and "No files contain
+					     that phrase." uses `flex-1`), and a `display` utility in
+					     `@layer utilities` beats Tailwind's `[hidden]{display:none}` in
+					     `@layer base` — so `flex` on the panel would leave the hidden one
+					     visible. `Tabs.Content`'s base class already carries `flex-1`. -->
+					<Tabs.Content value="problems" class="min-h-0">
+						<div bind:this={problemsPanelEl} class="flex h-full flex-col overflow-y-auto">
+							{#if !inFiles}
+								{#if indexLoading}
+									<div class="m-auto">
+										<p class="text-center text-sm text-muted-foreground">Loading search index…</p>
+									</div>
+								{:else if indexFailed}
+									<div class="m-auto flex flex-col gap-2 px-5">
+										<p class="text-center text-sm text-destructive">
+											Couldn't load the search index.
+										</p>
+										<p class="text-center text-sm text-muted-foreground">
+											Close this and reopen it to try again.
+										</p>
+									</div>
+								{:else if !query.trim() && !filtering}
+									<div class="m-auto flex flex-col gap-2 px-5">
+										<p class="text-center text-sm text-muted-foreground">
+											Type to search for problems across all olympiads…
+										</p>
+										<p class="text-center text-sm text-muted-foreground">
+											Search in the order: olympiad name, year, and problem title
+										</p>
+										{#if signedIn && progressLoading}
+											<p class="text-center text-xs text-muted-foreground">
+												Loading your progress…
+											</p>
+										{/if}
+									</div>
+								{:else if results.length === 0}
+									<div class="m-auto flex flex-col items-center gap-2 px-5">
+										<p class="text-center text-sm text-muted-foreground">No results found.</p>
+										<!-- A filled funnel is easy to miss, and "No results found" with a
+										     forgotten topic filter is the classic trap. -->
+										{#if filtering || olympiadFilter !== null}
+											<Button variant="outline" size="sm" onclick={clearFilters}
+												>Clear filters</Button
+											>
+										{/if}
+									</div>
 								{:else}
-									No files contain that phrase.
+									{#if filtering || olympiadFilter !== null}
+										<!-- The converse of files mode's note below, so **neither** switch is
+										     ever silent about what stopped applying. The bar used to render on
+										     `filtering` alone; an olympiad filter set in files mode is
+										     invisible here otherwise, and "search is broken" is what a
+										     forgotten invisible filter comes back as. -->
+										<div
+											class="flex items-center justify-between gap-2 border-b glass-hairline px-4 py-2 text-xs text-muted-foreground"
+										>
+											<span>
+												{#if filtering}
+													{filteredIndex.length}
+													{filteredIndex.length === 1 ? 'problem matches' : 'problems match'} your filters
+												{/if}
+												{#if olympiadFilter !== null}
+													<span class="block">
+														The {filteredOlympiadName ?? 'olympiad'} filter applies to file search only.
+													</span>
+												{/if}
+											</span>
+											<Button variant="ghost" size="sm" class="h-6 px-2" onclick={clearFilters}>
+												Clear filters
+											</Button>
+										</div>
+									{/if}
+									<ul>
+										{#each results as item, i (item.olympiadId + item.year + item.problem.number)}
+											<SearchResultItem
+												{item}
+												{query}
+												index={i}
+												focused={i === focused}
+												onactivate={() => navigateTo(item)}
+												onhover={() => (focusedIndex = i)}
+											/>
+										{/each}
+									</ul>
+									{#if results.length === MAX_RESULTS}
+										<p class="py-2 text-center text-xs text-muted-foreground">
+											Showing first {MAX_RESULTS} results — refine your search to narrow down.
+										</p>
+									{/if}
 								{/if}
-							</p>
-						{:else}
-							{#if filtering}
-								<!-- Shown only while a filter is set, so switching modes is never
-								     silent about what stopped applying. -->
-								<p class="border-b glass-hairline px-4 py-2 text-xs text-muted-foreground">
-									Topic and progress filters don't apply to files — one file can cover a whole year.
-								</p>
-							{/if}
-							<!-- A newer in-flight query dims the last landed list rather than
-							     emptying it. That is the whole anti-flicker contract. -->
-							<ul
-								class={cn(
-									'transition-opacity duration-150 motion-reduce:transition-none',
-									deepStale || deepLoading ? 'opacity-60' : 'opacity-100'
-								)}
-							>
-								{#each visibleDeepResults as hit, i (hit.file.url)}
-									<FileResultItem
-										{hit}
-										index={i}
-										focused={i === focused}
-										onhover={() => (focusedIndex = i)}
-									/>
-								{/each}
-							</ul>
-							{#if deep.truncated}
-								<p class="py-2 text-center text-xs text-muted-foreground">
-									Showing the {DEEP_SEARCH_LIMIT} best-matching files — refine your search to narrow down.
-								</p>
-							{/if}
-						{/if}
-					{:else if indexLoading}
-						<div class="m-auto">
-							<p class="text-center text-sm text-muted-foreground">Loading search index…</p>
-						</div>
-					{:else if indexFailed}
-						<div class="m-auto flex flex-col gap-2 px-5">
-							<p class="text-center text-sm text-destructive">Couldn't load the search index.</p>
-							<p class="text-center text-sm text-muted-foreground">
-								Close this and reopen it to try again.
-							</p>
-						</div>
-					{:else if !query.trim() && !filtering}
-						<div class="m-auto flex flex-col gap-2 px-5">
-							<p class="text-center text-sm text-muted-foreground">
-								Type to search for problems across all olympiads…
-							</p>
-							<p class="text-center text-sm text-muted-foreground">
-								Search in the order: olympiad name, year, and problem title
-							</p>
-							{#if signedIn && progressLoading}
-								<p class="text-center text-xs text-muted-foreground">Loading your progress…</p>
 							{/if}
 						</div>
-					{:else if results.length === 0}
-						<div class="m-auto flex flex-col items-center gap-2 px-5">
-							<p class="text-center text-sm text-muted-foreground">No results found.</p>
-							<!-- A filled funnel is easy to miss, and "No results found" with a
-							     forgotten topic filter is the classic trap. -->
-							{#if filtering || olympiadFilter !== null}
-								<Button variant="outline" size="sm" onclick={clearFilters}>Clear filters</Button>
-							{/if}
-						</div>
-					{:else}
-						{#if filtering || olympiadFilter !== null}
-							<!-- The converse of files mode's note below, so **neither** switch is
-							     ever silent about what stopped applying. The bar used to render on
-							     `filtering` alone; an olympiad filter set in files mode is
-							     invisible here otherwise, and "search is broken" is what a
-							     forgotten invisible filter comes back as. -->
-							<div
-								class="flex items-center justify-between gap-2 border-b glass-hairline px-4 py-2 text-xs text-muted-foreground"
-							>
-								<span>
+					</Tabs.Content>
+
+					<Tabs.Content value="files" class="min-h-0">
+						<div bind:this={filesPanelEl} class="flex h-full flex-col overflow-y-auto">
+							{#if inFiles}
+								{#if deepTooLong}
+									<!-- Above `deepFailed` on purpose: this is the one state that is never
+									     sent, so it has to win over any marker a query that *was* sent left
+									     behind. It renders no `<ul>`, and `visibleDeepResults` is empty on
+									     the same condition — the `resultCount` invariant. -->
+									<div class="m-auto flex flex-col gap-2 px-5">
+										<p class="text-center text-sm text-muted-foreground">
+											That's too long to search inside files.
+										</p>
+										<p class="text-center text-xs text-muted-foreground">
+											{deepQuery.length} characters — the limit is {MAX_DEEP_QUERY_LENGTH}.
+										</p>
+									</div>
+								{:else if deepFailed}
+									<div class="m-auto flex flex-col items-center gap-2 px-5">
+										<p class="text-center text-sm text-destructive">
+											Couldn't search inside files.
+										</p>
+										<Button variant="outline" size="sm" onclick={() => deep.retry()}
+											>Try again</Button
+										>
+									</div>
+								{:else if deepQuery.length < MIN_DEEP_QUERY_LENGTH}
+									<div class="m-auto flex flex-col gap-2 px-5">
+										<p class="text-center text-sm text-muted-foreground">
+											Search the text inside every uploaded document.
+										</p>
+										<!-- The hints bar is `hidden md:flex`, so the *meaning* of this
+										     mode has to live here, where a phone can see it. -->
+										<p class="text-center text-sm text-muted-foreground">
+											Results are files, not problems — one year's PDF often holds every problem of
+											that year.
+										</p>
+										{#if deepTooShort}
+											<p class="text-center text-xs text-muted-foreground">
+												Type at least {MIN_DEEP_QUERY_LENGTH} characters.
+											</p>
+										{/if}
+									</div>
+								{:else if visibleDeepResults.length === 0 && deepLoading}
+									<div class="m-auto">
+										<p class="text-center text-sm text-muted-foreground">Searching inside files…</p>
+									</div>
+								{:else if visibleDeepResults.length === 0}
+									<p
+										class="flex flex-1 items-center justify-center px-5 text-center text-sm text-muted-foreground"
+									>
+										<!-- `indexEmpty` is a claim about the whole pipeline and stays
+										     global under a filter — see `searchFiles`. Naming the olympiad
+										     in the other branch is this side's half of that bargain: the
+										     server does not narrow the field, so the client, which knows its
+										     own filter, words the sentence. -->
+										{#if deep.indexEmpty}
+											No files have been indexed yet — this is still catching up.
+										{:else if filteredOlympiadName !== null}
+											No {filteredOlympiadName} files contain that phrase.
+										{:else}
+											No files contain that phrase.
+										{/if}
+									</p>
+								{:else}
 									{#if filtering}
-										{filteredIndex.length}
-										{filteredIndex.length === 1 ? 'problem matches' : 'problems match'} your filters
+										<!-- Shown only while a filter is set, so switching modes is never
+										     silent about what stopped applying. -->
+										<p class="border-b glass-hairline px-4 py-2 text-xs text-muted-foreground">
+											Topic and progress filters don't apply to files — one file can cover a whole
+											year.
+										</p>
 									{/if}
-									{#if olympiadFilter !== null}
-										<span class="block">
-											The {filteredOlympiadName ?? 'olympiad'} filter applies to file search only.
-										</span>
+									<!-- A newer in-flight query dims the last landed list rather than
+									     emptying it. That is the whole anti-flicker contract. -->
+									<ul
+										class={cn(
+											'transition-opacity duration-150 motion-reduce:transition-none',
+											deepStale || deepLoading ? 'opacity-60' : 'opacity-100'
+										)}
+									>
+										{#each visibleDeepResults as hit, i (hit.file.url)}
+											<FileResultItem
+												{hit}
+												index={i}
+												focused={i === focused}
+												onhover={() => (focusedIndex = i)}
+											/>
+										{/each}
+									</ul>
+									{#if deep.truncated}
+										<p class="py-2 text-center text-xs text-muted-foreground">
+											Showing the {DEEP_SEARCH_LIMIT} best-matching files — refine your search to narrow
+											down.
+										</p>
 									{/if}
-								</span>
-								<Button variant="ghost" size="sm" class="h-6 px-2" onclick={clearFilters}>
-									Clear filters
-								</Button>
-							</div>
-						{/if}
-						<ul>
-							{#each results as item, i (item.olympiadId + item.year + item.problem.number)}
-								<SearchResultItem
-									{item}
-									{query}
-									index={i}
-									focused={i === focused}
-									onactivate={() => navigateTo(item)}
-									onhover={() => (focusedIndex = i)}
-								/>
-							{/each}
-						</ul>
-						{#if results.length === MAX_RESULTS}
-							<p class="py-2 text-center text-xs text-muted-foreground">
-								Showing first {MAX_RESULTS} results — refine your search to narrow down.
-							</p>
-						{/if}
-					{/if}
-				</div>
+								{/if}
+							{/if}
+						</div>
+					</Tabs.Content>
+				</Tabs.Root>
 
 				<SearchHints {mode} />
 			</Dialog.Content>
