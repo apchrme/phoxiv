@@ -13,6 +13,7 @@ import {
 	normalizeExtracted
 } from '$lib/search';
 import { extensionOf, isExtractable } from '$lib/uploads';
+import { olympiadUrlRange } from '$lib/server/storage';
 
 /**
  * The full-text index: writing it, querying it, and keeping it tidy.
@@ -324,8 +325,12 @@ type FtsHit = { url: string; snippet: string };
  * | pass 2, `snippet()` constrained by `rowid IN (…)` | ~63 |
  *
  * ~104 against ~2,186, for byte-identical snippets and ordering — about **21×**.
+ * Those are **unfiltered** figures, which is the only case they were measured in
+ * and the overwhelmingly common one; an olympiad-scoped call walks further in
+ * pass 1, as the scope section below explains, and is still the right decision.
  * Do not fold these back into one statement to save a round trip; the round trip
  * costs ~3 ms and the fold costs ~2,100 rows.
+
  *
  * # Pass 1 must not select `snippet()`
  *
@@ -344,12 +349,50 @@ type FtsHit = { url: string; snippet: string };
  * exactly `limit` eligible rows and is what makes {@link searchFiles}' `+ 1`
  * sound.
  *
+ * **That is the rule, not a fact about `status`**, and `olympiadId` is now the
+ * second predicate resting on it: *every* eligibility test has to run before the
+ * `LIMIT`, because the `LIMIT` is what `+ 1` reasons about. A predicate applied
+ * after it does not narrow a window of `limit` rows — it *shrinks* one, and for
+ * the olympiad filter it would shrink it to nothing far more often than not.
+ * `DEEP_SEARCH_LIMIT` is 20 over a ~2,124-document corpus, so filtering that
+ * global window down to one olympiad typically leaves 0–3 rows, and leaves
+ * exactly 0 whenever that olympiad has no document in the global top 20 — even
+ * if it has three hundred matching files. It would falsify `truncated` too. This
+ * is the same argument problem mode makes as "filtering precedes ranking".
+ *
  * The join costs ~21 rows over the bare index scan, which is the price of not
  * depending on a distant invariant — today no non-`ok` row *can* match, because
  * {@link writeFileText} nulls `text` on any non-`ok` write and the trigger
  * indexes `coalesce(text, '')`, but nothing here would notice if that changed,
  * and this module's contract explicitly admits writers as blunt as a hand-run
  * `wrangler d1 execute`.
+ *
+ * # The olympiad scope is a url range, not a join
+ *
+ * `olympiadId` narrows the ranking pass to one olympiad's files, and it does so
+ * as a range over `ft.url` because that is the only form costing **zero extra
+ * D1 rows**: the `file_text` row is already read by the `status` join above, so
+ * the predicate is pure CPU on a row that was already billed. The layout is
+ * read backwards by {@link olympiadUrlRange}, which is where the reasoning about
+ * its correctness lives.
+ *
+ * Two alternatives were rejected on cost. A correlated `EXISTS` back to
+ * `year_files`/`problem_files` costs ~5 extra rows **per candidate walked** —
+ * worst case ~2,100, which is worse than the fixed walk this function was split
+ * in two to remove. A materialised CTE of the olympiad's urls reintroduces a
+ * query-independent fixed cost, paid once per rung, which is the exact shape of
+ * the bug that was fixed.
+ *
+ * What the range does cost is a **longer walk**: fts5 hands rows over in rank
+ * order and the scope discards them one at a time, so the pass reads one
+ * `file_text` row per candidate it walks rather than ~`limit` of them. A filter
+ * to a small olympiad on a query matching hundreds of documents therefore reads
+ * hundreds of rows instead of ~20. That is still several times below the ~2,186
+ * regime this function escaped, and it is the price of the filter being correct
+ * rather than decorative. The escape hatch if the corpus grows an order of
+ * magnitude is a second FTS5 column filtered inside the `MATCH` — see
+ * `docs/search.md`, which records why it is not worth its migration today.
+
  *
  * # Rank order comes from pass 1 only
  *
@@ -373,19 +416,44 @@ type FtsHit = { url: string; snippet: string };
  * {@link resolveOwners}' constraint: fine at `DEEP_SEARCH_LIMIT` = 20, but
  * **raising the limit past ~90 means chunking** against D1's 100-parameter cap.
  */
-async function selectFtsHits(db: DB, match: string, limit: number): Promise<FtsHit[]> {
+async function selectFtsHits(
+	db: DB,
+	match: string,
+	limit: number,
+	olympiadId: string | null
+): Promise<FtsHit[]> {
+	// `sql.empty()` and not a `1 = 1` variant: an unfiltered call must produce the
+	// **byte-identical** statement it produced before this parameter existed, so
+	// every plan cached for it — and every reasoning about its measured cost —
+	// still applies.
+	const scope =
+		olympiadId === null
+			? sql.empty()
+			: (() => {
+					const { lo, hi } = olympiadUrlRange(olympiadId);
+					return sql` AND ft.url >= ${lo} AND ft.url < ${hi}`;
+				})();
+
 	const ranked = await db.all<{ id: number }>(sql`
 		SELECT file_text_fts.rowid AS id
 		FROM file_text_fts
 		JOIN file_text ft ON ft.id = file_text_fts.rowid AND ft.status = 'ok'
-		WHERE file_text_fts MATCH ${match}
+		WHERE file_text_fts MATCH ${match}${scope}
 		ORDER BY rank
 		LIMIT ${limit}
 	`);
 	if (ranked.length === 0) return [];
 
 	const ids = ranked.map((row) => row.id);
+	// **The scope term is deliberately absent here**, and adding it "for symmetry"
+	// is the one obvious wrong edit. `ids` is already the filtered answer, so the
+	// term cannot change this result — only the plan. `file_text_fts.rowid IN (…)`
+	// is the single constraint fts5's `xBestIndex` can absorb, and absorbing it is
+	// exactly what makes this pass *seek* instead of walking the content table:
+	// the whole 21×. A range term on `ft.url` gives the planner a reason to drive
+	// from `file_text_url_idx` instead, which would undo it silently.
 	const rows = await db.all<FtsHit & { id: number }>(sql`
+
 		SELECT ft.id AS id,
 		       ft.url AS url,
 		       snippet(file_text_fts, 0, char(2), char(3), '…', 16) AS snippet
@@ -517,10 +585,29 @@ async function resolveOwners(db: DB, urls: string[]): Promise<Map<string, Owner>
  *
  * A plan that matches nothing costs **one** statement rather than two, because
  * {@link selectFtsHits} returns before its snippet pass when the ranking pass
- * comes back empty — and a ranking pass measured ~20 rows for a query matching
- * 402 documents. So the ladder's worst case, a query that matches nothing at any
- * rung, is three ranking passes instead of one: ~60 rows, on top of the
- * {@link hasFileText} read a total miss already paid for its empty state.
+ * comes back empty — and an unfiltered ranking pass measured ~20 rows for a query
+ * matching 402 documents. So the ladder's worst case, a query that matches
+ * nothing at any rung, is three ranking passes instead of one: ~60 rows, on top
+ * of the {@link hasFileText} read a total miss already paid for its empty state.
+ *
+ * `olympiadId` scopes every rung, and the figure above is the unfiltered one.
+ * Under a scope the walk is no longer bounded by the `LIMIT` — see
+ * {@link selectFtsHits} — so a three-rung miss on a query matching hundreds of
+ * documents reads hundreds of rows rather than ~60. The `MAX_DEEP_QUERY_TOKENS`
+ * cap on rung 3 is still what bounds it, exactly as it bounds the bm25 scan.
+ *
+ * # A scoped result is not a subset of the unfiltered one
+ *
+ * It reads as a bug and it is the design. Every rung is tried *within the
+ * scope*, so a scoped search can descend **further** than the unfiltered one:
+ * rung 1 may match only out-of-scope files, in which case this falls through to
+ * rung 2 and surfaces looser hits the unfiltered search never showed, because
+ * there the phrase rung stopped the ladder. That is the correct reading of what
+ * the ladder means — the most precise rung that has an answer *within the
+ * requested scope* — and it is the second-strongest argument for the parameter
+ * existing at all, after the pre-`LIMIT` one. Do not "fix" it by pinning the
+ * scoped search to the rung the unfiltered search stopped at.
+
  *
  * The **modal** case for a multi-word query is neither of those two, and it is
  * worth naming rather than reading the best case as typical: rung 1 asks for the
@@ -562,12 +649,24 @@ async function resolveOwners(db: DB, urls: string[]): Promise<Map<string, Owner>
  * authority on what exists, so a stale index degrades to fewer results rather
  * than to a dead link.
  *
+ * `indexEmpty` stays **global under a scope**, deliberately. It means "the whole
+ * index is empty, so this is still catching up" — a claim about the pipeline,
+ * not about the query. Scoping it to the filtered olympiad would give one field
+ * two meanings across two cache-key families, told apart only by the request
+ * url, and the caller already knows its own filter and can word an empty state
+ * itself.
+
+ *
  * There is deliberately **no `try/catch` swallowing an FTS error to `[]`** — that
  * would put an empty body for a query that should work into the shared cache for
  * a day. The sanitiser is the defence; observability is where a bug should
  * surface.
  */
-export async function searchFiles(db: DB, query: string): Promise<FileSearchResponse> {
+export async function searchFiles(
+	db: DB,
+	query: string,
+	olympiadId: string | null = null
+): Promise<FileSearchResponse> {
 	const { plans, echo } = sanitizeFtsQuery(query);
 
 	// Nothing searchable — `???`, or punctuation only. No D1 read: the reason
@@ -579,7 +678,7 @@ export async function searchFiles(db: DB, query: string): Promise<FileSearchResp
 	// every one of them came back empty.
 	let hits: FtsHit[] = [];
 	for (const match of plans) {
-		hits = await selectFtsHits(db, match, DEEP_SEARCH_LIMIT + 1);
+		hits = await selectFtsHits(db, match, DEEP_SEARCH_LIMIT + 1, olympiadId);
 		if (hits.length > 0) break;
 	}
 
@@ -600,6 +699,13 @@ export async function searchFiles(db: DB, query: string): Promise<FileSearchResp
 	for (const url of kept) {
 		const owner = owners.get(url);
 		if (owner === undefined) continue;
+		// Belt and braces, and the two authorities are worth naming: `resolveOwners`
+		// reads ownership out of the file tables, while the scope in
+		// {@link selectFtsHits} *derives* it from the url. They can only disagree for
+		// a row written outside `uploadFile` — a hand-run `wrangler d1 execute`, an
+		// rclone load — and dropping such a row folds a layout violation into this
+		// module's standing contract: fewer results, never a wrong one.
+		if (olympiadId !== null && owner.olympiadId !== olympiadId) continue;
 		results.push({ ...owner, ...splitSnippet(snippetByUrl.get(url) ?? '') });
 	}
 

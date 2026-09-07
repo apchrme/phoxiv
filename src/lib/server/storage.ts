@@ -35,6 +35,37 @@ export function keyFromCdnUrl(url: string): string | null {
 	return url.startsWith(prefix) ? url.slice(prefix.length) : null;
 }
 
+/**
+ * The half-open `[lo, hi)` range of CDN urls belonging to one olympiad.
+ *
+ * The reverse of {@link fileKey}'s first two segments, and it lives here beside
+ * the forward derivation on purpose: CLAUDE.md rule 3 freezes the key layout,
+ * and colocating the two forces a future change to touch both. Deep search's
+ * olympiad filter is the only caller — it scopes the ranking pass with a range
+ * over `file_text.url` rather than a join, because that is the only form
+ * costing no extra D1 rows. See `docs/search.md`.
+ *
+ * Correctness rests entirely on {@link fileKey}:
+ * `olympiads/<olympiadId>/<year>[/<problemNumber>]/<slug>.<ext>`. Both file
+ * levels sit under `olympiads/<id>/`, and icons live under `icons/olympiads/…`
+ * and never enter the text index. The trailing `/` in `lo` is what stops `ipho`
+ * matching `iphox`: every character an id may continue with sorts above `/`
+ * (0x2F), so a longer id can never fall inside a shorter one's range. `url` is
+ * plain `text()` under SQLite's default BINARY collation — there is no
+ * `COLLATE NOCASE` anywhere in `schema.ts` — so the comparison is byte-wise and
+ * exact.
+ */
+export function olympiadUrlRange(olympiadId: string): { lo: string; hi: string } {
+	const lo = `${CDN_BASE_URL}/olympiads/${olympiadId}/`;
+	// `hi` is `lo`'s immediate successor, so `[lo, hi)` is exactly "the urls
+	// beginning with `lo`". Written out rather than expressed as `LIKE 'lo%'`
+	// because only a range stays a range: `LIKE` is not usable as an index bound
+	// unless the collation and the pattern both cooperate, and a prefix with no
+	// wildcard is what makes this an ordered scan the planner can reason about.
+	const hi = lo.slice(0, -1) + String.fromCharCode(lo.charCodeAt(lo.length - 1) + 1);
+	return { lo, hi };
+}
+
 /** Key for an olympiad's icon. One per olympiad, replaced in place. */
 export function iconKey(olympiadId: string, ext: string): string {
 	return `icons/olympiads/${olympiadId}.${ext}`;

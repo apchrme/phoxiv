@@ -30,7 +30,16 @@
 </svelte:head>
 
 <ModeWatcher />
-<GlobalSearch bind:open={searchOpen} userId={data.user?.id} />
+<!-- `currentOlympiad` is a route param rather than load data, so handing it over
+     couples the dialog to nothing it could not already resolve — but it is passed
+     down rather than read from `$app/state` inside `$lib`, for `userId`'s reason:
+     the shell takes its page context from the layout. It is `undefined` off an
+     olympiad route, which `page.params`' index signature cannot say. -->
+<GlobalSearch
+	bind:open={searchOpen}
+	userId={data.user?.id}
+	currentOlympiad={page.params.olympiad}
+/>
 <Toaster richColors closeButton position="top-center" />
 
 <Sidebar.Provider>

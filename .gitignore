@@ -32,4 +32,7 @@ vite.config.ts.timestamp-*
 .vscode
 
 # Local scratch copy of the R2 bucket, used when bulk-uploading with rclone.
-files
+# Anchored to the repo root: an unanchored `files` matches a directory of that
+# name *anywhere*, which silently kept `src/routes/api/search/files/` — deep
+# search's entire endpoint — out of version control.
+/files

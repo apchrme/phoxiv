@@ -194,6 +194,50 @@ each:
     share its words. That is the phrase rung, and a long query is meant to reach
     it. Backspace into the middle of the last word while it stands: the list must
     keep matching rather than blanking, which is the trailing `*`.
+  - **The olympiad filter**, files mode only. Most of its checks are about the
+    server rather than the control, but the combobox panel has a few of its own:
+    - Pick an olympiad whose files are **not** in some query's unfiltered top 20 —
+      a small one is easiest — and run that query scoped to it. Its files must come
+      back. This is the whole reason the parameter exists: filtered after the
+      `LIMIT` instead of before it, this returns nothing.
+    - Run a query whose phrase rung hits only **outside** the scope. The scoped
+      search must fall through to the `AND`/`OR` rung and show in-scope results the
+      unfiltered search never listed. A scoped result set is deliberately **not** a
+      subset of the unfiltered one; see
+      [search.md](./search.md#the-olympiad-filter-a-url-range-not-a-join).
+    - Same query, switch olympiad, switch back: each combination shows its own
+      results, and the **second** visit to a combination fires no request. The
+      session cache is keyed by the pair, not by the query.
+    - `curl` the endpoint directly with `?olympiad=` empty (unfiltered, 200),
+      malformed — a space, a `/`, over 32 characters — (**400**, and it must carry
+      no `s-maxage`), and well-formed but unknown like `iphoo` (**200**, empty
+      results). Also `?olympiad=rupho` where `rupho-w`, `rupho-x` and `rupho-y`
+      exist: **zero** results, which is the trailing `/` in the url range doing its
+      job.
+    - Open the panel and **type**: it narrows on the name _and_ the id, so both
+      `ipho` and `international` find IPhO. Backspace to empty and the whole list
+      is back; close and reopen and the box is empty again. A query nothing matches
+      says "No olympiad matches that."
+    - Inside the open panel, the **arrows move its own highlight and not the
+      result list's**, Enter picks the highlighted olympiad and closes the panel,
+      and **Escape closes the panel rather than the whole dialog**. All three are
+      the layering under a portal, so all three are worth a look after any bits-ui
+      bump.
+    - Open ⌘K **on an olympiad page** — `/olympiads/ipho` or `/contribute/ipho` —
+      and switch to files mode: that olympiad is the first row, under "On this
+      page", and appears exactly once in the panel. It must **not** be selected —
+      the trigger is unfilled and results are unscoped until it is clicked, because
+      a filter that set itself from the URL is the invisible-filter failure below.
+      Off an olympiad page there is no heading and no pinned row.
+    - After a filter change the highlight resets to the top row, and the arrows and
+      Enter address only rendered rows.
+    - Set the filter, switch to **problem** mode: the control is gone and the
+      summary bar says the olympiad filter applies to file search only. Switch
+      back — it is still set. Neither switch may be silent.
+    - At **390px** in files mode: three controls plus the input, and the close
+      button is not clipped. Open the panel there too — it is anchored to the
+      right-hand end of the row and capped at the viewport width, so neither edge
+      may run off screen.
   - Switch to file search **with the box empty**, and clear the box after a
     search: both must show the explainer, never "Couldn't search inside files."
     See [search.md](./search.md#the-deepsearch-class) for why the sentinel is

@@ -13,7 +13,7 @@ and keeping them distinct is what makes each of them explicable.
 | Matcher          | uFuzzy, typo-tolerant                             | a ladder of FTS5 `MATCH` expressions, prefix-extended |
 | Ranking          | uFuzzy's ordinal order                            | bm25 (`rank`)                                         |
 | Cap              | `MAX_RESULTS` = 50                                | `DEEP_SEARCH_LIMIT` = 20                              |
-| Filters          | topic and progress apply                          | **neither applies**                                   |
+| Filters          | topic and progress apply                          | **olympiad only** — one file, one olympiad            |
 | Activating a row | navigates to the year anchor                      | opens the file in a new tab                           |
 
 The two scores are **incomparable** — a bm25 float and an ordinal fuzzy rank
@@ -41,9 +41,14 @@ Three consequences follow, and each is handled rather than hidden:
 - **A year-level file is badged "Whole year".** `FileSearchResult.problems` being
   **empty _is_ that flag**; there is no `level` field. The badge is spelled out in
   the UI because an absent list would otherwise just look like missing data.
-- **The topic and progress filters cannot apply.** One year-level PDF spans every
-  topic and every completion state in that year, so the filters are not merely
-  unimplemented for files — they are _meaningless_ against one. See
+- **The topic and progress filters cannot apply — but the olympiad one can.**
+  One year-level PDF spans every topic and every completion state in that year, so
+  those two filters are not merely unimplemented for files: they are _meaningless_
+  against one. An olympiad is the exception, and the asymmetry is worth stating
+  plainly, because the same sentence used to dismiss all three. A file spans many
+  topics but sits in **exactly one** olympiad's namespace — `years.olympiad_id` is
+  `NOT NULL` with a single FK, so both join paths resolve to one, and
+  `FileSearchResult.olympiadId` has always been a scalar rather than a list. See
   [The filters](#the-filters-and-why-they-vanish).
 
 ## Problem mode: the fuzzy index
@@ -129,11 +134,46 @@ In the dialog:
   olympiad page: "Done" could only ever be empty without a session. Signing out
   mid-session resets `status` to `all`, because otherwise the user would go on
   filtering by a control that is no longer on screen.
-- In files mode **both vanish rather than greying out.** A disabled `TopicSelect`
-  keeps the filled `default` variant it had in problem mode, so it would go on
-  _claiming_ a filter is active while it isn't — worse than absent. Nothing is
-  discarded; switching back restores both. One line above the results says so
-  whenever a filter is set, so the switch is never silent.
+- In files mode **both vanish rather than greying out**, and the olympiad filter
+  takes their place. A disabled `TopicSelect` keeps the filled `default` variant it
+  had in problem mode, so it would go on _claiming_ a filter is active while it
+  isn't — worse than absent. Nothing is discarded in either direction; switching
+  back restores all three. **Both** switches say so: files mode carries the "topic
+  and progress filters don't apply to files" line, and problem mode's summary bar
+  renders whenever the olympiad filter is set, to say that one applies to file
+  search only. A filter that is set but invisible is the likeliest way for this
+  feature to come back as "search is broken".
+- **The olympiad filter is files-mode only, single-select, and applied on the
+  server.** `OlympiadFilter.svelte` is colocated in `components/search/` rather
+  than promoted to `$lib/components/` beside the other two, because unlike them it
+  can have no second caller: an olympiad page is already scoped to one olympiad. It
+  keeps `StatusFilter`'s **trigger** — an icon-only square that fills while a
+  filter is set — because with ~22 olympiads a labelled button or a segmented
+  `ToggleGroup` would take most of a phone's width. Files mode therefore shows
+  **three** controls beside the input, still fewer than problem mode's four.
+- **Behind that trigger it is a combobox, not a menu**, and that is the one place
+  the three filters diverge. `StatusFilter` picks from three options and
+  `TopicSelect` from a fixed handful, so a `DropdownMenu.RadioGroup` suits both;
+  the olympiads are ~22 and gain one whenever a contest is added, which makes the
+  same control a scrolling column of near-identical rows. The premise of the
+  feature is that people remember _which contest_ and not which year, so they
+  arrive knowing the answer, and typing three letters beats hunting for it. The
+  panel is bits-ui's `Popover` + `Command`, hand-styled in
+  `dropdown-menu-content`'s and `dropdown-menu-item`'s classes so it still reads
+  as one of the three: neither primitive is vendored under
+  [`ui/`](../src/lib/components/ui), and adding them would mean the shadcn CLI
+  that [CLAUDE.md](../CLAUDE.md) rule 2 keeps away from that directory.
+  `GlobalSearch.svelte`'s own hand-styled `Dialog` is the precedent. The match is
+  a plain case-insensitive substring over the name _and_ the id, with
+  `shouldFilter={false}`, because `Command`'s own filter reorders rows by score
+  and the order here is load-bearing — see the next bullet.
+- **The olympiad whose page you are on is listed first**, under an "On this page"
+  heading, and dropped from the body of the list so it appears exactly once. The
+  id comes from `page.params.olympiad`, passed down through `+layout.svelte` for
+  `userId`'s reason. It is **hoisted, never preselected**: a filter that set
+  itself from the URL would change what a query returns with the trigger's fill as
+  the only clue, which is the same failure the two "both switches say so" notes
+  above exist to prevent.
 - An empty query with a filter set lists the first 50 of the filtered pool,
   **unranked**. This is the whole cross-archive capability the filters unlock:
   "every relativity problem I haven't done" cannot be asked by typing, because
@@ -502,21 +542,36 @@ fixed term disappears:
 | pass 1 — rowids in rank order, no `snippet()`      |       ~41 |
 | pass 2 — `snippet()` constrained by `rowid IN (…)` |       ~63 |
 
-~104 against ~2,186, for byte-identical snippets and ordering: about **21×**. Do
-not fold these back into one statement to save a round trip — the round trip
-costs ~3 ms and the fold costs ~2,100 rows.
+~104 against ~2,186, for byte-identical snippets and ordering: about **21×**.
+Those figures are **unfiltered** — the case they were measured in and the common
+one. An olympiad-scoped call walks further in pass 1, for the reason in
+[the olympiad filter](#the-olympiad-filter-a-url-range-not-a-join) below, and is
+still comfortably inside the regime this split escaped. Do not fold these back
+into one statement to save a round trip — the round trip costs ~3 ms and the fold
+costs ~2,100 rows.
 
 The ladder changes how many statements a search costs, but not that shape, and it
 is cheap for one reason: **a rung that matches nothing costs one statement, not
 two**, because `selectFtsHits` returns before its snippet pass when the ranking
-pass comes back empty — and a ranking pass measured ~20 rows for a query matching
-402 documents. So the best case, a phrase hit, is the four queries above. The
-**modal** case for a multi-word query is five, and it is worth naming rather than
-reading the best case as typical: rung 1 asks for the words _adjacent_, which most
-real queries are not, so the usual shape is one empty ranking pass, then rung 2's
-two, then the two owner reads. The worst case, a query matching nothing at any
-rung, is three ranking passes — ~60 rows — on top of the `hasFileText` read a
-total miss already paid for its empty state.
+pass comes back empty — and an unfiltered ranking pass measured ~20 rows for a
+query matching 402 documents. So the best case, a phrase hit, is the four queries
+above. The **modal** case for a multi-word query is five, and it is worth naming
+rather than reading the best case as typical: rung 1 asks for the words
+_adjacent_, which most real queries are not, so the usual shape is one empty
+ranking pass, then rung 2's two, then the two owner reads. The worst case, a query
+matching nothing at any rung, is three ranking passes — ~60 rows — on top of the
+`hasFileText` read a total miss already paid for its empty state.
+
+**The rule behind that ~20, rather than the number itself:** a ranking pass reads
+the fts index plus one `file_text` row per candidate it _walks_, and unfiltered
+it stops walking at the `LIMIT`. A scope is exactly what makes the walk longer
+than the `LIMIT`, because fts5 hands rows over in rank order and the scope
+discards the out-of-scope ones one at a time. So every figure in this section is
+an unfiltered figure, and under a scope each ranking pass costs roughly the number
+of matching documents the scope had to walk past — hundreds, in the worst
+realistic case of a small olympiad and a common word, and three such passes if
+nothing matches at any rung. `MAX_DEEP_QUERY_TOKENS` is still what bounds it,
+exactly as it bounds the bm25 scan.
 
 `ORDER BY rank` still makes FTS5 score **every** matching document whatever the
 `LIMIT`, and `MAX_DEEP_QUERY_TOKENS` remains the only control on that. Rung 3 is
@@ -533,7 +588,14 @@ score. Ordering the result by anything else — `id`, or pass 2's natural order 
 silently discards bm25 and returns insertion order, **quietly falsifying the "the
 array order IS the rank" contract** the whole response shape rests on.
 
-**`status = 'ok'` is filtered in pass 1, before the `LIMIT`.** It used to be a
+**Every eligibility test is applied in pass 1, before the `LIMIT`** — there are
+two of them now, `status = 'ok'` and the olympiad scope, and they hold for one
+reason. The `LIMIT` is what `DEEP_SEARCH_LIMIT + 1` reasons about, so a predicate
+applied _after_ it does not narrow a window of `limit` rows, it **shrinks** one.
+State it as the rule rather than as a fact about `status`, because `+ 1` is sound
+only while the rule holds.
+
+The history is `status`'s. It used to be a
 join in the outer half of the CTE — i.e. _after_ the `LIMIT` — so a non-`ok` row
 inside the top window shrank the result set instead of being skipped over. That,
 and not the dedupe its comment claimed, is what the old **×3 over-fetch** was
@@ -555,6 +617,77 @@ join produced too, and the same degradation a url with no owning row already
 gets: fewer results, never a wrong one. The two passes are separate statements
 rather than one transaction, so a concurrent write between them can also drop a
 row — harmless for the same reason.
+
+### The olympiad filter: a url range, not a join
+
+`GET /api/search/files` accepts an optional `?olympiad=<id>`, and `searchFiles`
+passes it down to **pass 1 of every rung**. Everything below follows from that
+placement, which is the only thing the parameter buys: `DEEP_SEARCH_LIMIT` is 20
+over a ~2,124-document corpus, so filtering that global window afterwards would
+typically leave 0–3 rows and would leave exactly 0 whenever the chosen olympiad
+has no document in the global top 20 — even if it has three hundred matching
+files — while also falsifying `truncated`. It is the same argument problem mode
+makes as "filtering precedes ranking". **If the implementation ever drifts to
+filtering after the `LIMIT`, delete the parameter rather than keep it**: at that
+point the client can do the same job from a body it already has in
+`DeepSearch`'s session cache.
+
+The predicate is a half-open range over `file_text.url`,
+`ft.url >= lo AND ft.url < hi`, derived by `olympiadUrlRange` in
+[`storage.ts`](../src/lib/server/storage.ts) — beside `fileKey`, so the forward
+and reverse derivations of the key layout cannot drift apart. `lo` ends in `/`,
+which is what stops `ipho` matching `iphox`: every character an id may continue
+with sorts above `/` (0x2F). `url` is plain `text()` under BINARY collation, so
+the comparison is byte-wise and exact.
+
+**A range because of a push-down asymmetry.** `MATCH`, `rank` and fts5's own
+rowid are the only constraints `xBestIndex` can absorb, and absorbing
+`file_text_fts.rowid IN (…)` is pass 2's entire trick. A predicate on the content
+table is not absorbable, so it must be **free per row** — and a range over `url`
+is, because the `file_text` row is already read by the `status` join. Two
+alternatives were rejected on that basis: a correlated `EXISTS` back to
+`year_files`/`problem_files` costs ~5 extra rows _per candidate walked_ (worst
+case ~2,100 — worse than the bug the two-pass split fixed), and a materialised
+CTE of the olympiad's urls reintroduces a query-independent fixed cost paid once
+per rung, which is the exact shape of that bug.
+
+> **Do not add the scope term to pass 2.** It is the obvious "for symmetry" edit
+> and it is wrong. Pass 1's rowid list is already the filtered answer, so the term
+> cannot change the result — only the plan: a range on `ft.url` gives the planner
+> a reason to drive from `file_text_url_idx` instead of from fts5, silently
+> undoing the seek that the whole split exists for.
+
+**A scoped result is not a subset of the unfiltered one, and that is correct.**
+Every rung is tried _within the scope_, so a scoped search can descend
+**further** than the unfiltered one: if rung 1 matches only out-of-scope files,
+the ladder falls through to rung 2 and surfaces looser hits the unfiltered search
+never showed, because there the phrase rung stopped it. That is the honest
+reading of what the ladder means — the most precise rung that has an answer
+_within the requested scope_ — and it is the second-strongest argument for the
+parameter existing, after the pre-`LIMIT` one. It will nonetheless be read as a
+bug, so: do not "fix" it by pinning a scoped search to the rung an unfiltered one
+stopped at.
+
+Two things stay **global** under a scope, deliberately. `hasFileText` and the
+`indexEmpty` it feeds mean "the whole index is empty, so this is still catching
+up" — a claim about the pipeline, not about the query; scoping it would give one
+field two meanings across two cache-key families, told apart only by the request
+url. The client knows its own filter and words the empty state itself ("No IPhO
+files contain that phrase."). Ownership resolution stays global too, and the
+assembly loop then drops any row whose resolved `olympiadId` disagrees with the
+scope — belt and braces, since `resolveOwners` is the authority and the url
+prefix is only a derivation, and they can disagree only for a row written outside
+`uploadFile`. Dropping such a row folds a layout violation into the module's
+standing contract: fewer results, never a wrong one.
+
+**The escape hatch, if the corpus grows ~10×.** A second FTS5 column —
+`fts5(text, scope, …)` over a derived `file_text.scope` — filtered inside the
+`MATCH` would make the walk exactly `limit` at any size. It is not worth it now:
+it is a schema migration _plus_ an edit to the one hand-written FTS5 migration
+_plus_ a full `'rebuild'` (~14k rows written, 14% of the daily cap), it needs
+`bm25(file_text_fts, 1.0, 0.0)` to keep ranking identical, and it puts an
+olympiad id inside the bound `MATCH` string — reintroducing exactly the grammar
+risk `sanitizeFtsQuery` exists to kill.
 
 `resolveOwners` then turns the kept urls into rows with **two parallel queries
 folded into a map, not a `UNION`**. The two sides genuinely differ in shape — the
@@ -663,15 +796,17 @@ not the index.
 
 In the order they bite:
 
-| Control                 | Value | Effect                                                                                                                                                                                |
-| ----------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MIN_DEEP_QUERY_LENGTH` | 5     | no D1 read below it; enforced on both sides                                                                                                                                           |
-| `MAX_DEEP_QUERY_LENGTH` | 200   | refused before D1 _and_ before the cache header; enforced on both sides as well                                                                                                       |
-| `MAX_DEEP_QUERY_TOKENS` | 24    | **the real control on the bm25 scan** — each token is one more index probe, and this is what keeps a pathological query inside D1's 30 s ceiling. It bites on the `OR` rung above all |
-| `MAX_PHRASE_TOKENS`     | 32    | the phrase rung's own cap, deliberately looser: a longer phrase can only match _fewer_ documents, so what that rung asks of the index shrinks as the query grows                      |
-| `DEEP_SEARCH_LIMIT`     | 20    | fetched **one row past**, never further; the shape of the snippet pass is what actually bounds rows read                                                                              |
-| `normalizeDeepQuery`    | —     | `?q=Gravitation` and `?q=gravitation ` become one cache key                                                                                                                           |
-| `DEEP_DEBOUNCE_MS`      | 250   | client-side; the first debounce in the codebase                                                                                                                                       |
+| Control                   | Value | Effect                                                                                                                                                                                |
+| ------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MIN_DEEP_QUERY_LENGTH`   | 5     | no D1 read below it; enforced on both sides                                                                                                                                           |
+| `MAX_DEEP_QUERY_LENGTH`   | 200   | refused before D1 _and_ before the cache header; enforced on both sides as well                                                                                                       |
+| `MAX_DEEP_QUERY_TOKENS`   | 24    | **the real control on the bm25 scan** — each token is one more index probe, and this is what keeps a pathological query inside D1's 30 s ceiling. It bites on the `OR` rung above all |
+| `MAX_PHRASE_TOKENS`       | 32    | the phrase rung's own cap, deliberately looser: a longer phrase can only match _fewer_ documents, so what that rung asks of the index shrinks as the query grows                      |
+| `DEEP_SEARCH_LIMIT`       | 20    | fetched **one row past**, never further; the shape of the snippet pass is what actually bounds rows read                                                                              |
+| `normalizeDeepQuery`      | —     | `?q=Gravitation` and `?q=gravitation ` become one cache key                                                                                                                           |
+| `isOlympiadFilter`        | —     | bounds the edge key space: `?olympiad=` accepts ~22 ids and nothing else, so an arbitrary string cannot mint a cache key or buy a ladder walk. **Not** an injection defence           |
+| `normalizeOlympiadFilter` | —     | absent, empty and `?olympiad=IPhO` are one key, not three                                                                                                                             |
+| `DEEP_DEBOUNCE_MS`        | 250   | client-side; the first debounce in the codebase                                                                                                                                       |
 
 Both bounds are refused **before any D1 work and before the cache header goes
 on** — the same ordering `/api/olympiads/[olympiad]` uses for its 404. A 400 held
@@ -690,12 +825,41 @@ the `MATCH`, so half a word would become a spurious `hal*` term and quietly chan
 which files come back. Refusing to ask is honest; asking a different question is
 not.
 
-`GET /api/search/files` takes **one parameter, `q`**, and every omission has its
-own reason. Every accepted parameter multiplies cache keys; `status` is per-user
-and must never touch `/api/`; and `topics`/`olympiad` are meaningless against a
-file. A future `?topics=` should look wrong on sight. The handler **reads no cookie
-and never touches `locals.user`**, which is what makes the body safe in a shared
-cache — and why a future `?mine=1` would be a serious bug rather than a feature.
+`GET /api/search/files` takes **`q` and an optional `olympiad`**, and the rule
+that admits the second while refusing the rest is sharper than "every accepted
+parameter multiplies cache keys" — true, but it would refuse `olympiad` too:
+
+- **`status` and `mine` are per-user and must never touch `/api/`.** The whole
+  point of this path is that its bodies are safe in a shared cache.
+- **`topics` is meaningless against a file**, since one year-level PDF covers
+  every topic in that year. A future `?topics=` should still look wrong on sight.
+- **`olympiad` is not**, because a file belongs to _exactly one_ olympiad even
+  when it is year-level.
+
+The handler **reads no cookie and never touches `locals.user`** — unchanged by the
+filter, and what makes the body safe in a shared cache, which is why a future
+`?mine=1` would be a serious bug rather than a feature.
+
+The filter has a **three-way** response, and each branch is a cost decision:
+
+| `olympiad`              | response                                       | cached           | extra D1 |
+| ----------------------- | ---------------------------------------------- | ---------------- | -------- |
+| absent or empty         | the unfiltered search                          | yes, today's key | none     |
+| malformed               | **400**, before D1 and before the cache header | no               | none     |
+| well-formed but unknown | **200 with no results**                        | yes              | none     |
+
+"Unknown → empty" is what the url range does naturally, so there is no divergent
+branch to keep honest, and it avoids a `SELECT 1 FROM olympiads` on the happy path
+of every filtered search forever to catch a state the UI cannot produce. The 400
+for a malformed value is the opposite trade and is about the cache: a 400 is
+uncacheable, so a bad bookmark cannot park a wrong answer at the edge, where an
+unbounded `?olympiad=` would otherwise mint a fresh cache key — and a fresh
+three-rung ladder walk — per arbitrary string. `isOlympiadFilter` is a cache-key
+gate for that reason and **not an injection defence**: the value is a bound
+parameter and the range form cannot be broken by any string. Its pattern,
+`/^[a-z0-9][a-z0-9-]{0,31}$/`, is the tightest one that admits every id in the
+table; `createOlympiad` only lowercases and hyphenates, so the charset there and
+the pattern here are two halves of one rule.
 
 It is `GET`, not `POST`, because Cloudflare's cache key includes the query string
 and a POST is uncacheable, which would turn every keystroke into a D1 read.
@@ -706,6 +870,15 @@ and a POST is uncacheable, which would turn every keystroke into a D1 read.
 > shape change and just as stale in the edge cache. There is no finite list of URLs
 > to enumerate. Plan for that rather than discovering it; see
 > [deployment.md](./deployment.md#purging-the-cache-after-an-api-change).
+>
+> Adding an **optional** parameter is the one shape of change that owes no purge,
+> and `?olympiad=` is the worked example. An unfiltered request is `?q=gravitation`
+> before and after, so every cached body stays a correct answer to its own url, and
+> filtered urls are keys that have never existed. Two conditions carry that, and
+> both have to be checked rather than assumed: the response shape is unchanged — no
+> new field — and the unfiltered SQL statement is byte-identical, which is why
+> `selectFtsHits` composes its scope with `sql.empty()` rather than a `1 = 1`
+> variant. Verified by diffing unfiltered bodies across both builds.
 
 `AbortController` on the client saves bandwidth and ordering, not Worker work. The
 real request-volume defences are the debounce, the minimum length, the normalised
@@ -722,11 +895,20 @@ fetch per keystroke of ⌘K. The `<svelte:window>` handler has to stay out there
 the same reason: it is what _opens_ the dialog, so it could never fire from inside
 the content.
 
-Three network resources, three fetch-once rules: the problem index on first open;
-`/progress` on first open when signed in and again when `userId` changes; and the
-deep-search cache once per distinct normalised query, ever. Each guard is only set
-on **success**, so a failure retries on the next open rather than leaving the
-session permanently unsearchable.
+**Four** network resources, four fetch-once rules: the problem index on first
+open; `/progress` on first open when signed in and again when `userId` changes;
+`/api/olympiads` on first entry into **files mode**; and the deep-search cache
+once per distinct (query, olympiad) key, ever. Each guard is only set on
+**success**, so a failure retries on the next open rather than leaving the session
+permanently unsearchable.
+
+The olympiad list is fetched on entry into files mode rather than on open,
+because ⌘K must not do extra network for the people who never touch deep search,
+and it is **fetched rather than derived from the problem index**, which would be
+free. `index` carries one entry per _problem_, so deriving the list would silently
+omit an olympiad that has files but no `problems` rows — an ordinary state for a
+freshly created olympiad, and a hole nobody would see until they went looking for
+a filter that was never offered.
 
 Success is not the only thing worth remembering, though, so each guard also
 consults an **in-flight** flag. The "fetched" guards are set when a response
@@ -764,15 +946,32 @@ cache survives every open and close. The driving `$effect` deliberately stays in
 the component: an effect can only be created during init, and the teardown-based
 debounce depends on being one.
 
+**Every cell here is keyed by a (query, olympiad) pair, not by the query.**
+`deepCacheKey` composes the two with a `
+`, which is injective because
+`normalizeDeepQuery` collapses all whitespace to single spaces and so a
+normalised query can never contain one. Keying on the query alone was a
+correctness bug waiting for the filter to exist: the cache, the landed marker and
+the in-flight marker all read one opaque string, so switching olympiad would have
+found the previous olympiad's response already cached and shown it without ever
+asking the server. Every method still takes a single opaque `key` — only `run()`
+needs the halves apart, to build the url — and the key space being ~(olympiads +
+1)× larger is the one cost.
+
 **The cache is a plain `Map`, and that is load-bearing rather than an oversight.**
 A `SvelteMap` looks like the obvious choice — a response landing has to repaint —
-but `has()` on an _absent_ key subscribes to the map's version, so caching any
-query would invalidate every reader of any other key. The driving effect calls
-`has()`, so an earlier query landing would tear that effect down and **abort the
-request already in flight for the query the user is actually typing**, costing an
-extra round trip per keystroke. Nothing needs the map to be reactive, because
-nothing renders from a key other than `#landed`, which _is_ `$state`. Eviction is
+but `has()` on an _absent_ key subscribes to the map's version, so caching any key
+would invalidate every reader of any other key. The driving effect calls `has()`,
+so an earlier key landing would tear that effect down and **abort the request
+already in flight for the key the user is actually typing**, costing an extra
+round trip per keystroke. Nothing needs the map to be reactive, because nothing
+renders from a key other than `#landed`, which _is_ `$state`. Eviction is
 insertion-order at `CACHE_LIMIT` = 30 (≈ 200 KB).
+
+The url omits `olympiad` entirely when unfiltered rather than sending it empty —
+`?q=x&olympiad=` and `?q=x` are two Cloudflare keys holding one body — and the
+order is fixed at `?q=…&olympiad=…`, because Cloudflare does not sort a query
+string before keying on it.
 
 Three cells track what is on screen, in flight and failed, and **`null` is the
 "none" sentinel, not `''`.** That is a fixed bug rather than a style choice: the
@@ -908,7 +1107,10 @@ reading them side by side is the cheapest way to keep them agreeing.
 inputEl` returns early). Without that, an open filter dropdown moves _its_
   highlight and ours at the same time: `DropdownMenu` and `Dialog` both portal at
   `z-50` and both handlers see the key. Hovering a row does not move focus, so the
-  hover-then-Enter contract is unaffected.
+  hover-then-Enter contract is unaffected. The olympiad combobox gets its own
+  arrows out of the same line for nothing: `Popover.Content` traps focus and puts
+  it on the panel's search box, so while that panel is open this handler is looking
+  at a target that is not `inputEl` and stays out of the way.
 - ArrowDown clamps with `Math.max(resultCount - 1, 0)`: an empty list gives `-1`,
   which would park the index there until an ArrowUp recovered it.
 - **The focused row is clamped on read, never written back.** `focused` is
@@ -1030,8 +1232,9 @@ than an omission:
   not built.
 - **`.zip` and legacy `.doc` are never indexed**; `.docx`/`.xlsx` only by the local
   script, never by the browser.
-- **Deep search has no filters and cannot gain per-user ones.** Anything per-user
-  must never touch `/api/`.
+- **Deep search cannot gain per-user filters.** Anything per-user must never touch
+  `/api/`. The olympiad filter is not one of those: a file belongs to exactly one
+  olympiad, and the answer is the same for every visitor, so it stays shared-cached.
 - **Problem search ships the whole corpus.** If it ever outgrows a single fetch,
   the first lever is deduping `olympiadName`/`olympiadIcon`, which repeat on every
   problem in the archive — a breaking shape change, and not needed yet.
@@ -1041,11 +1244,14 @@ than an omission:
   ranges against `text.toLowerCase()`, which is not length-preserving for every
   Unicode case pair. Cosmetic, and independent of the escaping that makes the
   `{@html}` around it safe.
-- **The full ARIA combobox pattern is not implemented** —
+- **The full ARIA combobox pattern is not implemented on the results list** —
   `role="combobox"` with `aria-expanded`/`aria-controls`/`aria-activedescendant`
   and rows as `role="option"`. It touches both item components, changes the `<ul>`
   semantics and has to be reconciled with bits-ui's focus trap, and half of it is
-  worse than none.
+  worse than none. The olympiad filter's panel _does_ have all of it, because
+  `Command` brings it — which is also the honest measure of what the results list
+  would have to reimplement by hand, since it cannot be a `Command`: its rows are
+  links opened in a new tab, and its input is the dialog's own.
 
 The manual QA contract for all of this — there is no test suite — is in
 [contributing.md](./contributing.md#the-gates).

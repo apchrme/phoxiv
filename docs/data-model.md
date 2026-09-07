@@ -433,7 +433,7 @@ key by stripping the `CDN_BASE_URL` prefix back off:
 url column  ──keyFromCdnUrl()──→  key  ──bucket.delete()──→  gone
 ```
 
-Three consequences follow, and all three are silent failures:
+Four consequences follow, and all four are silent failures:
 
 1. **Changing `CDN_BASE_URL`** ([`$lib/constants.ts`](../src/lib/constants.ts))
    orphans every existing object _and_ breaks deletion for every existing row —
@@ -444,6 +444,14 @@ Three consequences follow, and all three are silent failures:
 3. **`deleteByUrl` must only ever be given a URL read back from the database.**
    A client-submitted value would let a crafted URL delete an arbitrary object.
    Every call site reads the row first.
+4. **Deep search's olympiad filter reads the layout backwards**, so a layout
+   change silently mis-scopes every filtered search. `olympiadUrlRange` derives the
+   half-open url range `[…/olympiads/<id>/, …/olympiads/<id>0)` and `selectFtsHits`
+   scopes its ranking pass with it — no join, no extra D1 row. It lives beside
+   `fileKey` in `storage.ts` precisely so the forward and reverse derivations have
+   to be changed together; the correctness argument, including why the trailing
+   `/` is what stops `ipho` matching `iphox`, is in
+   [search.md](./search.md#the-olympiad-filter-a-url-range-not-a-join).
 
 Icons are keyed _by extension_, so uploading a `.png` over an existing `.svg`
 would leave the old file live on the CDN. `deleteStaleIcons` removes the other

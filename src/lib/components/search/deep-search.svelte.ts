@@ -21,20 +21,49 @@ import type { FileSearchResponse, FileSearchResult } from '$lib/types.js';
  */
 const NO_RESULTS: readonly FileSearchResult[] = [];
 
-/** 30 queries × ~20 hits × ~200 chars ≈ 200 KB. Evicted in insertion order. */
+/**
+ * 30 keys × ~20 hits × ~200 chars ≈ 200 KB. Evicted in insertion order.
+ *
+ * A key is now a **(query, olympiad) pair** rather than a query, so the key
+ * space is roughly (olympiads + 1)× larger and a session that switches filter
+ * repeatedly reaches this cap sooner. Still generous: 30 keys is far more than a
+ * single ⌘K session types, and the cost of an eviction is one request.
+ */
 const CACHE_LIMIT = 30;
+
+/**
+ * The cache key for one deep search: a query **and** the olympiad it was scoped
+ * to.
+ *
+ * **Keying on the query alone was a correctness bug waiting for this feature.**
+ * `#cache`, `#landed`, `#inFlight` and `#failed` are all keyed by this string, so
+ * with the query alone, switching olympiad would serve the previous olympiad's
+ * results straight out of the session cache and never ask the server.
+ *
+ * `\n` is the separator because {@link normalizeDeepQuery} collapses every run of
+ * whitespace to single spaces, so a normalised query can never contain one — the
+ * composition is injective, and no (olympiad, query) pair can collide with
+ * another. `null` composes as the empty string, which no id can be.
+ *
+ * Every method here keeps taking a single opaque `key`, so nothing inside this
+ * class knows the pair exists; `run()` is the one place that needs both halves,
+ * and it takes them separately to build the url.
+ */
+export function deepCacheKey(query: string, olympiad: string | null): string {
+	return `${olympiad ?? ''}\n${query}`;
+}
 
 export class DeepSearch {
 	/**
-	 * Every response this session has received, keyed by normalised query.
+	 * Every response this session has received, keyed by {@link deepCacheKey}.
 	 *
 	 * **A plain `Map`, and that is load-bearing rather than an oversight.** A
 	 * `SvelteMap` looks like the obvious choice — a response landing has to
 	 * repaint — but `has()` on an *absent* key subscribes to the map's version, so
-	 * caching any query invalidates every reader of any other key. The driving
-	 * effect in `GlobalSearch.svelte` calls `has()`, so an earlier query landing
+	 * caching any key invalidates every reader of any other key. The driving
+	 * effect in `GlobalSearch.svelte` calls `has()`, so an earlier key landing
 	 * would tear that effect down and **abort the request already in flight for
-	 * the query the user is actually typing**, costing an extra round trip per
+	 * the key the user is actually typing**, costing an extra round trip per
 	 * keystroke.
 	 *
 	 * Nothing needs the map to be reactive, because nothing renders from a key
@@ -45,18 +74,19 @@ export class DeepSearch {
 	#cache = new Map<string, FileSearchResponse>();
 
 	/**
-	 * The query whose results are on screen.
+	 * The key whose results are on screen.
 	 *
-	 * **It deliberately trails the live query while a newer request is in
+	 * **It deliberately trails the live key while a newer request is in
 	 * flight.** That is the whole anti-flicker mechanism: the panel keeps the last
 	 * landed list instead of blanking on every keystroke. Everything that could
 	 * render a stale marker — {@link isLoading}, {@link hasFailed},
 	 * {@link isStale} — compares against the *live* key instead, so a marker left
-	 * over from a query the user has moved on from can never appear.
+	 * over from a key the user has moved on from can never appear.
 	 *
 	 * **`null` is the "none" sentinel, not `''`, and that is a fixed bug rather
 	 * than a style choice.** The empty string is also the value of `deepQuery`
-	 * when the input is empty, so with `''` here `hasFailed('')` and
+	 * when the input is empty — and so a prefix of every key — so with `''` here
+	 * `hasFailed('')` and
 	 * `isLoading('')` both answered *true* the moment files mode opened, and the
 	 * panel led with "Couldn't search inside files." before a key had been
 	 * pressed. A query the driving effect refuses to send — shorter than
@@ -105,34 +135,34 @@ export class DeepSearch {
 		return this.#current?.indexEmpty ?? false;
 	}
 
-	/** Whether `query` has already been fetched this session. Not reactive. */
-	has(query: string): boolean {
-		return this.#cache.has(query);
+	/** Whether `key` has already been fetched this session. Not reactive. */
+	has(key: string): boolean {
+		return this.#cache.has(key);
 	}
 
 	/**
-	 * Whether `query` is the one the panel is waiting on — **either sitting out
+	 * Whether `key` is the one the panel is waiting on — **either sitting out
 	 * the debounce or actually on the wire**; see {@link schedule}.
 	 *
-	 * `query` is always a string and the cell is `null` when idle, so an empty
+	 * `key` is always a string and the cell is `null` when idle, so an empty
 	 * input matches nothing here without a length check of its own.
 	 */
-	isLoading(query: string): boolean {
-		return this.#inFlight === query;
+	isLoading(key: string): boolean {
+		return this.#inFlight === key;
 	}
 
-	/** Whether `query` failed and has not since succeeded. */
-	hasFailed(query: string): boolean {
-		return this.#failed === query;
+	/** Whether `key` failed and has not since succeeded. */
+	hasFailed(key: string): boolean {
+		return this.#failed === key;
 	}
 
-	/** Whether what is on screen belongs to an older query than `query`. */
-	isStale(query: string): boolean {
-		return this.#landed !== null && this.#landed !== query;
+	/** Whether what is on screen belongs to an older key than `key`. */
+	isStale(key: string): boolean {
+		return this.#landed !== null && this.#landed !== key;
 	}
 
 	/**
-	 * Marks `query` as pending **before** the debounce timer starts.
+	 * Marks `key` as pending **before** the debounce timer starts.
 	 *
 	 * `#inFlight` used to be set only inside {@link run}, which the driving effect
 	 * calls `DEEP_DEBOUNCE_MS` (250 ms) after the last keystroke — so while a first
@@ -146,35 +176,35 @@ export class DeepSearch {
 	 * `#failed` is cleared here rather than only in `run()` for the same reason: a
 	 * failure marker must not outlive the decision to ask again.
 	 */
-	schedule(query: string): void {
-		this.#inFlight = query;
+	schedule(key: string): void {
+		this.#inFlight = key;
 		this.#failed = null;
 	}
 
 	/**
-	 * Drops the pending marker {@link schedule} set — **only if `query` is still
+	 * Drops the pending marker {@link schedule} set — **only if `key` is still
 	 * the pending one**.
 	 *
 	 * The guard is the whole point, not defensiveness. The driving effect's
 	 * teardown runs immediately before its re-run, so an unconditional clear would
-	 * wipe the *newer* query's pending state that the re-run is about to set, and
+	 * wipe the *newer* key's pending state that the re-run is about to set, and
 	 * the panel would flash exactly the premature "No files contain that phrase."
 	 * this pair exists to prevent. `run()`'s `finally` clears through here for the
-	 * same reason: an abort rejects a microtask *after* the next query has been
-	 * scheduled, and `#token` cannot see that, because a query still inside its
+	 * same reason: an abort rejects a microtask *after* the next key has been
+	 * scheduled, and `#token` cannot see that, because a key still inside its
 	 * debounce has not taken a token yet.
 	 */
-	unschedule(query: string): void {
-		if (this.#inFlight === query) this.#inFlight = null;
+	unschedule(key: string): void {
+		if (this.#inFlight === key) this.#inFlight = null;
 	}
 
-	/** Shows an already-cached query synchronously. Never a network event. */
-	show(query: string): void {
-		if (!this.#cache.has(query)) return;
+	/** Shows an already-cached key synchronously. Never a network event. */
+	show(key: string): void {
+		if (!this.#cache.has(key)) return;
 		this.#token++;
 		this.#inFlight = null;
 		this.#failed = null;
-		this.#landed = query;
+		this.#landed = key;
 	}
 
 	/** Re-fires the current query after a failure. */
@@ -191,16 +221,27 @@ export class DeepSearch {
 		this.#failed = null;
 	}
 
-	#remember(query: string, body: FileSearchResponse): void {
+	#remember(key: string, body: FileSearchResponse): void {
 		if (this.#cache.size >= CACHE_LIMIT) {
 			const oldest = this.#cache.keys().next();
 			if (!oldest.done) this.#cache.delete(oldest.value);
 		}
-		this.#cache.set(query, body);
+		this.#cache.set(key, body);
 	}
 
 	/**
-	 * Fetches one query.
+	 * Fetches one key.
+	 *
+	 * `key` is what everything here is stored under; `query` and `olympiad` are
+	 * its two halves, passed separately because only the url needs them apart.
+	 * They are **not** re-derived from `key` — splitting a composed string back
+	 * open is exactly the kind of thing that stops being injective when someone
+	 * changes the separator.
+	 *
+	 * The url omits `olympiad` entirely when unfiltered rather than sending it
+	 * empty: `?q=x&olympiad=` and `?q=x` are two Cloudflare cache keys holding one
+	 * body. The parameter order is fixed at `?q=…&olympiad=…` for the same reason
+	 * — Cloudflare does not sort a query string before keying on it.
 	 *
 	 * The explicit `res.ok` check is `fetchIndex`'s documented rule and matters for
 	 * the same reason: an error response with an HTML body makes `res.json()`
@@ -213,29 +254,37 @@ export class DeepSearch {
 	 *
 	 * An `AbortError` is not a failure. It is us.
 	 */
-	async run(query: string, signal: AbortSignal): Promise<void> {
+	async run(
+		key: string,
+		query: string,
+		olympiad: string | null,
+		signal: AbortSignal
+	): Promise<void> {
 		const token = ++this.#token;
 		// Normally a no-op: the driving effect has already scheduled this key. Kept
 		// so `run()` is correct on its own rather than only in that one caller.
-		this.#inFlight = query;
+		this.#inFlight = key;
 		this.#failed = null;
 
 		try {
-			const res = await fetch(`/api/search/files?q=${encodeURIComponent(query)}`, { signal });
+			const scope = olympiad === null ? '' : `&olympiad=${encodeURIComponent(olympiad)}`;
+			const res = await fetch(`/api/search/files?q=${encodeURIComponent(query)}${scope}`, {
+				signal
+			});
 			if (!res.ok) throw new Error(`HTTP ${res.status}`);
 			const body: FileSearchResponse = await res.json();
-			this.#remember(query, body);
+			this.#remember(key, body);
 			if (token !== this.#token) return;
-			this.#landed = query;
+			this.#landed = key;
 		} catch (e) {
 			if (e instanceof DOMException && e.name === 'AbortError') return;
 			if (token !== this.#token) return;
-			this.#failed = query;
+			this.#failed = key;
 		} finally {
 			// Through `unschedule` rather than a bare assignment: the token alone
-			// cannot tell that a newer query is already pending inside its debounce,
+			// cannot tell that a newer key is already pending inside its debounce,
 			// having taken no token yet. See that method.
-			if (token === this.#token) this.unschedule(query);
+			if (token === this.#token) this.unschedule(key);
 		}
 	}
 }

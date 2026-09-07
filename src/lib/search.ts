@@ -83,6 +83,54 @@ export const DEEP_DEBOUNCE_MS = 250;
 export function normalizeDeepQuery(raw: string): string {
 	return raw.toLowerCase().replace(/\s+/g, ' ').trim();
 }
+/**
+ * The olympiad filter reduced to its cache-key form: `null` when absent.
+ *
+ * **Absent and empty are one thing**, deliberately: without this, `?q=x` and
+ * `?q=x&olympiad=` are two Cloudflare cache keys holding one identical body,
+ * and the client has to remember never to emit the second. Trimmed and
+ * lowercased for `normalizeDeepQuery`'s reason — olympiad ids are lowercase, so
+ * `?olympiad=IPhO` is the same question as `?olympiad=ipho` and must not mint a
+ * second key for it.
+ *
+ * Applied by the client so the url is right, and again by the server so
+ * correctness never depends on the client having done it.
+ */
+export function normalizeOlympiadFilter(raw: string | null): string | null {
+	const id = (raw ?? '').trim().toLowerCase();
+	return id === '' ? null : id;
+}
+
+/**
+ * Whether an olympiad filter is *shaped* like an id.
+ *
+ * **Not validation against the `olympiads` table**, and the distinction is the
+ * whole point. A well-formed id that names no olympiad returns an empty result
+ * set, which is what the url range does naturally and costs no extra read; only
+ * a malformed one is refused. Checking against the table would put a
+ * `SELECT 1 FROM olympiads` on the happy path of every filtered search, forever,
+ * to catch a state the UI cannot produce.
+ *
+ * The honest purpose is **bounding the edge key space**. Without a gate,
+ * `?olympiad=` accepts arbitrary strings of any length, each one minting a fresh
+ * Cloudflare cache key and each one costing a full three-rung ladder walk to
+ * come back empty.
+ *
+ * It is emphatically **not an injection defence** — the value is a bound
+ * parameter and the range form cannot be broken by any string — so nobody should
+ * later "harden" it in that direction. It is also why the response to a
+ * malformed value is a 400 rather than an empty body: a 400 is uncacheable, so a
+ * bad bookmark cannot park a wrong answer in the shared cache.
+ *
+ * The pattern is the tightest one that admits every id in the table, checked
+ * against all 22 of them. `createOlympiad` slugifies with
+ * `.toLowerCase().replace(/\s+/g, '-')` and does not restrict the charset, so a
+ * future id could in principle fall outside this and become unfilterable — the
+ * charset there and the pattern here are the two halves of one rule.
+ */
+export function isOlympiadFilter(id: string): boolean {
+	return /^[a-z0-9][a-z0-9-]{0,31}$/.test(id);
+}
 
 // ── Extraction ──────────────────────────────────────────────────────────────
 

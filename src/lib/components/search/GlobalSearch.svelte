@@ -13,12 +13,13 @@
 	import FileResultItem from './FileResultItem.svelte';
 	import SearchHints from './SearchHints.svelte';
 	import SearchModeToggle from './SearchModeToggle.svelte';
-	import { DeepSearch } from './deep-search.svelte';
+	import { DeepSearch, deepCacheKey } from './deep-search.svelte';
 	import TopicSelect from '$lib/components/TopicSelect.svelte';
 	import StatusFilter from '$lib/components/StatusFilter.svelte';
+	import OlympiadFilter from './OlympiadFilter.svelte';
 	import { filterSearchItems, isFiltering, type ProblemStatus } from '$lib/filters';
 	import type { GlobalProgressMap } from '$lib/progress';
-	import type { FileSearchResult } from '$lib/types.js';
+	import type { FileSearchResult, OlympiadEntry } from '$lib/types.js';
 	import {
 		DEEP_DEBOUNCE_MS,
 		DEEP_SEARCH_LIMIT,
@@ -44,13 +45,15 @@
 	 * on screen: no header rows, no cross-kind index arithmetic. Arrows and Enter
 	 * operate over one array; only the count and the activation branch on mode.
 	 *
-	 * Three network resources, three fetch-once rules: the problem index on first
+	 * **Four** network resources, four fetch-once rules: the problem index on first
 	 * open, `/progress` on first open when signed in and again when `userId`
-	 * changes, and the deep-search cache once per distinct normalised query, ever.
+	 * changes, `/api/olympiads` on first entry into files mode, and the deep-search
+	 * cache once per distinct (query, olympiad) key, ever.
 	 */
 	let {
 		open = $bindable(false),
-		userId
+		userId,
+		currentOlympiad
 	}: {
 		open?: boolean;
 		/**
@@ -61,6 +64,16 @@
 		 * — which cannot even be typed from `$lib`.
 		 */
 		userId?: string;
+		/**
+		 * The olympiad whose page the reader is on, or `undefined` anywhere else.
+		 * Handed straight to `OlympiadFilter`, which lists it first; nothing in this
+		 * shell reads it, and in particular it never presets `olympiadFilter`.
+		 *
+		 * Passed down for `userId`'s reason. This one is only a route param, so it
+		 * carries no load shape with it, but the layout is still the honest place to
+		 * decide what "the page you are on" means.
+		 */
+		currentOlympiad?: string;
 	} = $props();
 
 	const signedIn = $derived(userId !== undefined);
@@ -222,6 +235,13 @@
 	let activeTopics = $state<ProblemTopic[]>([]);
 	/** Completion state the user is filtering by. Signed-in only. */
 	let status = $state<ProblemStatus>('all');
+	/**
+	 * The olympiad deep search is scoped to, or `null` for all of them. Files mode
+	 * only — it is the one filter a file *can* carry, since a file belongs to
+	 * exactly one olympiad even when it covers a whole year.
+	 */
+	let olympiadFilter = $state<string | null>(null);
+
 	let focusedIndex = $state(0);
 	let inputEl: HTMLInputElement | undefined = $state();
 	let resultsEl: HTMLDivElement | undefined = $state();
@@ -293,6 +313,65 @@
 	});
 
 	// ---------------------------------------------------------------------------
+	// Olympiads — for the deep-search filter, on first entry into files mode
+	// ---------------------------------------------------------------------------
+
+	/**
+	 * Every olympiad, for `OlympiadFilter`'s menu. `$state.raw` for `index`'s
+	 * reason: replaced wholesale, never mutated.
+	 *
+	 * **Fetched on first entry into files mode, not on open.** ⌘K must not do extra
+	 * network for the people who never touch deep search, and problem mode has no
+	 * use for this list — the mode is the honest trigger. Once fetched it is kept
+	 * for the session like the other two.
+	 *
+	 * **Fetched rather than derived from `index`**, which would be free. `index`
+	 * carries one entry per *problem*, so deriving the list would silently omit an
+	 * olympiad that has files but no `problems` rows — a perfectly ordinary state
+	 * for a freshly created olympiad, and the resulting hole would be invisible
+	 * until someone went looking for a filter that was never there. `/api/olympiads`
+	 * is authoritative and complete, and its payload is negligible beside
+	 * `/api/search`, which is already fetched on every open.
+	 */
+	let olympiads = $state.raw<OlympiadEntry[]>([]);
+	/**
+	 * Both plain `let`s, for `indexFetched` and `indexInFlight`'s documented
+	 * reasons — and the failure mode is the same one, not a hypothetical: this
+	 * function is called synchronously from an `$effect`, so a `$state` guard it
+	 * also writes would re-run that effect when the request settled, and on the
+	 * failure path nothing would stop the next run from refetching forever.
+	 *
+	 * Nothing renders a loading or failed state for this one. A missing list means
+	 * the filter is simply not offered yet, which is self-explanatory in a way
+	 * "couldn't load the olympiads" is not; `olympiadsFetched` is set only on
+	 * success, so the next entry into files mode tries again.
+	 */
+	let olympiadsFetched = false;
+	let olympiadsInFlight = false;
+
+	async function fetchOlympiads() {
+		if (olympiadsFetched || olympiadsInFlight) return;
+		olympiadsInFlight = true;
+		try {
+			const res = await fetch('/api/olympiads');
+			// `fetchIndex`'s rule: an error response with an HTML body makes
+			// `res.json()` throw, which would escape as an unhandled rejection.
+			if (!res.ok) throw new Error(`HTTP ${res.status}`);
+			olympiads = await res.json();
+			olympiadsFetched = true;
+		} catch {
+			// See above: no visible failure state, and the guard stays clear so the
+			// next entry into files mode retries.
+		} finally {
+			olympiadsInFlight = false;
+		}
+	}
+
+	$effect(() => {
+		if (open && mode === 'files') fetchOlympiads();
+	});
+
+	// ---------------------------------------------------------------------------
 	// Deep search
 	// ---------------------------------------------------------------------------
 
@@ -319,6 +398,26 @@
 	const deepTooLong = $derived(deepQuery.length > MAX_DEEP_QUERY_LENGTH);
 
 	/**
+	 * The key everything deep-search-shaped is *actually* keyed on: the query and
+	 * the olympiad it is scoped to, together.
+	 *
+	 * **Not `deepQuery`, and that is a correctness constraint.** `DeepSearch`'s
+	 * cache, its landed marker and its in-flight marker all key on one opaque
+	 * string; keyed on the query alone, switching olympiad would find the previous
+	 * olympiad's response already cached and show it without ever asking the
+	 * server. See `deepCacheKey`.
+	 *
+	 * `deepTooShort` and `deepTooLong` deliberately stay on `deepQuery`: the length
+	 * bounds are a fact about the query, and the olympiad has no length.
+	 */
+	const deepKey = $derived(deepCacheKey(deepQuery, olympiadFilter));
+
+	/** The filtered olympiad's display name, for the empty state. */
+	const filteredOlympiadName = $derived(
+		olympiadFilter === null ? null : (olympiads.find((o) => o.id === olympiadFilter)?.name ?? null)
+	);
+
+	/**
 	 * The debounce **is** the teardown.
 	 *
 	 * Every dependency change re-runs the effect, and the teardown fires
@@ -338,22 +437,30 @@
 	 * `deep.schedule()` and `deep.unschedule()` are safe under that same rule for
 	 * the opposite reason: they only *write* `DeepSearch`'s cells and read none of
 	 * them here, so they add no dependency and cannot re-trigger this effect.
+	 *
+	 * `olympiadFilter` needs no branch of its own: it is a tracked read *through*
+	 * `deepKey`, synchronously and above the `setTimeout`, exactly as that rule
+	 * requires — so changing the filter re-runs this, aborts whatever was in flight
+	 * and asks the new key.
 	 */
 	$effect(() => {
 		if (mode !== 'files') return;
-		const key = deepQuery;
+		const key = deepKey;
+		const query = deepQuery;
+		const olympiad = olympiadFilter;
 		const _attempt = deep.attempt; // tracked: lets "Try again" re-fire the same query
-		if (key.length < MIN_DEEP_QUERY_LENGTH) return;
+		if (query.length < MIN_DEEP_QUERY_LENGTH) return;
 		// The server's upper bound, mirrored so an over-long paste never goes out at
 		// all; `deepTooLong` explains what it used to cost. **Deliberately not a
 		// truncation to the limit**: the cut would land mid-word, and a deep query's
 		// last token is prefix-extended in the `MATCH`, so half a word would become a
 		// spurious `hal*` term and quietly change which files came back. Refusing to
 		// ask is honest; asking a different question is not.
-		if (key.length > MAX_DEEP_QUERY_LENGTH) return;
+		if (query.length > MAX_DEEP_QUERY_LENGTH) return;
 
 		// A cache hit is not a network event at all: shown synchronously, so
-		// backspacing through a query already run never shows a spinner.
+		// backspacing through a query already run — or switching back to an olympiad
+		// already asked about — never shows a spinner.
 		if (deep.has(key)) {
 			deep.show(key);
 			return;
@@ -364,13 +471,16 @@
 		// See `DeepSearch.schedule`.
 		deep.schedule(key);
 		const controller = new AbortController();
-		const timer = setTimeout(() => void deep.run(key, controller.signal), DEEP_DEBOUNCE_MS);
+		const timer = setTimeout(
+			() => void deep.run(key, query, olympiad, controller.signal),
+			DEEP_DEBOUNCE_MS
+		);
 		return () => {
 			clearTimeout(timer);
 			controller.abort();
 			// Guarded inside `unschedule`, because this teardown runs immediately
 			// before the re-run that schedules the *next* key — and on an abort, after
-			// it. Clearing unconditionally would blank the newer query's pending state.
+			// it. Clearing unconditionally would blank the newer key's pending state.
 			deep.unschedule(key);
 		};
 	});
@@ -391,9 +501,9 @@
 	 * `DeepSearch.schedule`, which is what stopped the panel announcing "No files
 	 * contain that phrase." during the 250 ms before it had asked anything.
 	 */
-	const deepFailed = $derived(inFiles && deep.hasFailed(deepQuery));
-	const deepLoading = $derived(inFiles && deep.isLoading(deepQuery));
-	const deepStale = $derived(inFiles && deep.isStale(deepQuery));
+	const deepFailed = $derived(inFiles && deep.hasFailed(deepKey));
+	const deepLoading = $derived(inFiles && deep.isLoading(deepKey));
+	const deepStale = $derived(inFiles && deep.isStale(deepKey));
 
 	/**
 	 * The file rows actually on screen — **not** simply `deep.results`.
@@ -446,7 +556,7 @@
 	$effect(() => {
 		// `activeTopics.join()` rather than the array by reference, so this does not
 		// depend on `TopicSelect` happening to reassign rather than mutate.
-		const _deps = [query, mode, status, activeTopics.join()]; // tracked dependencies
+		const _deps = [query, mode, status, olympiadFilter, activeTopics.join()]; // tracked dependencies
 		focusedIndex = 0;
 	});
 
@@ -477,6 +587,7 @@
 		mode = 'problems';
 		activeTopics = [];
 		status = 'all';
+		olympiadFilter = null;
 		focusedIndex = 0;
 		deep.reset();
 	});
@@ -485,9 +596,16 @@
 	// Helpers
 	// ---------------------------------------------------------------------------
 
+	/**
+	 * Clears **every** filter, including the olympiad one — which problem mode's
+	 * summary bar can now offer, because it is the mode where that filter is not
+	 * applying to anything. A "Clear filters" that left one set would be the exact
+	 * trap the bar exists to prevent.
+	 */
 	function clearFilters() {
 		activeTopics = [];
 		status = 'all';
+		olympiadFilter = null;
 	}
 
 	function navigateTo(item: SearchItem) {
@@ -662,12 +780,26 @@
 						class="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
 					/>
 					<div class="flex shrink-0 items-center gap-1">
-						<!-- The filters vanish in files mode rather than greying out. A
+						<!-- The problem filters vanish in files mode rather than greying out. A
 						     disabled `TopicSelect` keeps the `default` fill it had in problem
 						     mode, so it would go on *claiming* a filter is active while it
-						     isn't — worse than absent. Nothing is discarded; switching back
-						     restores both. -->
-						{#if !inFiles}
+						     isn't — worse than absent. The olympiad filter is the mirror image,
+						     present only in files mode, since it is the only one of the three a
+						     file can carry. Nothing is discarded either way; switching back
+						     restores all three.
+
+						     Files mode therefore shows **three** controls, not the five the
+						     width comment above warns about: the two problem filters leave as
+						     this one arrives, so the busiest row is still problem mode's four. -->
+						{#if inFiles}
+							<!-- Absent until `/api/olympiads` lands, rather than an empty panel:
+							     the fetch starts on entry into this mode, so the gap is one round
+							     trip, and a filter offering nothing to filter by is worse than a
+							     control that appears a moment later. -->
+							{#if olympiads.length > 0}
+								<OlympiadFilter bind:value={olympiadFilter} {olympiads} {currentOlympiad} />
+							{/if}
+						{:else}
 							{#if indexHasTopics}
 								<TopicSelect
 									bind:value={activeTopics}
@@ -684,6 +816,7 @@
 								<StatusFilter bind:value={status} size="icon-sm" />
 							{/if}
 						{/if}
+
 						<SearchModeToggle bind:mode />
 						<Dialog.Close
 							class={cn(
@@ -750,9 +883,18 @@
 							<p
 								class="flex flex-1 items-center justify-center px-5 text-center text-sm text-muted-foreground"
 							>
-								{deep.indexEmpty
-									? 'No files have been indexed yet — this is still catching up.'
-									: 'No files contain that phrase.'}
+								<!-- `indexEmpty` is a claim about the whole pipeline and stays
+								     global under a filter — see `searchFiles`. Naming the olympiad
+								     in the other branch is this side's half of that bargain: the
+								     server does not narrow the field, so the client, which knows its
+								     own filter, words the sentence. -->
+								{#if deep.indexEmpty}
+									No files have been indexed yet — this is still catching up.
+								{:else if filteredOlympiadName !== null}
+									No {filteredOlympiadName} files contain that phrase.
+								{:else}
+									No files contain that phrase.
+								{/if}
 							</p>
 						{:else}
 							{#if filtering}
@@ -813,18 +955,30 @@
 							<p class="text-center text-sm text-muted-foreground">No results found.</p>
 							<!-- A filled funnel is easy to miss, and "No results found" with a
 							     forgotten topic filter is the classic trap. -->
-							{#if filtering}
+							{#if filtering || olympiadFilter !== null}
 								<Button variant="outline" size="sm" onclick={clearFilters}>Clear filters</Button>
 							{/if}
 						</div>
 					{:else}
-						{#if filtering}
+						{#if filtering || olympiadFilter !== null}
+							<!-- The converse of files mode's note below, so **neither** switch is
+							     ever silent about what stopped applying. The bar used to render on
+							     `filtering` alone; an olympiad filter set in files mode is
+							     invisible here otherwise, and "search is broken" is what a
+							     forgotten invisible filter comes back as. -->
 							<div
 								class="flex items-center justify-between gap-2 border-b glass-hairline px-4 py-2 text-xs text-muted-foreground"
 							>
 								<span>
-									{filteredIndex.length}
-									{filteredIndex.length === 1 ? 'problem matches' : 'problems match'} your filters
+									{#if filtering}
+										{filteredIndex.length}
+										{filteredIndex.length === 1 ? 'problem matches' : 'problems match'} your filters
+									{/if}
+									{#if olympiadFilter !== null}
+										<span class="block">
+											The {filteredOlympiadName ?? 'olympiad'} filter applies to file search only.
+										</span>
+									{/if}
 								</span>
 								<Button variant="ghost" size="sm" class="h-6 px-2" onclick={clearFilters}>
 									Clear filters

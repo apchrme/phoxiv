@@ -16,8 +16,8 @@ olympiad, year, number and title, and runs entirely in the browser. The second
 mode — **deep search** — matches the _text inside_ every uploaded document, so a
 visitor who remembers "a rod pivoting on a frictionless bearing" but not which
 olympiad it was in has a route to it. Results there are **files, not problems**,
-deliberately: one year's PDF often holds every problem of that year. Both modes
-share a topic filter and a completion filter that span the whole archive.
+deliberately: one year's PDF often holds every problem of that year. The first
+mode has a topic filter and a completion filter that span the whole archive.
 
 **Track what you have solved.** A signed-in visitor can mark any problem done,
 optionally with a score, and see per-year totals against each problem's maximum.
