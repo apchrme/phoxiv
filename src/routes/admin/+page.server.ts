@@ -60,7 +60,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 				assignedOlympiads: user.assignedOlympiads
 			})
 			.from(user)
-			.orderBy(user.createdAt)
+			// **No `ORDER BY`, deliberately.** `user` has no index on `created_at`
+			// — only `user_email_unique` — so ordering here made D1 sort, reading
+			// 224 rows where the bare scan reads 112. The table sorts oldest-first
+			// on the client instead, which is free: `getSortedRowModel` already
+			// runs over the whole array for the sortable headers. Same visible
+			// order, half the rows. See `UsersTable.svelte`'s initial `sorting`.
 			.all(),
 		listOlympiadOptions(db),
 		// The same function the endpoint calls, so page 1 over-fetches by one too.

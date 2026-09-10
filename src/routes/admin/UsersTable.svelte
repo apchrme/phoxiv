@@ -6,6 +6,7 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { FlexRender, createSvelteTable } from '$lib/components/ui/data-table/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { ChevronUp, ChevronDown, ChevronsUpDown } from '@lucide/svelte';
 	import UserAvatar from '$lib/components/UserAvatar.svelte';
 	import UserRowActions from './UserRowActions.svelte';
@@ -17,8 +18,10 @@
 		getCoreRowModel,
 		getSortedRowModel,
 		getFilteredRowModel,
+		getPaginationRowModel,
 		type SortingState,
-		type ColumnFiltersState
+		type ColumnFiltersState,
+		type PaginationState
 	} from '@tanstack/table-core';
 
 	/**
@@ -41,7 +44,32 @@
 
 	let globalFilter = $state('');
 	let roleFilter = $state('all');
-	let sorting = $state<SortingState>([]);
+	/**
+	 * Oldest-first by join date, matching what the page showed when the load
+	 * carried an `ORDER BY user.createdAt`.
+	 *
+	 * That `ORDER BY` had no supporting index — `user` carries only
+	 * `user_email_unique` — so D1 paid a sort: 224 rows read where the bare scan
+	 * reads 112. Sorting here instead is free, because `getSortedRowModel` was
+	 * already running over the whole array for the sortable headers.
+	 */
+	let sorting = $state<SortingState>([{ id: 'joined', desc: false }]);
+	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 25 });
+
+	/**
+	 * Back to page 1, called from every control that changes *which* rows exist.
+	 *
+	 * TanStack would do this itself — `autoResetPageIndex` defaults on — but it
+	 * keys off the row model recomputing, which also happens when the `users`
+	 * prop merely changes identity. `setRole` and `banUser` run the default
+	 * `invalidateAll`, so the load re-runs and hands down a fresh array: with the
+	 * automatic reset on, changing a role on page 3 threw the admin back to page
+	 * 1 mid-task. It is off, and the three controls that genuinely need it call
+	 * this instead.
+	 */
+	function toFirstPage() {
+		pagination = { ...pagination, pageIndex: 0 };
+	}
 	const columnFilters = $derived<ColumnFiltersState>(
 		roleFilter !== 'all' ? [{ id: 'role', value: roleFilter }] : []
 	);
@@ -77,17 +105,34 @@
 			},
 			get columnFilters() {
 				return columnFilters;
+			},
+			get pagination() {
+				return pagination;
 			}
 		},
 		onSortingChange: (updater) => {
 			sorting = typeof updater === 'function' ? updater(sorting) : updater;
+			toFirstPage();
 		},
 		onGlobalFilterChange: (updater) => {
 			globalFilter = typeof updater === 'function' ? updater(globalFilter) : updater;
+			toFirstPage();
+		},
+		onPaginationChange: (updater) => {
+			pagination = typeof updater === 'function' ? updater(pagination) : updater;
 		},
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
+		// **Purely a rendering change — it saves no D1 rows.** Filtering and
+		// sorting already run over the whole `users` array client-side and the
+		// toolbar counter reads `users.length`, so this only bounds how many rows
+		// reach the DOM. Server-paging would cost more than it saved: the search
+		// box and role filter would have to move server-side, buying a debounced
+		// D1 query per keystroke in exchange for ~100 rows.
+		getPaginationRowModel: getPaginationRowModel(),
+		// See `toFirstPage` — the automatic reset fires on a load re-run too.
+		autoResetPageIndex: false,
 		globalFilterFn
 	});
 </script>
@@ -97,10 +142,20 @@
 	<Input
 		placeholder="Search users…"
 		value={globalFilter}
-		oninput={(e) => (globalFilter = (e.currentTarget as HTMLInputElement).value)}
+		oninput={(e) => {
+			globalFilter = (e.currentTarget as HTMLInputElement).value;
+			toFirstPage();
+		}}
 		class="max-w-xs"
 	/>
-	<Select.Root type="single" bind:value={roleFilter}>
+	<Select.Root
+		type="single"
+		value={roleFilter}
+		onValueChange={(v) => {
+			roleFilter = v;
+			toFirstPage();
+		}}
+	>
 		<Select.Trigger class="w-36">{ROLE_FILTERS[roleFilter]}</Select.Trigger>
 		<Select.Content>
 			<Select.Item value="all">All users</Select.Item>
@@ -219,5 +274,42 @@
 				</Table.Row>
 			{/if}
 		</Table.Body>
+
+		<!--
+			Prev/next and a page counter, built from the vendored Button. There is
+			deliberately no shadcn-svelte `pagination` component: `components.json`
+			points at a live registry, so a CLI run over `src/lib/components/ui/`
+			would pull today's upstream over ~40 commits of local customisation
+			(CLAUDE.md rule 2). This needs two buttons.
+		-->
+		{#if table.getPageCount() > 1}
+			<Table.Footer>
+				<Table.Row class="hover:bg-transparent">
+					<Table.Cell colspan={5}>
+						<div class="flex items-center justify-end gap-3">
+							<span class="text-xs font-normal text-muted-foreground">
+								Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+							</span>
+							<Button
+								variant="outline"
+								size="sm"
+								onclick={() => table.previousPage()}
+								disabled={!table.getCanPreviousPage()}
+							>
+								Previous
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								onclick={() => table.nextPage()}
+								disabled={!table.getCanNextPage()}
+							>
+								Next
+							</Button>
+						</div>
+					</Table.Cell>
+				</Table.Row>
+			</Table.Footer>
+		{/if}
 	</Table.Root>
 </div>
