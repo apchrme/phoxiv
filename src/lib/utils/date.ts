@@ -3,7 +3,8 @@
  *
  * The formatters are built once at module scope rather than per call:
  * `toLocaleDateString` constructs a fresh `Intl.DateTimeFormat` on every
- * invocation, and the admin activity log renders up to 100 timestamps per pass.
+ * invocation, and the admin activity log renders a timestamp per row over a
+ * list the operator can extend without bound by pressing "Load more".
  */
 
 type DateInput = Date | string | number | null | undefined;

@@ -1,7 +1,8 @@
 import type { Actions, PageServerLoad } from './$types';
-import { desc, eq } from 'drizzle-orm';
-import { activityLog, user } from '$lib/server/db';
+import { eq } from 'drizzle-orm';
+import { user } from '$lib/server/db';
 import { isProtectedSuperadmin, requireAdmin } from '$lib/server/guard';
+import { listActivity } from '$lib/server/activity-log';
 import { listOlympiadOptions } from '$lib/server/db/queries/olympiads';
 import { actionFail, field, fieldList, fieldOrNull, ok } from '$lib/server/forms';
 import { ASSIGNABLE_ROLES } from '$lib/activity';
@@ -11,8 +12,15 @@ import {
 	pruneFileText
 } from '$lib/server/db/queries/files';
 
-/** How many activity-log entries the panel shows. */
-const LOG_LIMIT = 100;
+/**
+ * How many activity-log entries one page of the panel shows.
+ *
+ * The load fetches the first page and `admin/activity/+server.ts` serves the
+ * rest behind "Load more". It was 100 unpaginated, which both cost four times
+ * as much on every open and made everything older than the newest 100 entries
+ * unreachable.
+ */
+const LOG_PAGE_SIZE = 25;
 
 /**
  * What `setRole` accepts: the roles the dropdown offers, plus `''`.
@@ -55,10 +63,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.orderBy(user.createdAt)
 			.all(),
 		listOlympiadOptions(db),
-		db.select().from(activityLog).orderBy(desc(activityLog.createdAt)).limit(LOG_LIMIT).all()
+		// The same function the endpoint calls, so page 1 over-fetches by one too.
+		// If only the endpoint did, `hasMore` would be unknown here and the button
+		// would show even when the log holds exactly `LOG_PAGE_SIZE` rows.
+		listActivity(db, { limit: LOG_PAGE_SIZE })
 	]);
 
-	return { users, olympiads, log };
+	return { users, olympiads, log: log.entries, hasMore: log.hasMore };
 };
 
 export const actions: Actions = {

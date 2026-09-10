@@ -191,16 +191,16 @@ export type FileSearchResponse = {
 // ── Admin panel shapes ──────────────────────────────────────────────────────
 
 /**
- * The body of `GET /admin/index-stats`.
+ * The bodies of `GET /admin/index-stats` and `GET /admin/activity`.
  *
  * **These two are the exception to everything above.** The shapes before them
  * are public and sit in Cloudflare's shared cache for up to a day, which is why
  * `FileSearchResponse`'s comment treats its own fields as frozen and why
  * CLAUDE.md rule 9 asks for a warning before changing one. These are admin-only
  * and uncached — `/admin/*` sets no cache headers at all — so they may change
- * freely, with nothing to purge. It lives here, rather than in
- * `$lib/server/`, only because the panel that renders it is a client
- * component and cannot import from there.
+ * freely, with nothing to purge. They live here, rather than in
+ * `$lib/server/`, only because the panels that render them are client
+ * components and cannot import from there.
  */
 
 /** One row of the admin panel's status breakdown. */
@@ -212,4 +212,24 @@ export type FileTextStats = {
 	failures: { url: string; status: string; error: string | null; attempts: number }[];
 	/** Distinct files in the archive, across both file tables. */
 	indexed: number;
+};
+
+/**
+ * One row of the activity log, as both the load and the endpoint hand it over.
+ *
+ * `createdAt` is a union because the two paths differ and neither is worth
+ * bending: the load's rows travel through devalue and arrive as a real `Date`,
+ * while the endpoint's go through `JSON.stringify` and arrive as an ISO string.
+ * `formatDateTime` already accepts both, so the union costs nothing at the
+ * render site — and annotating both sides with it is what lets the table
+ * concatenate the two sources into one array.
+ */
+export type ActivityEntry = {
+	id: number;
+	userName: string;
+	action: string;
+	detail: string;
+	olympiadId: string | null;
+	year: number | null;
+	createdAt: Date | string;
 };

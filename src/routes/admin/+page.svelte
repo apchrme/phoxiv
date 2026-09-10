@@ -55,7 +55,7 @@
 
 <SvelteSeo title="Admin — phoXiv" description="phoXiv admin panel" />
 
-<Title title="Admin" description="Manage user roles and access, and view 100 most recent logs." />
+<Title title="Admin" description="Manage user roles and access, and review the activity log." />
 
 <Tabs.Root
 	value={tab}
@@ -81,7 +81,7 @@
 	</Tabs.Content>
 
 	<Tabs.Content value="log">
-		<ActivityLogTable log={data.log} />
+		<ActivityLogTable log={data.log} hasMore={data.hasMore} />
 	</Tabs.Content>
 
 	<Tabs.Content value="index">
