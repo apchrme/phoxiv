@@ -100,6 +100,10 @@ Four things sit outside `(reg)` on purpose:
 - **`/admin`** — must never be cached at all, so it sets no header. SvelteKit
   emits no `cache-control` of its own for a server-rendered page and Cloudflare
   does not cache HTML by default, so "no header" really does mean "not cached".
+  Its three endpoints — `reindex/`, `index-stats/` and `activity/` — set no
+  headers either, and none of them lives under `/api/` for exactly that reason:
+  every handler there calls `setSharedCache()`, and one admin's index report or
+  audit trail must never reach Cloudflare's shared cache.
 - **`/contribute`** — same reasoning: it renders unsaved editor state.
 - **`/progress`** — the ⌘K dialog's cross-olympiad progress endpoint. It sets
   `private, no-store` itself, and it is outside the group because a `+server.ts`
@@ -135,6 +139,10 @@ src/routes/
 │   ├── columns.ts              TanStack column model
 │   ├── reindex/                the backfill's two halves; calls requireAdmin ITSELF,
 │   │                           because a +server.ts runs no layout loads
+│   ├── index-stats/            the Index tab's counts, fetched on its first open
+│   │                           rather than by the page load; calls requireAdmin ITSELF
+│   ├── activity/               pages of the log past the first, keyset on id;
+│   │                           calls requireAdmin ITSELF
 │   └── UsersTable.svelte, UserRowActions.svelte, ActivityLogTable.svelte,
 │       IndexPanel.svelte
 │
@@ -249,22 +257,22 @@ Done / To do` dropdown — is a client-side filter over the map the page
 Server-only code. SvelteKit refuses to bundle anything under `$lib/server/` into
 the client, so this boundary is enforced by the build, not by convention.
 
-| Module            | Responsibility                                                                                           |
-| ----------------- | -------------------------------------------------------------------------------------------------------- |
-| `auth.ts`         | the BetterAuth configuration, as a function of `(database, env)`                                         |
-| `auth-cli.ts`     | a module-level instance for the schema generator only — never imported by app code                       |
-| `guard.ts`        | `requireAdmin` / `requireContributor` / `requireOlympiadEditor`, each returning `{ db, user }`           |
-| `cache.ts`        | the two cache policies described above                                                                   |
-| `forms.ts`        | form-field parsing and the action-result envelope                                                        |
-| `uploads.ts`      | server-side enforcement of the upload rules declared in `$lib/uploads.ts`                                |
-| `storage.ts`      | every R2 read and write, and the object-key layout                                                       |
-| `markdown.ts`     | the _only_ place Markdown is rendered and sanitised                                                      |
-| `activity-log.ts` | `logActivity`, writing the admin panel's audit trail                                                     |
-| `reindex-cli.ts`  | the backfill driver, run by `bun run index:backfill` — never imported by app code                        |
-| `db/index.ts`     | re-exports the schema and aliases the `DB` handle type                                                   |
-| `db/schema.ts`    | the Drizzle schema — the source drizzle-kit generates migrations from                                    |
-| `db/relations.ts` | Drizzle's relational definitions, kept separate from the table declarations                              |
-| `db/queries/`     | `olympiads.ts`, `years.ts`, `content.ts`, `progress.ts`, `files.ts`: every query, one module per concern |
+| Module            | Responsibility                                                                                                                                                                                               |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `auth.ts`         | the BetterAuth configuration, as a function of `(database, env)`                                                                                                                                             |
+| `auth-cli.ts`     | a module-level instance for the schema generator only — never imported by app code                                                                                                                           |
+| `guard.ts`        | `requireAdmin` / `requireContributor` / `requireOlympiadEditor`, each returning `{ db, user }`                                                                                                               |
+| `cache.ts`        | the two cache policies described above                                                                                                                                                                       |
+| `forms.ts`        | form-field parsing and the action-result envelope                                                                                                                                                            |
+| `uploads.ts`      | server-side enforcement of the upload rules declared in `$lib/uploads.ts`                                                                                                                                    |
+| `storage.ts`      | every R2 read and write, and the object-key layout                                                                                                                                                           |
+| `markdown.ts`     | the _only_ place Markdown is rendered and sanitised                                                                                                                                                          |
+| `activity-log.ts` | the audit trail, both sides — `logActivity` writes it, `listActivity` reads it by keyset. The one query module outside `db/queries/`, because the action enum and the never-fail-a-write policy live with it |
+| `reindex-cli.ts`  | the backfill driver, run by `bun run index:backfill` — never imported by app code                                                                                                                            |
+| `db/index.ts`     | re-exports the schema and aliases the `DB` handle type                                                                                                                                                       |
+| `db/schema.ts`    | the Drizzle schema — the source drizzle-kit generates migrations from                                                                                                                                        |
+| `db/relations.ts` | Drizzle's relational definitions, kept separate from the table declarations                                                                                                                                  |
+| `db/queries/`     | `olympiads.ts`, `years.ts`, `content.ts`, `progress.ts`, `files.ts`: every query, one module per concern                                                                                                     |
 
 What each query module is for, since the names only half say it:
 
@@ -337,6 +345,14 @@ contract, and the two files change together:
   as a plain prop; per-component instances leave every button permanently enabled.
 
 Actions that end in `redirect()` never return, and so never appear in the union.
+
+**Two parts of `/admin` need JavaScript, and that costs nothing new.** The Index
+tab fetches its counts on first open and the log's "Load more" fetches its next
+page, so neither renders without JS — but `/admin` already needs JS to _switch
+tabs_ at all (bits-ui drives them), so the Index tab was unreachable without it
+long before either fetch existed. The panel's three maintenance forms remain
+native POSTs to named actions, enhanced rather than replaced, so the writes are
+progressively enhanced even where the reporting around them is not.
 
 ## Work the Worker deliberately does not do
 

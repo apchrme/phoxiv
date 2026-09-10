@@ -41,8 +41,9 @@ src/routes/
 │                  …except olympiads/[olympiad]/progress/, an endpoint that sets
 │                  its own `private, no-store` — it serves per-user progress
 ├── admin/         deliberately outside (reg) — must never be cached
-│                  …including reindex/, which calls requireAdmin ITSELF: a
-│                  +server.ts runs no layout loads, so the layout guard misses it
+│                  …including reindex/, index-stats/ and activity/, which each
+│                  call requireAdmin THEMSELVES: a +server.ts runs no layout
+│                  loads, so the layout guard misses them
 ├── progress/      also outside (reg); one GlobalProgressMap for the ⌘K dialog,
 │                  `private, no-store` — the status filter spans the archive
 ├── contribute/    also outside (reg); [olympiad]/ and [olympiad]/[year]/ editors

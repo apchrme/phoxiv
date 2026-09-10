@@ -1289,6 +1289,22 @@ One `index_files` activity-log row is written **per posted batch**, never per fi
 `upload_file` already covers the single-file event, and per-file rows would flood
 the log.
 
+**The tab fetches its own counts, on first open, from `admin/index-stats`.** They
+are not part of the page load, and this is deliberate: the status `GROUP BY` and
+the `year_files ∪ problem_files` count are ~4,500 D1 rows between them, 93 % of
+what opening `/admin` used to cost, and the panel opens on Users — most visits
+never looked at them. `+page.svelte` latches a flag in the tab's
+`onValueChange` and only mounts `IndexPanel` once that is set, because bits-ui
+renders every `Tabs.Content`'s children eagerly and merely hides the inactive
+ones; without the latch the panel would mount on page load and fetch immediately,
+saving nothing.
+
+That ~4,500 is then **the price of a truthful count**, not a defect to fix. Both
+url columns are indexed, so the union is already an index-only scan; the only way
+below it is a counters table kept in step with every write. If the tab feels slow,
+it is slow once per visit by design — do not "fix" it by moving the query back
+into the load, which would pay it on every open of the panel instead.
+
 ## Limits, and what is deliberately absent
 
 Worth knowing before proposing a change, because each of these is a decision rather

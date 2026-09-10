@@ -111,7 +111,12 @@ each:
 
 - **`/admin`** — change a role, assign olympiads to a contributor, ban and unban,
   check the log renders. Confirm the **busy state actually appears**; it is the
-  thing most likely to break without a visible symptom.
+  thing most likely to break without a visible symptom. Open the **Index** tab:
+  the counts load on first open — with the network tab open, confirm nothing is
+  requested before that click — and reload after each maintenance action and on
+  **Refresh**. Press **Load more** on the log and check the seam for duplicates.
+  Page through the users table and confirm changing a role does not throw you
+  back to page 1.
 - **`/contribute/<olympiad>`** — add a year, upload an icon, remove it, save
   metadata and confirm the uploaded icon survived, export and re-import the CSV.
 - **`/contribute/<olympiad>/<year>`** — save metadata with a duplicate problem

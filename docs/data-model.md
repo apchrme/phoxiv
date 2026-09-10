@@ -367,6 +367,22 @@ The admin panel's audit trail, written by `logActivity()`.
 `user_name` is denormalised on purpose: the log has to keep reading sensibly
 after an account is renamed or deleted.
 
+**Read by keyset on `id`, and the table carries no index at all.** `listActivity`
+pages with `WHERE id < ? ORDER BY id DESC LIMIT n + 1`; `id` is an AUTOINCREMENT
+rowid alias, so that is a backwards rowid scan reading exactly the page and no
+index rows. There was an `activity_log_created_at_idx`, from when the panel read
+the newest 100 rows with `ORDER BY created_at DESC`; it was dropped once nothing
+ordered or filtered on `created_at`, because it cost a second `rows_written` on
+every logged action — one per posted backfill batch included — and bought nothing.
+Add it back only alongside a reader that needs it, a date filter over the log
+being the obvious candidate.
+
+Rows are ordered by `id` but displayed by `created_at`, so two written in the
+same millisecond may render in an order their identical timestamps do not
+explain. Harmless, and not worth reintroducing an index read to fix. OFFSET is
+also not an option: it reads and discards every skipped row, so a deep page would
+cost as much as the unpaginated query the pagination replaced.
+
 ## JSON-encoded TEXT columns
 
 SQLite has no array type, so four columns store JSON strings:

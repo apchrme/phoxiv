@@ -218,6 +218,8 @@ session user.
 | `admin/+layout.server.ts`                              | `requireAdmin`                                                                                      |
 | `admin` — all **seven** actions                        | `requireAdmin`, again, in every one                                                                 |
 | `admin/reindex/+server.ts` — `GET` and `POST`          | **`requireAdmin`, called by the endpoint itself** — see below                                       |
+| `admin/index-stats/+server.ts` — `GET`                 | **`requireAdmin`, called by the endpoint itself** — see below                                       |
+| `admin/activity/+server.ts` — `GET`                    | **`requireAdmin`, called by the endpoint itself** — see below                                       |
 | `contribute/+layout.server.ts`                         | `requireContributor`, **then `requireOlympiadEditor`** when the path names an olympiad              |
 | `contribute` — `selectYear`                            | `canEditOlympiad` on the _submitted_ olympiad id                                                    |
 | `contribute` — `createOlympiad`                        | `requireAdmin` — contributors work within olympiads they were assigned, they do not create new ones |
@@ -233,10 +235,13 @@ session user.
 | everything else                                        | public                                                                                              |
 
 **A `+server.ts` runs no layout loads**, so `admin/+layout.server.ts` does not
-cover `admin/reindex`. It calls `requireAdmin` itself, and so does
-`contribute/[olympiad]/titles.csv` — the two endpoints that sit under a guarded
-layout and are not protected by it. Any new endpoint added under `admin/` or
-`contribute/` must do the same; the layout is not a perimeter.
+cover `admin/reindex`, `admin/index-stats` or `admin/activity`. Each calls
+`requireAdmin` itself, and so does `contribute/[olympiad]/titles.csv` — the four
+endpoints that sit under a guarded layout and are not protected by it. Any new
+endpoint added under `admin/` or `contribute/` must do the same; the layout is
+not a perimeter. The two newest exist because the admin panel now fetches its
+own data rather than receiving all of it from the page load, which is precisely
+the pattern that makes this trap easy to fall into.
 
 **Tracking a problem is not an editing permission.** `?/trackProblem` guards with
 a bare `locals.user` check because **any** signed-in user may track **any**

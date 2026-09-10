@@ -301,7 +301,12 @@ reproduce text that is already correct. The retry window is the mechanism; the
 version bump is the sledgehammer beside it.
 
 The admin panel's **Index** tab is how to tell the run landed: `pending` falls to
-whatever genuinely cannot be read, and `ok` rises by the same amount.
+whatever genuinely cannot be read, and `ok` rises by the same amount. Press
+**Refresh** on the Maintenance card to see it move. The tab fetches its counts
+once, when it is first opened, and then holds them — they are ~4,500 D1 rows and
+the panel is long-lived, so re-reading them on a timer or on every tab switch
+would cost more than the sweep being watched. Without that press the numbers
+sit frozen at whatever they were when the tab was opened.
 
 Results travel over HTTP rather than `wrangler d1 execute`, and that is not a
 style choice: D1 caps a _statement_ at 100 KB, which a 40 kB–500 kB text blows
