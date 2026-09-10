@@ -247,8 +247,17 @@ export const activityLog = sqliteTable(
 		createdAt: integer('created_at', { mode: 'timestamp_ms' })
 			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 			.notNull()
-	},
-	(t) => [index('activity_log_created_at_idx').on(t.createdAt)]
+	}
+	// **No index on `created_at`, deliberately.** There was one, back when the
+	// admin panel read the newest 100 rows with `ORDER BY created_at DESC`. The
+	// panel now pages by keyset on `id` — an AUTOINCREMENT rowid alias, so a
+	// backwards rowid scan reads the page and no index rows at all, which is
+	// strictly cheaper than the index it replaced. Nothing else in the codebase
+	// orders or filters on `created_at`; it is only ever selected. Left in place
+	// the index would cost a second `rows_written` on every logged action,
+	// including one per posted batch of `bun run index:backfill`, and buy
+	// nothing. Add it back only alongside a reader that actually needs it — a
+	// date filter over the log would be the obvious one.
 );
 
 /**

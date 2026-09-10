@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS `activity_log_created_at_idx`;
