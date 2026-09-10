@@ -1,6 +1,12 @@
 import { asc, eq, inArray, sql } from 'drizzle-orm';
 import { fileText, olympiads, problemFiles, problems, yearFiles, years, type DB } from '../index';
-import type { FileSearchProblem, FileSearchResponse, FileSearchResult } from '$lib/types';
+import type {
+	FileSearchProblem,
+	FileSearchResponse,
+	FileSearchResult,
+	FileTextStat,
+	FileTextStats
+} from '$lib/types';
 import {
 	capExtracted,
 	DEEP_SEARCH_LIMIT,
@@ -898,15 +904,18 @@ export async function pruneFileText(db: DB): Promise<number> {
 
 // ── Backfill and reporting ──────────────────────────────────────────────────
 
-/** One row of the admin panel's status breakdown. */
-export type FileTextStat = { status: string; count: number };
-
-/** Counts by status, plus the failures worth showing. */
-export async function getFileTextStats(db: DB): Promise<{
-	counts: FileTextStat[];
-	failures: { url: string; status: string; error: string | null; attempts: number }[];
-	indexed: number;
-}> {
+/**
+ * Counts by status, plus the failures worth showing.
+ *
+ * The shape lives in `$lib/types.ts` as `FileTextStats`, because the admin
+ * panel now fetches this over the wire rather than receiving it from the load,
+ * and a client component cannot import a type from `$lib/server/`.
+ *
+ * **This is the expensive read on the admin page** — the status `GROUP BY` and
+ * the `year_files ∪ problem_files` count are ~4,500 D1 rows between them, which
+ * is why `/admin` no longer runs it on open. See `admin/index-stats/+server.ts`.
+ */
+export async function getFileTextStats(db: DB): Promise<FileTextStats> {
 	const [counts, failures, indexed] = await Promise.all([
 		db.all<FileTextStat>(sql`
 			SELECT ${fileText.status} AS status, count(*) AS count

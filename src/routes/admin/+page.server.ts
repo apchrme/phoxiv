@@ -7,7 +7,6 @@ import { actionFail, field, fieldList, fieldOrNull, ok } from '$lib/server/forms
 import { ASSIGNABLE_ROLES } from '$lib/activity';
 import {
 	ensureFileTextIndex,
-	getFileTextStats,
 	optimizeFileTextIndex,
 	pruneFileText
 } from '$lib/server/db/queries/files';
@@ -27,9 +26,19 @@ const ACCEPTED_ROLES: readonly string[] = [...ASSIGNABLE_ROLES, ''];
 export const load: PageServerLoad = async ({ locals }) => {
 	const { db } = requireAdmin(locals);
 
-	// Four independent reads — one of them used to hide inside the return object,
+	// Three independent reads — one of them used to hide inside the return object,
 	// which is why this read like two sequential awaits rather than three.
-	const [users, olympiads, log, fileText] = await Promise.all([
+	//
+	// There were four. `getFileTextStats` left because it was ~4,500 of the
+	// ~4,870 D1 rows this load cost, and the panel it feeds opens on Users — most
+	// visits never looked at it. `admin/index-stats/+server.ts` serves it on the
+	// first open of the Index tab instead.
+	//
+	// **Streaming the promise from here looks like it solves that in one round
+	// trip, but it defers delivery, not cost**: an unawaited promise in the
+	// returned object still runs the query on every page open, which is the
+	// entire thing being avoided. Do not put it back that way.
+	const [users, olympiads, log] = await Promise.all([
 		db
 			.select({
 				id: user.id,
@@ -46,11 +55,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.orderBy(user.createdAt)
 			.all(),
 		listOlympiadOptions(db),
-		db.select().from(activityLog).orderBy(desc(activityLog.createdAt)).limit(LOG_LIMIT).all(),
-		getFileTextStats(db)
+		db.select().from(activityLog).orderBy(desc(activityLog.createdAt)).limit(LOG_LIMIT).all()
 	]);
 
-	return { users, olympiads, log, fileText };
+	return { users, olympiads, log };
 };
 
 export const actions: Actions = {

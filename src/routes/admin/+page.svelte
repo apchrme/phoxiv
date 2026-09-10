@@ -13,6 +13,26 @@
 	let tab = $state('users');
 
 	/**
+	 * Whether the Index tab has ever been opened.
+	 *
+	 * bits-ui renders every `Tabs.Content`'s children unconditionally and merely
+	 * hides the inactive panels via props, so all three mount on page load —
+	 * `IndexPanel` would fire its fetch immediately and save nothing. That fetch
+	 * costs ~4,500 D1 rows, which is the entire cost this deferral exists to
+	 * avoid, so the gate is load-bearing rather than tidy.
+	 *
+	 * Latched in the tab callback rather than derived from `tab` in an
+	 * `$effect`: the flag is written by the event that causes it. `onValueChange`
+	 * fires for keyboard activation too, so nothing is missed.
+	 *
+	 * It stays true once set, so **re-entering the tab does not refetch** —
+	 * re-paying those rows per visit would give most of the saving back, and the
+	 * numbers only move via the three maintenance actions, an upload elsewhere,
+	 * or a backfill. The panel's own Refresh button covers the last two.
+	 */
+	let indexSeen = $state(false);
+
+	/**
 	 * In-flight submissions for every row's forms, keyed by `<userId>_<operation>`.
 	 *
 	 * One instance for the whole page, passed down. `has()` reads the same map
@@ -37,7 +57,14 @@
 
 <Title title="Admin" description="Manage user roles and access, and view 100 most recent logs." />
 
-<Tabs.Root bind:value={tab} class="gap-4">
+<Tabs.Root
+	value={tab}
+	onValueChange={(v) => {
+		tab = v;
+		if (v === 'index') indexSeen = true;
+	}}
+	class="gap-4"
+>
 	<Tabs.List>
 		<Tabs.Trigger value="users">Users</Tabs.Trigger>
 		<Tabs.Trigger value="log">Log</Tabs.Trigger>
@@ -58,6 +85,8 @@
 	</Tabs.Content>
 
 	<Tabs.Content value="index">
-		<IndexPanel fileText={data.fileText} {pending} />
+		{#if indexSeen}
+			<IndexPanel {pending} />
+		{/if}
 	</Tabs.Content>
 </Tabs.Root>

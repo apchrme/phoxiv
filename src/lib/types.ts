@@ -187,3 +187,29 @@ export type FileSearchResponse = {
 	/** The text index holds no rows at all. Only ever true when `results` is empty. */
 	indexEmpty: boolean;
 };
+
+// ── Admin panel shapes ──────────────────────────────────────────────────────
+
+/**
+ * The body of `GET /admin/index-stats`.
+ *
+ * **These two are the exception to everything above.** The shapes before them
+ * are public and sit in Cloudflare's shared cache for up to a day, which is why
+ * `FileSearchResponse`'s comment treats its own fields as frozen and why
+ * CLAUDE.md rule 9 asks for a warning before changing one. These are admin-only
+ * and uncached — `/admin/*` sets no cache headers at all — so they may change
+ * freely, with nothing to purge. It lives here, rather than in
+ * `$lib/server/`, only because the panel that renders it is a client
+ * component and cannot import from there.
+ */
+
+/** One row of the admin panel's status breakdown. */
+export type FileTextStat = { status: string; count: number };
+
+/** Counts by status, plus the failures worth showing. */
+export type FileTextStats = {
+	counts: FileTextStat[];
+	failures: { url: string; status: string; error: string | null; attempts: number }[];
+	/** Distinct files in the archive, across both file tables. */
+	indexed: number;
+};
