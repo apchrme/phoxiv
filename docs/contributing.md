@@ -9,6 +9,11 @@
   disk under `.wrangler/`.
 - A **GitHub OAuth app** for signing in locally. It takes a minute to create and
   is the only way to get past the login page.
+- **Ghostscript** and **ImageMagick 7**, but only if you need to re-render the
+  landing page's thumbnails — see
+  [the landing page's corpus band](#the-landing-pages-corpus-band). Nothing else
+  in the project shells out to either, and the rendered PNGs are committed, so a
+  normal checkout never needs them.
 
 ## First run
 
@@ -88,6 +93,7 @@ link will 404 locally — expected, and not worth working around.
 | `bun run cf-typegen`        | after editing `wrangler.jsonc` — regenerates `src/worker-configuration.d.ts`                                                                                                     |
 | `bun run cf-typegen:check`  | verifies that file is up to date without writing it                                                                                                                              |
 | `bun run index:backfill`    | sweeps every already-uploaded file into the text index; see [search.md](./search.md#operating-the-index) and [deployment.md](./deployment.md#backfilling-the-text-index)         |
+| `bun run thumbs:render`     | re-renders the landing page's committed page thumbnails after editing `src/routes/corpus.ts`; needs Ghostscript and ImageMagick — see [below](#the-landing-pages-corpus-band)    |
 | `prepare`                   | `svelte-kit sync`, run by `bun install`. Never run by hand — it is what generates `./$types`, so a missing `.svelte-kit/` is why an editor suddenly cannot resolve them          |
 
 ## The gates
@@ -296,6 +302,57 @@ each:
   - Delete a file → it stops appearing, and **Prune orphans** reports the row.
     Delete and re-upload the same label → one row, with the new text.
   - **Rebuild index** → results unchanged. The index is disposable.
+
+## The landing page's corpus band
+
+The landing page ends its hero on a band of eighteen real first pages, cut by the
+fold. They are **rendered offline and committed**, not produced at request time:
+nothing in the Worker or in the browser ever rasterises a PDF.
+
+The list is [`src/routes/corpus.ts`](../src/routes/corpus.ts) — page-only data,
+so it sits beside `+page.svelte` rather than under `$lib`. It is the single source
+of truth for both halves: [`$lib/server/thumbs-cli.ts`](../src/lib/server/thumbs-cli.ts)
+reads it to know which PDFs to fetch and what to name each PNG, and
+`CorpusBand.svelte` reads the same array to lay the tiles out. To change what is
+on show, edit the list, then
+
+```sh
+bun run thumbs:render
+```
+
+and commit the PNGs it writes into `src/lib/assets/thumbs/`. The script needs
+**Ghostscript** and **ImageMagick 7** on `PATH`; Ghostscript's console binary is
+`gswin64c` on Windows and `gs` elsewhere, which the script resolves for you.
+It is idempotent — re-running it simply re-renders every entry — and it prints one
+line per file, so a source that has moved shows up as a failure rather than a
+stale tile.
+
+Ghostscript rasterises page 1 at 150 dpi; ImageMagick flattens it onto white and
+fits it to exactly **420×594**. The fixed shape is load-bearing: the band's two
+rows each sit on one baseline, so a landscape experiment sheet has to be cropped
+from the top rather than letterboxed into a tile of a different height. PNG with
+`-colors 64` rather than JPEG, because a rendered page is flat-toned text — it
+measured 48 KB against JPEG's 74 KB, without the ringing JPEG leaves around glyph
+edges. The committed files are only sources: `@sveltejs/enhanced-img` re-encodes
+them to AVIF/WebP with a `srcset` at build time.
+
+The two rows drift in opposite directions and wrap, so the band has no right-hand
+limit at any screen width. Each row's nine tiles are repeated into a track and
+GSAP walks the track exactly one set's pitch before snapping back, which makes the
+wrap invisible; the repeat count is derived from the measured set width and the
+viewport, so an ultrawide gets a third or fourth copy instead of a bare patch. The
+repeats are `aria-hidden` and out of the tab order — only the eighteen originals
+are real links. Hovering pauses the drift, because otherwise a tile someone is
+aiming at moves out from under them. Under `prefers-reduced-motion` none of this
+runs: the band falls back to one centred set per row, with row 2 offset half a
+pitch so the two rows still do not line up. That fallback is also the first frame
+before hydration, so the same eighteen tiles are in the DOM either way.
+
+Two things the band does **not** hardcode. Olympiad icons are joined in from
+`/api/olympiads` on mount — that response is answered from Cloudflare's shared
+cache rather than costing a D1 read, and it is what keeps an icon from going
+stale after a contributor changes it. And a tile carries its olympiad, year and
+file label as text, so a failed icon fetch costs nothing legible.
 
 ## Conventions
 
