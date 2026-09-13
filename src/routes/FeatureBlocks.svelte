@@ -35,7 +35,7 @@
 		{
 			n: '01',
 			title: 'Browse the archive',
-			body: `Every olympiad with the problems, solutions, marking schemes and
+			body: `Every olympiad with problems, solutions, marking schemes and
 			       extra links attached to each. Pages are cached, so they are lightning-fast.`,
 			href: resolve('/olympiads'),
 			cta: 'Browse olympiads'
@@ -50,17 +50,14 @@
 			body: `The default mode fuzzy-matches problems by olympiad, year, number and title, and
 			       runs entirely in your browser. Deep search matches the text inside the documents
 			       it could be extracted from, so you can search for problems that you remember a phrase
-				   from. Those results are files rather than problems, deliberately — one year's
-			       PDF often holds the whole paper.`,
+				   from.`,
 			shortcut: true
 		},
 		{
 			n: '03',
 			title: 'Track what you have solved',
-			body: `Mark any problem done, optionally with a score, and see per-year totals against
-			       each problem's maximum. Progress is private and filterable from
-			       the search dialog — "every relativity problem I haven't done" is a question the
-			       archive can answer.`,
+			body: `Mark any problem done, optionally with a score, and see per-year totals. Progress is private and filterable from
+			       the search dialog.`,
 			href: signedIn ? resolve('/profile') : resolve('/login'),
 			cta: signedIn ? 'See your progress' : 'Sign in to track'
 		},
@@ -68,8 +65,7 @@
 			n: '04',
 			title: 'Contribute',
 			body: `Contributors edit the olympiads they are assigned: adding years, uploading and
-			       labelling files, editing problem metadata, and importing or exporting titles,
-			       topics and maximum scores as CSV. An uploaded PDF is text-extracted in the
+			       labelling files, and editing problem metadata. An uploaded PDF is text-extracted in the
 			       browser the moment it is picked.`,
 			href: signedIn ? resolve('/contribute') : resolve('/login'),
 			cta: signedIn ? 'Open the editor' : 'Sign in to contribute'
