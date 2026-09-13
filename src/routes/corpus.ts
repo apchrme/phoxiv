@@ -63,20 +63,20 @@ export const CORPUS: CorpusEntry[] = [
 		url: 'https://cdn.phoxiv.org/olympiads/ipho/2016_min.pdf'
 	},
 	{
-		slug: 'apho-2024-e',
+		slug: 'apho-2017-e',
 		olympiad: 'apho',
 		label: 'APhO',
-		year: 2024,
+		year: 2017,
 		file: 'Experiment',
-		url: 'https://cdn.phoxiv.org/olympiads/apho/2024_E.pdf'
+		url: 'https://cdn.phoxiv.org/olympiads/apho/2017/E1.pdf'
 	},
 	{
-		slug: 'eupho-2021-t-s',
+		slug: 'eupho-2021-t',
 		olympiad: 'eupho',
 		label: 'EuPhO',
 		year: 2021,
-		file: 'Theory Solutions',
-		url: 'https://cdn.phoxiv.org/olympiads/eupho/2021_T_S.pdf'
+		file: 'Theory',
+		url: 'https://cdn.phoxiv.org/olympiads/eupho/2021_T.pdf'
 	},
 	{
 		slug: 'eotvos-1994-s',
@@ -103,12 +103,12 @@ export const CORPUS: CorpusEntry[] = [
 		url: 'https://cdn.phoxiv.org/olympiads/nbpho/2006.pdf'
 	},
 	{
-		slug: 'usapho-1997-s',
+		slug: 'usapho-1997',
 		olympiad: 'usapho',
 		label: 'USAPhO',
 		year: 1997,
-		file: 'Solutions',
-		url: 'https://cdn.phoxiv.org/olympiads/usapho/1997_S.pdf'
+		file: 'Problems',
+		url: 'https://cdn.phoxiv.org/olympiads/usapho/1997.pdf'
 	},
 	{
 		slug: 'bpho-r1-2020-1',
