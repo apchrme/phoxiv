@@ -164,7 +164,17 @@
 
 		// A resize can cross the `sm`/`lg` breakpoints, which changes the tile width
 		// and therefore both the loop distance and how many copies are needed.
+		//
+		// Width only, deliberately. `build()` ends in a fresh `fromTo`, which puts both
+		// tracks back at x = `from` — every rebuild is a visible reset of the drift. On
+		// a phone, scrolling the page collapses and expands the browser's URL bar, and
+		// each of those fires `resize` with `innerWidth` untouched, so the band jumped
+		// back to its start whenever someone scrolled past it. Nothing here is measured
+		// against the viewport's height, so ignoring a height-only resize costs nothing.
+		let lastWidth = window.innerWidth;
 		const onResize = () => {
+			if (window.innerWidth === lastWidth) return;
+			lastWidth = window.innerWidth;
 			clearTimeout(resizeTimer);
 			resizeTimer = setTimeout(() => void build(), 200);
 		};
