@@ -240,7 +240,8 @@ Done / To do` dropdown — is a client-side filter over the map the page
   `visibleProblems`. No new endpoint, no new field, and nothing new on the wire.
   It is rendered only for signed-in users, since "Done" could only ever be empty
   without a session. The component lives in `$lib/components/` beside
-  `TopicSelect.svelte` and is **shared with the ⌘K dialog**, which offers the same
+  `TopicSelect.svelte` and `OlympiadPicker.svelte`, and is **shared with the ⌘K
+  dialog**, which offers the same
   two filters over the whole archive: a `$lib` component cannot import from a
   route directory, and the predicates behind both — `$lib/filters.ts` — are shared
   for the same reason, so the two screens cannot disagree about what "Done" means.
@@ -317,6 +318,15 @@ bundle belongs to the page.
 the reference for the style: a `+page.svelte` that owns state and data fetching,
 presentational children beside it, and the fiddly pure logic in a plain `.ts`
 module.
+
+The converse pull is just as real. Three routes had each grown their own olympiad
+picker, their own labelled-field wrapper and their own spinner-swap submit button,
+because each was written where it was needed and nothing said they were the same
+thing. `$lib/components/` now holds the shared set — the picker, `Field`,
+`SubmitButton`, `ConfirmSubmit`, `Repeater`, `EmptyState`, `PageHeader` — and
+[contributing.md](./contributing.md#reach-for-the-shared-primitives-before-writing-markup)
+says which to reach for. Colocation is about where a component _may_ live, not an
+argument for writing a second one.
 
 ## The action-result envelope
 

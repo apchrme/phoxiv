@@ -144,13 +144,11 @@ In the dialog:
   search only. A filter that is set but invisible is the likeliest way for this
   feature to come back as "search is broken".
 - **The olympiad filter is files-mode only, single-select, and applied on the
-  server.** `OlympiadFilter.svelte` is colocated in `components/search/` rather
-  than promoted to `$lib/components/` beside the other two, because unlike them it
-  can have no second caller: an olympiad page is already scoped to one olympiad. It
-  keeps `StatusFilter`'s **trigger** — an icon-only square that fills while a
-  filter is set — because with ~22 olympiads a labelled button or a segmented
-  `ToggleGroup` would take most of a phone's width. Files mode therefore shows
-  **one** control beside the input and problem mode at most **two**; the mode
+  server.** It is `OlympiadPicker.svelte` in `$lib/components/`, wearing its
+  `trigger="icon"` shape: `StatusFilter`'s trigger, an icon-only square that fills
+  while a filter is set, because with ~22 olympiads a labelled button or a
+  segmented `ToggleGroup` would take most of a phone's width. Files mode therefore
+  shows **one** control beside the input and problem mode at most **two**; the mode
   switch itself is not one of them, and [the tabs](#the-mode-switch-is-tabs-not-a-filter)
   explain why.
 - **Behind that trigger it is a combobox, not a menu**, and that is the one place
@@ -166,9 +164,19 @@ In the dialog:
   [`ui/`](../src/lib/components/ui), and adding them would mean the shadcn CLI
   that [CLAUDE.md](../CLAUDE.md) rule 2 keeps away from that directory.
   `GlobalSearch.svelte`'s own hand-styled `Dialog` is the precedent. The match is
-  a plain case-insensitive substring over the name _and_ the id, with
-  `shouldFilter={false}`, because `Command`'s own filter reorders rows by score
-  and the order here is load-bearing — see the next bullet.
+  `matchesOlympiadText` from `$lib/filters.ts` — a plain case-insensitive substring
+  over the name _and_ the id — with `shouldFilter={false}`, because `Command`'s own
+  filter reorders rows by score and the order here is load-bearing; see the next
+  bullet.
+- **The same component answers the question everywhere else it is asked.**
+  `Popover` + `Command` is what lets it: the search box sits _inside_ the panel, so
+  the trigger can be a 32px square here and a full-width form field on
+  `/contribute`, where it picks the olympiad to edit, and in `/admin`, where
+  `multiple` mode assigns the olympiads a contributor may edit. bits-ui's own
+  `Combobox` anchors its panel to its input — the input _is_ the trigger — which
+  serves a form field and cannot serve a square. All three call sites list the same
+  rows out of the same table, so three separately-written pickers could only
+  disagree with each other, and did: the admin one had no search at all.
 - **The olympiad whose page you are on is listed first**, under an "On this page"
   heading, and dropped from the body of the list so it appears exactly once. The
   id comes from `page.params.olympiad`, passed down through `+layout.svelte` for
@@ -897,7 +905,7 @@ belongs to the dialog rather than to either search.
 
 This used to be a single 32px icon-only button in the input row — a `FileSearch`
 glyph that filled while files mode was on — sitting immediately beside
-`TopicSelect`, `StatusFilter` and `OlympiadFilter` and built from the identical
+`TopicSelect`, `StatusFilter` and the olympiad picker, and built from the identical
 `buttonVariants({ variant: active ? 'default' : 'outline', size: 'icon-sm' })`
 recipe. It was therefore indistinguishable in kind from a filter and spoke the
 same "filled means on" language, yet it is **the one control in that row that

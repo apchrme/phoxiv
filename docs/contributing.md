@@ -371,6 +371,40 @@ belongs to the page.
 [`(reg)/olympiads/[olympiad]/`](<../src/routes/(reg)/olympiads/[olympiad]>) is the
 reference for the style.
 
+### Reach for the shared primitives before writing markup
+
+`src/app.css` draws the line: a utility class belongs in CSS when the same
+decoration lands on structurally different elements, and anything that repeats its
+**markup** as well should be a component. These are the pieces that crossed it, and
+a new screen should use them rather than re-derive them.
+
+| Component                    | Use it for                                                                                    |
+| ---------------------------- | --------------------------------------------------------------------------------------------- |
+| `forms/Field.svelte`         | a labelled control. Omit `for` where the control is a button and the label becomes a `<span>` |
+| `forms/SubmitButton.svelte`  | any submit. It takes the `Pending` key the form was tracked under and owns the busy state     |
+| `forms/ConfirmSubmit.svelte` | a destructive submit. **Not** `window.confirm`, and not `TrackOptions.confirm`                |
+| `forms/Repeater.svelte`      | a list of rows the contributor adds to and deletes from                                       |
+| `EmptyState.svelte`          | a list with nothing in it, or a fetch that failed — those are different, hence `variant`      |
+| `PageHeader.svelte`          | the block at the top of a page                                                                |
+| `OlympiadPicker.svelte`      | picking one olympiad or several, anywhere                                                     |
+| `OlympiadIcon.svelte`        | an olympiad's icon, at one of four named sizes                                                |
+| `$lib/resource.svelte.ts`    | a JSON body the browser fetches, with its loading and failed flags                            |
+| `$lib/utils/plural.ts`       | `plural(n, noun)`. The number is printed raw — no separators, anywhere in this app            |
+
+Two of these encode a rule rather than a shape, and that is why they are worth
+using even for a single call site. `SubmitButton` cuts the number of times an
+action's name is hand-typed per form from three to two, and the third — a typo in
+`pending.has()` — used to leave the button permanently enabled with nothing on
+screen to say so. `Resource` holds the `res.ok` check, the success-only fetch-once
+guard and the plain-`let` in-flight flag this document mandates below, in one place
+rather than in each copy.
+
+`ConfirmSubmit` inverts the order a confirmation happens in. `TrackOptions.confirm`
+is synchronous and cancels the submit inline; an `AlertDialog` answers later, so
+the trigger is a plain button and confirming calls `requestSubmit()` on the
+enclosing form. `use:enhance` and `Pending` then run exactly as they do for a real
+submit.
+
 ### Comment the _why_
 
 Every exported symbol gets a doc comment, and the comments that matter are the
@@ -404,12 +438,12 @@ page with the error template, discarding whatever the contributor had typed.
 Svelte 5 runes throughout. Four choices recur, and picking the wrong one has
 caused real bugs, so they are worth stating rather than inferring:
 
-| Use                              | When                                                                                                                                                                                                                                                                                     |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `$state`                         | ordinary reactive cells that drive markup                                                                                                                                                                                                                                                |
-| `$state.raw`                     | a collection **replaced wholesale and never mutated** that is read on a hot path. A deep proxy puts a trap on every element read; `index` and `progress` in the ⌘K dialog are read on every keystroke, so both are raw. It also makes an identity check exact rather than proxy-mediated |
-| a plain `let`                    | a flag that **gates a fetch but drives no markup**. Making it reactive is not merely wasteful — if the effect that writes it also reads it, reactivity **loops**. `indexFetched`, `progressFetchedFor` and the olympiad page's `touched` are all plain                                   |
-| a class in a `.svelte.ts` module | several cells that belong together and must **survive an unmount**. `Pending` in `$lib/forms.svelte.ts` and `DeepSearch` in the search folder are the two                                                                                                                                |
+| Use                              | When                                                                                                                                                                                                                                                                                                               |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `$state`                         | ordinary reactive cells that drive markup                                                                                                                                                                                                                                                                          |
+| `$state.raw`                     | a collection **replaced wholesale and never mutated** that is read on a hot path. A deep proxy puts a trap on every element read; `index` and `progress` in the ⌘K dialog are read on every keystroke, so both are raw. It also makes an identity check exact rather than proxy-mediated                           |
+| a plain `let`                    | a flag that **gates a fetch but drives no markup**. Making it reactive is not merely wasteful — if the effect that writes it also reads it, reactivity **loops**. `indexFetched`, `progressFetchedFor` and the olympiad page's `touched` are all plain                                                             |
+| a class in a `.svelte.ts` module | several cells that belong together and must **survive an unmount**, or that always change together. `Pending` in `$lib/forms.svelte.ts`, `DeepSearch` in the search folder, and `Resource` in `$lib/resource.svelte.ts` — the last of which is what keeps the fetch rules below written once rather than six times |
 
 Two rules about effects, both learned the hard way:
 

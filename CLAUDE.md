@@ -58,8 +58,16 @@ and `db/` (`schema.ts`, `relations.ts`, `index.ts`, plus
 `queries/{olympiads,years,content,progress,files}.ts`). Client-safe shared code
 sits directly under `src/lib/`: `types`, `uploads`, `constants`, `nav`, `posts`,
 `activity`, `progress`, `filters`, `search`, `pdf-text`, `forms.svelte`,
-`auth-client`, `utils` (just `cn`), `utils/{date,flag,fuzzy,json,topics}`,
-`hooks/is-mobile.svelte`, and `prose.svelte`.
+`resource.svelte`, `auth-client`, `utils` (just `cn`),
+`utils/{date,flag,fuzzy,json,plural,topics}`, `hooks/is-mobile.svelte`, and
+`prose.svelte`.
+
+`src/lib/components/` holds the route-agnostic UI: `OlympiadPicker`,
+`OlympiadIcon`, `TopicSelect`, `StatusFilter`, `TagSelect`, `EmptyState`,
+`PageHeader`, `FileBadge`, `UserAvatar` and friends, plus `forms/` (`Field`,
+`SubmitButton`, `ConfirmSubmit`, `Repeater`, `IconFilePicker`) and `search/`.
+Reach for these before writing markup — see
+[contributing.md](./docs/contributing.md#reach-for-the-shared-primitives-before-writing-markup).
 
 **Roles are `user`, `contributor` and `admin`.** `contributor` is real and
 load-bearing: contributors may edit the olympiads listed in their

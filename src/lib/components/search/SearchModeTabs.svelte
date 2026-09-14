@@ -9,7 +9,7 @@
 	 *
 	 * This was a 32px icon-only button (`FileSearch`, filled while files mode was
 	 * on) sitting in the input row immediately beside `TopicSelect`,
-	 * `StatusFilter` and `OlympiadFilter` — built from the identical
+	 * `StatusFilter` and the olympiad picker — built from the identical
 	 * `buttonVariants({ variant: active ? 'default' : 'outline', size: 'icon-sm' })`
 	 * recipe. It was therefore indistinguishable in kind from a filter and spoke
 	 * the same "filled means on" language, yet it is the one control in that row
