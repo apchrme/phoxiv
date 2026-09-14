@@ -3,11 +3,11 @@
 	import type { UserRow } from './columns';
 	import { enhance } from '$app/forms';
 	import type { Pending } from '$lib/forms.svelte';
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import { Ban, CircleCheck, BookOpenCheck } from '@lucide/svelte';
+	import OlympiadPicker from '$lib/components/OlympiadPicker.svelte';
+	import { Ban, CircleCheck } from '@lucide/svelte';
 	import { parseStringArray } from '$lib/utils/json';
 	import { ASSIGNABLE_ROLES, roleLabel } from '$lib/activity';
 
@@ -58,13 +58,27 @@
 	const role = $derived(roleDraft ?? storedRole);
 	const roleDirty = $derived(role !== storedRole);
 
-	/** Same idea for the assignment checkboxes: `null` means "unedited". */
+	/**
+	 * Same idea for the assignments: `null` means "unedited", which is why the
+	 * picker below is driven one-way — `values` in, `onValuesChange` out — rather
+	 * than bound. Binding would collapse the draft into the displayed value and
+	 * leave the Save button with nothing to compare against, which is the shape
+	 * that produced the role select's submit loop.
+	 */
 	let assignDraft = $state<string[] | null>(null);
-	const assigned = $derived(assignDraft ?? parseStringArray(user.assignedOlympiads));
+	const storedAssigned = $derived(parseStringArray(user.assignedOlympiads));
+	const assigned = $derived(assignDraft ?? storedAssigned);
 
-	function toggleAssigned(olympiadId: string, checked: boolean) {
-		assignDraft = checked ? [...assigned, olympiadId] : assigned.filter((id) => id !== olympiadId);
-	}
+	/**
+	 * Compared as *sets*, not as arrays. The picker emits its selection in the
+	 * olympiad table's display order, while a value stored by an older save is in
+	 * whatever order that one happened to submit — so an order-sensitive check would
+	 * light up Save on a row nobody had touched. Toggling an olympiad on and back
+	 * off likewise has to settle back to clean.
+	 */
+	const assignDirty = $derived(
+		assigned.length !== storedAssigned.length || assigned.some((id) => !storedAssigned.includes(id))
+	);
 </script>
 
 <div class="flex flex-wrap items-center justify-end gap-2">
@@ -102,56 +116,50 @@
 		</Button>
 	</form>
 
-	<!-- Assign olympiads — contributors only -->
+	<!-- Assign olympiads — contributors only.
+
+	     This was a dropdown holding an unsearchable column of one native checkbox
+	     per olympiad, which grows every time somebody adds a contest. It is the same
+	     question deep search and the contribute page ask, so it gets the same
+	     answer: `OlympiadPicker`, which brings the search box, the icons, the empty
+	     state and the "Clear selection" row the column never had. The picker's hidden
+	     inputs render in place, inside this `<form>`, which is what the old
+	     checkboxes could not do — see its header.
+
+	     Sized to the row rather than left full-width: this shares a line with the
+	     role select, and `cn` lets the caller win. -->
 	{#if user.role === 'contributor'}
-		<DropdownMenu.Root>
-			<DropdownMenu.Trigger class={buttonVariants({ variant: 'outline', size: 'xs' })}>
-				<BookOpenCheck class="size-3" />
-				Assign
-			</DropdownMenu.Trigger>
-			<DropdownMenu.Content align="end" class="max-h-72 w-56 overflow-y-auto">
-				<DropdownMenu.Label>Assigned olympiads</DropdownMenu.Label>
-				<DropdownMenu.Separator />
-				{#each olympiads as olympiad (olympiad.id)}
-					<label
-						class="flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm select-none hover:bg-accent"
-					>
-						<input
-							type="checkbox"
-							checked={assigned.includes(olympiad.id)}
-							onchange={(e) =>
-								toggleAssigned(olympiad.id, (e.currentTarget as HTMLInputElement).checked)}
-						/>
-						{olympiad.name}
-					</label>
-				{/each}
-				<DropdownMenu.Separator />
-				<!-- The checkboxes above are not form controls: the dropdown content is
-				     portalled to document.body, so only these hidden inputs submit. -->
-				<form
-					method="POST"
-					action="?/setAssignedOlympiads"
-					use:enhance={pending.track(user.id + '_assign', {
-						reset: true,
-						onDone: () => (assignDraft = null)
-					})}
-					class="px-1 pb-1"
-				>
-					<input type="hidden" name="userId" value={user.id} />
-					{#each assigned as olympiadId (olympiadId)}
-						<input type="hidden" name="olympiadId" value={olympiadId} />
-					{/each}
-					<Button
-						type="submit"
-						size="xs"
-						class="w-full"
-						disabled={pending.has(user.id + '_assign')}
-					>
-						Save assignments
-					</Button>
-				</form>
-			</DropdownMenu.Content>
-		</DropdownMenu.Root>
+		<form
+			method="POST"
+			action="?/setAssignedOlympiads"
+			use:enhance={pending.track(user.id + '_assign', {
+				reset: true,
+				// Drop the draft so the row falls back to reading straight from the
+				// (now-updated) server data again.
+				onDone: () => (assignDraft = null)
+			})}
+			class="flex items-center gap-1.5"
+		>
+			<input type="hidden" name="userId" value={user.id} />
+			<OlympiadPicker
+				multiple
+				name="olympiadId"
+				values={assigned}
+				onValuesChange={(v) => (assignDraft = v)}
+				{olympiads}
+				heading="Assigned olympiads"
+				placeholder="Assign olympiads"
+				class="h-8 w-44 text-xs"
+			/>
+			<Button
+				type="submit"
+				size="xs"
+				variant={assignDirty ? 'default' : 'outline'}
+				disabled={pending.has(user.id + '_assign') || !assignDirty}
+			>
+				Save
+			</Button>
+		</form>
 	{/if}
 
 	<Separator orientation="vertical" class="h-5" />
