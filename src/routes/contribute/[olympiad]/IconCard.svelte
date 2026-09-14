@@ -61,7 +61,7 @@
 				{#if previewUrl}
 					<img src={previewUrl} alt="Icon preview" class="h-12 w-auto object-contain" />
 				{:else}
-					<OlympiadIcon {icon} id={olympiadId} class="h-10 w-auto text-4xl leading-none" />
+					<OlympiadIcon {icon} id={olympiadId} size="lg" />
 				{/if}
 			</div>
 			<div class="flex flex-col gap-0.5 text-sm">

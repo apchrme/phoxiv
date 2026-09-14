@@ -67,7 +67,7 @@
 			     long as `/api/olympiads` is in flight, and for ever if it never lands. -->
 			<span class="flex h-3.5 w-3.5 shrink-0 items-center">
 				{#if icon !== undefined}
-					<OlympiadIcon {icon} id={entry.olympiad} class="h-3.5 w-auto text-sm leading-none" />
+					<OlympiadIcon {icon} id={entry.olympiad} size="xs" />
 				{/if}
 			</span>
 			<span class="truncate text-[0.7rem] leading-none font-medium text-foreground">

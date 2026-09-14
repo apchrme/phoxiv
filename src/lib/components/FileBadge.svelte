@@ -13,7 +13,10 @@
 		href,
 		label,
 		external = false,
-		class: className = 'px-2.5 py-2.5 text-sm',
+		// The default is what two of the three call sites were passing explicitly.
+		// Note it **replaces** rather than merges, which is what lets the ⌘K result
+		// row shrink the badge to `text-xs` and drop the hover tint in one prop.
+		class: className = 'px-2.5 py-2.5 text-sm hover:border-primary/40 dark:hover:border-primary/30',
 		onclick
 	}: {
 		href: string;

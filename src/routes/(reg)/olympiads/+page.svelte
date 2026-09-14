@@ -93,18 +93,10 @@
 					>
 						<!-- Top row: icon + badge -->
 						<div class="flex items-start justify-between">
-							<!--
-									OlympiadIcon replaces the raw emoji <span> to fix the
-									two-letter rendering bug on Windows/Chromium for flag emojis.
-									  • Flag emojis   → Flagpedia SVG, sized to h-9 w-auto
-									  • Other emojis  → plain <span>, sized by text-4xl
-									Both cases get leading-none to match the original layout.
-								-->
-							<OlympiadIcon
-								icon={olympiad.icon}
-								id={olympiad.id}
-								class="h-9 w-auto text-4xl leading-none"
-							/>
+							<!-- OlympiadIcon rather than a raw emoji `<span>`, to fix the
+							     two-letter rendering bug on Windows/Chromium for flag emojis: a
+							     flag becomes a Flagpedia SVG and everything else stays a span. -->
+							<OlympiadIcon icon={olympiad.icon} id={olympiad.id} size="lg" />
 							<Badge variant="outline">
 								{olympiad.tag}
 							</Badge>

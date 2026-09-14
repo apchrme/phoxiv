@@ -61,11 +61,7 @@
 	>
 		<!-- Olympiad + year -->
 		<div class="flex items-center gap-1.5 text-muted-foreground">
-			<OlympiadIcon
-				icon={item.olympiadIcon}
-				id={item.olympiadId}
-				class="h-4 w-auto shrink-0 text-base"
-			/>
+			<OlympiadIcon icon={item.olympiadIcon} id={item.olympiadId} size="sm" />
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			<span>{@html highlight(item.olympiadName, query)}</span>
 			<span aria-hidden="true">·</span>

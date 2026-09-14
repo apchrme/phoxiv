@@ -88,11 +88,7 @@
 							<FileBadge href={link.url} label={link.label} external />
 						{/each}
 						{#each year.yearFiles as file (file.label)}
-							<FileBadge
-								href={file.url}
-								label={file.label}
-								class="px-2.5 py-2.5 text-sm hover:border-primary/40 dark:hover:border-primary/30"
-							/>
+							<FileBadge href={file.url} label={file.label} />
 						{/each}
 					</div>
 				{/if}

@@ -2,10 +2,33 @@
 	import { getFlagCountryCode } from '$lib/utils/flag.js';
 	import { isIconUrl } from '$lib/uploads.js';
 	import { CircleAlert } from '@lucide/svelte';
+	import { cn } from '$lib/utils.js';
+
+	/**
+	 * The four sizes this is actually rendered at, named.
+	 *
+	 * Eight call sites had spelled out seven slightly different recipes for the same
+	 * handful of sizes, because each had to set the image's height *and* the font
+	 * size the emoji fallback renders at — two numbers that must agree, with nothing
+	 * keeping them in step. `size-4` appeared as well, which fixes *both* axes and
+	 * so squashes a flag's aspect ratio; every size here sets a height and lets the
+	 * width follow.
+	 *
+	 * `shrink-0` is in the base rather than per size: five of the eight passed it,
+	 * and an icon that shrinks to nothing inside a flex row is never what was
+	 * wanted.
+	 */
+	const SIZES = {
+		xs: 'h-3.5 w-auto text-sm leading-none',
+		sm: 'h-4 w-auto text-base leading-none',
+		md: 'h-7 w-auto text-3xl leading-none',
+		lg: 'h-9 w-auto text-4xl leading-none'
+	} as const;
 
 	let {
 		icon = '',
 		id,
+		size = 'md',
 		class: className = ''
 	}: {
 		/** The raw emoji / icon string. May be blank. */
@@ -16,8 +39,12 @@
 		 * used instead of the flag CDN or raw emoji, if one exists.
 		 */
 		id?: string;
+		size?: keyof typeof SIZES;
+		/** Merged after the size, so it stays the escape hatch for the odd case. */
 		class?: string;
 	} = $props();
+
+	const classes = $derived(cn('shrink-0', SIZES[size], className));
 
 	// -------------------------------------------------------------------------
 	// Local icon overrides (build-time)
@@ -70,18 +97,18 @@
 	  5. Blank / fallback
 -->
 {#if isUrl}
-	<img src={icon} alt={id ?? 'olympiad icon'} class={className} />
+	<img src={icon} alt={id ?? 'olympiad icon'} class={classes} />
 {:else if overrideUrl}
-	<img src={overrideUrl} alt={icon} class={className} />
+	<img src={overrideUrl} alt={icon} class={classes} />
 {:else if countryCode && !imageError}
 	<img
 		src="https://flagcdn.com/{countryCode}.svg"
 		alt={icon}
-		class="rounded-md {className}"
+		class={cn('rounded-md', classes)}
 		onerror={() => (imageError = true)}
 	/>
 {:else if icon}
-	<span class={className} aria-hidden="true">{icon}</span>
+	<span class={classes} aria-hidden="true">{icon}</span>
 {:else}
 	<CircleAlert class="h-auto" />
 {/if}

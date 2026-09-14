@@ -276,7 +276,7 @@
 		<!-- The real icon here, the way `StatusFilter`'s items carry
 		     `ProgressControl`'s circles: in the panel there is a label beside it and no
 		     fill to invert against. -->
-		<OlympiadIcon icon={olympiad.icon} id={olympiad.id} class="size-4 shrink-0" />
+		<OlympiadIcon icon={olympiad.icon} id={olympiad.id} size="sm" />
 		<span class="flex-1 truncate">{olympiad.name}</span>
 		{@render indicator(isSelected(olympiad))}
 	</Command.Item>
@@ -313,9 +313,9 @@
 		<Popover.Trigger class={cn(FIELD, className)} aria-label={heading}>
 			<span class="flex min-w-0 items-center gap-2">
 				{#if !multiple && selected !== null}
-					<OlympiadIcon icon={selected.icon} id={selected.id} class="size-4 shrink-0" />
+					<OlympiadIcon icon={selected.icon} id={selected.id} size="sm" />
 				{:else if multiple && chosen.length === 1}
-					<OlympiadIcon icon={chosen[0].icon} id={chosen[0].id} class="size-4 shrink-0" />
+					<OlympiadIcon icon={chosen[0].icon} id={chosen[0].id} size="sm" />
 				{:else}
 					<Trophy class="text-muted-foreground" />
 				{/if}

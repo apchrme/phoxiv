@@ -1,9 +1,8 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import TopicSelect from '$lib/components/TopicSelect.svelte';
-	import { Plus, Trash2 } from '@lucide/svelte';
+	import Repeater from '$lib/components/forms/Repeater.svelte';
 	import { newProblemRow, type ProblemRow } from './metadata';
 
 	/**
@@ -15,8 +14,8 @@
 	 * dropdown, physically outside the form, so its own markup never submits.
 	 * Removing that input would silently clear every problem's topics on save.
 	 *
-	 * See `./metadata.ts` for the index-zipping contract; `rows` is `$bindable`
-	 * and has no fallback for the same reasons as in `NotesEditor`.
+	 * See `./metadata.ts` for the index-zipping contract, and `Repeater` for why
+	 * `rows` is bound rather than passed.
 	 */
 	let {
 		rows = $bindable(),
@@ -46,12 +45,12 @@
 		</Card.Description>
 	</Card.Header>
 	<Card.Content class="flex flex-col gap-3">
-		{#each rows as problem, i (problem.id)}
-			<!-- `{@const}` compiles to `$derived`, so this re-evaluates as the number
-			     is typed. A plain `const` in a script block would freeze at mount. -->
-			{@const isDuplicate = problem.number.trim() !== '' && duplicates.has(problem.number.trim())}
-			{@const maxScoreError = maxScoreErrors.get(problem.number.trim())}
-			<div class="flex flex-wrap items-center gap-2">
+		<Repeater bind:rows newRow={newProblemRow} itemLabel="problem">
+			{#snippet row(problem)}
+				<!-- `{@const}` compiles to `$derived`, so this re-evaluates as the number is
+				     typed. A plain `const` in a script block would freeze at mount. -->
+				{@const isDuplicate = problem.number.trim() !== '' && duplicates.has(problem.number.trim())}
+				{@const maxScoreError = maxScoreErrors.get(problem.number.trim())}
 				<Input
 					name="problemNumber"
 					type="text"
@@ -97,27 +96,16 @@
 					class="w-20"
 					aria-invalid={maxScoreError !== undefined}
 				/>
-				<Button type="button" variant="ghost" size="icon" onclick={() => rows.splice(i, 1)}>
-					<Trash2 class="size-4" />
-				</Button>
-			</div>
-		{/each}
-		<Button
-			type="button"
-			variant="outline"
-			size="sm"
-			onclick={() => rows.push(newProblemRow())}
-			class="self-start"
-		>
-			<Plus class="size-4" /> Add problem
-		</Button>
-		{#if duplicates.size > 0}
-			<p class="text-sm text-destructive">
-				Duplicate problem numbers: {[...duplicates].join(', ')}. Each problem number must be unique.
-			</p>
-		{/if}
-		{#each [...maxScoreErrors] as [number, error] (number)}
-			<p class="text-sm text-destructive">Maximum score for {number}: {error}.</p>
-		{/each}
+			{/snippet}
+			{#if duplicates.size > 0}
+				<p class="text-sm text-destructive">
+					Duplicate problem numbers: {[...duplicates].join(', ')}. Each problem number must be
+					unique.
+				</p>
+			{/if}
+			{#each [...maxScoreErrors] as [number, error] (number)}
+				<p class="text-sm text-destructive">Maximum score for {number}: {error}.</p>
+			{/each}
+		</Repeater>
 	</Card.Content>
 </Card.Root>

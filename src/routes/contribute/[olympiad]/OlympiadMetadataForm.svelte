@@ -108,7 +108,7 @@
 							disabled={hasUploadedIcon}
 						/>
 						{#if icon && !hasUploadedIcon}
-							<OlympiadIcon {icon} id={olympiad.id} class="h-7 w-auto shrink-0 text-3xl" />
+							<OlympiadIcon {icon} id={olympiad.id} size="md" />
 						{/if}
 					</div>
 					{#if hasUploadedIcon}

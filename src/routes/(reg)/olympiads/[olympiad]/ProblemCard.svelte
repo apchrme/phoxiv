@@ -58,11 +58,7 @@
 	</div>
 	<div class="flex flex-wrap gap-2">
 		{#each problem.files as file (file.label)}
-			<FileBadge
-				href={file.url}
-				label={file.label}
-				class="px-2.5 py-2.5 text-sm hover:border-primary/40 dark:hover:border-primary/30"
-			/>
+			<FileBadge href={file.url} label={file.label} />
 		{/each}
 	</div>
 </div>

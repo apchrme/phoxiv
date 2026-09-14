@@ -84,11 +84,7 @@
 		     file's text, not its metadata, and marking the name would claim a match
 		     that did not happen. -->
 		<div class="flex items-center gap-1.5 text-muted-foreground">
-			<OlympiadIcon
-				icon={hit.olympiadIcon}
-				id={hit.olympiadId}
-				class="h-4 w-auto shrink-0 text-base"
-			/>
+			<OlympiadIcon icon={hit.olympiadIcon} id={hit.olympiadId} size="sm" />
 			<span>{hit.olympiadName}</span>
 			<span aria-hidden="true">·</span>
 			<span class="font-mono">{hit.year}</span>

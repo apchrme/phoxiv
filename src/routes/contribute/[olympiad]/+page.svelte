@@ -81,7 +81,7 @@
 
 <PageHeader title={data.olympiad.name} size="sm">
 	{#snippet leading()}
-		<OlympiadIcon {icon} id={data.olympiad.id} class="h-9 w-auto text-4xl leading-none" />
+		<OlympiadIcon {icon} id={data.olympiad.id} size="lg" />
 	{/snippet}
 	<p class="m-0 font-mono text-sm text-muted-foreground">{data.olympiad.id}</p>
 	<p class="m-0 text-sm text-muted-foreground">
