@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import Title from '$lib/components/Title.svelte';
+	import PageHeader from '$lib/components/PageHeader.svelte';
 
 	const descriptions: Record<number, string> = {
 		404: "A page link doesn't exist here. Did you type the URL correctly?",
@@ -8,7 +8,13 @@
 	};
 </script>
 
-<Title
-	title="Uh oh! You have encountered an error {page.status}: {page.error?.message}"
-	description={descriptions[page.status] ?? ''}
-/>
+<!-- The status is the title and the message is not. Passing the whole sentence as
+     the title set "Uh oh! You have encountered an error 404: Not Found" at
+     `text-3xl sm:text-4xl`, which filled the viewport with the least useful
+     wording available. -->
+<PageHeader title="Error {page.status}">
+	<p class="m-0 text-lg font-medium text-foreground">{page.error?.message}</p>
+	{#if descriptions[page.status]}
+		<p class="m-0 prose text-muted-foreground">{descriptions[page.status]}</p>
+	{/if}
+</PageHeader>

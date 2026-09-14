@@ -4,6 +4,7 @@
 	import SearchBar from '$lib/components/search/SearchBar.svelte';
 	import TopicSelect from '$lib/components/TopicSelect.svelte';
 	import SearchEmptyState from '$lib/components/search/SearchEmptyState.svelte';
+	import PageHeader from '$lib/components/PageHeader.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import BackLink from '$lib/components/BackLink.svelte';
 	import SvelteSeo from 'svelte-seo';
@@ -226,16 +227,15 @@
 
 <BackLink href={resolve('/olympiads')}>Back to olympiads</BackLink>
 
-<header class="flex flex-col gap-3 pt-3 md:pt-5">
-	<h1 class="text-3xl leading-tight font-bold tracking-tight sm:text-4xl">{olympiad.name}</h1>
+<PageHeader title={olympiad.name}>
 	{#if olympiad?.descriptionHtml}
-		<div class="prose mb-4 max-w-none">
+		<div class="prose max-w-none">
 			<!-- Sanitised server-side by $lib/server/markdown.ts before it is ever stored. -->
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			{@html olympiad.descriptionHtml}
 		</div>
 	{/if}
-</header>
+</PageHeader>
 
 <section class="py-4">
 	<div class="mb-5">

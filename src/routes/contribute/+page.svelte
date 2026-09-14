@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import { formToasts, Pending } from '$lib/forms.svelte';
-	import Title from '$lib/components/Title.svelte';
+	import PageHeader from '$lib/components/PageHeader.svelte';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import SvelteSeo from 'svelte-seo';
 	import SelectYearForm from './SelectYearForm.svelte';
@@ -32,7 +32,7 @@
 
 <SvelteSeo title="Contribute" description="Edit anything" />
 
-<Title
+<PageHeader
 	title="Contribute"
 	description="This is Houston. Right here, you can edit almost every piece of content on the olympiads page. Note that due to caching, your changes may only be reflected on the corresponding olympiad pages after a day or so. Reloading will not expedite it — the delay is in Cloudflare's shared cache, which only an admin can purge early."
 />

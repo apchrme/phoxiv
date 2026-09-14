@@ -9,7 +9,7 @@
 	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
 	import { ArrowRight } from '@lucide/svelte';
 	import * as Card from '$lib/components/ui/card';
-	import Title from '$lib/components/Title.svelte';
+	import PageHeader from '$lib/components/PageHeader.svelte';
 	import SvelteSeo from 'svelte-seo';
 	import { onMount } from 'svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
@@ -52,7 +52,7 @@
 <SvelteSeo title="Olympiads — phoXiv" description="Explore olympiads" />
 
 <section id="olympiads" class="mb-4">
-	<Title
+	<PageHeader
 		title="Olympiads"
 		description="Click any card to explore problems, solutions &amp; marking schemes."
 	/>

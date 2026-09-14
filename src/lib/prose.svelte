@@ -8,13 +8,13 @@
 		seoTitle = title + ' — phoXiv',
 		seoDescription = description
 	} = $props();
-	import Title from '$lib/components/Title.svelte';
+	import PageHeader from '$lib/components/PageHeader.svelte';
 	import SvelteSeo from 'svelte-seo';
 </script>
 
 <SvelteSeo title={seoTitle} description={seoDescription} />
 
-<Title {title} {description} />
+<PageHeader {title} {description} />
 
 <div class="prose max-w-none dark:prose-invert">
 	{@render children?.()}

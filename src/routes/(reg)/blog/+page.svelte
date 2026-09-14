@@ -3,7 +3,7 @@
 	import SvelteSeo from 'svelte-seo';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Calendar, Tag, User, ArrowRight } from '@lucide/svelte';
-	import Title from '$lib/components/Title.svelte';
+	import PageHeader from '$lib/components/PageHeader.svelte';
 	import { resolve } from '$app/paths';
 	import { formatDate } from '$lib/utils/date';
 
@@ -12,7 +12,7 @@
 
 <SvelteSeo title="Blog — phoXiv" description="Updates, articles and anything related to phoXiv." />
 
-<Title
+<PageHeader
 	title="Blog"
 	description="A collection of updates and articles closely or distantly related to physics olympiads."
 />

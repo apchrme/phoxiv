@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import SvelteSeo from 'svelte-seo';
-	import Title from '$lib/components/Title.svelte';
+	import PageHeader from '$lib/components/PageHeader.svelte';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { formToasts, Pending } from '$lib/forms.svelte';
 	import UsersTable from './UsersTable.svelte';
@@ -55,7 +55,10 @@
 
 <SvelteSeo title="Admin — phoXiv" description="phoXiv admin panel" />
 
-<Title title="Admin" description="Manage user roles and access, and review the activity log." />
+<PageHeader
+	title="Admin"
+	description="Manage user roles and access, and review the activity log."
+/>
 
 <Tabs.Root
 	value={tab}

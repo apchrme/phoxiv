@@ -8,7 +8,7 @@
 	import { LogOut, Mail, Shield } from '@lucide/svelte';
 	import Github from '$lib/components/GithubMark.svelte';
 	import UserAvatar from '$lib/components/UserAvatar.svelte';
-	import Title from '$lib/components/Title.svelte';
+	import PageHeader from '$lib/components/PageHeader.svelte';
 
 	import { formatDate } from '$lib/utils/date';
 
@@ -31,7 +31,7 @@
 
 <SvelteSeo title="Profile — phoXiv" description="Your phoXiv profile." />
 
-<Title title="Profile" description="Your account details and settings." />
+<PageHeader title="Profile" description="Your account details and settings." />
 
 <div class="mx-auto max-w-lg">
 	<!-- Avatar + name card -->

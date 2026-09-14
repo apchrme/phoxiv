@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
 	import BackLink from '$lib/components/BackLink.svelte';
+	import PageHeader from '$lib/components/PageHeader.svelte';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { formToasts, Pending } from '$lib/forms.svelte';
 	import MetadataTab from './MetadataTab.svelte';
@@ -38,17 +39,16 @@
 
 <BackLink href={resolve(`/contribute/${params.olympiad}`)}>Back to {data.olympiad.name}</BackLink>
 
-<header class="flex flex-col gap-1 py-5">
-	<h1 class="text-2xl font-bold tracking-tight">
-		{data.olympiad.name}
+<PageHeader title={data.olympiad.name} size="sm">
+	{#snippet titleSuffix()}
 		<span class="font-mono text-primary">{data.year.year}</span>
-	</h1>
-	<p class="text-sm text-muted-foreground">
+	{/snippet}
+	<p class="m-0 text-sm text-muted-foreground">
 		Editing <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs"
 			>{data.olympiad.id}/{data.year.year}</code
 		>
 	</p>
-</header>
+</PageHeader>
 
 <Tabs.Root bind:value={phase} class="gap-5">
 	<Tabs.List>

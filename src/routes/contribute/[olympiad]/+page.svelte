@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
 	import BackLink from '$lib/components/BackLink.svelte';
+	import PageHeader from '$lib/components/PageHeader.svelte';
 	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
 	import { formToasts, Pending } from '$lib/forms.svelte';
 	import YearsCard from './YearsCard.svelte';
@@ -78,18 +79,15 @@
 
 <BackLink href={resolve('/contribute')}>Back to contribute</BackLink>
 
-<header class="flex flex-col gap-2 py-5">
-	<div class="flex items-center gap-3">
+<PageHeader title={data.olympiad.name} size="sm">
+	{#snippet leading()}
 		<OlympiadIcon {icon} id={data.olympiad.id} class="h-9 w-auto text-4xl leading-none" />
-		<div>
-			<h1 class="text-2xl font-bold tracking-tight">{data.olympiad.name}</h1>
-			<p class="font-mono text-sm text-muted-foreground">{data.olympiad.id}</p>
-		</div>
-	</div>
-	<p class="text-sm text-muted-foreground">
+	{/snippet}
+	<p class="m-0 font-mono text-sm text-muted-foreground">{data.olympiad.id}</p>
+	<p class="m-0 text-sm text-muted-foreground">
 		Edit metadata for this olympiad. Changes will be reflected on the olympiad listing page.
 	</p>
-</header>
+</PageHeader>
 
 <div class="mx-auto flex max-w-xl flex-col gap-5">
 	<YearsCard olympiadId={data.olympiad.id} years={data.years} {pending} />
