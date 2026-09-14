@@ -2,6 +2,7 @@
 	import type { FileTextStats } from '$lib/types';
 	import type { Pending } from '$lib/forms.svelte';
 	import { onMount } from 'svelte';
+	import { Resource } from '$lib/resource.svelte';
 	import { enhance } from '$app/forms';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
@@ -45,49 +46,19 @@
 		error: 'extraction failed; see the failures below'
 	};
 
-	let stats = $state.raw<FileTextStats | null>(null);
-	let loading = $state(true);
-	let failed = $state(false);
-
 	/**
-	 * Which fetch is the current one. A **monotonic token, not a boolean
-	 * in-flight guard**.
+	 * The breakdown, refetched after every maintenance action.
 	 *
-	 * The incident recorded in `GlobalSearch.svelte` is about a fetch-once-ever
-	 * contract, where dropping a concurrent call is the desired outcome. This one
-	 * is *refreshable*: a boolean guard would silently drop the post-prune refresh
-	 * if the mount fetch were still in flight, leaving the counts permanently
-	 * wrong — the exact failure the refresh exists to prevent. A token lets every
-	 * call run and lets only the newest write.
-	 *
-	 * A plain `let` rather than `$state`, because it is read on the effect path
-	 * and never rendered.
+	 * `refresh()` rather than `loadOnce()` throughout, and `Resource`'s monotonic
+	 * token is what makes that safe: a boolean in-flight guard would silently drop
+	 * the post-prune refresh if the mount fetch were still running, leaving the
+	 * counts permanently wrong — the exact failure the refresh exists to prevent.
+	 * Its `loading` likewise stays false once there are numbers to show, so a
+	 * maintenance click dims the card rather than flashing it back to a skeleton.
 	 */
-	let seq = 0;
-
-	async function refresh() {
-		const mine = ++seq;
-		// Only blank the card when there is nothing worth keeping — otherwise a
-		// maintenance click would flash it empty. Same anti-flicker contract as the
-		// search dialog: a newer request dims the last landed numbers, it does not
-		// replace them with a skeleton.
-		loading = stats === null;
-		try {
-			const res = await fetch('/admin/index-stats');
-			// The explicit `ok` check matters: an error response with an HTML body
-			// makes `res.json()` throw as an unhandled rejection. A 403 is live here
-			// rather than hypothetical — a session can expire while the page sits open.
-			if (!res.ok) throw new Error(`HTTP ${res.status}`);
-			const next: FileTextStats = await res.json();
-			if (mine !== seq) return;
-			stats = next;
-			failed = false;
-		} catch {
-			if (mine === seq) failed = true;
-		} finally {
-			if (mine === seq) loading = false;
-		}
-	}
+	const source = new Resource<FileTextStats>('/admin/index-stats');
+	const refresh = () => void source.refresh();
+	const stats = $derived(source.value);
 
 	// Mounting is the trigger, because mounting is already gated on the tab.
 	onMount(refresh);
@@ -113,15 +84,15 @@
 </script>
 
 <div class="flex flex-col gap-5">
-	{#if failed && stats === null}
+	{#if source.failed && stats === null}
 		<Card.Root>
 			<Card.Header class="border-b">
 				<Card.Title>Full-text index</Card.Title>
 				<Card.Description>The index report could not be loaded.</Card.Description>
 			</Card.Header>
 			<Card.Content>
-				<Button variant="outline" onclick={refresh} disabled={loading}>
-					{#if loading}<Spinner class="size-3.5" />{/if}
+				<Button variant="outline" onclick={refresh} disabled={source.loading}>
+					{#if source.loading}<Spinner class="size-3.5" />{/if}
 					Retry
 				</Button>
 			</Card.Content>
@@ -139,7 +110,7 @@
 			</Card.Content>
 		</Card.Root>
 	{:else}
-		<Card.Root class={loading ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
+		<Card.Root class={source.loading ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
 			<Card.Header class="border-b">
 				<Card.Title>Full-text index</Card.Title>
 				<Card.Description>
@@ -239,8 +210,8 @@
 				a `bun run index:backfill` run — and docs/deployment.md names this tab
 				as *the* way to tell a backfill landed.
 			-->
-			<Button variant="ghost" onclick={refresh} disabled={loading} class="ml-auto">
-				{#if loading}
+			<Button variant="ghost" onclick={refresh} disabled={source.loading} class="ml-auto">
+				{#if source.loading}
 					<Spinner class="size-3.5" />
 				{:else}
 					<RefreshCw class="size-3.5" />

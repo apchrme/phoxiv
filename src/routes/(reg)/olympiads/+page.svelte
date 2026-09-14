@@ -12,34 +12,25 @@
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import SvelteSeo from 'svelte-seo';
 	import { onMount } from 'svelte';
+	import { Resource } from '$lib/resource.svelte';
 	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
 
 	let query = $state('');
 	let activeTag = $state<OlympiadTag | null>(null);
 
-	let olympiads: OlympiadEntry[] = $state([]);
-	let olympiadsLoading = $state(true);
-	let loadFailed = $state(false);
-
 	/**
-	 * The list comes from `/api/olympiads` rather than a page load, so the
-	 * response is served out of Cloudflare's shared cache instead of costing a D1
-	 * read per visit.
+	 * The list comes from `/api/olympiads` rather than a page load, so the response
+	 * is served out of Cloudflare's shared cache instead of costing a D1 read per
+	 * visit.
 	 *
-	 * The loading flag is cleared in `finally`: letting a rejection escape left it
-	 * stuck at `true` and the page showed its six skeletons forever.
+	 * `Resource` owns the three cells and the `finally` that clears the loading one
+	 * — letting a rejection escape it is what once left this page showing its six
+	 * skeletons forever.
 	 */
-	onMount(async () => {
-		try {
-			const res = await fetch('/api/olympiads');
-			if (!res.ok) throw new Error(`HTTP ${res.status}`);
-			olympiads = await res.json();
-		} catch {
-			loadFailed = true;
-		} finally {
-			olympiadsLoading = false;
-		}
-	});
+	const source = new Resource<OlympiadEntry[]>('/api/olympiads');
+	onMount(() => void source.loadOnce());
+
+	const olympiads = $derived(source.value ?? []);
 
 	const filtered = $derived(() => {
 		const q = query.trim().toLowerCase();
@@ -80,13 +71,13 @@
 
 	<!-- Olympiad grid — glass cards -->
 
-	{#if olympiadsLoading}
+	{#if source.loading}
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">
 			{#each { length: 6 }, i (i)}
 				<Skeleton class="h-50 w-full" />
 			{/each}
 		</div>
-	{:else if loadFailed}
+	{:else if source.failed}
 		<SearchEmptyState
 			message="Couldn't load the olympiads"
 			hint="Something went wrong fetching the list. Reloading usually fixes it."

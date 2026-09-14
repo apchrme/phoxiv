@@ -5,6 +5,7 @@
 	import brand from '$lib/assets/branding/brand.svg';
 	import logo from '$lib/assets/branding/logo.svg';
 	import { onMount } from 'svelte';
+	import { Resource } from '$lib/resource.svelte';
 	import GitHubButton from '$lib/components/buttons/GitHubButton.svelte';
 	import DiscordButton from '$lib/components/buttons/DiscordButton.svelte';
 	import { gsap } from 'gsap';
@@ -24,24 +25,17 @@
 	 *
 	 * Seeding this with zeroes meant a failed request rendered a confident
 	 * "0 / 0 / 0" — the archive claiming to be empty — with the reveal animation
-	 * playing over it as though nothing were wrong.
+	 * playing over it as though nothing were wrong. `Resource` holds `null` until a
+	 * body lands, which is that guarantee written once.
 	 */
-	let stats = $state<Record<string, number> | null>(null);
+	const stats = new Resource<Record<string, number>>('/api/stats');
 
-	onMount(async () => {
-		try {
-			const res = await fetch('/api/stats');
-			if (!res.ok) throw new Error(`HTTP ${res.status}`);
-			stats = await res.json();
-		} catch {
-			stats = null;
-		}
-	});
+	onMount(() => void stats.loadOnce());
 
 	const statItems = $derived([
-		{ value: stats?.olympiads, label: 'Olympiads' },
-		{ value: stats?.years, label: 'Years' },
-		{ value: stats?.files, label: 'Files' }
+		{ value: stats.value?.olympiads, label: 'Olympiads' },
+		{ value: stats.value?.years, label: 'Years' },
+		{ value: stats.value?.files, label: 'Files' }
 	]);
 
 	let pageRoot: HTMLElement | undefined = $state();
