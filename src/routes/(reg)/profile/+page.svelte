@@ -59,7 +59,9 @@
 
 	<!-- Details card -->
 	<Card.Root class="mb-4">
-		<Card.Header class="border-b pb-4">
+		<!-- No `pb-4`: `card-header.svelte` already sets `[.border-b]:pb-6`, and
+		     overriding it here was the only card in the app whose header sat tighter. -->
+		<Card.Header class="border-b">
 			<Card.Title>Account details</Card.Title>
 		</Card.Header>
 		<Card.Content class="flex flex-col divide-y divide-border">

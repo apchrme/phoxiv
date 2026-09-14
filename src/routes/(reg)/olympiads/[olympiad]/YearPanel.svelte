@@ -46,7 +46,7 @@
 </script>
 
 <Card.Root id={String(year.year)}>
-	<Card.Header>
+	<Card.Header class="border-b">
 		<Card.Title class="font-mono text-lg font-semibold text-foreground tabular-nums">
 			{year.year}
 		</Card.Title>

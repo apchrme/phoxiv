@@ -1,9 +1,19 @@
 <script lang="ts">
-	import { User, LogIn } from '@lucide/svelte';
+	import { LogIn } from '@lucide/svelte';
 	import { buttonVariants } from '$lib/components/ui/button/index.js';
+	import UserAvatar from '$lib/components/UserAvatar.svelte';
 	import { resolve } from '$app/paths';
 	import { cn } from '$lib/utils.js';
 
+	/**
+	 * The nav's account control: the signed-in user's avatar linking to their
+	 * profile, or a sign-in button.
+	 *
+	 * The avatar is `UserAvatar`, which this used to re-implement inline — with a
+	 * bare `<User>` glyph as the fallback where every other call site gets the
+	 * tinted circle. Sizing and ring come from the anchor rather than the avatar,
+	 * because the anchor is the button and has to own its own hit area.
+	 */
 	const { user } = $props();
 </script>
 
@@ -17,11 +27,7 @@
 		aria-label="Your profile"
 		title={user.name}
 	>
-		{#if user.image}
-			<img src={user.image} alt={user.name} class="size-full object-cover" />
-		{:else}
-			<User class="size-4" />
-		{/if}
+		<UserAvatar {user} class="size-full object-cover" />
 	</a>
 {:else}
 	<a
