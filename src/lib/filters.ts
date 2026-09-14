@@ -12,6 +12,13 @@ import { progressKey, type GlobalProgressMap } from '$lib/progress';
  * the first, and the disagreement would show up as two screens marking different
  * problems complete.
  *
+ * {@link matchesOlympiadText} sits here for the same reason one level up. The
+ * olympiad *list* is narrowed by typed text in three unrelated places — the
+ * olympiads page's own search box, and both trigger shapes of the shared
+ * `OlympiadPicker` — and each had written the same substring test out by hand.
+ * So this module is not only about problems: it holds the filter predicates the
+ * archive's browsing surfaces share, at whatever level they apply.
+ *
  * Deliberately **not** folded into [`progress.ts`](./progress.ts). That module is
  * the domain model — what a score is, how a problem is filed, what completion
  * means. These are filter predicates *over* that model, chosen by the user and
@@ -112,5 +119,37 @@ export function filterSearchItems(
 		(item) =>
 			matchesTopics(item.problem.topics, topics) &&
 			matchesStatus(isDone(progress, item.olympiadId, item.year, item.problem.number), status)
+	);
+}
+
+/**
+ * Whether an olympiad matches a typed needle: a plain, case-insensitive
+ * substring test over its id, its name, and its summary where it has one.
+ *
+ * **A substring test and not a fuzzy score, deliberately.** The two ways people
+ * name an olympiad — `ipho`, and "International Physics Olympiad" — must be
+ * equally good, and a score would rank one above the other for no reason a
+ * reader could predict. It also answers with a boolean rather than a rank, which
+ * is what lets `OlympiadPicker` keep `Command`'s own filter switched off and so
+ * hold its pinned group and its reset row in the positions it put them.
+ *
+ * `needle` is taken **already trimmed and lowercased**, because every caller
+ * derives it once per keystroke and then tests it against the whole list;
+ * lowercasing it here would redo that work once per row. An empty needle matches
+ * everything, which is what makes filtering an untouched search box a no-op.
+ *
+ * `summary` is read when the caller hands over a whole `OlympiadEntry` and
+ * simply absent when it hands over the leaner `OlympiadOption` — the same call
+ * either way.
+ */
+export function matchesOlympiadText(
+	olympiad: { id: string; name: string; summary?: string },
+	needle: string
+): boolean {
+	if (needle === '') return true;
+	return (
+		olympiad.name.toLowerCase().includes(needle) ||
+		olympiad.id.toLowerCase().includes(needle) ||
+		(olympiad.summary?.toLowerCase().includes(needle) ?? false)
 	);
 }

@@ -26,6 +26,26 @@ export type OlympiadEntry = {
 	descriptionHtml?: string;
 };
 
+/**
+ * The least an olympiad has to be for `OlympiadPicker` to render a row for it:
+ * an id to submit, a name to read, and an icon if one is known.
+ *
+ * A separate type from {@link OlympiadEntry}, which is a superset of it, because
+ * the two arrive by different routes. The ⌘K dialog holds whole entries from the
+ * publicly cached `/api/olympiads` and hands them over unmapped; the contribute
+ * and admin pages hold only what `listOlympiadOptions` selects, which is these
+ * three columns and no more — neither page has any use for a summary or a
+ * rendered description, and neither is worth a wider read of the table.
+ *
+ * `icon` is optional so a caller with no icons to show still type-checks; the
+ * picker falls back to `OlympiadIcon`'s own blank state.
+ */
+export type OlympiadOption = {
+	id: string;
+	name: string;
+	icon?: string;
+};
+
 export type ExtraLink = {
 	label: string;
 	url: string;

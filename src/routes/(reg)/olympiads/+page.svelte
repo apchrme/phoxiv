@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { OLYMPIAD_TAGS, type OlympiadTag, type OlympiadEntry } from '$lib/types.js';
+	import { matchesOlympiadText } from '$lib/filters.js';
 	import { Badge } from '$lib/components/ui/badge/index';
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
 	import SearchBar from '$lib/components/search/SearchBar.svelte';
@@ -42,15 +43,9 @@
 
 	const filtered = $derived(() => {
 		const q = query.trim().toLowerCase();
-		return olympiads.filter((c) => {
-			const matchesTag = activeTag === null || c.tag === activeTag;
-			const matchesQuery =
-				!q ||
-				c.name.toLowerCase().includes(q) ||
-				c.summary.toLowerCase().includes(q) ||
-				c.id.toLowerCase().includes(q);
-			return matchesTag && matchesQuery;
-		});
+		return olympiads.filter(
+			(c) => (activeTag === null || c.tag === activeTag) && matchesOlympiadText(c, q)
+		);
 	});
 </script>
 

@@ -1,7 +1,7 @@
 import { asc, eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import { olympiads, type DB } from '../index';
-import type { OlympiadEntry, OlympiadTag } from '$lib/types';
+import type { OlympiadEntry, OlympiadOption, OlympiadTag } from '$lib/types';
 
 /** Reads and DTO shaping for the `olympiads` table. */
 
@@ -26,10 +26,19 @@ export async function listOlympiads(db: DB): Promise<OlympiadRow[]> {
 		.all();
 }
 
-/** Just id and name, in display order — for pickers and dropdowns. */
-export async function listOlympiadOptions(db: DB): Promise<{ id: string; name: string }[]> {
+/**
+ * Just what a picker renders — id, name and icon — in display order.
+ *
+ * Narrower than {@link toOlympiadEntry} on purpose: this feeds `OlympiadPicker`
+ * on `/contribute` and `/admin`, neither of which shows a summary or a
+ * description, and both of which read the whole table on every request.
+ *
+ * Its two callers are both outside `(reg)` and outside `/api/`, so nothing it
+ * returns reaches Cloudflare's shared cache and widening it purges nothing.
+ */
+export async function listOlympiadOptions(db: DB): Promise<OlympiadOption[]> {
 	return db
-		.select({ id: olympiads.id, name: olympiads.name })
+		.select({ id: olympiads.id, name: olympiads.name, icon: olympiads.icon })
 		.from(olympiads)
 		.orderBy(...displayOrder())
 		.all();
