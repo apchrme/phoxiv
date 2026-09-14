@@ -3,6 +3,7 @@
 	import { rank, MAX_RESULTS } from '$lib/utils/fuzzy';
 	import { Search, SearchX, TriangleAlert } from '@lucide/svelte';
 	import EmptyState from '$lib/components/EmptyState.svelte';
+	import { plural } from '$lib/utils/plural';
 	import XIcon from '@lucide/svelte/icons/x';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
@@ -880,8 +881,7 @@
 					<!-- One coarse live region, carrying a **count only**. A region echoing
 					     row contents would read the whole list out again on every keystroke. -->
 					<p class="sr-only" role="status" aria-live="polite">
-						{resultCount}
-						{resultCount === 1 ? 'result' : 'results'}
+						{plural(resultCount, 'result')}
 					</p>
 
 					<!-- Two panels, and the `{#if}` inside each one is **load-bearing**.
@@ -960,8 +960,7 @@
 										>
 											<span>
 												{#if filtering}
-													{filteredIndex.length}
-													{filteredIndex.length === 1 ? 'problem matches' : 'problems match'} your filters
+													{plural(filteredIndex.length, 'problem matches', 'problems match')} your filters
 												{/if}
 												{#if olympiadFilter !== null}
 													<span class="block">

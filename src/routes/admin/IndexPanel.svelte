@@ -3,8 +3,11 @@
 	import type { Pending } from '$lib/forms.svelte';
 	import { onMount } from 'svelte';
 	import { Resource } from '$lib/resource.svelte';
+	import { plural } from '$lib/utils/plural';
 	import { enhance } from '$app/forms';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
+	import ConfirmSubmit from '$lib/components/forms/ConfirmSubmit.svelte';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
@@ -172,10 +175,9 @@
 					onDone: refresh
 				})}
 			>
-				<Button type="submit" variant="outline" disabled={pending.has('ensureIndex')}>
-					{#if pending.has('ensureIndex')}<Spinner class="size-3.5" />{/if}
+				<SubmitButton {pending} key="ensureIndex" variant="outline" busyLabel="Rebuilding…">
 					Rebuild index
-				</Button>
+				</SubmitButton>
 			</form>
 			<form
 				method="POST"
@@ -185,24 +187,32 @@
 					onDone: refresh
 				})}
 			>
-				<Button type="submit" variant="outline" disabled={pending.has('optimizeIndex')}>
-					{#if pending.has('optimizeIndex')}<Spinner class="size-3.5" />{/if}
+				<SubmitButton {pending} key="optimizeIndex" variant="outline" busyLabel="Merging…">
 					Merge segments
-				</Button>
+				</SubmitButton>
 			</form>
 			<form
 				method="POST"
 				action="?/pruneIndex"
 				use:enhance={pending.track(() => 'pruneIndex', {
-					confirm: 'Remove index rows for files that no longer exist?',
 					invalidateAll: false,
 					onDone: refresh
 				})}
 			>
-				<Button type="submit" variant="outline" disabled={pending.has('pruneIndex')}>
-					{#if pending.has('pruneIndex')}<Spinner class="size-3.5" />{/if}
+				<!-- The confirmation moved out of `pending.track`'s `confirm` and into the
+				     dialog — see `ConfirmSubmit`. `variant="outline"`, not destructive: it
+				     removes index rows whose files are already gone, so it asks because it
+				     cannot be undone, not because it destroys anything a reader can see. -->
+				<ConfirmSubmit
+					{pending}
+					key="pruneIndex"
+					variant="outline"
+					title="Prune orphaned index rows?"
+					description="Index rows for files that no longer exist are deleted. Nothing a reader can see changes, and rebuilding the index restores them."
+					confirmLabel="Prune orphans"
+				>
 					Prune orphans
-				</Button>
+				</ConfirmSubmit>
 			</form>
 			<!--
 				Not cosmetic. The panel fetches once on first open and then stays
@@ -235,7 +245,7 @@
 						<li class="flex flex-col gap-0.5 text-sm">
 							<span class="font-mono break-all">{failure.url}</span>
 							<span class="text-xs text-muted-foreground">
-								{failure.attempts} attempt{failure.attempts === 1 ? '' : 's'}
+								{plural(failure.attempts, 'attempt')}
 								{#if failure.error}— {failure.error}{/if}
 							</span>
 						</li>

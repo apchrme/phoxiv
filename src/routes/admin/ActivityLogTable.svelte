@@ -4,6 +4,8 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
+	import EmptyState from '$lib/components/EmptyState.svelte';
+	import { ScrollText } from '@lucide/svelte';
 	import { formatDateTime } from '$lib/utils/date';
 	import { actionLabel, actionVariant } from '$lib/activity';
 
@@ -114,8 +116,14 @@
 			{/each}
 			{#if rows.length === 0}
 				<Table.Row>
-					<Table.Cell colspan={4} class="py-12 text-center text-sm text-muted-foreground">
-						No activity recorded yet.
+					<!-- `boxed={false}`: the table already has edges. -->
+					<Table.Cell colspan={4} class="py-12">
+						<EmptyState
+							boxed={false}
+							icon={ScrollText}
+							message="No activity recorded yet"
+							hint="Edits made through the contribute pages show up here."
+						/>
 					</Table.Cell>
 				</Table.Row>
 			{/if}

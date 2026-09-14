@@ -5,6 +5,7 @@
 	import { cn } from '$lib/utils.js';
 	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
 	import { matchesOlympiadText } from '$lib/filters.js';
+	import { plural } from '$lib/utils/plural';
 	import type { OlympiadOption } from '$lib/types.js';
 
 	/**
@@ -149,7 +150,7 @@
 		if (!multiple) return selected?.name ?? (allowAll ? 'All olympiads' : placeholder);
 		if (chosen.length === 0) return placeholder;
 		if (chosen.length === 1) return chosen[0].name;
-		return `${chosen.length} olympiads`;
+		return plural(chosen.length, 'olympiad');
 	});
 	const isEmpty = $derived(multiple ? chosen.length === 0 : selected === null);
 

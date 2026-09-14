@@ -7,8 +7,12 @@
 	import * as Table from '$lib/components/ui/table/index.js';
 	import { FlexRender, createSvelteTable } from '$lib/components/ui/data-table/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { ChevronUp, ChevronDown, ChevronsUpDown } from '@lucide/svelte';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import { ChevronUp, ChevronDown, ChevronsUpDown, UsersRound } from '@lucide/svelte';
 	import UserAvatar from '$lib/components/UserAvatar.svelte';
+	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
+	import { plural } from '$lib/utils/plural';
 	import UserRowActions from './UserRowActions.svelte';
 	import { globalFilterFn, userColumns } from './columns';
 	import { formatDate } from '$lib/utils/date';
@@ -241,10 +245,36 @@
 						<div class="flex flex-wrap gap-1">
 							<Badge variant={roleVariant(u.role)} class="text-xs">{roleLabel(u.role)}</Badge>
 							{#if u.role === 'contributor'}
-								<Badge variant="outline" class="text-xs">
-									{assignedIds.length}
-									{assignedIds.length === 1 ? 'olympiad' : 'olympiads'}
-								</Badge>
+								<!-- The count alone answers "how many" and never "which", which is the
+								     question an admin scanning this column actually has. The tooltip
+								     answers it without opening the picker. `Tooltip.Provider` is not
+								     needed: `Sidebar.Provider` in the root layout already wraps the app
+								     in one. -->
+								<Tooltip.Root>
+									<Tooltip.Trigger>
+										<Badge variant="outline" class="text-xs">
+											{plural(assignedIds.length, 'olympiad')}
+										</Badge>
+									</Tooltip.Trigger>
+									<Tooltip.Content class="max-w-56">
+										{#if assignedIds.length === 0}
+											<span class="text-xs">No olympiads assigned yet</span>
+										{:else}
+											<!-- Resolved against `olympiads` rather than printing the stored
+											     ids: an id whose olympiad was deleted since has no row to show
+											     and is simply dropped, the same way the picker resolves its own
+											     selection. -->
+											<ul class="flex flex-col gap-1">
+												{#each olympiads.filter((o) => assignedIds.includes(o.id)) as o (o.id)}
+													<li class="flex items-center gap-1.5 text-xs">
+														<OlympiadIcon icon={o.icon} id={o.id} size="sm" />
+														{o.name}
+													</li>
+												{/each}
+											</ul>
+										{/if}
+									</Tooltip.Content>
+								</Tooltip.Root>
 							{/if}
 							{#if u.banned}
 								<Badge variant="destructive" class="text-xs">Banned</Badge>
@@ -268,8 +298,14 @@
 
 			{#if table.getFilteredRowModel().rows.length === 0}
 				<Table.Row>
-					<Table.Cell colspan={5} class="py-12 text-center text-sm text-muted-foreground">
-						No users match your filters.
+					<!-- `boxed={false}`: the table already has edges. -->
+					<Table.Cell colspan={5} class="py-12">
+						<EmptyState
+							boxed={false}
+							icon={UsersRound}
+							message="No users found"
+							hint="Try a different search term, or clear the role filter."
+						/>
 					</Table.Cell>
 				</Table.Row>
 			{/if}

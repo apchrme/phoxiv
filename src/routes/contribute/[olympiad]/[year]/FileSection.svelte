@@ -8,6 +8,7 @@
 	import { ExternalLink, Trash2 } from '@lucide/svelte';
 	import { cn } from '$lib/utils.js';
 	import { collidingLabel, DOCUMENT_UPLOAD, slugifyLabel } from '$lib/uploads';
+	import { plural } from '$lib/utils/plural';
 	import type { Extraction } from '$lib/pdf-text';
 
 	/**
@@ -180,7 +181,7 @@
 				detail: extracted.error
 			};
 		}
-		const pages = extracted.pages === 1 ? '1 page' : `${extracted.pages} pages`;
+		const pages = plural(extracted.pages, 'page');
 		return {
 			tone: 'ok',
 			text: `${pages}, ${extracted.chars.toLocaleString()} characters — searchable${

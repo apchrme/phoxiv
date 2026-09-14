@@ -13,6 +13,7 @@
 	import { Tags, ChevronDown, Funnel } from '@lucide/svelte';
 	import { PROBLEM_TOPICS, type ProblemTopic } from '$lib/types.js';
 	import { cn } from '$lib/utils.js';
+	import { plural } from '$lib/utils/plural';
 
 	let {
 		value = $bindable([]),
@@ -51,7 +52,7 @@
 	}
 
 	const summary = $derived(
-		value.length === 0 ? label : value.length === 1 ? value[0] : `${value.length} topics`
+		value.length === 0 ? label : value.length === 1 ? value[0] : plural(value.length, 'topic')
 	);
 
 	const triggerSize = $derived(size ?? (iconOnly ? 'icon' : 'default'));
