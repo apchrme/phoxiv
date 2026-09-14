@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { ActionData } from './$types';
 	import { enhance } from '$app/forms';
 	import type { Pending } from '$lib/forms.svelte';
 	import IconFilePicker from '$lib/components/forms/IconFilePicker.svelte';
@@ -24,10 +23,8 @@
 	 * list portals to `document.body`, so it has to stay inside the `<form>`.
 	 */
 	let {
-		form,
 		pending
 	}: {
-		form: ActionData;
 		/** The page's single tracker, so the submit button can disable itself. */
 		pending: Pending;
 	} = $props();
@@ -127,9 +124,6 @@
 					placeholder="Longer description shown on the olympiad page..."
 				></Textarea>
 			</div>
-			{#if form && !form.success && form.action === 'createOlympiad'}
-				<p class="text-sm text-destructive">{form.error}</p>
-			{/if}
 			<Button type="submit" class="self-start" disabled={pending.has('createOlympiad')}>
 				Create olympiad <ArrowRight />
 			</Button>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import { Pending } from '$lib/forms.svelte';
+	import { formToasts, Pending } from '$lib/forms.svelte';
 	import Title from '$lib/components/Title.svelte';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import SvelteSeo from 'svelte-seo';
@@ -19,6 +19,15 @@
 	 * buttons permanently enabled.
 	 */
 	const pending = new Pending();
+
+	/**
+	 * Both actions redirect on success, so there is nothing to toast but failures —
+	 * hence no success map. The call itself is not optional: without it this page
+	 * was the only one in the app whose children rendered their own errors inline,
+	 * which is the arrangement `YearsCard` and `ImportTitlesCard` explicitly forbid
+	 * after it once showed the same message twice.
+	 */
+	formToasts(() => form);
 </script>
 
 <SvelteSeo title="Contribute" description="Edit anything" />
@@ -35,10 +44,10 @@
 	</Tabs.List>
 
 	<Tabs.Content value="existing">
-		<SelectYearForm olympiads={data.olympiads} {form} {pending} />
+		<SelectYearForm olympiads={data.olympiads} {pending} />
 	</Tabs.Content>
 
 	<Tabs.Content value="new">
-		<NewOlympiadForm {form} {pending} />
+		<NewOlympiadForm {pending} />
 	</Tabs.Content>
 </Tabs.Root>
