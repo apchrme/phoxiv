@@ -17,7 +17,7 @@
 	import { DeepSearch, deepCacheKey } from './deep-search.svelte';
 	import TopicSelect from '$lib/components/TopicSelect.svelte';
 	import StatusFilter from '$lib/components/StatusFilter.svelte';
-	import OlympiadFilter from './OlympiadFilter.svelte';
+	import OlympiadPicker from '$lib/components/OlympiadPicker.svelte';
 	import { filterSearchItems, isFiltering, type ProblemStatus } from '$lib/filters';
 	import type { GlobalProgressMap } from '$lib/progress';
 	import type { FileSearchResult, OlympiadEntry } from '$lib/types.js';
@@ -72,7 +72,7 @@
 		userId?: string;
 		/**
 		 * The olympiad whose page the reader is on, or `undefined` anywhere else.
-		 * Handed straight to `OlympiadFilter`, which lists it first; nothing in this
+		 * Handed straight to `OlympiadPicker`, which lists it first; nothing in this
 		 * shell reads it, and in particular it never presets `olympiadFilter`.
 		 *
 		 * Passed down for `userId`'s reason. This one is only a route param, so it
@@ -329,7 +329,7 @@
 	// ---------------------------------------------------------------------------
 
 	/**
-	 * Every olympiad, for `OlympiadFilter`'s menu. `$state.raw` for `index`'s
+	 * Every olympiad, for `OlympiadPicker`'s panel. `$state.raw` for `index`'s
 	 * reason: replaced wholesale, never mutated.
 	 *
 	 * **Fetched on first entry into files mode, not on open.** ⌘K must not do extra
@@ -847,7 +847,14 @@
 								     trip, and a filter offering nothing to filter by is worse than a
 								     control that appears a moment later. -->
 								{#if olympiads.length > 0}
-									<OlympiadFilter bind:value={olympiadFilter} {olympiads} {currentOlympiad} />
+									<OlympiadPicker
+										trigger="icon"
+										allowAll
+										heading="Filter by olympiad"
+										bind:value={olympiadFilter}
+										{olympiads}
+										{currentOlympiad}
+									/>
 								{/if}
 							{:else}
 								{#if indexHasTopics}
