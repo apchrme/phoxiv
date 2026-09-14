@@ -3,10 +3,12 @@
 	import type { Pending } from '$lib/forms.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { Spinner } from '$lib/components/ui/spinner/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
 	import IconFilePicker from '$lib/components/forms/IconFilePicker.svelte';
+	import Field from '$lib/components/forms/Field.svelte';
+	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
+	import ConfirmSubmit from '$lib/components/forms/ConfirmSubmit.svelte';
 	import { Upload, X } from '@lucide/svelte';
 	import { isIconUrl } from '$lib/uploads';
 
@@ -102,25 +104,25 @@
 			use:enhance={pending.track('uploadIcon', { invalidateAll: false })}
 			class="flex flex-col gap-3"
 		>
-			<div class="flex flex-col gap-1.5">
-				<label for="iconFile" class="text-sm font-medium">Image file</label>
+			<Field label="Image file" for="iconFile">
 				<IconFilePicker
 					bind:this={picker}
 					required
 					showPreview={false}
 					onchange={(_file, url) => (previewUrl = url)}
 				/>
-			</div>
+			</Field>
 			<div class="flex gap-2">
-				<Button type="submit" size="sm" disabled={pending.has('uploadIcon') || !previewUrl}>
-					{#if pending.has('uploadIcon')}
-						<Spinner class="size-3.5" />
-						Uploading…
-					{:else}
-						<Upload class="size-3.5" />
-						Upload icon
-					{/if}
-				</Button>
+				<SubmitButton
+					{pending}
+					key="uploadIcon"
+					size="sm"
+					icon={Upload}
+					busyLabel="Uploading…"
+					disabled={!previewUrl}
+				>
+					Upload icon
+				</SubmitButton>
 				{#if previewUrl}
 					<Button type="button" variant="ghost" size="sm" onclick={clear}>
 						<X class="size-3.5" />
@@ -143,20 +145,18 @@
 					<p class="text-xs text-muted-foreground">
 						Remove the uploaded icon and fall back to the emoji/flag set in the metadata below.
 					</p>
-					<Button
-						type="submit"
-						variant="destructive"
+					<ConfirmSubmit
+						{pending}
+						key="removeIcon"
 						size="sm"
-						disabled={pending.has('removeIcon')}
+						icon={X}
 						class="ml-4 shrink-0"
+						title="Remove the uploaded icon?"
+						description="The uploaded image is deleted from storage and the olympiad falls back to the emoji or flag set in its metadata. This cannot be undone."
+						confirmLabel="Remove icon"
 					>
-						{#if pending.has('removeIcon')}
-							<Spinner class="size-3.5" />
-						{:else}
-							<X class="size-3.5" />
-						{/if}
 						Remove icon
-					</Button>
+					</ConfirmSubmit>
 				</div>
 			</form>
 		{/if}

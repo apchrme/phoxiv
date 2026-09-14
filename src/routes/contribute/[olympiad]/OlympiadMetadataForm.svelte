@@ -3,10 +3,10 @@
 	import { enhance } from '$app/forms';
 	import type { Pending } from '$lib/forms.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
-	import { Spinner } from '$lib/components/ui/spinner/index.js';
+	import Field from '$lib/components/forms/Field.svelte';
+	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
 	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
 	import TagSelect from '$lib/components/TagSelect.svelte';
 	import { Save } from '@lucide/svelte';
@@ -65,8 +65,7 @@
 			<Card.Description>Core details shown on the olympiad listing and page.</Card.Description>
 		</Card.Header>
 		<Card.Content class="flex flex-col gap-4">
-			<div class="flex flex-col gap-1.5">
-				<label for="name" class="text-sm font-medium">Full name</label>
+			<Field label="Full name" for="name">
 				<Input
 					id="name"
 					name="name"
@@ -75,10 +74,9 @@
 					bind:value={name}
 					placeholder="e.g. International Physics Olympiad"
 				/>
-			</div>
+			</Field>
 
-			<div class="flex flex-col gap-1.5">
-				<label for="summary" class="text-sm font-medium">Summary</label>
+			<Field label="Summary" for="summary">
 				<Input
 					id="summary"
 					name="summary"
@@ -87,16 +85,14 @@
 					bind:value={summary}
 					placeholder="One-sentence description shown on the listing"
 				/>
-			</div>
+			</Field>
 
 			<div class="grid grid-cols-2 gap-4">
-				<div class="flex flex-col gap-1.5">
-					<label for="icon" class="text-sm font-medium">
-						Emoji icon
-						<span class="text-xs font-normal text-muted-foreground">
-							{hasUploadedIcon ? '(overridden by upload)' : '(optional)'}
-						</span>
-					</label>
+				<Field
+					label="Emoji icon"
+					for="icon"
+					hint={hasUploadedIcon ? '(overridden by upload)' : '(optional)'}
+				>
 					<div class="flex items-center gap-2">
 						<Input
 							id="icon"
@@ -116,21 +112,16 @@
 							Remove the uploaded icon above to use an emoji instead.
 						</p>
 					{/if}
-				</div>
+				</Field>
 
-				<div class="flex flex-col gap-1.5">
-					<!-- svelte-ignore a11y_label_has_associated_control -->
-					<label class="text-sm font-medium">Tag</label>
+				<!-- No `for`: `TagSelect`'s trigger is a button, which `<label>` does not
+				     apply to. -->
+				<Field label="Tag">
 					<TagSelect bind:value={tag} placeholder="Select…" />
-				</div>
+				</Field>
 			</div>
 
-			<div class="flex flex-col gap-1.5">
-				<label for="displayOrder" class="text-sm font-medium">
-					Display order
-					<span class="text-xs font-normal text-muted-foreground">(lower = earlier in listing)</span
-					>
-				</label>
+			<Field label="Display order" for="displayOrder" hint="(lower = earlier in listing)">
 				<Input
 					id="displayOrder"
 					name="displayOrder"
@@ -141,7 +132,7 @@
 					placeholder="9999"
 					class="w-32"
 				/>
-			</div>
+			</Field>
 		</Card.Content>
 	</Card.Root>
 
@@ -163,13 +154,9 @@
 		</Card.Content>
 	</Card.Root>
 
-	<div class="flex items-center gap-3">
-		<Button type="submit" class="disabled:bg-primary/60" disabled={pending.has('updateOlympiad')}>
-			<Save class="size-4" />
-			Save changes
-		</Button>
-		{#if pending.has('updateOlympiad')}
-			<Spinner class="size-5" />
-		{/if}
-	</div>
+	<!-- The spinner used to sit *beside* this button rather than in it, one of the
+	     three competing busy shapes `SubmitButton` settles. -->
+	<SubmitButton {pending} key="updateOlympiad" icon={Save} busyLabel="Saving…" class="self-start">
+		Save changes
+	</SubmitButton>
 </form>

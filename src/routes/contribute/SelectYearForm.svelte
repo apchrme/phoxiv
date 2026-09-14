@@ -5,6 +5,8 @@
 	import type { Pending } from '$lib/forms.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import OlympiadPicker from '$lib/components/OlympiadPicker.svelte';
+	import Field from '$lib/components/forms/Field.svelte';
+	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { ArrowRight, Pencil } from '@lucide/svelte';
@@ -36,7 +38,7 @@
 </script>
 
 <Card.Root>
-	<Card.Header>
+	<Card.Header class="border-b">
 		<Card.Title>Go to a year</Card.Title>
 		<Card.Description>
 			Select an olympiad and enter a year. The year will be created if it doesn't exist yet. Leave
@@ -50,23 +52,16 @@
 			use:enhance={pending.track('selectYear')}
 			class="flex flex-col gap-4"
 		>
-			<div class="flex flex-col gap-1.5">
-				<!-- A `<span>` and not a `<label for>`: the picker's trigger is a button, not
-				     a form control, so nothing here is labellable. Its accessible name comes
-				     from the `heading` prop instead. -->
-				<span class="text-sm font-medium">Olympiad</span>
+			<!-- No `for`: the picker's trigger is a button, which `<label>` does not
+			     apply to. `Field` renders a `<span>` instead, and the picker's own
+			     `heading` is its accessible name. -->
+			<Field label="Olympiad">
 				<!-- No browser `required`, which a button cannot carry anyway: `selectYear`
 				     already answers an empty submit with "Please select an olympiad", and the
 				     page toasts it. -->
 				<OlympiadPicker name="olympiadId" bind:value={olympiadId} {olympiads} />
-			</div>
-			<div class="flex flex-col gap-1.5">
-				<label for="year" class="text-sm font-medium">
-					Year
-					<span class="ml-1 text-xs font-normal text-muted-foreground">
-						— leave blank to edit olympiad metadata
-					</span>
-				</label>
+			</Field>
+			<Field label="Year" for="year" hint="— leave blank to edit olympiad metadata">
 				<Input
 					id="year"
 					name="year"
@@ -75,11 +70,17 @@
 					max={MAX_YEAR}
 					placeholder="e.g. 2025 (optional)"
 				/>
-			</div>
+			</Field>
 			<div class="flex flex-wrap gap-2">
-				<Button type="submit" class="self-start" disabled={pending.has('selectYear')}>
-					Go <ArrowRight />
-				</Button>
+				<SubmitButton
+					{pending}
+					key="selectYear"
+					icon={ArrowRight}
+					iconSide="end"
+					class="self-start"
+				>
+					Go
+				</SubmitButton>
 				{#if olympiadId}
 					<Button variant="outline" href={resolve(`/contribute/${olympiadId}`)}>
 						<Pencil class="size-3.5" />

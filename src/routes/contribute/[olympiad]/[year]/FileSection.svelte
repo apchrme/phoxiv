@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { Pending } from '$lib/forms.svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
-	import { Spinner } from '$lib/components/ui/spinner/index.js';
+	import Field from '$lib/components/forms/Field.svelte';
+	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
+	import ConfirmSubmit from '$lib/components/forms/ConfirmSubmit.svelte';
 	import { ExternalLink, Trash2 } from '@lucide/svelte';
 	import { cn } from '$lib/utils.js';
 	import { collidingLabel, DOCUMENT_UPLOAD, slugifyLabel } from '$lib/uploads';
@@ -230,24 +231,29 @@
 						<form
 							method="POST"
 							action="?/deleteFile"
-							use:enhance={pending.track(() => `${key}/${file.label}`, {
-								reset: true,
-								confirm: `Delete "${file.label}"? This will permanently remove the file. This cannot be undone.`
-							})}
+							use:enhance={pending.track(() => `${key}/${file.label}`, { reset: true })}
 						>
 							<input type="hidden" name="scope" value={scope} />
 							<input type="hidden" name="label" value={file.label} />
 							{#if problemNumber}
 								<input type="hidden" name="problemNumber" value={problemNumber} />
 							{/if}
-							<Button
-								type="submit"
-								variant="ghost"
+							<!-- `variant="destructive"`, matching `IconCard` and `MetadataTab`. A
+							     ghost button with a red icon was this file's own spelling of
+							     "permanent", and the odd one out. The confirmation moved out of
+							     `pending.track`'s `confirm` and into the dialog — see
+							     `ConfirmSubmit`. -->
+							<ConfirmSubmit
+								{pending}
+								key={`${key}/${file.label}`}
 								size="icon-sm"
-								disabled={pending.has(`${key}/${file.label}`)}
+								icon={Trash2}
+								title={`Delete "${file.label}"?`}
+								description="The file is permanently removed from storage and from the archive. This cannot be undone."
+								confirmLabel="Delete file"
 							>
-								<Trash2 class="size-3.5 text-destructive" />
-							</Button>
+								<span class="sr-only">Delete {file.label}</span>
+							</ConfirmSubmit>
 						</form>
 					</div>
 				</div>
@@ -285,8 +291,7 @@
 			     which re-normalises and size-gates this field because it is
 			     client-submitted. -->
 			<input type="hidden" name="extractedText" value={extractedText} />
-			<div class="flex flex-1 flex-col gap-1.5">
-				<label for="{uid}-label" class="text-xs font-medium text-muted-foreground">Label</label>
+			<Field label="Label" for="{uid}-label" class="flex-1">
 				<!-- The pattern forbids forward slashes: the label becomes a path segment
 				     in the R2 key, so a slash would silently nest the object. -->
 				<input
@@ -306,9 +311,8 @@
 				{#if isInvalid}
 					<p class="text-xs text-destructive">{labelError()}</p>
 				{/if}
-			</div>
-			<div class="flex flex-1 flex-col gap-1.5">
-				<label for="{uid}-file" class="text-xs font-medium text-muted-foreground">File</label>
+			</Field>
+			<Field label="File" for="{uid}-file" class="flex-1">
 				<input
 					id="{uid}-file"
 					type="file"
@@ -318,15 +322,10 @@
 					onchange={onFilePicked}
 					class="file-input"
 				/>
-			</div>
-			<Button type="submit" disabled={pending.has(key) || isInvalid} class="shrink-0">
-				{#if pending.has(key)}
-					<Spinner class="size-3.5" />
-					Uploading…
-				{:else}
-					Upload
-				{/if}
-			</Button>
+			</Field>
+			<SubmitButton {pending} {key} busyLabel="Uploading…" disabled={isInvalid} class="shrink-0">
+				Upload
+			</SubmitButton>
 		</div>
 		{#if extractionNote}
 			<!-- Reported before the upload, not after it: that is the whole reason the

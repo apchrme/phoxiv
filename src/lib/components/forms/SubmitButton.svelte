@@ -32,6 +32,7 @@
 		pending,
 		key = '',
 		icon,
+		iconSide = 'start',
 		busyLabel,
 		variant = 'default',
 		size = 'default',
@@ -45,6 +46,12 @@
 		key?: string;
 		/** Shown at rest, and replaced by the spinner while busy. */
 		icon?: LucideIcon;
+		/**
+		 * Which side the icon sits on. `'end'` for the buttons whose icon is an arrow
+		 * saying where the submit *goes* — that arrow reads backwards in front of its
+		 * label, and the spinner replaces it in place either way.
+		 */
+		iconSide?: 'start' | 'end';
 		/**
 		 * Replaces the label while busy — "Uploading…", "Deleting…". Omit it where
 		 * the label already reads as a state ("Add / go to year") and only the icon
@@ -75,15 +82,20 @@
 	const spinnerSize = $derived(size === 'xs' || size === 'icon-xs' ? 'size-3' : 'size-4');
 </script>
 
-<Button type="submit" {variant} {size} class={className} disabled={busy || disabled}>
+{#snippet glyph()}
 	{#if busy}
 		<Spinner class={spinnerSize} />
 	{:else if Icon}
 		<Icon />
 	{/if}
+{/snippet}
+
+<Button type="submit" {variant} {size} class={className} disabled={busy || disabled}>
+	{#if iconSide === 'start'}{@render glyph()}{/if}
 	{#if busy && busyLabel}
 		{busyLabel}
 	{:else}
 		{@render children()}
 	{/if}
+	{#if iconSide === 'end'}{@render glyph()}{/if}
 </Button>

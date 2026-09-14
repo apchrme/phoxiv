@@ -4,8 +4,8 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { Spinner } from '$lib/components/ui/spinner/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
+	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
 	import { FileUp, Download, X } from '@lucide/svelte';
 	import { PROBLEM_TOPICS } from '$lib/types';
 	import { CSV_UPLOAD } from '$lib/uploads';
@@ -95,15 +95,16 @@
 				class="file-input"
 			/>
 			<div class="flex gap-2">
-				<Button type="submit" size="sm" disabled={pending.has('importTitles') || !fileName}>
-					{#if pending.has('importTitles')}
-						<Spinner class="size-3.5" />
-						Importing…
-					{:else}
-						<FileUp class="size-3.5" />
-						Import titles
-					{/if}
-				</Button>
+				<SubmitButton
+					{pending}
+					key="importTitles"
+					size="sm"
+					icon={FileUp}
+					busyLabel="Importing…"
+					disabled={!fileName}
+				>
+					Import titles
+				</SubmitButton>
 				{#if fileName}
 					<Button type="button" variant="ghost" size="sm" onclick={clear}>
 						<X class="size-3.5" />

@@ -2,9 +2,9 @@
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
 	import type { Pending } from '$lib/forms.svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Spinner } from '$lib/components/ui/spinner/index.js';
-	import { Trash2 } from '@lucide/svelte';
+	import { Save, Trash2 } from '@lucide/svelte';
+	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
+	import ConfirmSubmit from '$lib/components/forms/ConfirmSubmit.svelte';
 	import NotesEditor from './NotesEditor.svelte';
 	import LinksEditor from './LinksEditor.svelte';
 	import ProblemsEditor from './ProblemsEditor.svelte';
@@ -82,18 +82,18 @@
 	<LinksEditor bind:rows={extraLinks} />
 	<ProblemsEditor bind:rows={problemList} {duplicates} {maxScoreErrors} />
 
-	<div class="flex flex-row items-center gap-2">
-		<Button
-			type="submit"
-			class="disabled:bg-primary/60"
-			disabled={pending.has('metadata') || saveError() !== null}
-		>
-			Save metadata
-		</Button>
-		{#if pending.has('metadata')}
-			<Spinner class="size-5" />
-		{/if}
-	</div>
+	<!-- The spinner used to sit *beside* this button rather than in it, one of the
+	     three competing busy shapes `SubmitButton` settles. -->
+	<SubmitButton
+		{pending}
+		key="metadata"
+		icon={Save}
+		busyLabel="Saving…"
+		disabled={saveError() !== null}
+		class="self-start"
+	>
+		Save metadata
+	</SubmitButton>
 </form>
 
 <!--
@@ -104,18 +104,19 @@
 <form
 	method="POST"
 	action="?/deleteYear"
-	use:enhance={pending.track('deleteYear', {
-		reset: true,
-		confirm: `Delete ${olympiadName} ${year.year}? This will permanently remove the year, its problems, and all uploaded files.`
-	})}
+	use:enhance={pending.track('deleteYear', { reset: true })}
 >
-	<Button type="submit" variant="destructive" disabled={pending.has('deleteYear')}>
-		{#if pending.has('deleteYear')}
-			<Spinner class="size-3.5" />
-			Deleting…
-		{:else}
-			<Trash2 class="size-4" />
-			Delete this year
-		{/if}
-	</Button>
+	<!-- The confirmation moved out of `pending.track`'s `confirm` and into the
+	     dialog: this asks first and submits after, where that submitted first and
+	     cancelled inline. See `ConfirmSubmit`. -->
+	<ConfirmSubmit
+		{pending}
+		key="deleteYear"
+		icon={Trash2}
+		title="Delete {olympiadName} {year.year}?"
+		description="The year, its problems, and all of its uploaded files are permanently removed — along with every user's tracked progress on those problems. This cannot be undone."
+		confirmLabel="Delete year"
+	>
+		Delete this year
+	</ConfirmSubmit>
 </form>

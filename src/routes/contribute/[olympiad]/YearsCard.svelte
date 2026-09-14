@@ -6,7 +6,8 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { Spinner } from '$lib/components/ui/spinner/index.js';
+	import Field from '$lib/components/forms/Field.svelte';
+	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import { Plus, Pencil } from '@lucide/svelte';
 	import { MAX_YEAR, MIN_YEAR } from '$lib/constants';
@@ -62,8 +63,7 @@
 			use:enhance={pending.track('selectYear', { reset: true })}
 			class="flex flex-wrap items-end gap-2"
 		>
-			<div class="flex flex-col gap-1.5">
-				<label for="newYear" class="text-xs font-medium text-muted-foreground">Year</label>
+			<Field label="Year" for="newYear">
 				<Input
 					id="newYear"
 					name="year"
@@ -74,15 +74,10 @@
 					required
 					class="w-32"
 				/>
-			</div>
-			<Button type="submit" size="sm" disabled={pending.has('selectYear')}>
-				{#if pending.has('selectYear')}
-					<Spinner class="size-3.5" />
-				{:else}
-					<Plus class="size-3.5" />
-				{/if}
-				Add / go to year
-			</Button>
+			</Field>
+			<!-- No `busyLabel`: the label already reads as an instruction rather than a
+			     state, so only the icon swaps. -->
+			<SubmitButton {pending} key="selectYear" size="sm" icon={Plus}>Add / go to year</SubmitButton>
 		</form>
 	</Card.Content>
 </Card.Root>

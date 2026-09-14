@@ -2,9 +2,10 @@
 	import { enhance } from '$app/forms';
 	import type { Pending } from '$lib/forms.svelte';
 	import IconFilePicker from '$lib/components/forms/IconFilePicker.svelte';
+	import Field from '$lib/components/forms/Field.svelte';
+	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
 	import TagSelect from '$lib/components/TagSelect.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { ArrowRight } from '@lucide/svelte';
@@ -21,6 +22,7 @@
 	 *
 	 * `TagSelect` submits `tag` through a hidden input rendered in place while its
 	 * list portals to `document.body`, so it has to stay inside the `<form>`.
+	 * Errors are the page's to toast — see its `formToasts` call.
 	 */
 	let {
 		pending
@@ -33,7 +35,7 @@
 </script>
 
 <Card.Root>
-	<Card.Header>
+	<Card.Header class="border-b">
 		<Card.Title>New olympiad</Card.Title>
 		<Card.Description>
 			Creates a new olympiad and takes you straight to editing its first year.
@@ -48,34 +50,22 @@
 			class="flex flex-col gap-4"
 		>
 			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-				<div class="flex flex-col gap-1.5">
-					<label for="id" class="text-sm font-medium">
-						ID <span class="text-sm text-muted-foreground">(unique acronym)</span>
-					</label>
+				<Field label="ID" for="id" hint="(unique acronym)">
 					<Input id="id" name="id" type="text" required placeholder="e.g. ipho" />
-				</div>
-				<div class="flex flex-col gap-1.5">
-					<label for="icon" class="text-sm font-medium">
-						Emoji icon <span class="text-sm text-muted-foreground">(optional)</span>
-					</label>
+				</Field>
+				<Field label="Emoji icon" for="icon" hint="(optional)">
 					<Input id="icon" name="icon" type="text" placeholder="e.g. 🌍" />
-				</div>
+				</Field>
 			</div>
 
-			<!-- Icon file upload -->
-			<div class="flex flex-col gap-1.5">
-				<label for="iconFile" class="text-sm font-medium">
-					Icon image
-					<span class="text-sm text-muted-foreground">(optional — overrides emoji)</span>
-				</label>
+			<Field label="Icon image" for="iconFile" hint="(optional — overrides emoji)">
 				<IconFilePicker class="flex-1" />
 				<p class="text-xs text-muted-foreground">
 					{ICON_UPLOAD.label} · max {ICON_UPLOAD.maxLabel}
 				</p>
-			</div>
+			</Field>
 
-			<div class="flex flex-col gap-1.5">
-				<label for="name" class="text-sm font-medium">Full name</label>
+			<Field label="Full name" for="name">
 				<Input
 					id="name"
 					name="name"
@@ -83,9 +73,8 @@
 					required
 					placeholder="e.g. International Physics Olympiad"
 				/>
-			</div>
-			<div class="flex flex-col gap-1.5">
-				<label for="summary" class="text-sm font-medium">Summary</label>
+			</Field>
+			<Field label="Summary" for="summary">
 				<Input
 					id="summary"
 					name="summary"
@@ -93,15 +82,15 @@
 					required
 					placeholder="One sentence description"
 				/>
-			</div>
+			</Field>
 			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-				<div class="flex flex-col gap-1.5">
-					<!-- svelte-ignore a11y_label_has_associated_control -->
-					<label class="text-sm font-medium">Tag</label>
+				<!-- No `for`: `TagSelect`'s trigger is a button, which `<label>` does not
+				     apply to. `Field` renders a `<span>` instead, which is why this no
+				     longer needs an `a11y_label_has_associated_control` suppression. -->
+				<Field label="Tag">
 					<TagSelect bind:value={tag} />
-				</div>
-				<div class="flex flex-col gap-1.5">
-					<label for="first-year" class="text-sm font-medium">First year</label>
+				</Field>
+				<Field label="First year" for="first-year">
 					<Input
 						id="first-year"
 						name="year"
@@ -111,22 +100,26 @@
 						max={MAX_YEAR}
 						placeholder="e.g. 2025"
 					/>
-				</div>
+				</Field>
 			</div>
-			<div class="flex flex-col gap-1.5">
-				<label for="description" class="text-sm font-medium">
-					Description <span class="text-sm text-muted-foreground">(optional, Markdown)</span>
-				</label>
+			<Field label="Description" for="description" hint="(optional, Markdown)">
 				<Textarea
 					id="description"
 					name="description"
 					rows={3}
 					placeholder="Longer description shown on the olympiad page..."
 				></Textarea>
-			</div>
-			<Button type="submit" class="self-start" disabled={pending.has('createOlympiad')}>
-				Create olympiad <ArrowRight />
-			</Button>
+			</Field>
+			<SubmitButton
+				{pending}
+				key="createOlympiad"
+				icon={ArrowRight}
+				iconSide="end"
+				busyLabel="Creating…"
+				class="self-start"
+			>
+				Create olympiad
+			</SubmitButton>
 		</form>
 	</Card.Content>
 </Card.Root>
