@@ -52,17 +52,17 @@
 
 <div class={cn('flex flex-col gap-1.5', className)}>
 	{#if htmlFor}
-		<label for={htmlFor} class="text-sm font-medium">
+		<label for={htmlFor} class="text-sm font-medium text-foreground">
 			{label}
 			{#if hint}
-				<span class="ml-1 font-normal text-muted-foreground">{hint}</span>
+				<span class="text-sm font-normal text-muted-foreground">{hint}</span>
 			{/if}
 		</label>
 	{:else}
-		<span class="text-sm font-medium">
+		<span class="text-sm font-medium text-foreground">
 			{label}
 			{#if hint}
-				<span class="ml-1 font-normal text-muted-foreground">{hint}</span>
+				<span class="text-sm font-normal text-muted-foreground">{hint}</span>
 			{/if}
 		</span>
 	{/if}

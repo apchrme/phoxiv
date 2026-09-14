@@ -60,8 +60,7 @@
 
 	<Separator class="mb-8" />
 
-	<!-- Post content -->
-	<div class="prose max-w-none">
-		<PostContent />
-	</div>
+	<!-- Post content. The prose wrapper comes from its mdsvex layout,
+	     `$lib/post.svelte` — see there for why posts skip `prose.svelte`. -->
+	<PostContent />
 </article>

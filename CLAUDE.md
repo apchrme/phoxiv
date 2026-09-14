@@ -59,8 +59,8 @@ and `db/` (`schema.ts`, `relations.ts`, `index.ts`, plus
 sits directly under `src/lib/`: `types`, `uploads`, `constants`, `nav`, `posts`,
 `activity`, `progress`, `filters`, `search`, `pdf-text`, `forms.svelte`,
 `resource.svelte`, `auth-client`, `utils` (just `cn`),
-`utils/{date,flag,fuzzy,json,plural,topics}`, `hooks/is-mobile.svelte`, and
-`prose.svelte`.
+`utils/{date,flag,fuzzy,json,plural,topics}`, `hooks/is-mobile.svelte`, and the
+two mdsvex layouts, `prose.svelte` and `post.svelte`.
 
 `src/lib/components/` holds the route-agnostic UI: `OlympiadPicker`,
 `OlympiadIcon`, `TopicSelect`, `StatusFilter`, `TagSelect`, `EmptyState`,

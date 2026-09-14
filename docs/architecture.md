@@ -172,6 +172,29 @@ data straight through, which is **not** optional: when a universal `+layout.ts`
 exists, SvelteKit derives `LayoutData` from _its_ return type, so returning
 nothing would drop `user` from every page's `data`.
 
+### The two mdsvex layouts
+
+Three files are markdown, not Svelte: `resources/+page.svx`, `privacy/+page.svx`
+and the blog posts in `$lib/posts/`. mdsvex wraps each in a layout and passes its
+front matter to that layout as props, so the layout is where a `.svx` file's
+title and description turn into markup. The two kinds want opposite things from
+that, which is why [`svelte.config.js`](../svelte.config.js) configures a _named_
+layout map rather than one layout — mdsvex chooses the entry whose key matches a
+folder in the file's path, and falls back to `_`:
+
+- [`prose.svelte`](../src/lib/prose.svelte) (the `_` fallback) is the whole page
+  for a standalone `.svx` route. It renders a `PageHeader` and a `SvelteSeo` from
+  the front matter, because nothing else does.
+- [`post.svelte`](../src/lib/post.svelte) (the `posts` key) renders only the prose
+  wrapper. A blog post is embedded in
+  [`blog/[slug]/+page.svelte`](<../src/routes/(reg)/blog/[slug]/+page.svelte>),
+  which already draws a richer header — date, author, tags — and its own
+  `SvelteSeo`. While posts shared the fallback, every one of them printed its
+  title and description a second time and emitted two competing `<title>` tags.
+
+The blog route owns a post's header and SEO because only it has the date, author
+and tags to show; the layout owns only the typography.
+
 ### Why some pages fetch their own data
 
 The olympiads index, the olympiad detail page and the landing page all `fetch()`
@@ -289,7 +312,7 @@ Client-safe modules sit directly under `$lib/`: `types.ts`, `uploads.ts`,
 `constants.ts`, `nav.ts`, `posts.ts`, `activity.ts`, `progress.ts`, `filters.ts`,
 `search.ts`, `pdf-text.ts`, `forms.svelte.ts`, `auth-client.ts`, `utils.ts` (just
 `cn`), `utils/{date,flag,fuzzy,json,topics}.ts`, `hooks/is-mobile.svelte.ts` and
-`prose.svelte`.
+the two mdsvex layouts, `prose.svelte` and `post.svelte`.
 Several of them exist specifically so a rule is stated once and consumed from
 both sides — the upload allow-list is the clearest example, `progress.ts` carries
 the score rules the year editor, the CSV import, the `trackProblem` action and
