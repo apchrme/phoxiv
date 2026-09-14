@@ -5,9 +5,10 @@
 	import { Badge } from '$lib/components/ui/badge/index';
 	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
 	import SearchBar from '$lib/components/search/SearchBar.svelte';
-	import SearchEmptyState from '$lib/components/search/SearchEmptyState.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
-	import { ArrowRight } from '@lucide/svelte';
+	import { ArrowRight, SearchX, TriangleAlert } from '@lucide/svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import SvelteSeo from 'svelte-seo';
@@ -78,12 +79,16 @@
 			{/each}
 		</div>
 	{:else if source.failed}
-		<SearchEmptyState
+		<EmptyState
+			variant="error"
+			icon={TriangleAlert}
 			message="Couldn't load the olympiads"
 			hint="Something went wrong fetching the list. Reloading usually fixes it."
-			clearLabel="Reload"
-			onClear={() => location.reload()}
-		/>
+		>
+			{#snippet action()}
+				<Button variant="outline" size="sm" onclick={() => location.reload()}>Reload</Button>
+			{/snippet}
+		</EmptyState>
 	{:else if filtered().length > 0}
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">
 			{#each filtered() as olympiad (olympiad.id)}
@@ -126,15 +131,24 @@
 			{/each}
 		</div>
 	{:else}
-		<SearchEmptyState
+		<EmptyState
+			icon={SearchX}
 			message="No olympiads found"
-			hint="Try a different search term or clear the filter."
-			clearLabel="Clear filters"
-			onClear={() => {
-				query = '';
-				activeTag = null;
-			}}
-		/>
+			hint="Try a different search term, or clear the filter."
+		>
+			{#snippet action()}
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={() => {
+						query = '';
+						activeTag = null;
+					}}
+				>
+					Clear filters
+				</Button>
+			{/snippet}
+		</EmptyState>
 	{/if}
 </section>
 

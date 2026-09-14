@@ -2,7 +2,7 @@
 	import type { SearchItem } from '$lib/types.js';
 	import { highlight } from '$lib/utils/fuzzy';
 	import FileBadge from '$lib/components/FileBadge.svelte';
-	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
+	import ResultMeta from './ResultMeta.svelte';
 	import { cn } from '$lib/utils.js';
 	import { resolve } from '$app/paths';
 
@@ -55,19 +55,19 @@
 		}}
 		onmousemove={onhover}
 		class={cn(
-			'flex flex-col gap-1.5 border-b border-white/40 px-4 py-3 transition-all duration-150 last:border-0 dark:border-white/8',
+			'flex flex-col gap-1.5 border-b border-white/40 px-4 py-3 transition-all duration-150 last:border-0 motion-reduce:transition-none dark:border-white/8',
 			focused ? 'bg-white/50 dark:bg-white/8' : 'hover:bg-white/35 dark:hover:bg-white/5'
 		)}
 	>
-		<!-- Olympiad + year -->
-		<div class="flex items-center gap-1.5 text-muted-foreground">
-			<OlympiadIcon icon={item.olympiadIcon} id={item.olympiadId} size="sm" />
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			<span>{@html highlight(item.olympiadName, query)}</span>
-			<span aria-hidden="true">·</span>
-			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-			<span class="font-mono">{@html highlight(String(item.year), query)}</span>
-		</div>
+		<!-- `query` given, so the name and year are marked: unlike a file hit, the
+		     query really did run over this text. -->
+		<ResultMeta
+			olympiadId={item.olympiadId}
+			olympiadIcon={item.olympiadIcon}
+			olympiadName={item.olympiadName}
+			year={item.year}
+			{query}
+		/>
 
 		<!-- Problem number + title -->
 		<div class="flex items-baseline gap-2">

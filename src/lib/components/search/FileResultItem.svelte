@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { FileSearchResult } from '$lib/types.js';
 	import { splitMarks } from '$lib/utils/fuzzy';
-	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
+	import ResultMeta from './ResultMeta.svelte';
 	import { FileText } from '@lucide/svelte';
 	import { cn } from '$lib/utils.js';
 
@@ -80,14 +80,14 @@
 			focused ? 'bg-white/50 dark:bg-white/8' : 'hover:bg-white/35 dark:hover:bg-white/5'
 		)}
 	>
-		<!-- Olympiad + year. **Deliberately not highlighted**: the query matched the
-		     file's text, not its metadata, and marking the name would claim a match
-		     that did not happen. -->
-		<div class="flex items-center gap-1.5 text-muted-foreground">
-			<OlympiadIcon icon={hit.olympiadIcon} id={hit.olympiadId} size="sm" />
-			<span>{hit.olympiadName}</span>
-			<span aria-hidden="true">·</span>
-			<span class="font-mono">{hit.year}</span>
+		<!-- **No `query`, deliberately**: the query matched the file's text, not its
+		     metadata, and marking the name would claim a match that did not happen. -->
+		<ResultMeta
+			olympiadId={hit.olympiadId}
+			olympiadIcon={hit.olympiadIcon}
+			olympiadName={hit.olympiadName}
+			year={hit.year}
+		>
 			{#if hit.problems.length != 0}
 				<span aria-hidden="true">·</span>
 				<span class="font-mono">
@@ -96,7 +96,7 @@
 						: ''}
 				</span>
 			{/if}
-		</div>
+		</ResultMeta>
 
 		<!-- The file, then what it covers -->
 		<div class="flex flex-wrap items-baseline gap-x-2 gap-y-1">

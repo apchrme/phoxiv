@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { ProblemTopic, SearchItem, SearchMode } from '$lib/types.js';
 	import { rank, MAX_RESULTS } from '$lib/utils/fuzzy';
-	import { Search } from '@lucide/svelte';
+	import { Search, SearchX, TriangleAlert } from '@lucide/svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 	import XIcon from '@lucide/svelte/icons/x';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import { Spinner } from '$lib/components/ui/spinner/index.js';
@@ -905,14 +906,17 @@
 										<p class="text-center text-sm text-muted-foreground">Loading search index…</p>
 									</div>
 								{:else if indexFailed}
-									<div class="m-auto flex flex-col gap-2 px-5">
-										<p class="text-center text-sm text-destructive">
-											Couldn't load the search index.
-										</p>
-										<p class="text-center text-sm text-muted-foreground">
-											Close this and reopen it to try again.
-										</p>
-									</div>
+									<!-- `boxed={false}` for every empty state in here: the dialog panel
+									     already has edges, and a dashed box inside it reads as a rendering
+									     fault rather than as a state. -->
+									<EmptyState
+										boxed={false}
+										variant="error"
+										icon={TriangleAlert}
+										message="Couldn't load the search index"
+										hint="Close this and reopen it to try again."
+										class="m-auto"
+									/>
 								{:else if !query.trim() && !filtering}
 									<div class="m-auto flex flex-col gap-2 px-5">
 										<p class="text-center text-sm text-muted-foreground">
@@ -928,16 +932,22 @@
 										{/if}
 									</div>
 								{:else if results.length === 0}
-									<div class="m-auto flex flex-col items-center gap-2 px-5">
-										<p class="text-center text-sm text-muted-foreground">No results found.</p>
+									<EmptyState
+										boxed={false}
+										icon={SearchX}
+										message="No results found"
+										class="m-auto"
+									>
 										<!-- A filled funnel is easy to miss, and "No results found" with a
 										     forgotten topic filter is the classic trap. -->
-										{#if filtering || olympiadFilter !== null}
-											<Button variant="outline" size="sm" onclick={clearFilters}
-												>Clear filters</Button
-											>
-										{/if}
-									</div>
+										{#snippet action()}
+											{#if filtering || olympiadFilter !== null}
+												<Button variant="outline" size="sm" onclick={clearFilters}
+													>Clear filters</Button
+												>
+											{/if}
+										{/snippet}
+									</EmptyState>
 								{:else}
 									{#if filtering || olympiadFilter !== null}
 										<!-- The converse of files mode's note below, so **neither** switch is
@@ -1003,14 +1013,19 @@
 										</p>
 									</div>
 								{:else if deepFailed}
-									<div class="m-auto flex flex-col items-center gap-2 px-5">
-										<p class="text-center text-sm text-destructive">
-											Couldn't search inside files.
-										</p>
-										<Button variant="outline" size="sm" onclick={() => deep.retry()}
-											>Try again</Button
-										>
-									</div>
+									<EmptyState
+										boxed={false}
+										variant="error"
+										icon={TriangleAlert}
+										message="Couldn't search inside files"
+										class="m-auto"
+									>
+										{#snippet action()}
+											<Button variant="outline" size="sm" onclick={() => deep.retry()}
+												>Try again</Button
+											>
+										{/snippet}
+									</EmptyState>
 								{:else if deepQuery.length < MIN_DEEP_QUERY_LENGTH}
 									<div class="m-auto flex flex-col gap-2 px-5">
 										<p class="text-center text-sm text-muted-foreground">
@@ -1033,22 +1048,22 @@
 										<p class="text-center text-sm text-muted-foreground">Searching inside files…</p>
 									</div>
 								{:else if visibleDeepResults.length === 0}
-									<p
-										class="flex flex-1 items-center justify-center px-5 text-center text-sm text-muted-foreground"
-									>
-										<!-- `indexEmpty` is a claim about the whole pipeline and stays
-										     global under a filter — see `searchFiles`. Naming the olympiad
-										     in the other branch is this side's half of that bargain: the
-										     server does not narrow the field, so the client, which knows its
-										     own filter, words the sentence. -->
-										{#if deep.indexEmpty}
-											No files have been indexed yet — this is still catching up.
-										{:else if filteredOlympiadName !== null}
-											No {filteredOlympiadName} files contain that phrase.
-										{:else}
-											No files contain that phrase.
-										{/if}
-									</p>
+									<!-- `indexEmpty` is a claim about the whole pipeline and stays global
+									     under a filter — see `searchFiles`. Naming the olympiad in the other
+									     branch is this side's half of that bargain: the server does not narrow
+									     the field, so the client, which knows its own filter, words the
+									     sentence. -->
+									<EmptyState
+										boxed={false}
+										icon={SearchX}
+										class="m-auto"
+										message={deep.indexEmpty
+											? 'No files indexed yet'
+											: filteredOlympiadName !== null
+												? `No ${filteredOlympiadName} files contain that phrase`
+												: 'No files contain that phrase'}
+										hint={deep.indexEmpty ? 'The archive is still catching up.' : undefined}
+									/>
 								{:else}
 									{#if filtering}
 										<!-- Shown only while a filter is set, so switching modes is never

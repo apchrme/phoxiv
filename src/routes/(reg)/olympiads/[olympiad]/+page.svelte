@@ -3,9 +3,11 @@
 	import type { ProblemTopic, YearEntry } from '$lib/types.js';
 	import SearchBar from '$lib/components/search/SearchBar.svelte';
 	import TopicSelect from '$lib/components/TopicSelect.svelte';
-	import SearchEmptyState from '$lib/components/search/SearchEmptyState.svelte';
+	import EmptyState from '$lib/components/EmptyState.svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import { Switch } from '$lib/components/ui/switch/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { SearchX, TriangleAlert } from '@lucide/svelte';
 	import BackLink from '$lib/components/BackLink.svelte';
 	import SvelteSeo from 'svelte-seo';
 	import { tick } from 'svelte';
@@ -282,12 +284,16 @@
 			{/each}
 		</div>
 	{:else if loadFailed}
-		<SearchEmptyState
+		<EmptyState
+			variant="error"
+			icon={TriangleAlert}
 			message="Couldn't load this olympiad"
 			hint="Something went wrong fetching the file list. Reloading usually fixes it."
-			clearLabel="Reload"
-			onClear={() => location.reload()}
-		/>
+		>
+			{#snippet action()}
+				<Button variant="outline" size="sm" onclick={() => location.reload()}>Reload</Button>
+			{/snippet}
+		</EmptyState>
 	{:else if filtered.length > 0}
 		<div class="flex flex-col gap-4">
 			{#each filtered as year (year.year)}
@@ -301,15 +307,24 @@
 			{/each}
 		</div>
 	{:else}
-		<SearchEmptyState
+		<EmptyState
+			icon={SearchX}
 			message="No results found"
 			hint="Try a different year or problem name, or clear the topic and progress filters."
-			clearLabel="Clear filters"
-			onClear={() => {
-				query = '';
-				activeTopics = [];
-				status = 'all';
-			}}
-		/>
+		>
+			{#snippet action()}
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={() => {
+						query = '';
+						activeTopics = [];
+						status = 'all';
+					}}
+				>
+					Clear filters
+				</Button>
+			{/snippet}
+		</EmptyState>
 	{/if}
 </section>
