@@ -241,9 +241,8 @@
 							{/if}
 							<!-- `variant="destructive"`, matching `IconCard` and `MetadataTab`. A
 							     ghost button with a red icon was this file's own spelling of
-							     "permanent", and the odd one out. The confirmation moved out of
-							     `pending.track`'s `confirm` and into the dialog — see
-							     `ConfirmSubmit`. -->
+							     "permanent", and the odd one out. It asks before submitting rather
+							     than during — see `ConfirmSubmit`. -->
 							<ConfirmSubmit
 								{pending}
 								key={`${key}/${file.label}`}

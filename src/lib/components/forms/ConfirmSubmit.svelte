@@ -19,16 +19,19 @@
 	 *
 	 * # This changes the control flow, and that is the whole point of the file
 	 *
-	 * `TrackOptions.confirm` is synchronous: `use:enhance` calls it *during* the
-	 * submit and cancels inline if the user declines. An `AlertDialog` cannot work
-	 * that way — it returns immediately and answers later — so the order inverts
-	 * from "submit, then ask" to "ask, then submit". The button here is therefore
-	 * `type="button"` and does not submit anything; confirming calls
-	 * `requestSubmit()` on the enclosing form, which runs `use:enhance` and
-	 * `Pending` exactly as a real submit does. `requestSubmit` and not `submit()`,
-	 * which bypasses both.
+	 * The `TrackOptions.confirm` this replaced was synchronous: `use:enhance` called
+	 * it *during* the submit and cancelled inline if the user declined. An
+	 * `AlertDialog` cannot work that way — it returns immediately and answers later
+	 * — so the order inverts from "submit, then ask" to "ask, then submit". The
+	 * button here is therefore `type="button"` and does not submit anything;
+	 * confirming calls `requestSubmit()` on the enclosing form, which runs
+	 * `use:enhance` and `Pending` exactly as a real submit does. `requestSubmit` and
+	 * not `submit()`, which bypasses both.
 	 *
-	 * `TrackOptions.confirm` stays in place for anything not migrated.
+	 * That option is gone rather than left beside this: with every call site
+	 * migrated it had no callers, and a second way to ask is how the two drift apart.
+	 * `TrackOptions.guard` is not a replacement — it blocks a submit that must not
+	 * happen and toasts why, which is a different question from asking permission.
 	 *
 	 * # Why it is hand-styled
 	 *

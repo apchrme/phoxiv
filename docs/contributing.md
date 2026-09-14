@@ -382,7 +382,7 @@ a new screen should use them rather than re-derive them.
 | ---------------------------- | --------------------------------------------------------------------------------------------- |
 | `forms/Field.svelte`         | a labelled control. Omit `for` where the control is a button and the label becomes a `<span>` |
 | `forms/SubmitButton.svelte`  | any submit. It takes the `Pending` key the form was tracked under and owns the busy state     |
-| `forms/ConfirmSubmit.svelte` | a destructive submit. **Not** `window.confirm`, and not `TrackOptions.confirm`                |
+| `forms/ConfirmSubmit.svelte` | a destructive submit. It is the **only** way this app asks — never `window.confirm`           |
 | `forms/Repeater.svelte`      | a list of rows the contributor adds to and deletes from                                       |
 | `EmptyState.svelte`          | a list with nothing in it, or a fetch that failed — those are different, hence `variant`      |
 | `PageHeader.svelte`          | the block at the top of a page                                                                |
@@ -399,11 +399,15 @@ screen to say so. `Resource` holds the `res.ok` check, the success-only fetch-on
 guard and the plain-`let` in-flight flag this document mandates below, in one place
 rather than in each copy.
 
-`ConfirmSubmit` inverts the order a confirmation happens in. `TrackOptions.confirm`
-is synchronous and cancels the submit inline; an `AlertDialog` answers later, so
-the trigger is a plain button and confirming calls `requestSubmit()` on the
-enclosing form. `use:enhance` and `Pending` then run exactly as they do for a real
-submit.
+`ConfirmSubmit` inverts the order a confirmation happens in, and that is why it is
+a component rather than an option on `pending.track()`. The `TrackOptions.confirm`
+it replaced was synchronous and cancelled the submit inline; an `AlertDialog`
+answers later, so the trigger is a plain button and confirming calls
+`requestSubmit()` on the enclosing form. `use:enhance` and `Pending` then run
+exactly as they do for a real submit. That option has been removed rather than
+left alongside — a second way to ask is how the two drift apart. `TrackOptions.guard`
+is not a replacement: it blocks a submit that must not happen and toasts why,
+which is a different question from asking permission.
 
 ### Comment the _why_
 

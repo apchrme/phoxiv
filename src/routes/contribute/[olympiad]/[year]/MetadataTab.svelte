@@ -106,9 +106,8 @@
 	action="?/deleteYear"
 	use:enhance={pending.track('deleteYear', { reset: true })}
 >
-	<!-- The confirmation moved out of `pending.track`'s `confirm` and into the
-	     dialog: this asks first and submits after, where that submitted first and
-	     cancelled inline. See `ConfirmSubmit`. -->
+	<!-- This asks first and submits after, where the `window.confirm()` it replaced
+	     submitted first and cancelled inline. See `ConfirmSubmit`. -->
 	<ConfirmSubmit
 		{pending}
 		key="deleteYear"

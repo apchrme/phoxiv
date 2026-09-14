@@ -199,8 +199,8 @@
 					onDone: refresh
 				})}
 			>
-				<!-- The confirmation moved out of `pending.track`'s `confirm` and into the
-				     dialog — see `ConfirmSubmit`. `variant="outline"`, not destructive: it
+				<!-- Asks before submitting rather than during — see `ConfirmSubmit`.
+				     `variant="outline"`, not destructive: it
 				     removes index rows whose files are already gone, so it asks because it
 				     cannot be undone, not because it destroys anything a reader can see. -->
 				<ConfirmSubmit

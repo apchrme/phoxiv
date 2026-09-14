@@ -22,9 +22,15 @@ export type TrackOptions = {
 	reset?: boolean;
 	/** Re-run load functions afterwards. Defaults to SvelteKit's own behaviour. */
 	invalidateAll?: boolean;
-	/** Ask for confirmation before submitting; declining cancels. */
-	confirm?: string | (() => string);
-	/** Return a message to block the submission and toast it; `null` to allow. */
+	/**
+	 * Return a message to block the submission and toast it; `null` to allow.
+	 *
+	 * This is the only thing left here that can stop a submit, and it is
+	 * deliberately not a confirmation. A `confirm` option used to sit beside it,
+	 * cancelling inline against `window.confirm()`; confirmations are
+	 * `ConfirmSubmit` now, which asks *before* submitting rather than during — see
+	 * its header for why that order had to change.
+	 */
 	guard?: () => string | null;
 	/** Runs once the response is in, before the page data updates. */
 	onDone?: () => void;
@@ -64,14 +70,6 @@ export class Pending {
 				const message = options.guard();
 				if (message) {
 					toast.error(message);
-					cancel();
-					return;
-				}
-			}
-
-			if (options.confirm) {
-				const prompt = typeof options.confirm === 'function' ? options.confirm() : options.confirm;
-				if (!window.confirm(prompt)) {
 					cancel();
 					return;
 				}
