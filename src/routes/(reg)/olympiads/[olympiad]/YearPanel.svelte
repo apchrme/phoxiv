@@ -74,7 +74,6 @@
 		{/if}
 	</Card.Header>
 
-	<Separator />
 
 	<div class="flex flex-col gap-4 px-3 sm:px-5">
 		{#if showYearLevel && hasYearLevelContent(year)}
