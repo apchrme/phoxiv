@@ -35,8 +35,8 @@
 		{
 			n: '01',
 			title: 'Browse the archive',
-			body: `Every olympiad with problems, solutions, marking schemes and
-			       extra links attached to each. Pages are cached, so they are lightning-fast.`,
+			body: `Dozens of olympiads, each with problems, solutions, marking schemes and more.
+			Pages are cached, so they are lightning-fast.`,
 			href: resolve('/olympiads'),
 			cta: 'Browse olympiads'
 		},
@@ -47,17 +47,14 @@
 			// breath that a scan will not be searchable. Claiming "every document" here
 			// and admitting the exception four blocks later is the same page
 			// contradicting itself.
-			body: `The default mode fuzzy-matches problems by olympiad, year, number and title, and
-			       runs entirely in your browser. Deep search matches the text inside the documents
-			       it could be extracted from, so you can search for problems that you remember a phrase
-				   from.`,
+			body: `The site includes two different types of search. The default search allows you to find a problem you remember the number/title of. Can't remember that?
+			Fret not. Deep search matches the text inside the PDFs, so you can search for problems that you remember a phrase from.`,
 			shortcut: true
 		},
 		{
 			n: '03',
 			title: 'Track what you have solved',
-			body: `Mark any problem done, optionally with a score, and see per-year totals. Progress is private and filterable from
-			       the search dialog.`,
+			body: `Mark any problem you have done, optionally with a score, and see per-year totals. Filter by completion status to narrow down your search.`,
 			href: signedIn ? resolve('/profile') : resolve('/login'),
 			cta: signedIn ? 'See your progress' : 'Sign in to track'
 		},
@@ -65,8 +62,7 @@
 			n: '04',
 			title: 'Contribute',
 			body: `Contributors edit the olympiads they are assigned: adding years, uploading and
-			       labelling files, and editing problem metadata. An uploaded PDF is text-extracted in the
-			       browser the moment it is picked.`,
+			       labelling files, and editing problem metadata. Don't see an olympiad you like here? Become a contributor and add it!`,
 			href: signedIn ? resolve('/contribute') : resolve('/login'),
 			cta: signedIn ? 'Open the editor' : 'Sign in to contribute'
 		}
