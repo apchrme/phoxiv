@@ -13,13 +13,8 @@
 	import { MAX_YEAR, MIN_YEAR } from '$lib/constants';
 
 	/**
-	 * The olympiad's existing years, plus the form that adds one.
-	 *
-	 * `?/selectYear` always redirects into the year editor, so there is no success
-	 * result to toast. Failures are left to the page's `formToasts`, which toasts
-	 * every failed action — rendering them inline here as well showed the same
-	 * message twice. The action creates the year record when it doesn't exist yet,
-	 * which is why the same control both adds and navigates.
+	 * The olympiad's years, plus a form that goes to a year, creating it if new.
+	 * Don't render errors inline: the page's `formToasts` already toasts them.
 	 */
 	let {
 		olympiadId,
@@ -28,7 +23,7 @@
 	}: {
 		olympiadId: string;
 		years: PageData['years'];
-		/** The page's single tracker, so the submit button can disable itself. */
+		/** The page's single `Pending`, so the submit button can disable itself. */
 		pending: Pending;
 	} = $props();
 </script>
@@ -75,8 +70,6 @@
 					class="w-32"
 				/>
 			</Field>
-			<!-- No `busyLabel`: the label already reads as an instruction rather than a
-			     state, so only the icon swaps. -->
 			<SubmitButton {pending} key="selectYear" size="sm" icon={Plus}>Add / go to year</SubmitButton>
 		</form>
 	</Card.Content>

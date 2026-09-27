@@ -1,10 +1,6 @@
 /**
- * How wide an olympiad's field is. Used for the filter on the olympiads page
- * and as the `tag` column's allowed values.
- *
- * `src/lib/server/db/schema.ts` repeats these literals in its `enum:` option:
- * drizzle-kit bundles the schema with its own resolver, so `$lib` does not
- * resolve there. Keep the two in sync.
+ * An olympiad's scope, used by the olympiads page filter. `schema.ts` repeats
+ * these in the `tag` enum (it can't import `$lib`); keep them in sync.
  */
 export const OLYMPIAD_TAGS = ['International', 'Regional', 'National', 'Open'] as const;
 
@@ -15,7 +11,7 @@ export function isOlympiadTag(value: string): value is OlympiadTag {
 	return (OLYMPIAD_TAGS as readonly string[]).includes(value);
 }
 
-/** A olympiad entry. */
+/** An olympiad, as served publicly. */
 export type OlympiadEntry = {
 	id: string;
 	name: string;
@@ -27,18 +23,9 @@ export type OlympiadEntry = {
 };
 
 /**
- * The least an olympiad has to be for `OlympiadPicker` to render a row for it:
- * an id to submit, a name to read, and an icon if one is known.
- *
- * A separate type from {@link OlympiadEntry}, which is a superset of it, because
- * the two arrive by different routes. The ⌘K dialog holds whole entries from the
- * publicly cached `/api/olympiads` and hands them over unmapped; the contribute
- * and admin pages hold only what `listOlympiadOptions` selects, which is these
- * three columns and no more — neither page has any use for a summary or a
- * rendered description, and neither is worth a wider read of the table.
- *
- * `icon` is optional so a caller with no icons to show still type-checks; the
- * picker falls back to `OlympiadIcon`'s own blank state.
+ * What `OlympiadPicker` needs for one row. {@link OlympiadEntry} also fits, so the
+ * search dialog passes those directly; contribute and admin pass the narrower
+ * `listOlympiadOptions` rows.
  */
 export type OlympiadOption = {
 	id: string;
@@ -56,11 +43,7 @@ export type FileEntry = {
 	url: string;
 };
 
-/**
- * The fixed set of physics topics a problem can be tagged with. Topics are
- * deliberately coarse — they are only used for filtering, and a finer-grained
- * list would risk spoiling the problem.
- */
+/** Problem topics, for filtering only. Kept coarse so they don't spoil problems. */
 export const PROBLEM_TOPICS = [
 	'Mechanics',
 	'Electromagnetism',
@@ -77,30 +60,12 @@ export type ProblemEntry = {
 	number: string;
 	title?: string;
 	/**
-	 * Topics assigned to this problem.
-	 *
-	 * **Never rendered next to a problem** — that would spoil it. That, and not
-	 * "never on the wire", is the invariant: topics ride on both public payloads,
-	 * `/api/olympiads/[olympiad]` and `/api/search`, because both the olympiad
-	 * page's topic filter and the ⌘K dialog's run entirely in the browser over
-	 * the body they already hold.
-	 *
-	 * Optional only because a *cached* payload may predate the field.
-	 * `getSearchIndex` emits `[]` for an untagged problem rather than omitting the
-	 * key, which is what makes `undefined` mean exactly one thing on the client:
-	 * "this body was cached before topics shipped".
+	 * Sent in the public payloads for client-side filtering, but never render
+	 * them next to a problem (spoilers). `undefined` means a stale cached body
+	 * from before topics existed; untagged problems get `[]`.
 	 */
 	topics?: ProblemTopic[];
-	/**
-	 * The denominator a tracked score is shown against. **Omitted, never null**,
-	 * when no contributor has set one — the same convention `title` follows above,
-	 * and most problems have none.
-	 *
-	 * Public, and therefore in the shared-cached `/api/olympiads/[olympiad]` body:
-	 * a marking scheme's maximum is the same for every visitor, so it belongs with
-	 * the rest of a problem's metadata rather than travelling with the signed-in
-	 * user's own progress. Only the score *against* it is per-user.
-	 */
+	/** Max score for tracked progress. Omitted, not null, when unset. */
 	maxScore?: number;
 	files: FileEntry[];
 };
@@ -113,8 +78,7 @@ export type YearEntry = {
 	problems: ProblemEntry[];
 };
 
-/** A problem entry with the extra properties the ⌘K search UI needs — see
- *  `$lib/components/search/`. `searchText` is what the fuzzy matcher runs over. */
+/** A problem for the search dialog. `searchText` is what the fuzzy matcher runs over. */
 export type SearchItem = {
 	olympiadId: string;
 	olympiadName: string;
@@ -124,7 +88,7 @@ export type SearchItem = {
 	searchText: string;
 };
 
-/** Which corpus the ⌘K dialog is searching. See `$lib/components/search/`. */
+/** What the search dialog is searching. */
 export type SearchMode = 'problems' | 'files';
 
 /** One problem a matched file is attached to. */
@@ -134,94 +98,48 @@ export type FileSearchProblem = {
 };
 
 /**
- * One hit from deep (in-file) search.
- *
- * **The result unit is a file, not a problem, and that is deliberate.** A
- * year-level PDF routinely contains every problem of that year, so a
- * problem-level hit would claim "IPhO 2019 T2" on the strength of text belonging
- * to T1. Making the file the unit removes the ambiguity: the row says *this
- * document contains your phrase*, which is exactly what the index knows.
+ * One deep (in-file) search hit. The unit is a file, not a problem: a year-level
+ * PDF often holds every problem, so the index can't say which one matched.
  */
 export type FileSearchResult = {
-	/** The file itself. `url` is the hit's identity, unique within a response. */
+	/** `url` identifies the hit; unique within a response. */
 	file: FileEntry;
 	olympiadId: string;
 	olympiadName: string;
 	olympiadIcon: string;
 	year: number;
-	/**
-	 * The problems this file is attached to, in creation order. **Empty means
-	 * year-level** — the emptiness *is* the flag, exactly as an absent key is the
-	 * only spelling of "untracked" in a `ProgressMap`. There is no `level` field.
-	 */
+	/** Problems this file is attached to, in creation order. Empty means year-level. */
 	problems: FileSearchProblem[];
 	/**
-	 * A plain-text excerpt, whitespace collapsed. **Never HTML.**
-	 *
-	 * FTS5's `snippet()` does not escape the text around a match, and that text
-	 * comes out of contributor-uploaded PDFs — so sending `<mark>`-marked HTML and
-	 * rendering it with `{@html}` would be stored XSS on our own origin. The marks
-	 * travel as offsets instead; see `matches`.
+	 * Plain-text excerpt, never HTML. FTS5 `snippet()` doesn't escape uploaded
+	 * text, so rendering it with `{@html}` would be stored XSS. Highlights are
+	 * sent as offsets in `matches`.
 	 */
 	snippet: string;
-	/**
-	 * `[start, end)` UTF-16 code-unit offsets into `snippet` that matched,
-	 * ascending and non-overlapping. The client slices `snippet` with these and
-	 * renders the pieces as text; nothing here ever reaches `{@html}`.
-	 */
+	/** Sorted, non-overlapping `[start, end)` UTF-16 offsets of matches in `snippet`. */
 	matches: [number, number][];
 };
 
 /**
- * The body of `GET /api/search/files`.
- *
- * An envelope rather than a bare array, unlike the four older public shapes,
- * because `truncated` and `indexEmpty` have to travel — and `indexEmpty` is what
- * lets a launch before the backfill finishes say "still indexing" rather than
- * "no matches".
- *
- * **There is no `rank` field, deliberately.** A bm25 float is an artefact of
- * which index was chosen — negative, unbounded, and meaningless if the index is
- * ever swapped, at which point the field would have to be faked to keep the
- * shape. `results` is sorted; the array order *is* the rank. It also cannot be
- * interleaved with uFuzzy's ordinal ranking, which is exactly why the dialog
- * shows one kind of result at a time.
+ * The body of `GET /api/search/files`. `results` is sorted best first; there is
+ * no `rank` field, so bm25 scores never become part of the cached shape.
  */
 export type FileSearchResponse = {
-	/**
-	 * The query as the server understood it: normalised, phrases re-quoted,
-	 * **nothing dropped**.
-	 *
-	 * It names no single expression, because there is no longer a single one to
-	 * name — `sanitizeFtsQuery` builds a ladder and `searchFiles` stops at the
-	 * first rung that matches. It used to echo the capped eight tokens that the
-	 * one expression ran, which told the user words had been discarded; now the
-	 * caps bound only what each rung probes, and every word the user typed is
-	 * still part of the question.
-	 */
+	/** The query as the server understood it: normalised, phrases re-quoted, nothing dropped. */
 	query: string;
 	/** Best first. */
 	results: FileSearchResult[];
 	/** More files matched than were returned. */
 	truncated: boolean;
-	/** The text index holds no rows at all. Only ever true when `results` is empty. */
+	/** The index is empty, so the UI can say "still indexing". Implies no results. */
 	indexEmpty: boolean;
 };
 
 // ── Admin panel shapes ──────────────────────────────────────────────────────
 
-/**
- * The bodies of `GET /admin/index-stats` and `GET /admin/activity`.
- *
- * **These two are the exception to everything above.** The shapes before them
- * are public and sit in Cloudflare's shared cache for up to a day, which is why
- * `FileSearchResponse`'s comment treats its own fields as frozen and why
- * CLAUDE.md rule 9 asks for a warning before changing one. These are admin-only
- * and uncached — `/admin/*` sets no cache headers at all — so they may change
- * freely, with nothing to purge. They live here, rather than in
- * `$lib/server/`, only because the panels that render them are client
- * components and cannot import from there.
- */
+// Bodies of `GET /admin/index-stats` and `GET /admin/activity`. Unlike the public
+// shapes above, these are uncached and can change freely. They live here because
+// client components render them.
 
 /** One row of the admin panel's status breakdown. */
 export type FileTextStat = { status: string; count: number };
@@ -235,14 +153,8 @@ export type FileTextStats = {
 };
 
 /**
- * One row of the activity log, as both the load and the endpoint hand it over.
- *
- * `createdAt` is a union because the two paths differ and neither is worth
- * bending: the load's rows travel through devalue and arrive as a real `Date`,
- * while the endpoint's go through `JSON.stringify` and arrive as an ISO string.
- * `formatDateTime` already accepts both, so the union costs nothing at the
- * render site — and annotating both sides with it is what lets the table
- * concatenate the two sources into one array.
+ * One activity log row. `createdAt` is a `Date` from the page load (devalue) and
+ * an ISO string from the JSON endpoint; `formatDateTime` takes both.
  */
 export type ActivityEntry = {
 	id: number;

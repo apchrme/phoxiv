@@ -3,20 +3,9 @@
 	import { cn } from '$lib/utils.js';
 
 	/**
-	 * The block at the top of a page: a heading, something explaining it, and
-	 * optionally an icon beside them or controls opposite.
-	 *
-	 * This is `Title.svelte` grown up. `Title` served five pages; four more had
-	 * hand-rolled their own header because they needed one thing it did not offer —
-	 * an icon, a rich description, a coloured year, a second line — and in doing so
-	 * arrived at four different vertical rhythms (`py-5 md:py-10`, `pt-3 md:pt-5`,
-	 * `py-5` with `gap-2`, `py-5` with `gap-1`) and two heading sizes with no rule
-	 * separating them.
-	 *
-	 * **One rhythm, and a rule for the two sizes.** A page you navigate *to* gets
-	 * `'default'`; an editor you navigate *into*, under a `BackLink`, gets `'sm'`,
-	 * because there the heading names the record being edited rather than the
-	 * section of the site. Nothing else chooses.
+	 * The heading block at the top of a page, with optional icon and actions.
+	 * Size rule: `'default'` for pages you navigate to; `'sm'` for editors
+	 * reached through a `BackLink`, where the heading names the record.
 	 */
 	let {
 		title,
@@ -29,27 +18,21 @@
 		children
 	}: {
 		title: string;
-		/** Plain-text explanation. For anything richer, use `children` instead. */
+		/** Plain-text explanation. For anything richer, use `children`. */
 		description?: string;
-		/** See the header: `'sm'` is for an editor reached through a `BackLink`. */
+		/** `'sm'` for an editor reached through a `BackLink`. */
 		size?: 'default' | 'sm';
 		/**
-		 * Rendered to the left of the heading — an `OlympiadIcon`, sized by the
-		 * caller. Named for its position rather than its contents, because `icon`
-		 * everywhere else in this codebase is an olympiad's icon *string*, and a
-		 * snippet by that name shadows the caller's own variable.
+		 * Left of the heading, usually an `OlympiadIcon`. Not called `icon`, which
+		 * elsewhere means an olympiad's icon string and would shadow it.
 		 */
 		leading?: Snippet;
-		/** Rendered inside the `<h1>`, after the title — the year an editor is scoped to. */
+		/** Inside the `<h1>`, after the title, e.g. the year being edited. */
 		titleSuffix?: Snippet;
-		/** Rendered opposite the heading, pushed to the end of the row. */
+		/** Opposite the heading, at the end of the row. */
 		actions?: Snippet;
 		class?: string;
-		/**
-		 * The description, when it is more than one string: rendered markdown, a
-		 * `<code>` path, an id under the name. Wins over `description` when both are
-		 * given, which no caller should do.
-		 */
+		/** A rich description. Replaces `description` if both are given. */
 		children?: Snippet;
 	} = $props();
 </script>

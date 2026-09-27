@@ -15,21 +15,14 @@
 	import { RefreshCw } from '@lucide/svelte';
 
 	/**
-	 * The full-text index, as reporting plus three maintenance buttons.
+	 * The full-text index: status counts plus three maintenance actions.
 	 *
-	 * **Deliberately read-only about the corpus itself.** There is no "index the
-	 * next batch" button, because there is nothing for the Worker to loop over —
-	 * extraction runs in the contributor's browser on upload and in
-	 * `bun run index:backfill` on a maintainer's machine for everything older. That
-	 * also sidesteps the infinite-submit-loop shape CLAUDE.md rule 8 records in
-	 * this exact panel: the three actions below each do one bounded thing and
-	 * return.
+	 * No "index the next batch" button: extraction runs in the browser on upload
+	 * and in `bun run index:backfill`. Each action here does one bounded thing
+	 * and returns; a self-resubmitting form in this panel once looped forever.
 	 *
-	 * **The counts are fetched here rather than handed down from the load.** They
-	 * cost ~4,500 D1 rows — 93% of what opening `/admin` used to cost — and the
-	 * panel opens on Users, so most visits never looked at them. `+page.svelte`
-	 * only mounts this component once someone has actually opened the Index tab;
-	 * see the latch there, which is what makes the deferral real.
+	 * The counts are expensive, so they are fetched here, not in the page load,
+	 * and `+page.svelte` mounts this only once the Index tab is opened.
 	 */
 	let {
 		pending
@@ -50,14 +43,9 @@
 	};
 
 	/**
-	 * The breakdown, refetched after every maintenance action.
-	 *
-	 * `refresh()` rather than `loadOnce()` throughout, and `Resource`'s monotonic
-	 * token is what makes that safe: a boolean in-flight guard would silently drop
-	 * the post-prune refresh if the mount fetch were still running, leaving the
-	 * counts permanently wrong — the exact failure the refresh exists to prevent.
-	 * Its `loading` likewise stays false once there are numbers to show, so a
-	 * maintenance click dims the card rather than flashing it back to a skeleton.
+	 * The breakdown, refetched after every maintenance action. Uses `refresh()`,
+	 * not `loadOnce()`, so a refresh requested while the first fetch is running
+	 * isn't dropped. A refresh dims the card rather than showing the skeleton.
 	 */
 	const source = new Resource<FileTextStats>('/admin/index-stats');
 	const refresh = () => void source.refresh();
@@ -74,14 +62,8 @@
 	);
 	const known = $derived(ORDER.reduce((n, s) => n + (byStatus[s] ?? 0), 0));
 	/**
-	 * Files in the archive that the index has never seen at all.
-	 *
-	 * An **approximation**: `indexed − known` clamped at zero, which an orphaned
-	 * `file_text` row — one whose file has since been deleted and not yet pruned —
-	 * hides by inflating `known`. The exact form is a `LEFT JOIN … WHERE id IS
-	 * NULL` count at the same cost, so this is not a saving; it is just what the
-	 * two numbers already on hand can answer. Left as it is, but do not read it as
-	 * exact.
+	 * Files the index has never seen. Approximate: unpruned orphan rows inflate
+	 * `known` and hide some unseen files.
 	 */
 	const unseen = $derived(stats ? Math.max(stats.indexed - known, 0) : 0);
 </script>
@@ -160,12 +142,9 @@
 		</Card.Header>
 		<Card.Content class="flex flex-wrap gap-2">
 			<!--
-				`invalidateAll: false` on all three: the counts no longer come from the
-				load, so the default would re-run the users and log queries to refresh
-				nothing — and it would also reset the log's first page underneath the
-				"Load more" accumulator. None of the three writes `user`, `olympiads`
-				or `activity_log`. `onDone` fires after the response is in but before
-				`update()`, so the write has committed and the refetch sees it.
+				`invalidateAll: false`: these actions change nothing the page load
+				reads, and invalidating would reset the activity log's "Load more"
+				pages. `onDone` runs after the write commits, so the refetch sees it.
 			-->
 			<form
 				method="POST"
@@ -199,10 +178,8 @@
 					onDone: refresh
 				})}
 			>
-				<!-- Asks before submitting rather than during — see `ConfirmSubmit`.
-				     `variant="outline"`, not destructive: it
-				     removes index rows whose files are already gone, so it asks because it
-				     cannot be undone, not because it destroys anything a reader can see. -->
+				<!-- Confirms because it can't be undone, but `outline`, not destructive:
+				     it only removes rows whose files are already gone. -->
 				<ConfirmSubmit
 					{pending}
 					key="pruneIndex"
@@ -214,12 +191,7 @@
 					Prune orphans
 				</ConfirmSubmit>
 			</form>
-			<!--
-				Not cosmetic. The panel fetches once on first open and then stays
-				mounted, so without this an operator would watch a frozen card through
-				a `bun run index:backfill` run — and docs/deployment.md names this tab
-				as *the* way to tell a backfill landed.
-			-->
+			<!-- The panel stays mounted, so this is how to watch a backfill progress. -->
 			<Button variant="ghost" onclick={refresh} disabled={source.loading} class="ml-auto">
 				{#if source.loading}
 					<Spinner class="size-3.5" />

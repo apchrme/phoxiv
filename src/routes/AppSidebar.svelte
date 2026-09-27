@@ -22,10 +22,9 @@
 
 <div class="md:hidden">
 	<Sidebar.Root>
-		<!-- Header: user profile when logged in, phoXiv branding when logged out -->
+		<!-- Header: the user's profile when signed in, a log-in button otherwise -->
 		<Sidebar.Header>
 			{#if user}
-				<!-- Logged-in: profile info -->
 				<a
 					href={resolve('/profile')}
 					class="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-sidebar-accent"
@@ -38,7 +37,6 @@
 					</div>
 				</a>
 			{:else}
-				<!-- Logged-out: Log in button -->
 				<Sidebar.Menu>
 					<Sidebar.MenuItem>
 						<Sidebar.MenuButton>

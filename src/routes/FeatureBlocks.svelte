@@ -6,26 +6,16 @@
 	let {
 		signedIn = false
 	}: {
-		/**
-		 * Whether there is a session. Only affects where blocks 03 and 04 point:
-		 * sending a signed-in visitor to `/login` is the same dead end the hero's
-		 * second CTA already avoids.
-		 */
+		/** Points blocks 03 and 04 past `/login` for signed-in visitors. */
 		signedIn?: boolean;
 	} = $props();
 
-	/**
-	 * The four things the site does, in the README's own order and words.
-	 *
-	 * "Administer it." is deliberately absent: it is admin-only, and a landing page
-	 * that advertises a panel almost no visitor can open is advertising a locked
-	 * door.
-	 */
+	/** What the site does. Admin features are left out; almost no visitor can use them. */
 	type Block = {
 		n: string;
 		title: string;
 		body: string;
-		/** Present on every block that has somewhere to go. Block 02 does not — see below. */
+		/** Absent on block 02: search is a dialog, not a route. */
 		href?: string;
 		cta?: string;
 		shortcut?: boolean;
@@ -43,10 +33,6 @@
 		{
 			n: '02',
 			title: 'Search it two ways',
-			// Scoped to what was actually extracted, because block 04 says in the same
-			// breath that a scan will not be searchable. Claiming "every document" here
-			// and admitting the exception four blocks later is the same page
-			// contradicting itself.
 			body: `The site includes two different types of search. The default search allows you to find a problem you remember the number/title of. Can't remember that?
 			Fret not. Deep search matches the text inside the PDFs, so you can search for problems that you remember a phrase from.`,
 			shortcut: true
@@ -71,11 +57,8 @@
 
 <div class="flex flex-col gap-16 sm:gap-24">
 	{#each blocks as block, i (block.n)}
-		<!-- Alternating sides, and asymmetric within the row: the numeral takes three of
-		     twelve columns and the copy the remaining nine, so neither row is a centred
-		     slab. The two spans have to add up to twelve — at 3 + 7 the leftover pair of
-		     columns fell on the right of *every* row, which reads as the whole feature
-		     list hanging left rather than as an alternating layout. -->
+		<!-- Alternating sides. The spans (3 + 9) must add up to 12, or leftover
+		     columns always land on the right and the layout stops alternating. -->
 		<div
 			class="feature-block grid grid-cols-1 items-start gap-4 sm:grid-cols-12 sm:gap-8
 			       {i % 2 === 1 ? 'sm:[&>*:first-child]:order-2' : ''}"
@@ -91,8 +74,6 @@
 					? 'sm:items-end sm:text-right'
 					: 'sm:text-left'}"
 			>
-				<!-- DM Sans Variable carries weights to 1000 and nothing else in the app goes
-				     past 700, so the display weight raises the ceiling without a second face. -->
 				<h2
 					class="m-0 text-3xl leading-tight font-[1000] tracking-tight text-foreground sm:text-4xl"
 				>
@@ -113,10 +94,7 @@
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				{:else if block.shortcut}
-					<!-- Search has no route of its own — it is a dialog on every page — so this
-					     block ends with the shortcut that opens it rather than a link that would
-					     have to point somewhere else. Both spellings, since half the visitors
-					     are not on a Mac. -->
+					<!-- Search is a dialog, so show its shortcut instead of a link. -->
 					<div class="mt-1 flex w-fit items-center gap-2 text-sm text-muted-foreground">
 						<span>Press</span>
 						<Kbd.Root class="inline-flex">⌘</Kbd.Root>

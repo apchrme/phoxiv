@@ -6,16 +6,12 @@
 	import { newProblemRow, type ProblemRow } from './metadata';
 
 	/**
-	 * The `problemNumber` / `problemTitle` / `problemTopics` / `problemMaxScore`
-	 * repeater — fields only, no `<form>`.
+	 * The problems repeater: fields only, no `<form>`. Rows must render every
+	 * input unconditionally; see `./metadata.ts`.
 	 *
-	 * The hidden `problemTopics` input is the *only* channel through which topics
-	 * reach the server: `TopicSelect` renders its checkboxes in a portalled
-	 * dropdown, physically outside the form, so its own markup never submits.
-	 * Removing that input would silently clear every problem's topics on save.
-	 *
-	 * See `./metadata.ts` for the index-zipping contract, and `Repeater` for why
-	 * `rows` is bound rather than passed.
+	 * The hidden `problemTopics` input is the only way topics reach the server,
+	 * because `TopicSelect`'s menu is portalled out of the form. Removing it
+	 * clears every problem's topics on save.
 	 */
 	let {
 		rows = $bindable(),
@@ -23,10 +19,9 @@
 		maxScoreErrors
 	}: {
 		rows: ProblemRow[];
-		/** Numbers used by more than one row; owned by the parent, which also
-		 *  blocks the save while it is non-empty. */
+		/** Numbers used by more than one row. The parent blocks saving while non-empty. */
 		duplicates: Set<string>;
-		/** Problem number -> why its maximum score was refused; same ownership. */
+		/** Problem number -> why its max score was rejected. */
 		maxScoreErrors: Map<string, string>;
 	} = $props();
 </script>
@@ -47,8 +42,6 @@
 	<Card.Content class="flex flex-col gap-3">
 		<Repeater bind:rows newRow={newProblemRow} itemLabel="problem">
 			{#snippet row(problem)}
-				<!-- `{@const}` compiles to `$derived`, so this re-evaluates as the number is
-				     typed. A plain `const` in a script block would freeze at mount. -->
 				{@const isDuplicate = problem.number.trim() !== '' && duplicates.has(problem.number.trim())}
 				{@const maxScoreError = maxScoreErrors.get(problem.number.trim())}
 				<Input
@@ -66,8 +59,6 @@
 					placeholder="Problem title (optional)"
 					class="min-w-40 flex-1"
 				/>
-				<!-- Topics are never displayed alongside the problem publicly — they
-				     only power the topic filter on the olympiad page. -->
 				<TopicSelect
 					bind:value={problem.topics}
 					align="end"
@@ -75,18 +66,9 @@
 					class="shrink-0"
 				/>
 				<input type="hidden" name="problemTopics" value={JSON.stringify(problem.topics)} />
-				<!-- Unconditional, like every other field in this row: `saveMetadata`
-				     zips the repeater by position, so an input behind an `{#if}` would
-				     shift every later row's data into the wrong record.
-
-				     `type="text"` rather than `type="number"`, for two reasons that both
-				     end in silent data loss. Svelte coerces `bind:value` on a number
-				     input to a *number*, which breaks `parseMaxScore`'s `.trim()` — and,
-				     worse, a browser that judges the field invalid (`1.2.3`) reports its
-				     value as `''`, so a visibly wrong entry would submit as "no maximum"
-				     with nothing on screen to say so. `inputmode` still gets the numeric
-				     keypad on a phone, and `parseMaxScore` is the real validator on both
-				     sides regardless. -->
+				<!-- `type="text"`, not `number`: Svelte binds number inputs as numbers,
+				     breaking `parseMaxScore`, and an invalid entry reads as `''`, which
+				     would silently save "no maximum". -->
 				<Input
 					name="problemMaxScore"
 					type="text"

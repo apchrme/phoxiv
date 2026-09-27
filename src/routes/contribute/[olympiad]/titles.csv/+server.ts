@@ -6,30 +6,22 @@ import { requireOlympiad } from '$lib/server/db/queries/olympiads';
 import { formatTopicsCsvCell, parseTopics } from '$lib/utils/topics';
 import { exactScore } from '$lib/progress';
 
-/**
- * UTF-8 byte-order mark. Written as a char code rather than a literal so it
- * stays visible in the source; without it Excel misreads accented titles.
- */
+/** UTF-8 byte-order mark, so Excel reads accented titles correctly. */
 const BOM = String.fromCharCode(0xfeff);
 
-/** Quotes a CSV field (doubling embedded quotes) only when it actually needs it. */
+/** Quotes a CSV field (doubling embedded quotes) only when needed. */
 function csvField(value: string): string {
 	return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
 }
 
 /**
- * Exports every problem title, topic set and maximum score as CSV, for bulk
- * editing in a spreadsheet and re-importing through the `importTitles` action.
- *
- * The format is a contract with that action, so the header row, the `;`-separated
- * topics cell, the leading BOM and the CRLF line endings must all be preserved.
- * See `docs/data-model.md`.
- *
- * `max_score` is snake_case where every other column is a single word by
- * coincidence: the import lowercases its header names, so a `maxScore` column
- * would arrive as `maxscore` and never be read.
+ * Exports problems as CSV for editing in a spreadsheet and re-importing via
+ * `importTitles`. The format is a contract with that action; see
+ * docs/data-model.md, "The `titles.csv` contract". `max_score` is snake_case
+ * because the import lowercases headers.
  */
 export const GET: RequestHandler = async ({ params, locals }) => {
+	// Guards itself: a `+server.ts` runs no layout load.
 	const { db } = requireOlympiadEditor(locals, params.olympiad);
 	await requireOlympiad(db, params.olympiad);
 
@@ -55,9 +47,7 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 				csvField(row.number),
 				csvField(row.title ?? ''),
 				csvField(formatTopicsCsvCell(parseTopics(row.topics))),
-				// Through `exactScore` and never `formatScore`: this cell is re-parsed
-				// on import, so rounding it to two decimals here would make the
-				// round-trip lossy — a stored `8.333` would come back as `8.33`.
+				// `exactScore`, not `formatScore`, so the round-trip is lossless.
 				row.maxScore === null ? '' : exactScore(row.maxScore)
 			].join(',')
 		);

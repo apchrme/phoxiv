@@ -30,11 +30,8 @@
 </svelte:head>
 
 <ModeWatcher />
-<!-- `currentOlympiad` is a route param rather than load data, so handing it over
-     couples the dialog to nothing it could not already resolve — but it is passed
-     down rather than read from `$app/state` inside `$lib`, for `userId`'s reason:
-     the shell takes its page context from the layout. It is `undefined` off an
-     olympiad route, which `page.params`' index signature cannot say. -->
+<!-- Page context is passed in from the layout rather than read inside `$lib`.
+     `currentOlympiad` is `undefined` off an olympiad route. -->
 <GlobalSearch
 	bind:open={searchOpen}
 	userId={data.user?.id}
@@ -44,7 +41,7 @@
 
 <Sidebar.Provider>
 	<AppSidebar navLinks={[...PRIMARY_NAV, ...secondaryNav]} user={data.user} />
-	<!-- Main wrapper — transparent so html gradient shows through -->
+	<!-- CorpusBand's full-bleed margins undo this column's `px-4` and widths. -->
 	<div class="flex min-h-screen w-full flex-col items-center bg-background px-4 pt-6 pb-3">
 		<div class="w-full lg:w-5/6 xl:w-2/3">
 			<!-- Mobile nav — glass pill -->

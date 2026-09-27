@@ -24,11 +24,7 @@ export function sanitizeTopics(raw: readonly string[]): ProblemTopic[] {
 	return PROBLEM_TOPICS.filter((t) => found.has(t));
 }
 
-/**
- * Parses the JSON array stored in `problems.topics`. Tolerates malformed values
- * by falling back to an empty list — same defensive convention as the other
- * JSON-encoded columns in this schema.
- */
+/** Parses `problems.topics`; `[]` on malformed values, like `utils/json.ts`. */
 export function parseTopics(stored: string | null | undefined): ProblemTopic[] {
 	if (!stored) return [];
 	try {
@@ -45,10 +41,7 @@ export function serializeTopics(topics: readonly string[]): string {
 	return JSON.stringify(sanitizeTopics(topics));
 }
 
-/**
- * Topics in a CSV cell are separated by semicolons, since commas are the CSV
- * delimiter itself (e.g. `Mechanics;Waves and Optics`).
- */
+/** Separates topics in a CSV cell (`Mechanics;Waves and Optics`), since commas split cells. */
 export const CSV_TOPIC_SEPARATOR = ';';
 
 export function parseTopicsCsvCell(cell: string | null | undefined): ProblemTopic[] {

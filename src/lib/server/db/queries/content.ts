@@ -4,21 +4,15 @@ import { parseTopics } from '$lib/utils/topics';
 import { parseLabelledUrls, parseStringArray } from '$lib/utils/json';
 import type { FileEntry, ProblemTopic, SearchItem, YearEntry } from '$lib/types';
 
-/**
- * The joined reads that assemble years, problems and their files.
- *
- * D1 has no cheap way to fetch a nested tree, so each of these issues one
- * `LEFT JOIN` per level and folds the flat rows back into a tree in memory with
- * {@link groupJoined}. That is why the file orderings below are load-bearing:
- * the SQL `ORDER BY` is the only thing that fixes the order of the nested arrays.
+/*
+ * Reads that assemble years, problems and their files. Each uses a LEFT JOIN and
+ * folds the flat rows into a tree with {@link groupJoined}, so the SQL ORDER BY
+ * is what fixes the order of the nested arrays. Keep the orderings.
  */
 
 /**
- * Folds rows from a `LEFT JOIN` into one entry per distinct parent.
- *
- * Insertion order is preserved, so the query's `ORDER BY` carries through to the
- * result. `merge` is called for every row including the first, and is
- * responsible for skipping rows whose joined side is `null` (no child).
+ * Folds LEFT JOIN rows into one entry per parent, keeping row order. `merge` runs
+ * for every row, including the first, and must skip rows with no child (`null`).
  *
  * @param keyOf identifies the parent a row belongs to
  * @param init builds the parent entry from its first row
@@ -57,22 +51,16 @@ export type EditableProblem = {
 /**
  * Every year of an olympiad with its notes, links, files and problems.
  *
- * Backs `GET /api/olympiads/[olympiad]`, which is held in Cloudflare's shared
- * cache for up to a day. The shape is not frozen by fiat, but changing it costs a
- * manual dashboard purge and a window in which freshly deployed clients read a
- * day-old body — it has been changed exactly once, to carry `maxScore`. See
- * `docs/deployment.md` for the procedure.
- *
- * Optional fields are *omitted* rather than set to `null` when a problem has
- * none, `title` and `maxScore` alike.
+ * Backs `GET /api/olympiads/[olympiad]`, which sits in Cloudflare's shared cache
+ * for a day. Changing the shape needs a cache purge; see docs/deployment.md.
+ * Missing `title` and `maxScore` are omitted, not `null`.
  */
 export async function getOlympiadYearEntries(db: DB, olympiadId: string): Promise<YearEntry[]> {
 	const [yearRows, problemRows] = await Promise.all([
 		db
-			// Nested select form, not a flat one: Drizzle only nullifies a LEFT
-			// JOIN's group when the selection path is two levels deep. Flatten this
-			// and `if (row.year_files)` below is permanently truthy, pushing
-			// `{label: null, url: null}` entries into a frozen API payload.
+			// Keep the nested select. Drizzle only returns `null` for a missing LEFT
+			// JOIN row when the selection is nested; flattened, `if (row.year_files)`
+			// is always true and `{label: null, url: null}` entries leak into the API.
 			.select({
 				years: { id: years.id, year: years.year, notes: years.notes, extraLinks: years.extraLinks },
 				year_files: { label: yearFiles.label, url: yearFiles.url }
@@ -80,9 +68,7 @@ export async function getOlympiadYearEntries(db: DB, olympiadId: string): Promis
 			.from(years)
 			.leftJoin(yearFiles, eq(yearFiles.yearId, years.id))
 			.where(eq(years.olympiadId, olympiadId))
-			// `yearFiles.id` is ordered by but no longer selected. Valid SQLite, and
-			// the emitted SQL is unchanged — but the ordering is load-bearing (see
-			// the file header), so it must survive any further trimming here.
+			// Ordering by an unselected column is valid SQLite. Keep it (see top of file).
 			.orderBy(desc(years.year), asc(yearFiles.id))
 			.all(),
 		db
@@ -99,8 +85,7 @@ export async function getOlympiadYearEntries(db: DB, olympiadId: string): Promis
 			})
 			.from(problems)
 			.leftJoin(problemFiles, eq(problemFiles.problemId, problems.id))
-			// `years` is joined purely to make the `where` expressible; no column of
-			// it is read, so none is selected.
+			// Joined only for the `where`.
 			.innerJoin(years, eq(years.id, problems.yearId))
 			.where(eq(years.olympiadId, olympiadId))
 			.orderBy(asc(problems.id), asc(problemFiles.id))
@@ -130,9 +115,7 @@ export async function getOlympiadYearEntries(db: DB, olympiadId: string): Promis
 			number: problem.number,
 			...(problem.title ? { title: problem.title } : {}),
 			topics: problem.topics,
-			// `=== null`, not a truthiness check like `title`'s above: `parseMaxScore`
-			// refuses zero, but a hand-edited row holding one should show up as a bad
-			// denominator rather than silently vanish from the payload.
+			// `=== null`, not truthiness: a hand-edited 0 should show up, not vanish.
 			...(problem.maxScore === null ? {} : { maxScore: problem.maxScore }),
 			files: problem.files
 		});
@@ -157,12 +140,7 @@ export async function getOlympiadYearEntries(db: DB, olympiadId: string): Promis
 	);
 }
 
-/**
- * One year's files and problems, for the contribute editor.
- *
- * Cannot share {@link getOlympiadYearEntries}: the editor needs each problem's
- * row `id` to update it, and must not group by year.
- */
+/** One year's files and problems for the contribute editor, with problem row ids. */
 export async function getYearContent(
 	db: DB,
 	yearId: number
@@ -188,8 +166,7 @@ export async function getYearContent(
 		problems: groupJoined(
 			problemRows,
 			(row) => row.problems.id,
-			// Lists its fields explicitly even though the select above is a bare
-			// `db.select()`, so a new column is only exposed to the editor on purpose.
+			// Fields listed explicitly so a new column isn't exposed by accident.
 			(row) => ({
 				id: row.problems.id,
 				number: row.problems.number,
@@ -208,39 +185,18 @@ export async function getYearContent(
 }
 
 /**
- * The whole problem corpus, flattened for the global fuzzy search.
+ * The whole problem corpus, flattened for the global fuzzy search
+ * (`GET /api/search`).
  *
- * Backs `GET /api/search`. `searchText` is a lowercased join of olympiad id,
- * olympiad name, year, problem number and title **in that order** — uFuzzy
- * matches against it directly, so reordering changes which results rank first.
- *
- * **`topics` travels; `searchText` still excludes it.** The two are not in
- * tension. Topics are already public in the shared-cached
- * `/api/olympiads/[olympiad]` body — that is what the olympiad page's own topic
- * filter reads — so withholding them here bought nothing except a ⌘K dialog that
- * could not offer the same filter. The invariant they are guarded by is "never
- * *rendered* next to a problem", not "never on the wire". Folding a topic name
- * into the haystack would be a different thing entirely: it would break the
- * ranking contract above *and* let a visitor infer a problem's topic by typing
- * "Relativity" and seeing what surfaces, which is the actual spoiler the
- * original omission was reaching for.
- *
- * `maxScore` stays omitted, on its own unchanged reasoning: it is simply not
- * what this endpoint is for — a fuzzy index, not a metadata feed.
- *
- * `problems.id` does not travel either. The topic filter needs `topics`, the
- * status filter needs `(olympiadId, year, number)`, and navigation is
- * `#<year>` — so no row id has to enter a cached payload.
+ * `searchText` joins olympiad id, name, year, number and title in that order;
+ * reordering changes ranking. Topics are sent for the topic filter but kept out
+ * of `searchText`, so typing a topic can't reveal which problems have it.
+ * `maxScore` and `problems.id` are not sent.
  */
 export async function getSearchIndex(db: DB): Promise<SearchItem[]> {
 	const rows = await db
-		// Projected down to the nine columns the mapper reads. The full row dragged
-		// `olympiads.descriptionMd`/`descriptionHtml` along — per-olympiad markdown
-		// blobs, replicated onto every problem-file row of the whole corpus.
-		//
-		// Nested select form, not a flat one: Drizzle only nullifies a LEFT JOIN's
-		// group when the selection path is two levels deep, and `if
-		// (row.problem_files)` below depends on that.
+		// Select only what the mapper reads (a full row would copy olympiad
+		// descriptions onto every row). Keep it nested: see getOlympiadYearEntries.
 		.select({
 			problems: {
 				id: problems.id,
@@ -256,18 +212,9 @@ export async function getSearchIndex(db: DB): Promise<SearchItem[]> {
 		.innerJoin(years, eq(years.id, problems.yearId))
 		.innerJoin(olympiads, eq(olympiads.id, years.olympiadId))
 		.leftJoin(problemFiles, eq(problemFiles.problemId, problems.id))
-		// Ordered by columns that are mostly not selected. Valid SQLite, and the
-		// nested arrays' order is the only thing the SQL ORDER BY fixes — so this
-		// is load-bearing and must survive any further trimming.
-		//
-		// The top-level ordering is new and deliberate: the array has never had
-		// one, which did not show while `rank()` reordered everything it returned.
-		// The dialog now lists `filteredIndex` directly when the query is empty and
-		// a filter is set, and without this that list would come back in
-		// `problems.id` order — meaningless across olympiads.
-		//
-		// `problems.id` must precede `problemFiles.id`, or one problem's file rows
-		// would not be contiguous and `groupJoined` would split the problem in two.
+		// The search dialog shows this order as-is when a filter is set with no
+		// query. `problems.id` must come before `problemFiles.id`, or `groupJoined`
+		// would split a problem whose file rows aren't contiguous.
 		.orderBy(
 			asc(olympiads.displayOrder),
 			asc(olympiads.id),
@@ -297,12 +244,8 @@ export async function getSearchIndex(db: DB): Promise<SearchItem[]> {
 			problem: {
 				number: row.problems.number,
 				...(row.problems.title ? { title: row.problems.title } : {}),
-				// **Always** an array, never omitted-when-empty like `title` above.
-				// That is what makes `topics === undefined` mean exactly one thing on
-				// the client: "this body was cached before topics shipped". Omitting
-				// `[]` would make "untagged problem" and "stale payload"
-				// indistinguishable, and the dialog's topic filter would silently
-				// empty the result list for a day after deploy.
+				// Always an array, even when empty, so the client can read
+				// `topics === undefined` as "stale cached body from before topics".
 				topics: parseTopics(row.problems.topics),
 				files: []
 			}

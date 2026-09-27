@@ -1,37 +1,24 @@
 /**
- * The eighteen files shown in the landing page's corpus band.
+ * The hand-picked files shown in the landing page's corpus band.
  *
- * Page-only data, so it sits beside `+page.svelte` rather than under `$lib`
- * (CLAUDE.md rule 4). A non-`+` file in `src/routes/` is inert to the router.
+ * Read by both `CorpusBand.svelte` and `$lib/server/thumbs-cli.ts`. To add one:
+ * add an entry, run `bun run thumbs:render`, commit the PNG. See
+ * docs/contributing.md, "The landing page's corpus band".
  *
- * This is the single source of truth for **both** halves of the band: the
- * offline renderer in `$lib/server/thumbs-cli.ts` reads it to know which PDFs to
- * fetch and what to name each thumbnail, and `CorpusBand.svelte` reads it to lay
- * the tiles out. Add an entry here, re-run `bun run thumbs:render`, commit the
- * PNG — there is no third place to edit.
- *
- * The selection is deliberately hand-picked rather than sampled: it spans 1967
- * to 2026, nine writing systems, and the whole label vocabulary the schema
- * actually holds (problems, solutions, answer sheets, marking minutes, an
- * experiment). The copy above the band says so in as many words, so nothing
- * implies this is a live or random slice of the archive.
- *
- * Every `url` is a real `cdn.phoxiv.org` URL copied out of the production API,
- * not constructed here. Both the key layout and `slugifyLabel` are frozen
- * (CLAUDE.md rule 3), but a stored URL is still the only thing guaranteed to
- * match the object that exists.
+ * Every `url` is copied from the production API, not constructed, so it
+ * matches a real object.
  */
 export type CorpusEntry = {
-	/** Thumbnail filename stem — `src/lib/assets/thumbs/<slug>.png`. */
+	/** Thumbnail filename stem: `src/lib/assets/thumbs/<slug>.png`. */
 	slug: string;
-	/** `olympiads.id`. There is no short-name column, hence `label` below. */
+	/** `olympiads.id`. */
 	olympiad: string;
-	/** How the olympiad is written on the tile — the acronym, not the full name. */
+	/** The short name shown on the tile. */
 	label: string;
 	year: number;
-	/** The problem number, when the file hangs off a problem rather than a year. */
+	/** The problem number, for problem-level files. */
 	num?: string;
-	/** The file's real label, as stored. */
+	/** The file's label, as stored. */
 	file: string;
 	url: string;
 };

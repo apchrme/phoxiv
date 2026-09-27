@@ -2,16 +2,11 @@
 	import { cn } from '$lib/utils.js';
 
 	/**
-	 * An image with separate light and dark sources.
+	 * An image with light and dark sources. Renders both and lets CSS choose.
+	 * Don't branch on `mode.current`: it's unset during SSR, so the image would
+	 * swap on hydrate.
 	 *
-	 * Renders both and lets CSS pick, rather than branching on
-	 * `mode.current` — that reads a store which is unset during SSR, so the
-	 * server would emit the light variant and the client would swap it on hydrate.
-	 * `app.css` defines the `dark` variant over the same `.dark` class
-	 * mode-watcher toggles, so the two are exactly equivalent at runtime.
-	 *
-	 * @param swap inverts the pairing, for marks sitting on an inverted surface
-	 *   (e.g. the white-on-dark login button).
+	 * @param swap inverts the pairing, for marks on an inverted surface.
 	 */
 	let {
 		light,

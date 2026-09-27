@@ -7,12 +7,9 @@ import type { createAuth } from '$lib/server/auth';
 type Auth = ReturnType<typeof createAuth>;
 
 /**
- * BetterAuth's own inferred session shape, including the `admin` plugin's
- * `role`/`banned`/`banExpires` fields and our `assignedOlympiads` additional
- * field. Deliberately derived from the auth instance rather than from the
- * Drizzle table: BetterAuth returns `undefined` for absent optional columns
- * where Drizzle's `InferSelectModel` promises `null`, so the Drizzle model is
- * not assignable to what `getSession` actually hands back.
+ * BetterAuth's inferred session shape, including admin-plugin fields and
+ * `assignedOlympiads`. Inferred from the auth instance, not the Drizzle table,
+ * because BetterAuth returns `undefined` where Drizzle's types say `null`.
  */
 type AuthSession = NonNullable<Awaited<ReturnType<Auth['api']['getSession']>>>;
 

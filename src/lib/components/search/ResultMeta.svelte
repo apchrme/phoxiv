@@ -4,24 +4,12 @@
 	import { highlight } from '$lib/utils/fuzzy';
 
 	/**
-	 * The identity line every ⌘K result row opens with: the olympiad's icon, its
-	 * name, and the year, separated by middots.
+	 * The identity line of every ⌘K result row: olympiad icon, name and year.
 	 *
-	 * Shared by both result kinds because it says the same thing in both — *which
-	 * contest, which year* — and the two copies had already begun to drift apart at
-	 * the icon.
+	 * Problem rows pass `query` to mark matches. File rows must not, because
+	 * their query matched the file's contents, not this text.
 	 *
-	 * # `query` is optional, and that is the one real difference between them
-	 *
-	 * A problem row marks the characters the query matched, because the query ran
-	 * over exactly this text. A file row does **not**, and must not: there the
-	 * query matched the file's *contents*, so marking the olympiad's name would
-	 * claim a match that never happened. Passing no `query` is how a caller says
-	 * so, rather than passing one and hoping nothing marks.
-	 *
-	 * `{@html}` is safe here for the reason `highlight` documents: it escapes the
-	 * text it wraps. It is never given a snippet from a PDF — those travel as
-	 * offsets, and the row renders them as text.
+	 * `{@html}` is safe because `highlight` escapes what it wraps.
 	 */
 	let {
 		olympiadId,

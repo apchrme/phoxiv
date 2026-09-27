@@ -10,11 +10,8 @@
 	import { actionLabel, actionVariant } from '$lib/activity';
 
 	/**
-	 * The contributor actions, newest first, a page at a time.
-	 *
-	 * Read-only. The load supplies the first page and "Load more" fetches the
-	 * rest from `admin/activity` by keyset cursor, so history older than the
-	 * newest page is reachable — it was not when the load simply capped the query.
+	 * Contributor actions, newest first. The load supplies page 1; "Load more"
+	 * fetches older pages from `admin/activity` by id cursor.
 	 */
 	let {
 		log,
@@ -27,33 +24,14 @@
 	} = $props();
 
 	/**
-	 * The pages fetched past the first.
-	 *
-	 * **Deliberately not a copy of `log`.** Copying page 1 into `$state` would go
-	 * stale the moment `banUser` or `setRole` runs its default `invalidateAll`
-	 * and the load re-runs: the prop would update and the copy would not.
-	 * Accumulating alongside it keeps the load authoritative over page 1.
-	 *
-	 * The concatenation is duplicate-free **by construction**, which matters
-	 * because `{#each}` throws on a duplicate key: every `extra` id is strictly
-	 * below the cursor it was fetched with, and a refreshed page 1 is the top
-	 * `n` by id, so `min(page 1) ≥ old min > max(extra)`.
-	 *
-	 * The known cost: rows inserted between such a refresh and the accumulated
-	 * tail leave an invisible gap until the page is reloaded. Acceptable for an
-	 * audit view, and stated here so nobody has to discover it.
+	 * Pages after the first. Don't copy `log` into state: it would go stale when
+	 * an action reloads the page. Ids in `extra` are always below page 1's, so
+	 * the concatenation has no duplicate keys. After a reload, entries between
+	 * page 1 and `extra` may be missing until a full refresh; accepted.
 	 */
 	let extra = $state.raw<ActivityEntry[]>([]);
 	let hasMoreFetched = $state<boolean | null>(null);
-	/**
-	 * The button's own guard, and `$state` is right here: it is read from an
-	 * `onclick` handler, not synchronously inside an `$effect`. The rule the
-	 * search dialog records is narrower than "guards must be plain `let`" — it is
-	 * that a guard read synchronously inside an `$effect` must not be `$state`
-	 * the same path writes. Getting it wrong in *this* direction produces an
-	 * invisible busy state, which is the failure mode this route is most likely
-	 * to hide.
-	 */
+	/** `$state` is fine here: it's read in a click handler, not inside an `$effect`. */
 	let loadingMore = $state(false);
 	let failed = $state(false);
 
@@ -68,8 +46,8 @@
 		failed = false;
 		try {
 			const res = await fetch(`/admin/activity?before=${cursor}`);
-			// An error response with an HTML body would make `res.json()` throw as an
-			// unhandled rejection; a 403 from an expired session is the live case.
+			// Check first: an HTML error body (e.g. a 403 after the session expires)
+			// would make `res.json()` throw.
 			if (!res.ok) throw new Error(`HTTP ${res.status}`);
 			const page: { entries: ActivityEntry[]; hasMore: boolean } = await res.json();
 			extra = [...extra, ...page.entries];

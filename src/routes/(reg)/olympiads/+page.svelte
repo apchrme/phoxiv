@@ -20,13 +20,9 @@
 	let activeTag = $state<OlympiadTag | null>(null);
 
 	/**
-	 * The list comes from `/api/olympiads` rather than a page load, so the response
-	 * is served out of Cloudflare's shared cache instead of costing a D1 read per
-	 * visit.
-	 *
-	 * `Resource` owns the three cells and the `finally` that clears the loading one
-	 * — letting a rejection escape it is what once left this page showing its six
-	 * skeletons forever.
+	 * Fetched from the shared-cached `/api/olympiads` instead of a page load, to
+	 * save a D1 read per visit. Use `Resource` rather than a hand-rolled fetch: it
+	 * always clears `loading`, even on failure.
 	 */
 	const source = new Resource<OlympiadEntry[]>('/api/olympiads');
 	onMount(() => void source.loadOnce());
@@ -98,9 +94,7 @@
 					>
 						<!-- Top row: icon + badge -->
 						<div class="flex items-start justify-between">
-							<!-- OlympiadIcon rather than a raw emoji `<span>`, to fix the
-							     two-letter rendering bug on Windows/Chromium for flag emojis: a
-							     flag becomes a Flagpedia SVG and everything else stays a span. -->
+							<!-- Not a raw emoji: Windows shows flag emoji as two letters. -->
 							<OlympiadIcon icon={olympiad.icon} id={olympiad.id} size="lg" />
 							<Badge variant="outline">
 								{olympiad.tag}

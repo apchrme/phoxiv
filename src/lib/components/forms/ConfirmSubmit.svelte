@@ -9,36 +9,14 @@
 	import { cn } from '$lib/utils.js';
 
 	/**
-	 * A destructive submit that asks first, in the app's own chrome.
+	 * A destructive submit that asks first, in an `AlertDialog`.
 	 *
-	 * Three permanent actions — delete a file, delete a year, prune the text index
-	 * — asked with `window.confirm()`, which is the operating system's dialog in an
-	 * otherwise entirely custom design system: unstyleable, unthemeable, and
-	 * showing the page's URL above the question. Meanwhile **Ban user**, which is
-	 * at least as permanent, asked nothing at all.
+	 * The trigger is `type="button"` and submits nothing. Confirming calls
+	 * `requestSubmit()` on the enclosing form, which runs `use:enhance` and
+	 * `Pending` like a real submit. Don't use `submit()`: it bypasses both.
 	 *
-	 * # This changes the control flow, and that is the whole point of the file
-	 *
-	 * The `TrackOptions.confirm` this replaced was synchronous: `use:enhance` called
-	 * it *during* the submit and cancelled inline if the user declined. An
-	 * `AlertDialog` cannot work that way — it returns immediately and answers later
-	 * — so the order inverts from "submit, then ask" to "ask, then submit". The
-	 * button here is therefore `type="button"` and does not submit anything;
-	 * confirming calls `requestSubmit()` on the enclosing form, which runs
-	 * `use:enhance` and `Pending` exactly as a real submit does. `requestSubmit` and
-	 * not `submit()`, which bypasses both.
-	 *
-	 * That option is gone rather than left beside this: with every call site
-	 * migrated it had no callers, and a second way to ask is how the two drift apart.
-	 * `TrackOptions.guard` is not a replacement — it blocks a submit that must not
-	 * happen and toasts why, which is a different question from asking permission.
-	 *
-	 * # Why it is hand-styled
-	 *
-	 * `alert-dialog` is not vendored, and adding it means the shadcn CLI, which
-	 * CLAUDE.md rule 2 keeps away from `ui/`. The overlay and panel classes are
-	 * `GlobalSearch`'s own dialog's, which is this codebase's precedent for
-	 * hand-styling a bits-ui primitive where no vendored component fits.
+	 * Hand-styled from bits-ui; don't add `alert-dialog` via the shadcn CLI
+	 * (CLAUDE.md rule 2).
 	 */
 	let {
 		pending,
@@ -54,7 +32,7 @@
 		class: className,
 		children
 	}: {
-		/** The page's single tracker, so the trigger can show the submission it starts. */
+		/** The page's single `Pending`, so the trigger can show its submission. */
 		pending: Pending;
 		/** The key the enclosing form's `pending.track()` was given. */
 		key?: string;
@@ -76,12 +54,7 @@
 	} = $props();
 
 	let open = $state(false);
-	/**
-	 * The trigger, kept so the form can be found from it. Walking up from the
-	 * button rather than taking a form `id` prop: several of these sit in `{#each}`
-	 * rows where an id would have to be made unique per row, and the button is
-	 * always inside the form it submits.
-	 */
+	/** The trigger, used to find its enclosing form (no per-row form ids needed). */
 	let trigger = $state<HTMLElement | null>(null);
 
 	const busy = $derived(pending.has(key));
@@ -123,8 +96,7 @@
 				{description}
 			</AlertDialog.Description>
 			<div class="mt-2 flex justify-end gap-2">
-				<!-- `Cancel` first in the DOM so it takes the dialog's initial focus: the
-				     safe answer is the one a stray Enter should give. -->
+				<!-- Cancel first, so it gets initial focus and a stray Enter is safe. -->
 				<AlertDialog.Cancel class={buttonVariants({ variant: 'outline', size: 'sm' })}>
 					{cancelLabel}
 				</AlertDialog.Cancel>

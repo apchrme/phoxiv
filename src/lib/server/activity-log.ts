@@ -1,40 +1,20 @@
-/**
- * The admin panel's audit trail, both sides: `logActivity` writes it and
- * `listActivity` reads it back a page at a time.
- *
- * **The one query module outside `db/queries/`**, which `docs/architecture.md`
- * otherwise describes as holding every query, one module per concern. The
- * insert was already the exception, because the action enum and the
- * never-fail-a-write policy below belong with it; honouring the rule properly
- * would mean moving both halves and rewriting ~10 import sites across
- * `/contribute` and `/admin`. Do that or nothing — a half-split, with the read
- * in `db/queries/` importing its row type from the write side, is the worst of
- * the three.
+/*
+ * The admin audit log: `logActivity` writes, `listActivity` reads a page.
+ * The only query module outside `db/queries/`. If you move it, move both halves.
  */
 
 import { desc, lt } from 'drizzle-orm';
 import { activityLog, type DB } from './db';
 import type { ActivityEntry } from '$lib/types';
 
-/**
- * The set of loggable actions.
- *
- * Derived from the `activityLog.action` column's enum so the two can never drift.
- * `$lib/activity.ts` maps these to display labels for the admin panel.
- */
+/** Loggable actions, from the `activityLog.action` enum. Labels are in `$lib/activity.ts`. */
 export type LogAction = NonNullable<(typeof activityLog.$inferInsert)['action']>;
 
 type ActingUser = { id: string; name: string } | null | undefined;
 
 /**
- * Records a contributor action for the admin panel's "Log" tab.
- *
- * No-ops without a signed-in user. In practice there always is one — every call
- * site sits behind a `require*` guard — but the log is an audit trail, not a
- * control, so it must never be the thing that fails a write.
- *
- * The user's name is denormalised into the row on purpose: the log should still
- * read correctly after an account is renamed or deleted.
+ * Records a contributor action for the admin "Log" tab. Without a user it
+ * silently does nothing rather than throw: the log must never fail a write.
  */
 export async function logActivity(
 	db: DB,
@@ -58,26 +38,11 @@ export async function logActivity(
 }
 
 /**
- * One page of the log, newest first.
+ * One page of the log, newest first, before `before`.
  *
- * **Keyset on `id`, not OFFSET.** OFFSET still reads and discards every skipped
- * row, so a deep page would cost as much as the unpaginated query this replaced
- * and "Load more" would save nothing. `id` is an AUTOINCREMENT rowid alias, so
- * this is a backwards rowid scan reading exactly `limit + 1` rows and no index
- * rows at all — cheaper than the old `ORDER BY created_at DESC`, which paid
- * index rows *and* table rows.
- *
- * It is also insert-race-immune: new rows take higher ids and can never be
- * re-encountered mid-page, where OFFSET would duplicate rows under a backfill
- * writing as the operator pages.
- *
- * Ordered by `id` but displayed by `created_at`: two rows written in the same
- * millisecond may render in an order their identical timestamps do not explain.
- * Harmless — do not "fix" it back to `created_at` and reintroduce the index read.
- *
- * Over-fetches by one to answer "is there more", the idiom `searchFiles`
- * already uses. Columns are listed explicitly because `db.select()` would ship
- * `userId`, which nothing renders.
+ * Pages by `id` rather than OFFSET: OFFSET reads every skipped row, and new
+ * inserts would shift pages. Don't switch to ordering by `created_at`; that
+ * needs an index. Fetches one extra row to compute `hasMore`.
  */
 export async function listActivity(
 	db: DB,

@@ -13,12 +13,8 @@
 	import { isIconUrl } from '$lib/uploads';
 
 	/**
-	 * Uploads and removes the olympiad's image icon.
-	 *
-	 * `icon` is read-only here. Both actions change it, but the page owns the
-	 * variable — it is a `$derived` the page's toast handlers overwrite so the new
-	 * icon appears before the load revalidates — so this card renders what it is
-	 * given and lets the result come back down as a prop.
+	 * Uploads and removes the olympiad's image icon. `icon` is read-only here:
+	 * the page owns it and updates it from the action results.
 	 */
 	let {
 		olympiadId,
@@ -26,14 +22,13 @@
 		pending
 	}: {
 		olympiadId: string;
-		/** The icon currently in force: an uploaded image URL, an emoji, or ''. */
+		/** An uploaded image URL, an emoji, or ''. */
 		icon: string;
-		/** The page's single tracker, so the submit buttons can disable themselves. */
+		/** The page's single `Pending`, so the submit buttons can disable themselves. */
 		pending: Pending;
 	} = $props();
 
-	// The picker owns the object-URL lifecycle; this card only renders the larger
-	// preview from the URL it hands back, and must not outlive it.
+	// The picker owns the object URL; this only renders a larger preview from it.
 	let picker: ReturnType<typeof IconFilePicker> | undefined = $state();
 	let previewUrl = $state<string | null>(null);
 
@@ -42,7 +37,6 @@
 		picker?.clear();
 	}
 
-	/** Whether the current icon is an uploaded image rather than an emoji/flag. */
 	const hasUploadedIcon = $derived(isIconUrl(icon));
 </script>
 
@@ -85,17 +79,8 @@
 		<Separator />
 
 		<!--
-			Upload form.
-
-			`invalidateAll: false` because re-running `load` hands
-			`OlympiadMetadataForm` a freshly built `olympiad` object, which recomputes
-			all five of its `$derived` fields and silently throws away whatever the
-			contributor had typed into the metadata form but not yet saved.
-
-			Nothing here needs that reload: the page's toast handler already overwrites
-			`icon` from the action's `iconUrl`, and every consumer — the header, this
-			card, the metadata form — reads that override rather than
-			`data.olympiad.icon`.
+			`invalidateAll: false`: reloading would reset `OlympiadMetadataForm` and
+			discard its unsaved edits. The page updates `icon` from the result instead.
 		-->
 		<form
 			method="POST"
@@ -135,7 +120,7 @@
 		<!-- Remove uploaded icon -->
 		{#if hasUploadedIcon}
 			<Separator />
-			<!-- `invalidateAll: false` for the same reason as the upload form above. -->
+			<!-- `invalidateAll: false`, as above. -->
 			<form
 				method="POST"
 				action="?/removeIcon"

@@ -2,9 +2,8 @@ import type { LayoutServerLoad } from './$types';
 import { requireContributor } from '$lib/server/guard';
 
 /**
- * Gates the whole contribute area. Per-olympiad permission is checked again in
- * each load and action via `requireOlympiadEditor`, because a contributor who
- * may edit one olympiad must not be able to edit another by URL.
+ * Gates the contribute area by role only. Each load and action must still call
+ * `requireOlympiadEditor`, or a contributor could edit any olympiad by URL.
  */
 export const load: LayoutServerLoad = ({ locals }) => {
 	requireContributor(locals);

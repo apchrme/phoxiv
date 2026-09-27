@@ -14,9 +14,9 @@
 		/** Controls that stack below the input on mobile and join its row at `md`. */
 		filters?: Snippet;
 		/**
-		 * Controls pinned to the input's own row at every width. Only for things
-		 * that stay narrow whatever their state — anything label-sized belongs in
-		 * `filters`, or it squeezes the input on a phone.
+		 * Controls pinned to the input's row at every width. Only for narrow
+		 * controls; anything label-sized belongs in `filters`, or it squeezes the
+		 * input on a phone.
 		 */
 		trailing?: Snippet;
 	} = $props();

@@ -4,10 +4,8 @@ import { setSharedCache } from '$lib/server/cache';
 import { getSearchIndex } from '$lib/server/db/queries/content';
 
 /**
- * The whole problem corpus as `SearchItem[]`, for the ⌘K fuzzy search.
- *
- * Fetched once per session on first open and matched entirely in the browser —
- * there is no server-side query path for search.
+ * The whole problem corpus as `SearchItem[]`, for the ⌘K fuzzy search. Fetched
+ * once per session and matched entirely in the browser.
  */
 export const GET: RequestHandler = async ({ locals, setHeaders }) => {
 	setSharedCache(setHeaders);

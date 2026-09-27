@@ -8,10 +8,7 @@
 	};
 </script>
 
-<!-- The status is the title and the message is not. Passing the whole sentence as
-     the title set "Uh oh! You have encountered an error 404: Not Found" at
-     `text-3xl sm:text-4xl`, which filled the viewport with the least useful
-     wording available. -->
+<!-- Only the status goes in the title; a full sentence is too big at heading size. -->
 <PageHeader title="Error {page.status}">
 	<p class="m-0 text-lg font-medium text-foreground">{page.error?.message}</p>
 	{#if descriptions[page.status]}

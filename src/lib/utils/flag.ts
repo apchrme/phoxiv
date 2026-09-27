@@ -1,15 +1,6 @@
 /**
- * Checks whether a string is a two-character flag emoji composed of
- * Unicode Regional Indicator Symbols (U+1F1E6–U+1F1FF).
- *
- * Returns the ISO 3166-1 alpha-2 country code in **lowercase** if it is
- * a flag emoji, or `null` for any other string (regular emoji, text, etc.).
- *
- * Examples:
- *   '🇸🇬'  → 'sg'
- *   '🇺🇸'  → 'us'
- *   '⚛️'   → null
- *   '🌍'   → null
+ * The lowercase ISO country code of a flag emoji (two Regional Indicator
+ * Symbols), or `null` for anything else. `'🇸🇬'` → `'sg'`, `'🌍'` → `null`.
  */
 export function getFlagCountryCode(emoji: string): string | null {
 	const chars = [...emoji]; // split by Unicode code points, not UTF-16 code units

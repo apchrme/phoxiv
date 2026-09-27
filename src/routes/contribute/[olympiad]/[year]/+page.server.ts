@@ -34,36 +34,26 @@ import { duplicateProblemNumbers, invalidMaxScores } from './metadata';
 type Scope = 'year' | 'problem';
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-	// Authorise before reading, for the reason spelled out in `../+page.server.ts`:
-	// the layout guard says this is a contributor, not that they may edit *this*
+	// Authorise before reading: the layout guard only checks the role, not this
 	// olympiad. Permission first, existence second.
 	const { db } = requireOlympiadEditor(locals, params.olympiad);
 
 	const yearNum = parseYear(params.year);
 	if (yearNum === null) error(400, 'Invalid year');
 
-	// Independent reads. `requireOlympiad` throws inside the promise, so a missing
-	// olympiad still rejects before the `if (!yearRow)` line — the 404 for the
-	// olympiad keeps winning over the one for the year.
+	// A missing olympiad rejects the Promise.all, so its 404 wins over the year's.
 	const [olympiadRow, yearRow] = await Promise.all([
 		requireOlympiad(db, params.olympiad),
 		getYear(db, params.olympiad, yearNum)
 	]);
 	if (!yearRow) error(404, YEAR_NOT_FOUND);
 
-	// Sequential on purpose: this one genuinely needs `yearRow.id`.
-
 	const { yearFiles: yearFileEntries, problems: problemEntries } = await getYearContent(
 		db,
 		yearRow.id
 	);
 
-	// The extraction status of every file on this page, for the quiet badges in
-	// `FileSection`. Read here rather than folded into `getYearContent`, which is
-	// the tree assembly `content.ts` describes itself as: the text index is a
-	// different concern and lives behind `queries/files.ts`, which is also why
-	// this cannot drag `file_text.text` along by accident. `/contribute` is
-	// uncached, so the extra read is free.
+	// Text-extraction status of each file, for the badges in `FileSection`.
 	const fileTextStatus = await getFileTextStatuses(db, [
 		...yearFileEntries.map((f) => f.url),
 		...problemEntries.flatMap((p) => p.files.map((f) => f.url))
@@ -85,11 +75,8 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 export const actions: Actions = {
 	/**
-	 * Replaces the year's notes, extra links and problem list in one shot.
-	 *
-	 * The four problem fields (`problemNumber`, `problemTitle`, `problemTopics`,
-	 * `problemMaxScore`) are positionally aligned: one of each per row in the
-	 * editor's repeater.
+	 * Replaces the year's notes, extra links and problem list. The four problem
+	 * fields are aligned by position, one of each per editor row.
 	 */
 	saveMetadata: async ({ request, params, platform, locals }) => {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
@@ -112,8 +99,7 @@ export const actions: Actions = {
 		const rawTitles = fieldList(data, 'problemTitle');
 		const rawTopics = fieldList(data, 'problemTopics');
 		const rawMaxScores = fieldList(data, 'problemMaxScore');
-		// The maximum score stays a raw string through the zip and the filter below,
-		// so that it is validated only for the rows that actually survive.
+		// Max score stays a raw string so only surviving rows are validated.
 		const submitted = rawNumbers
 			.map((number, i) => ({
 				number,
@@ -123,28 +109,21 @@ export const actions: Actions = {
 			}))
 			.filter((p) => p.number);
 
-		// Reject duplicates rather than silently upserting them over each other,
-		// which would lose one of the two problems' files. Shares the editor's
-		// helper so the two halves of the check cannot drift apart.
+		// Upserting duplicates over each other would lose one problem's files.
+		// Uses the same helper as the editor so the checks agree.
 		const [duplicate] = duplicateProblemNumbers(submitted);
 		if (duplicate !== undefined) {
 			return actionFail(400, 'saveMetadata', `Duplicate problem number: ${duplicate}`);
 		}
 
-		// The number becomes a path segment of every key under this problem, so a
-		// slash would nest its files a level deeper than `fileKey` intends — the same
-		// reason `uploadFile` forbids one in a label. Rejected rather than slugified:
-		// keys are built from the raw number, and normalising it now would orphan
-		// every file already uploaded under a number that normalising would change.
+		// The number is an R2 key segment, so a slash would nest files. Rejected, not
+		// slugified: keys use the raw number, and normalising would orphan files.
 		const nested = submitted.find((p) => p.number.includes('/'));
 		if (nested) {
 			return actionFail(400, 'saveMetadata', `Problem number cannot include /: ${nested.number}`);
 		}
 
-		// Checked *after* the blank-number filter above, so a stray character left
-		// in a row the contributor is about to discard cannot block the save. Shares
-		// the editor's helper, like the duplicate check, so the two halves cannot
-		// drift apart.
+		// After the blank-number filter, so a discarded row can't block the save.
 		const [badMaxScore] = invalidMaxScores(submitted);
 		if (badMaxScore !== undefined) {
 			return actionFail(
@@ -154,27 +133,17 @@ export const actions: Actions = {
 			);
 		}
 
-		// Anything the editor no longer lists was removed by the user — including a
-		// problem whose number was edited, which is a delete plus an insert.
-		//
-		// One condition, built once and used for both statements below, so the
-		// query that finds the files and the query that deletes the rows can never
-		// disagree about which problems went away.
+		// Problems no longer listed were removed (a renumber is delete + insert).
+		// One condition for both the file lookup and the delete, so they agree.
 		const submittedNumbers = submitted.map((p) => p.number);
 		const removed =
 			submittedNumbers.length > 0
 				? and(eq(problems.yearId, yearRow.id), notInArray(problems.number, submittedNumbers))
 				: eq(problems.yearId, yearRow.id);
 
-		// The FK cascade takes the problemFiles rows with the problem, and those
-		// rows are the only record of which R2 keys belong to it — so the objects
-		// have to go first, or they are unreachable garbage in the bucket forever.
-		//
-		// Read here rather than after the upserts, which is the same set either
-		// way: the loop only touches numbers that *are* submitted and never
-		// rewrites a `number`, so nothing it does can move a row in or out of
-		// `removed`. Reading it now is what lets the storage check below happen
-		// before anything has been written.
+		// The cascade deletes the problemFiles rows, which are the only record of
+		// the R2 keys, so collect the URLs first. Read before any write so the
+		// storage check below can still refuse cleanly.
 		const orphaned = await db
 			.select({ url: problemFiles.url })
 			.from(problemFiles)
@@ -182,9 +151,8 @@ export const actions: Actions = {
 			.where(removed)
 			.all();
 
-		// Only demand a bucket when something actually has to be deleted, so a
-		// storage outage cannot block the ordinary save that removes nothing — but
-		// demand it now, while refusing is still free.
+		// Need a bucket only if something must be deleted, so an R2 outage doesn't
+		// block ordinary saves.
 		let bucket: R2Bucket | null = null;
 		if (orphaned.length > 0) {
 			bucket = getBucket(platform);
@@ -192,16 +160,8 @@ export const actions: Actions = {
 		}
 
 		// ── Nothing below this line may fail the save. ──────────────────────────
-		//
-		// None of it is in a transaction, so a `return actionFail` between two
-		// writes commits half of one. Every check this action makes is therefore
-		// above: the year's own fields used to be written up with the form fields
-		// they are parsed from, which put them *before* the problem rows were
-		// validated — so a mistyped maximum score toasted "Maximum score for
-		// problem 3: …" over a year whose notes and links had already changed. It
-		// looked clean at the time, because the rejected page still shows the
-		// contributor's own draft; it surfaced on the next load, as a save they
-		// were told had failed and half of which had not.
+		// There is no transaction, so an `actionFail` after a write reports a failed
+		// save that has half happened. Keep every check above this line.
 		await db
 			.update(years)
 			.set({ notes: JSON.stringify(notes), extraLinks: JSON.stringify(extraLinks) })
@@ -209,17 +169,13 @@ export const actions: Actions = {
 			.run();
 
 		for (const { number, title, topics, maxScore: rawMaxScore } of submitted) {
-			// Cannot fail — `invalidMaxScores` just refused everything that could.
-			// Written as a branch rather than a cast so that a later change to
-			// `parseMaxScore` cannot quietly slip an unvalidated value into the row.
+			// Already validated above; a branch rather than a cast keeps it type-safe.
 			const parsedMaxScore = parseMaxScore(rawMaxScore);
 			const maxScore = parsedMaxScore.ok ? parsedMaxScore.value : null;
 			await db
 				.insert(problems)
 				.values({ yearId: yearRow.id, number, title, topics, maxScore })
-				// `maxScore` has to appear in the `set` as well as the `values`, or the
-				// field would be unclearable: blanking it in the editor would leave the
-				// stored maximum in place on every existing problem.
+				// `maxScore` must be in `set` too, or blanking it would never clear it.
 				.onConflictDoUpdate({
 					target: [problems.yearId, problems.number],
 					set: { title, topics, maxScore }
@@ -236,9 +192,7 @@ export const actions: Actions = {
 
 		await db.delete(problems).where(removed).run();
 
-		// Below the "nothing may fail the save" line, and best-effort with it. The
-		// same url list the orphan-object delete above already read, so the two
-		// cannot disagree about which files went away.
+		// Best-effort, like everything below the line.
 		await deleteFileTextForUrls(
 			db,
 			orphaned.map((f) => f.url)
@@ -266,8 +220,7 @@ export const actions: Actions = {
 		const yearRow = await getYear(db, params.olympiad, yearNum);
 		if (!yearRow) return actionFail(404, 'deleteYear', YEAR_NOT_FOUND);
 
-		// Collect the object URLs before the rows go away — they are the only
-		// record of which R2 keys belong to this year.
+		// Collect URLs before the rows go; they are the only record of the R2 keys.
 		const [yearFileRows, problemFileRows] = await Promise.all([
 			db
 				.select({ url: yearFiles.url })
@@ -290,9 +243,7 @@ export const actions: Actions = {
 		// Cascades to `problems`, `yearFiles`, `problemFiles` via FK onDelete: 'cascade'
 		await db.delete(years).where(eq(years.id, yearRow.id)).run();
 
-		// Best-effort, below the deletes it follows. No `NOT EXISTS` guard is
-		// needed: the R2 key layout namespaces urls by olympiad and year, so no
-		// other year can share one of these.
+		// Best-effort. URLs are namespaced by olympiad and year, so none is shared.
 		await deleteFileTextForUrls(db, [
 			...yearFileRows.map((f) => f.url),
 			...problemFileRows.map((f) => f.url)
@@ -325,9 +276,7 @@ export const actions: Actions = {
 		}
 		// The label becomes a path segment, so a slash would silently nest the object.
 		if (label.includes('/')) return actionFail(400, 'uploadFile', 'Label cannot include /');
-		// `slugifyLabel` deletes everything outside [a-z0-9_], so a label made only of
-		// punctuation slugs to nothing and would key the object as a bare ".pdf" —
-		// and every such label collides with every other one.
+		// An all-punctuation label slugs to "" and would key the object as a bare ".pdf".
 		if (!slugifyLabel(label)) {
 			return actionFail(400, 'uploadFile', 'Label must include a letter or number');
 		}
@@ -356,13 +305,9 @@ export const actions: Actions = {
 			}
 		}
 
-		// Reject a colliding label rather than overwriting, on two counts. An exact
-		// match may carry a different extension, which would leave the old object
-		// orphaned but still linked from the database. And a *different* label can
-		// slug to the same key, in which case `bucket.put` below would replace the
-		// earlier object silently — see `collidingLabel`. Compared in JS because
-		// SQLite cannot run `slugifyLabel`, so the labels come back and are matched
-		// here, with the same helper the editor uses to warn in advance.
+		// Reject a colliding label rather than overwrite. Same label with another
+		// extension would orphan the old object; a different label with the same
+		// slug would silently replace it. Checked in JS since SQLite can't slugify.
 		const siblings = problemRow
 			? await db
 					.select({ label: problemFiles.label })
@@ -389,12 +334,8 @@ export const actions: Actions = {
 			);
 		}
 
-		// `yearNum`, never the raw `params.year`. `parseYear` is parseInt-based and
-		// there is no route matcher, so `/contribute/ipho/2020abc` resolves the
-		// year-2020 row and would then write the object under `…/2020abc/…`; a
-		// `%2F` in the segment could put it under an arbitrary prefix entirely.
-		// Every well-formed URL emits a byte-identical key, so nothing already
-		// uploaded moves — and per rule 3 `fileKey` itself stays untouched.
+		// Use `yearNum`, never raw `params.year`: `parseYear` accepts "2020abc", and
+		// a `%2F` in the segment could write under an arbitrary prefix.
 		const key = fileKey(
 			params.olympiad,
 			yearNum,
@@ -420,17 +361,8 @@ export const actions: Actions = {
 		}
 
 		// ── Nothing below this line may fail the upload. ────────────────────────
-		//
-		// The rule `saveMetadata` states above its own writes, for the same reason:
-		// the object is in R2 and the row is in D1, so an `actionFail` here would
-		// tell the contributor their upload failed when it did not. A missing,
-		// oversized or unparseable `extractedText` therefore lands as a `pending`
-		// row for the backfill sweep to pick up — never as a failed upload.
-		//
-		// `extractedText` is produced by `$lib/pdf-text.ts` in the contributor's own
-		// browser on file-pick, which is why storing it is one more D1 write and not
-		// a parse. `putFileText` re-runs `normalizeExtracted` over it and applies a
-		// hard size gate; see the four containments spelled out there.
+		// The file is already stored. Bad or missing `extractedText` (parsed in the
+		// browser) becomes a `pending` row for the backfill, never a failed upload.
 		await putFileText(db, url, ext, field(data, 'extractedText')).catch(() => {});
 
 		await logActivity(
@@ -466,11 +398,10 @@ export const actions: Actions = {
 				.get();
 			if (!record) return actionFail(404, 'deleteFile', 'File not found');
 
-			// Derive the R2 key from the stored URL, never from the submitted one:
-			// a crafted value could otherwise delete an arbitrary object.
+			// Use the stored URL, never a submitted one, or a crafted value could
+			// delete any object.
 			await deleteByUrl(bucket, record.url);
 			await db.delete(yearFiles).where(eq(yearFiles.id, record.id)).run();
-			// Best-effort hygiene; see the problem-scoped delete below.
 			await deleteFileTextForUrl(db, record.url).catch(() => {});
 		} else {
 			const problem = await db
@@ -489,10 +420,8 @@ export const actions: Actions = {
 
 			await deleteByUrl(bucket, record.url);
 			await db.delete(problemFiles).where(eq(problemFiles.id, record.id)).run();
-			// Hygiene only, and best-effort for that reason: `searchFiles` INNER
-			// JOINs back to this table, so a row whose file is gone is unreachable
-			// rather than wrong. Failing the delete here would report a failure for
-			// a deletion that has already happened.
+			// Best-effort: the file is already gone, and search joins back to the file
+			// tables, so a leftover text row is never shown.
 			await deleteFileTextForUrl(db, record.url).catch(() => {});
 		}
 

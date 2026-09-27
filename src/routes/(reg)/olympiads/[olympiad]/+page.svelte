@@ -28,7 +28,6 @@
 	let { data, form }: PageProps = $props();
 
 	const olympiad = $derived(data.olympiad);
-	/** Layout data is merged into page data, so `user` is reachable from here. */
 	const signedIn = $derived(!!data.user);
 
 	let years: YearEntry[] | null = $state(null);
@@ -37,52 +36,30 @@
 
 	let query = $state('');
 	let showFullYear = $state(false);
-	/** Topics the user is filtering by. Empty means no topic filter. */
+	/** Empty means no topic filter. */
 	let activeTopics = $state<ProblemTopic[]>([]);
-	/**
-	 * Completion state the user is filtering by. Signed-in only — the control is
-	 * not rendered for anonymous visitors, for whom "Done" could only ever be
-	 * empty.
-	 */
+	/** Signed-in only; anonymous visitors have no progress to filter. */
 	let status = $state<ProblemStatus>('all');
 
-	/**
-	 * The problems the signed-in user has tracked, keyed by `progressKey`. Empty
-	 * for anonymous visitors, who see no tracking UI at all.
-	 *
-	 * Only their scores: each problem's maximum arrives with the problem itself in
-	 * `years` below, because it is public and the same for every visitor.
-	 */
+	/** The user's scores keyed by `progressKey`. Maximums come with `years`. */
 	let progress = $state<ProgressMap>({});
 
 	/**
-	 * Problems tracked or removed while the progress fetch below was still in
-	 * flight. The action's answer is newer than the snapshot, so it wins key by
-	 * key when the snapshot finally lands.
-	 *
-	 * A set of keys rather than a `{ ...fetched, ...progress }` spread: a removal
-	 * is spelled as an *absent* key, so a spread would let the snapshot's copy of
-	 * a just-removed problem come back from the dead.
-	 *
-	 * Deliberately not `$state`. It is bookkeeping about writes that have already
-	 * happened, and making it reactive would re-run the very effect that writes
-	 * it — the same reason `formToasts` keeps its `lastSeen` off the graph.
+	 * Keys tracked or removed while the progress fetch was in flight; they win
+	 * over the snapshot when it lands. Not a spread merge, because a removal is an
+	 * absent key and a spread would bring it back. Not `$state`, or it would
+	 * re-run the effect that writes it.
 	 */
 	// eslint-disable-next-line svelte/prefer-svelte-reactivity -- a SvelteSet is exactly what this must not be
 	let touched = new Set<string>();
 
-	/** In-flight submissions, one entry per problem — see `ProgressControl`. */
+	/** The single `Pending` for this page, passed down to every `ProgressControl`. */
 	const pending = new Pending();
 
 	/**
-	 * The years, problems and files come from `/api/olympiads/[olympiad]` rather
-	 * than from the page load, so the response is served out of Cloudflare's
-	 * shared cache instead of costing a D1 read per visit.
-	 *
-	 * Plain `fetch`. `max-age=0, must-revalidate` means the browser revalidates
-	 * before reusing anything it stored, so Cloudflare's shared cache is the only
-	 * place this can go stale — see `$lib/server/cache.ts` for how long, and why
-	 * that is accepted.
+	 * Years, problems and files come from `/api/olympiads/[olympiad]`, not the page
+	 * load, so they're served from the shared cache instead of D1. See
+	 * docs/architecture.md, "Why some pages fetch their own data".
 	 */
 	$effect(() => {
 		const id = olympiad.id; // tracked dependency: refetch when navigating between olympiads
@@ -99,27 +76,23 @@
 				return r.json() as Promise<YearEntry[]>;
 			})
 			.then(async (fetched) => {
-				// Discard a response the user has already navigated away from. The
-				// component is reused between olympiads, so a slow first response can
-				// otherwise land after a faster second one and leave one olympiad's
-				// years sitting under another olympiad's name until a reload.
+				// The component is reused across olympiads, so drop a response for one
+				// the user has navigated away from.
 				if (olympiad.id !== id) return;
 				years = fetched;
 				loading = false;
 
-				// Honour a #<year> deep link once the panels actually exist.
+				// Honour a #<year> deep link once the panels exist.
 				const hash = window.location.hash;
 				if (hash) {
 					await tick();
-					// Re-checked after the tick: year ids are bare numbers, so a
-					// navigation during it would scroll to a plausible wrong panel.
+					// Re-checked: year ids are bare numbers, so a stale scroll would hit a wrong panel.
 					if (olympiad.id !== id) return;
 					document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' });
 				}
 			})
 			.catch(() => {
-				// Guarded for the same reason, and `loading` with it: a stale failure
-				// must not paint "couldn't load" over an olympiad that loaded fine.
+				// A stale failure must not show an error over an olympiad that loaded.
 				if (olympiad.id !== id) return;
 				loading = false;
 				loadFailed = true;
@@ -127,17 +100,10 @@
 	});
 
 	/**
-	 * Progress, fetched separately from the years above.
-	 *
-	 * A second effect rather than a branch of the first, because the dependencies
-	 * genuinely differ: this one tracks the signed-in user as well as the
-	 * olympiad, so signing in or out refetches — and it must not drag the years
-	 * fetch along with it when that happens.
-	 *
-	 * The endpoint sits outside `/api/` and answers `private, no-store`; a page
-	 * load could not have carried this, because `(reg)/+layout.server.ts` has
-	 * already set a four-hour private cache header and SvelteKit refuses to set
-	 * the same header twice.
+	 * Progress, in its own effect because it also depends on the user: signing in
+	 * or out refetches it without refetching the years. The endpoint is outside
+	 * `/api/` and `private, no-store`. It can't come from the page load, whose
+	 * cache header `(reg)/+layout.server.ts` has already set.
 	 */
 	$effect(() => {
 		const id = olympiad.id;
@@ -152,19 +118,11 @@
 				return r.json() as Promise<ProgressMap>;
 			})
 			.then((fetched) => {
-				// Discard a response the user has already navigated away from, as the
-				// years fetch above does.
 				if (olympiad.id !== id) return;
 
-				// Anything tracked or removed since this request went out is newer than
-				// the snapshot about to replace the map, so re-apply those keys on top
-				// — a `delete` for a removal, because an absent key is the only
-				// spelling of "untracked".
-				//
-				// Not left to the merge effect below. That effect *does* re-run here,
-				// since it reads `progress` and this assignment invalidates it, but
-				// `form` only ever holds the last result — so two problems tracked
-				// while this was in flight would come back as one.
+				// Re-apply keys changed since the request went out. Don't leave this to
+				// the merge effect below: `form` holds only the last result, so two
+				// problems tracked meanwhile would come back as one.
 				for (const key of touched) {
 					const entry = progress[key];
 					if (entry === undefined) delete fetched[key];
@@ -173,33 +131,21 @@
 				progress = fetched;
 			})
 			.catch(() => {
-				// Tracking is an enhancement: a failure here leaves every problem
-				// looking untracked rather than breaking the page.
+				// On failure every problem just looks untracked.
 			});
 	});
 
-	// Failures toast automatically. There is deliberately no `trackProblem` entry
-	// in the success map: a successful click is silent, and the icon changing
-	// state is the feedback.
+	// The one `formToasts` call for this page. No success toast for
+	// `trackProblem`: the icon changing is the feedback.
 	formToasts(() => form);
 
 	/**
-	 * Merges the action's canonical entry back into the map.
-	 *
-	 * `form` is a discriminated union — first on `success`, then on `action` — so
-	 * `form.key` and `form.entry` narrow without any `'x' in form` probing. This
-	 * is why the merge lives here rather than in a `formToasts` handler, which
-	 * only sees the loosely typed envelope.
-	 *
-	 * A removal **deletes** the key instead of writing a tombstone: an absent key
-	 * is the only spelling of "untracked", and a second spelling would have to be
-	 * checked for everywhere the map is read. Svelte 5's `$state` proxy traps
-	 * `deleteProperty`, so the delete is as reactive as the assignment.
+	 * Merges the action's entry into the map. Lives here, not in a `formToasts`
+	 * handler, because `form` is typed here. A removal deletes the key: an absent
+	 * key is the only way to say "untracked".
 	 */
 	$effect(() => {
 		if (!(form?.success && form.action === 'trackProblem')) return;
-		// Recorded so a progress snapshot still in flight cannot undo this — see
-		// `touched` above.
 		touched.add(form.key);
 		if (form.entry === null) delete progress[form.key];
 		else progress[form.key] = form.entry;
@@ -207,15 +153,8 @@
 
 	const filterState = $derived<FilterState>({ query, topics: activeTopics, status, showFullYear });
 	/**
-	 * `progress` is an *input* to the filter, not just to the cards, so a problem
-	 * that stops matching leaves the list the moment its state changes: under "To
-	 * do" the page reads as a to-do list that empties as you work. The card
-	 * unmounting takes the portalled popover with it, which is the intended
-	 * feedback rather than a bug.
-	 *
-	 * It costs nothing while no problem-level filter is active — `filter.ts`
-	 * returns early before ever reading the map, so this doesn't re-derive on
-	 * every tracking click.
+	 * `progress` feeds the filter, so under "To do" a problem leaves the list as
+	 * soon as it's tracked, closing its popover. That is intended.
 	 */
 	const filtered = $derived.by(() => filterYears(years, filterState, progress));
 	const canShowFullYear = $derived.by(() => hasProblemMatches(years, filterState, progress));
@@ -243,9 +182,7 @@
 	<div class="mb-5">
 		<SearchBar placeholder="Search by year or problem…" bind:value={query}>
 			{#snippet trailing()}
-				<!-- Topics are never shown on a problem — that would spoil it — but they can
-				     still be used to narrow the list down. Icon-only so that sharing the
-				     input's row on a phone doesn't cost the input a topic name's width. -->
+				<!-- Topics are never shown on a problem (spoilers), only used to filter. -->
 				<TopicSelect
 					bind:value={activeTopics}
 					label="All topics"
@@ -255,18 +192,12 @@
 					class="shrink-0"
 				/>
 				{#if signedIn}
-					<!-- Anonymous visitors have no progress, so "Done" could only ever be
-							empty for them — the disabled circle on each problem is what tells
-							them tracking exists. -->
 					<StatusFilter bind:value={status} />
 				{/if}
 			{/snippet}
 			{#snippet filters()}
-				<!-- The `{#if}` is outside the element, not inside it: `SearchBar` renders
-				     this snippet unconditionally, so anything always-present here is a
-				     flex item that earns its `gap-y-4` even while empty — which is the
-				     default state, since `canShowFullYear` is false until the query
-				     matches a *problem*. -->
+				<!-- Keep the `{#if}` outside the element: an empty element here would
+				     still take up a flex gap. -->
 				{#if canShowFullYear}
 					<label class="flex cursor-pointer items-center gap-2">
 						<Switch bind:checked={showFullYear} />

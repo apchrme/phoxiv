@@ -1,12 +1,7 @@
-/**
- * Tolerant parsers for the JSON-encoded TEXT columns in D1.
- *
- * SQLite has no array type, so `years.notes`, `years.extraLinks`,
- * `problems.topics` and `user.assignedOlympiads` all store JSON strings. Rows
- * predate several schema revisions and are editable by hand through
- * `wrangler d1 execute`, so a malformed value is a realistic possibility. These
- * parsers degrade to an empty result rather than throwing, which would turn one
- * bad row into a 500 for a whole page.
+/*
+ * Parsers for the JSON TEXT columns (`years.notes`, `years.extraLinks`,
+ * `problems.topics`, `user.assignedOlympiads`). Rows can be old or hand-edited,
+ * so bad values return `[]` instead of throwing and failing the whole page.
  */
 
 /** Parses a JSON array of strings; `[]` on anything unexpected. */

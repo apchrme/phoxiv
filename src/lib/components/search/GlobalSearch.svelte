@@ -34,29 +34,19 @@
 	/**
 	 * The ⌘K search dialog, mounted once by the root layout.
 	 *
-	 * Everything stateful lives in this shell on purpose. `Dialog.Content` is
-	 * wrapped in bits-ui's `{#if shouldRender}`, so its whole subtree unmounts
-	 * when the dialog closes — state pushed into a child would be rebuilt on
-	 * every open, and the session-long caches below would quietly become a fetch
-	 * per keystroke of ⌘K. The `<svelte:window>` handler has to stay out here for
-	 * the same reason: it is what *opens* the dialog, so it could never fire from
-	 * inside the content.
+	 * All state lives in this shell because bits-ui unmounts `Dialog.Content`'s
+	 * subtree on close; state in a child would be rebuilt, and its caches
+	 * refetched, on every open. The `<svelte:window>` handler opens the dialog,
+	 * so it must live out here too.
 	 *
-	 * # Two modes, one list
+	 * Two modes, two `Tabs.Content` panels, but only one list is ever active:
+	 * arrows and Enter work over one array. bits-ui keeps the inactive panel
+	 * mounted (just `hidden`), so each panel guards its body on the mode.
 	 *
-	 * The two searches are two `Tabs.Content` panels, but only ever **one list**:
-	 * no header rows, no cross-kind index arithmetic. Arrows and Enter operate over
-	 * one array; only the count and the activation branch on mode.
-	 *
-	 * That is a fact the reader has to be told, because bits-ui keeps the inactive
-	 * panel's children **mounted** and merely sets `hidden` on it. Each panel
-	 * therefore guards its body on the mode as well — see the `{#if}` inside each
-	 * one, which is load-bearing rather than belt-and-braces.
-	 *
-	 * **Four** network resources, four fetch-once rules: the problem index on first
-	 * open, `/progress` on first open when signed in and again when `userId`
-	 * changes, `/api/olympiads` on first entry into files mode, and the deep-search
-	 * cache once per distinct (query, olympiad) key, ever.
+	 * Network, each fetched once and cached for the session: the problem index
+	 * (first open), `/progress` (first open when signed in, and when `userId`
+	 * changes), `/api/olympiads` (first entry into files mode), and deep-search
+	 * responses per (query, olympiad) key.
 	 */
 	let {
 		open = $bindable(false),
@@ -65,21 +55,15 @@
 	}: {
 		open?: boolean;
 		/**
-		 * The signed-in user's id, or `undefined`. Passed down by `+layout.svelte`
-		 * rather than read from `$app/state` here: `data` is a `$props()` read and
-		 * so already reactive, and reading `page.data.user` inside a `$lib`
-		 * component would couple a shared component to the root layout's load shape
-		 * — which cannot even be typed from `$lib`.
+		 * The signed-in user's id, or `undefined`. Passed in by `+layout.svelte`
+		 * rather than read from `page.data`, which would tie a `$lib` component to
+		 * the root layout's load shape.
 		 */
 		userId?: string;
 		/**
-		 * The olympiad whose page the reader is on, or `undefined` anywhere else.
-		 * Handed straight to `OlympiadPicker`, which lists it first; nothing in this
-		 * shell reads it, and in particular it never presets `olympiadFilter`.
-		 *
-		 * Passed down for `userId`'s reason. This one is only a route param, so it
-		 * carries no load shape with it, but the layout is still the honest place to
-		 * decide what "the page you are on" means.
+		 * The olympiad whose page the reader is on, if any. Only passed to
+		 * `OlympiadPicker`, which lists it first; it never presets
+		 * `olympiadFilter`.
 		 */
 		currentOlympiad?: string;
 	} = $props();
@@ -94,11 +78,8 @@
 	// ---------------------------------------------------------------------------
 
 	/**
-	 * `$state.raw`, not `$state`: the array is only ever replaced wholesale, and a
-	 * deep proxy over thousands of nested `SearchItem`s would put a `Proxy` trap on
-	 * every element read in the filter and the haystack build — both of which run
-	 * on a keystroke. It also makes `filterSearchItems`' same-array early return an
-	 * exact identity check rather than a proxy-mediated one.
+	 * `$state.raw`: replaced wholesale, and a deep proxy over thousands of items
+	 * would slow the per-keystroke filter and haystack build.
 	 */
 	let index = $state.raw<SearchItem[]>([]);
 	let indexLoading = $state(false);
@@ -108,34 +89,16 @@
 	let indexInFlight = false;
 
 	/**
-	 * `indexFetched` is only set on success, so a failed attempt is retried the
-	 * next time the dialog opens rather than leaving the session permanently
-	 * unsearchable. A plain `let` rather than `$state`: it gates a fetch, it does
-	 * not drive markup.
+	 * `indexFetched` is set only on success, so a failure is retried on the next
+	 * open. `indexInFlight` stops repeated ⌘K presses from firing duplicate
+	 * requests.
 	 *
-	 * # Why the guard also consults `indexInFlight`
+	 * Both guards must be plain `let`s. This runs synchronously inside an
+	 * `$effect`, so any `$state` it reads becomes a dependency. Guarding on
+	 * `indexLoading`, which this function writes, would rerun the effect when the
+	 * request settles, and after a failure it would refetch in a loop.
 	 *
-	 * Success is not the only thing worth remembering. `indexFetched` is set when
-	 * the response lands, so pressing ⌘K three times in quick succession re-ran the
-	 * effect below three times before the first response arrived and fired
-	 * `/api/search` three times over. **Retry after a failure still works**: both
-	 * flags are false again by the time the `finally` has run, so the next open
-	 * tries exactly once more, which is the behaviour the paragraph above
-	 * describes.
-	 *
-	 * `indexInFlight` is a plain `let` for a stronger reason than `indexFetched`'s.
-	 * This function is called synchronously from an `$effect`, so every `$state` it
-	 * reads becomes a dependency of that effect — and `indexLoading` is written by
-	 * this very function. Guarding on `indexLoading` would therefore re-run the
-	 * effect when the request settles, and on the *failure* path nothing would stop
-	 * the next run: `indexFetched` is still false and the flag is false again, so
-	 * it would refetch, fail and refetch for as long as the dialog stayed open.
-	 * `indexLoading` stays `$state` because the markup reads it; the guard reads
-	 * this one.
-	 *
-	 * The explicit `ok` check matters: an error response with an HTML body makes
-	 * `res.json()` throw, which used to escape as an unhandled rejection and left
-	 * the dialog claiming "No results found" as though the archive were empty.
+	 * Check `res.ok`: an HTML error body makes `res.json()` throw.
 	 */
 	async function fetchIndex() {
 		if (indexFetched || indexInFlight) return;
@@ -168,26 +131,18 @@
 	/** Drives one hint line, so a "Done" filter chosen before the map lands doesn't read as an empty archive. */
 	let progressLoading = $state(false);
 	/**
-	 * The user whose map is in `progress`. A plain `let` for `indexFetched`'s
-	 * reason and one more: the effect below both reads and writes it, so making it
-	 * reactive would loop. Precedent: `touched` on the olympiad page.
+	 * The user whose map is in `progress`. A plain `let`: the effect below reads
+	 * and writes it, so `$state` would loop.
 	 */
 	let progressFetchedFor: string | undefined = undefined;
 	/**
-	 * The user whose map is on the wire right now — `indexInFlight`'s guard, keyed
-	 * by user because `progressFetchedFor` is. Three ⌘K presses before the first
-	 * response landed used to fire three `/progress` requests, and that endpoint is
-	 * `private, no-store` precisely so it is never cached: each one is a real D1
-	 * read. Keyed rather than a bare boolean so that a *different* user's map is
-	 * still fetched while this one is in flight, which a boolean would have made
-	 * wait for the next open.
+	 * The user whose map is being fetched. Stops duplicate `/progress` requests
+	 * (uncached, so each is a real D1 read). Keyed by user so a different user's
+	 * map can still be fetched meanwhile.
 	 *
-	 * Plain, non-reactive, and that is load-bearing here rather than a preference.
-	 * `progressLoading` is `$state`, so guarding the effect on it would make the
-	 * effect depend on a cell `fetchProgress` writes — and after a failure
-	 * `progressFetchedFor` is still unset, so every settled request would schedule
-	 * the next one and `/progress` would be hit in a loop for as long as the dialog
-	 * stayed open. `progressLoading` stays `$state` because the hint line reads it.
+	 * A plain `let`, and don't guard on `progressLoading` instead: it is `$state`
+	 * written by `fetchProgress`, so after a failure the effect would refetch in
+	 * a loop.
 	 */
 	let progressInFlightFor: string | undefined = undefined;
 
@@ -203,13 +158,10 @@
 			progress = fetched;
 			progressFetchedFor = id;
 		} catch {
-			// Tracking is an enhancement, so no toast — the same handling as the
-			// olympiad page. `progressFetchedFor` stays unset, so the next open
-			// retries rather than leaving the session permanently unfiltered — and
-			// clearing the in-flight key below is what keeps that retry possible.
+			// No toast: tracking is an enhancement. `progressFetchedFor` stays unset,
+			// so the next open retries.
 		} finally {
-			// Guarded, for `DeepSearch.unschedule`'s reason: a request for a user who
-			// has since been superseded must not clear the newer one's key.
+			// Guarded so a superseded user's request can't clear the newer key.
 			if (progressInFlightFor === id) progressInFlightFor = undefined;
 			progressLoading = false;
 		}
@@ -218,10 +170,8 @@
 	$effect(() => {
 		const id = userId;
 		if (!id) {
-			// **Signing out must reset `status` too.** `StatusFilter` is rendered only
-			// when signed in, so a user who signs out mid-session would otherwise keep
-			// filtering by a control that is no longer on screen — an empty list with
-			// nothing on the page explaining why.
+			// Reset `status` too: `StatusFilter` is hidden when signed out, so a
+			// leftover status filter would empty the list invisibly.
 			progress = {};
 			progressLoading = false;
 			progressFetchedFor = undefined;
@@ -244,37 +194,26 @@
 	/** Completion state the user is filtering by. Signed-in only. */
 	let status = $state<ProblemStatus>('all');
 	/**
-	 * The olympiad deep search is scoped to, or `null` for all of them. Files mode
-	 * only — it is the one filter a file *can* carry, since a file belongs to
-	 * exactly one olympiad even when it covers a whole year.
+	 * The olympiad deep search is scoped to, or `null` for all. Files mode only:
+	 * a file belongs to exactly one olympiad, but may cover every topic.
 	 */
 	let olympiadFilter = $state<string | null>(null);
 
 	let focusedIndex = $state(0);
 	let inputEl: HTMLInputElement | undefined = $state();
-	/**
-	 * One scroller per `Tabs.Content`, since each mode now owns a panel.
-	 * `scrollFocusedIntoView` reads whichever the current mode renders into — see
-	 * `resultsEl` below, which is what keeps that function unchanged.
-	 */
+	/** One scroller per panel; `resultsEl` below picks the current one. */
 	let problemsPanelEl: HTMLDivElement | undefined = $state();
 	let filesPanelEl: HTMLDivElement | undefined = $state();
 
-	/**
-	 * Created once in the shell, so the deep-search cache survives every open and
-	 * close. A plain `const` whose *fields* are `$state`.
-	 */
+	/** Created once in the shell, so the deep-search cache survives open and close. */
 	const deep = new DeepSearch();
 
 	/**
-	 * `/api/search` gained `problem.topics`, and the old body sits in Cloudflare's
-	 * shared cache for up to a day (CLAUDE.md rule 9 — purge it after deploying).
-	 * A topic filter over an index without topics matches *nothing at all*, so the
-	 * control is hidden rather than left offering a filter that silently empties
-	 * the list. True until proven otherwise, so it does not pop in when the fetch
-	 * lands.
+	 * Hides the topic filter if a stale cached `/api/search` body lacks
+	 * `problem.topics`, where it would match nothing. True until the index lands,
+	 * so the control doesn't pop in.
 	 *
-	 * **Delete this a day after the purge.** A deploy-window guard, not a feature.
+	 * A temporary deploy-window guard: delete it a day after the cache purge.
 	 */
 	const indexHasTopics = $derived(
 		index.length === 0 || index.some((i) => i.problem.topics !== undefined)
@@ -283,46 +222,26 @@
 	const filtering = $derived(isFiltering({ topics: activeTopics, status }));
 
 	/**
-	 * Three deriveds, split so each depends on only what it reads: `filteredIndex`
-	 * never reads `query`, so typing cannot re-run the topic filter, and the
-	 * ranking never reads `progress`, so marking a problem done cannot re-run the
-	 * fuzzy match.
+	 * Split into three deriveds so typing doesn't rerun the filter, and progress
+	 * changes don't rerun the fuzzy match.
 	 */
 	const filteredIndex = $derived.by(() =>
 		filterSearchItems(index, { topics: activeTopics, status }, progress)
 	);
 	/**
-	 * The strings `rank` matches against, indexed in parallel with
-	 * `filteredIndex`.
-	 *
-	 * Derived from the *filtered* array, not from `index` — which is what keeps
-	 * the two aligned structurally rather than by convention. `rank` maps a
-	 * haystack index straight back to `items[idx]`, so a haystack built from the
-	 * unfiltered corpus would return the wrong problems.
+	 * The strings `rank` matches, parallel to `filteredIndex`. Must be built from
+	 * the filtered array, since `rank` maps haystack positions back to items.
 	 */
 	const filteredHaystack = $derived(filteredIndex.map((i) => i.searchText));
 
 	const results = $derived.by(() => {
 		if (indexLoading) return [];
-		// **Filtering precedes ranking, and that is a correctness constraint rather
-		// than a performance one.** `rank()` caps at MAX_RESULTS, so filtering its
-		// *output* would show two "Done" results where forty exist further down the
-		// ranking. Do not "simplify" this into a filter over `rank(index, …)`.
-		//
-		// The second-order effect is worth knowing: with a filter active the corpus
-		// `rank` runs over is smaller, so filtering makes the per-keystroke match
-		// *faster*. The new layer costs nothing per keystroke.
+		// Filter before ranking, never after: `rank()` caps at MAX_RESULTS, so
+		// filtering its output would drop matches further down.
 		if (query.trim()) return rank(filteredIndex, filteredHaystack, query);
-		// An empty query with a filter set lists the pool itself, matching the
-		// olympiad page — where topic and status always apply and the text query
-		// only narrows further. This is the whole cross-archive capability the
-		// filters unlock: "every relativity problem I haven't done" cannot be asked
-		// by typing, because typing narrows by *text*. It is also why
-		// `getSearchIndex` now carries a deterministic top-level order, without
-		// which this list would come back in `problems.id` order.
-		//
-		// `rank()` returns [] for an empty query *by contract*, so this branch
-		// deliberately bypasses it rather than bending it.
+		// An empty query with a filter set lists the filtered pool (in
+		// `getSearchIndex`'s order), e.g. "every relativity problem I haven't
+		// done". `rank()` returns [] for an empty query, so bypass it.
 		return filtering ? filteredIndex.slice(0, MAX_RESULTS) : [];
 	});
 
@@ -331,34 +250,17 @@
 	// ---------------------------------------------------------------------------
 
 	/**
-	 * Every olympiad, for `OlympiadPicker`'s panel. `$state.raw` for `index`'s
-	 * reason: replaced wholesale, never mutated.
+	 * Every olympiad, for `OlympiadPicker`. Fetched on first entry into files
+	 * mode, so ⌘K costs nothing extra for people who never use deep search.
 	 *
-	 * **Fetched on first entry into files mode, not on open.** ⌘K must not do extra
-	 * network for the people who never touch deep search, and problem mode has no
-	 * use for this list — the mode is the honest trigger. Once fetched it is kept
-	 * for the session like the other two.
-	 *
-	 * **Fetched rather than derived from `index`**, which would be free. `index`
-	 * carries one entry per *problem*, so deriving the list would silently omit an
-	 * olympiad that has files but no `problems` rows — a perfectly ordinary state
-	 * for a freshly created olympiad, and the resulting hole would be invisible
-	 * until someone went looking for a filter that was never there. `/api/olympiads`
-	 * is authoritative and complete, and its payload is negligible beside
-	 * `/api/search`, which is already fetched on every open.
+	 * Don't derive it from `index`: that has one entry per problem, so it would
+	 * miss an olympiad with files but no problems.
 	 */
 	let olympiads = $state.raw<OlympiadEntry[]>([]);
 	/**
-	 * Both plain `let`s, for `indexFetched` and `indexInFlight`'s documented
-	 * reasons — and the failure mode is the same one, not a hypothetical: this
-	 * function is called synchronously from an `$effect`, so a `$state` guard it
-	 * also writes would re-run that effect when the request settled, and on the
-	 * failure path nothing would stop the next run from refetching forever.
-	 *
-	 * Nothing renders a loading or failed state for this one. A missing list means
-	 * the filter is simply not offered yet, which is self-explanatory in a way
-	 * "couldn't load the olympiads" is not; `olympiadsFetched` is set only on
-	 * success, so the next entry into files mode tries again.
+	 * Plain `let`s, for the same reason as `indexFetched` / `indexInFlight`.
+	 * No loading or error UI: until the list lands the filter just isn't shown,
+	 * and a failure retries on the next entry into files mode.
 	 */
 	let olympiadsFetched = false;
 	let olympiadsInFlight = false;
@@ -368,14 +270,11 @@
 		olympiadsInFlight = true;
 		try {
 			const res = await fetch('/api/olympiads');
-			// `fetchIndex`'s rule: an error response with an HTML body makes
-			// `res.json()` throw, which would escape as an unhandled rejection.
 			if (!res.ok) throw new Error(`HTTP ${res.status}`);
 			olympiads = await res.json();
 			olympiadsFetched = true;
 		} catch {
-			// See above: no visible failure state, and the guard stays clear so the
-			// next entry into files mode retries.
+			// No failure UI; the next entry into files mode retries.
 		} finally {
 			olympiadsInFlight = false;
 		}
@@ -389,40 +288,20 @@
 	// Deep search
 	// ---------------------------------------------------------------------------
 
-	/**
-	 * The key everything deep-search-shaped is keyed on.
-	 *
-	 * Normalised on the client so `Gravitation`, `gravitation` and `gravitation `
-	 * are one Cloudflare cache key, and again on the server so correctness never
-	 * depends on the client having done it.
-	 */
+	/** Normalised here so equivalent queries share one Cloudflare cache key. */
 	const deepQuery = $derived(normalizeDeepQuery(query));
 	const deepTooShort = $derived(deepQuery.length > 0 && deepQuery.length < MIN_DEEP_QUERY_LENGTH);
 	/**
-	 * `deepTooShort`'s mirror at the top end, and a fix for a reported failure
-	 * rather than a hypothetical one.
-	 *
-	 * `MAX_DEEP_QUERY_LENGTH` was enforced only on the server, so pasting a long
-	 * passage in — the exact reproduction — got a 400 `{"message":"Search query too
-	 * long"}` (confirmed against the live endpoint with a 259-character query). The
-	 * panel could render that only as "Couldn't search inside files.", beside a
-	 * "Try again" that re-fires the identical query and so **can never succeed**.
-	 * Answering it here costs nothing and says what is actually wrong.
+	 * Checked on the client too, so an over-long paste gets a clear message
+	 * instead of a server 400 shown as a failure whose "Try again" can never
+	 * succeed.
 	 */
 	const deepTooLong = $derived(deepQuery.length > MAX_DEEP_QUERY_LENGTH);
 
 	/**
-	 * The key everything deep-search-shaped is *actually* keyed on: the query and
-	 * the olympiad it is scoped to, together.
-	 *
-	 * **Not `deepQuery`, and that is a correctness constraint.** `DeepSearch`'s
-	 * cache, its landed marker and its in-flight marker all key on one opaque
-	 * string; keyed on the query alone, switching olympiad would find the previous
-	 * olympiad's response already cached and show it without ever asking the
-	 * server. See `deepCacheKey`.
-	 *
-	 * `deepTooShort` and `deepTooLong` deliberately stay on `deepQuery`: the length
-	 * bounds are a fact about the query, and the olympiad has no length.
+	 * The key `DeepSearch` stores everything under: query plus olympiad. Keying
+	 * on the query alone would show the previous olympiad's results. The length
+	 * checks stay on `deepQuery`.
 	 */
 	const deepKey = $derived(deepCacheKey(deepQuery, olympiadFilter));
 
@@ -432,30 +311,14 @@
 	);
 
 	/**
-	 * The debounce **is** the teardown.
+	 * The debounce is the effect's teardown: it runs just before each rerun, so
+	 * `clearTimeout` cancels a request not yet sent and `abort()` cancels one
+	 * that was.
 	 *
-	 * Every dependency change re-runs the effect, and the teardown fires
-	 * immediately before the re-run — so `clearTimeout` cancels a request that had
-	 * not gone out yet and `abort()` supersedes one that had. No timer state, no
-	 * wrapper, and the two compose in three lines.
-	 *
-	 * The first debounce anywhere in this codebase, and it earns it: problem search
-	 * is a local fuzzy match, this one hits the network per keystroke.
-	 *
-	 * **Every tracked read is synchronous and above the `setTimeout`.** Svelte only
-	 * registers dependencies read synchronously in the body, which is exactly what
-	 * is wanted here — the fetch itself must create none, or landing a response
-	 * would re-trigger the request that produced it. `deep.has()` reads a plain
-	 * `Map` for that reason; see the comment on it.
-	 *
-	 * `deep.schedule()` and `deep.unschedule()` are safe under that same rule for
-	 * the opposite reason: they only *write* `DeepSearch`'s cells and read none of
-	 * them here, so they add no dependency and cannot re-trigger this effect.
-	 *
-	 * `olympiadFilter` needs no branch of its own: it is a tracked read *through*
-	 * `deepKey`, synchronously and above the `setTimeout`, exactly as that rule
-	 * requires — so changing the filter re-runs this, aborts whatever was in flight
-	 * and asks the new key.
+	 * Every tracked read must be synchronous and above the `setTimeout`. The
+	 * fetch must create no dependency, or a landing response would re-trigger it;
+	 * that is why `deep.has()` reads a plain `Map`. `schedule()` / `unschedule()`
+	 * only write state, so they add no dependency either.
 	 */
 	$effect(() => {
 		if (mode !== 'files') return;
@@ -464,25 +327,17 @@
 		const olympiad = olympiadFilter;
 		const _attempt = deep.attempt; // tracked: lets "Try again" re-fire the same query
 		if (query.length < MIN_DEEP_QUERY_LENGTH) return;
-		// The server's upper bound, mirrored so an over-long paste never goes out at
-		// all; `deepTooLong` explains what it used to cost. **Deliberately not a
-		// truncation to the limit**: the cut would land mid-word, and a deep query's
-		// last token is prefix-extended in the `MATCH`, so half a word would become a
-		// spurious `hal*` term and quietly change which files came back. Refusing to
-		// ask is honest; asking a different question is not.
+		// Refuse, don't truncate: a cut mid-word would become a prefix term and
+		// change the results.
 		if (query.length > MAX_DEEP_QUERY_LENGTH) return;
 
-		// A cache hit is not a network event at all: shown synchronously, so
-		// backspacing through a query already run — or switching back to an olympiad
-		// already asked about — never shows a spinner.
+		// A cache hit is shown synchronously, with no spinner.
 		if (deep.has(key)) {
 			deep.show(key);
 			return;
 		}
 
-		// Pending from *here*, not from inside the timer: the 250 ms a first query
-		// spends being typed is time the panel must not spend claiming an answer.
-		// See `DeepSearch.schedule`.
+		// Pending from here, not inside the timer. See `DeepSearch.schedule`.
 		deep.schedule(key);
 		const controller = new AbortController();
 		const timer = setTimeout(
@@ -492,9 +347,7 @@
 		return () => {
 			clearTimeout(timer);
 			controller.abort();
-			// Guarded inside `unschedule`, because this teardown runs immediately
-			// before the re-run that schedules the *next* key — and on an abort, after
-			// it. Clearing unconditionally would blank the newer key's pending state.
+			// Guarded inside `unschedule`, so it can't clear the next key's state.
 			deep.unschedule(key);
 		};
 	});
@@ -509,94 +362,51 @@
 	const resultsEl = $derived(inFiles ? filesPanelEl : problemsPanelEl);
 
 	/**
-	 * Non-flickering states are expressed by **branch order, not flags**: too long →
-	 * failed → (empty and loading) → genuinely empty → the list. So the loading
-	 * state can only appear when there is nothing worth keeping, and a newer query
-	 * merely dims the last landed list rather than emptying it.
-	 *
-	 * `deepLoading` covers the debounce as well as the request itself — see
-	 * `DeepSearch.schedule`, which is what stopped the panel announcing "No files
-	 * contain that phrase." during the 250 ms before it had asked anything.
+	 * The panel avoids flicker through branch order: too long → failed → too
+	 * short → empty and loading → empty → the list. A newer query dims the last
+	 * list instead of clearing it. `deepLoading` covers the debounce too.
 	 */
 	const deepFailed = $derived(inFiles && deep.hasFailed(deepKey));
 	const deepLoading = $derived(inFiles && deep.isLoading(deepKey));
 	const deepStale = $derived(inFiles && deep.isStale(deepKey));
 
 	/**
-	 * The file rows actually on screen — **not** simply `deep.results`.
-	 *
-	 * The two diverge in the states that render something else instead: a failure,
-	 * and a query outside the length bounds — backspaced below the minimum, or
-	 * pasted over the maximum. `deep.results` still holds the last landed list in
-	 * all of them (deliberately — that is the cache, and re-typing must not cost a
-	 * request), but nothing is rendered from it, so the keyboard must not address
-	 * it either. Without this, ArrowDown would move a highlight over rows that are
-	 * not there and Enter would open a file the user cannot see.
-	 *
-	 * The conditions are in the panel's branch order on purpose: the two have to
-	 * agree, and the cheapest way to keep them agreeing is to be able to read them
-	 * side by side.
+	 * The file rows actually on screen. `deep.results` keeps the last list even
+	 * when the panel shows something else (failure, too short, too long), and the
+	 * keyboard must not address rows that aren't rendered. Keep these conditions
+	 * in step with the panel's branches.
 	 */
 	const visibleDeepResults = $derived(
 		deepTooLong || deepFailed || deepQuery.length < MIN_DEEP_QUERY_LENGTH ? NO_HITS : deep.results
 	);
 
 	/**
-	 * How many rows the keyboard may address. **Derived from what is rendered**, in
-	 * both modes, which is the invariant that keeps `focusedIndex` addressable:
-	 * every branch that renders no `<ul>` also reports zero here.
+	 * How many rows the keyboard may address, derived from what is rendered:
+	 * every branch that renders no `<ul>` must give zero here.
 	 */
 	const resultCount = $derived(inFiles ? visibleDeepResults.length : results.length);
 
 	/**
-	 * The row the keyboard is actually on.
-	 *
-	 * **Clamped on read, never written back**, because the list can shrink *under*
-	 * `focusedIndex` between the moment it is set and the moment it is used: hover
-	 * row 18 of a stale twenty-row list, let a two-row response land, and Enter did
-	 * nothing while ArrowUp needed seventeen presses to reach a real row. The reset
-	 * effect below only fires on `query`/`mode`/filter changes, so a *response*
-	 * arriving for the query already typed never went through it.
-	 *
-	 * Clamping by writing `focusedIndex` back from an effect would be a
-	 * derived-driven write to state that same derived reads — which is how the
-	 * loops this file keeps warning about start. A clamp on read cannot loop, and
-	 * it cannot be forgotten by whoever adds the next branch that empties the list.
-	 *
-	 * Writes still target `focusedIndex` — hover, the arrows, the reset — so an
-	 * index parked beyond a briefly-short list is restored, not destroyed, if the
-	 * list grows back.
+	 * The row the keyboard is on: `focusedIndex` clamped on read, because a
+	 * response can shrink the list under it. Don't clamp by writing
+	 * `focusedIndex` back from an effect; that risks a loop.
 	 */
 	const focused = $derived(resultCount === 0 ? 0 : Math.min(focusedIndex, resultCount - 1));
 
 	// Reset the keyboard highlight to the top whenever what is listed changes.
 	$effect(() => {
-		// `activeTopics.join()` rather than the array by reference, so this does not
-		// depend on `TopicSelect` happening to reassign rather than mutate.
+		// `join()` so this tracks the contents, whether TopicSelect mutates or reassigns.
 		const _deps = [query, mode, status, olympiadFilter, activeTopics.join()]; // tracked dependencies
 		focusedIndex = 0;
 	});
 
 	/**
-	 * Reset on every open, not just the ones ⌘K drove.
+	 * Resets query, filters and mode on every open, however it was opened. A
+	 * filter left over from last time would be invisible, and ⌘K must never start
+	 * in files mode, which hits the network.
 	 *
-	 * The dialog can be opened three ways (⌘K, the mobile pill, the desktop nav
-	 * button) and closed four (⌘K, Escape, the overlay, the close button), and
-	 * only two of those seven went through a function of ours. Before this,
-	 * Escape followed by a click on the nav search button reopened the dialog with
-	 * the previous query still in it.
-	 *
-	 * The filters reset too, deliberately unlike the olympiad page: no filter
-	 * state lives in any URL in this app and there is no visible chip while the
-	 * dialog is shut, so a sticky invisible filter is the likeliest way for this
-	 * feature to come back as "search is broken". The **mode** resets for a
-	 * stronger reason still — deep search costs a round trip, and ⌘K must never
-	 * start out hitting the network.
-	 *
-	 * It resets what the user asked for and nothing they paid for: all three caches
-	 * are untouched, so a reopen still costs no requests. That is the contract
-	 * `docs/contributing.md` checks. It assigns these cells but never reads them,
-	 * so its only dependency is `open` and there is no loop.
+	 * Caches are kept, so a reopen costs no requests. This only writes these
+	 * cells, never reads them, so its only dependency is `open`.
 	 */
 	$effect(() => {
 		if (!open) return;
@@ -613,12 +423,7 @@
 	// Helpers
 	// ---------------------------------------------------------------------------
 
-	/**
-	 * Clears **every** filter, including the olympiad one — which problem mode's
-	 * summary bar can now offer, because it is the mode where that filter is not
-	 * applying to anything. A "Clear filters" that left one set would be the exact
-	 * trap the bar exists to prevent.
-	 */
+	/** Clears every filter, including the olympiad one, even from problem mode. */
 	function clearFilters() {
 		activeTopics = [];
 		status = 'all';
@@ -631,20 +436,12 @@
 	}
 
 	/**
-	 * Opens whatever the keyboard is on.
-	 *
-	 * In files mode the row's anchor is deliberately untouched — no
-	 * `preventDefault`, no handler — so Enter has no click to delegate to and has
-	 * to open the window itself. A keydown is a user activation, so this is not
-	 * blocked in practice, and the same-tab fallback covers the case where it is;
-	 * silently doing nothing on Enter would be the worst outcome.
-	 *
-	 * The dialog stays **open** for a file: it opened in a new tab, so coming back
-	 * should land on the same result list.
+	 * Opens whatever the keyboard is on. A file row's anchor has no handler, so
+	 * Enter opens the new tab itself, falling back to same-tab if blocked. The
+	 * dialog stays open for a file.
 	 */
 	function activateFocused() {
-		// `focused`, not `focusedIndex`: the row the user can see is the clamped one,
-		// and it is the only one Enter may open.
+		// `focused`, not `focusedIndex`: only the clamped, visible row may open.
 		if (inFiles) {
 			const hit = visibleDeepResults[focused];
 			if (!hit) return;
@@ -657,22 +454,12 @@
 	}
 
 	/**
-	 * Keeps the keyboard-focused row visible.
-	 *
-	 * Reaches into the DOM rather than holding element references, since the rows
-	 * are rendered by a child — but by `[data-result-index]` rather than by
-	 * `querySelectorAll('li')[i]`. The scroll container also holds a filter
-	 * summary, the "filters don't apply to files" note and a footer, and any
-	 * future non-result `<li>` would silently shift every index, landing the
-	 * highlight on the wrong row. The rows own their index.
-	 *
-	 * That is also what makes it safe to hoist the live region *out* of both
-	 * scrollers and share it above the panels: a position-based lookup would have
-	 * shifted by one when it left.
+	 * Keeps the keyboard-focused row visible. Looks rows up by
+	 * `[data-result-index]`, not position, because the scroller holds other
+	 * elements too.
 	 */
 	function scrollFocusedIntoView() {
-		// `focused` again: no row carries a `data-result-index` past the last one, so
-		// scrolling to an unclamped index would simply find nothing.
+		// `focused`: an unclamped index might match no row.
 		resultsEl
 			?.querySelector(`[data-result-index="${focused}"]`)
 			?.scrollIntoView({ block: 'nearest' });
@@ -685,8 +472,7 @@
 	function onWindowKeydown(e: KeyboardEvent) {
 		const key = e.key.toLowerCase();
 
-		// `.toLowerCase()`: with caps lock on — or shift held — `e.key` is `'K'`,
-		// and the plain `=== 'k'` this replaces silently stopped ⌘K working at all.
+		// Lowercased: with caps lock on, `e.key` is `'K'`.
 		if ((e.metaKey || e.ctrlKey) && !e.shiftKey && key === 'k') {
 			e.preventDefault();
 			open = !open;
@@ -694,9 +480,7 @@
 		}
 		if (!open) return;
 
-		// ⌘⇧F toggles the mode. Unbound in Chrome, Safari and Firefox — unlike ⌘⇧K,
-		// which is Firefox's Web Console — and the tabs are Tab-reachable, so the
-		// chord is a convenience and never the only route.
+		// ⌘⇧F toggles the mode. Not ⌘⇧K, which is Firefox's Web Console.
 		if ((e.metaKey || e.ctrlKey) && e.shiftKey && key === 'f') {
 			e.preventDefault();
 			mode = inFiles ? 'problems' : 'files';
@@ -704,33 +488,18 @@
 			return;
 		}
 
-		// Arrows drive the list only while focus is in the input. Without this, an
-		// open filter dropdown moves *its* highlight and ours at the same time:
-		// `DropdownMenu` and `Dialog` both portal at z-50 and both handlers see the
-		// key. Hovering a row does not move focus, so the documented
-		// hover-then-Enter contract is unaffected.
+		// Only while focus is in the input, or an open filter dropdown and the list
+		// would both react to the arrows.
 		if (e.target !== inputEl) return;
 
-		// While an IME is composing, Enter and the arrows belong to the candidate
-		// list, not to us: an unguarded handler activates a result and closes the
-		// dialog on the keystroke that was only *committing a word*, and candidate
-		// arrows move both highlights at once. This archive's audience is
-		// international — Japanese, Chinese and Korean input is a normal way to reach
-		// it, not an edge case.
-		//
-		// **Below the chords, deliberately.** Composition never involves ⌘/Ctrl, so
-		// no chord can be part of picking a candidate, and ⌘K in particular is how
-		// the dialog is closed again — taking that away mid-composition would trap
-		// the user in the very state this guard exists to make usable. Everything an
-		// IME genuinely owns is past this line.
+		// During IME composition, Enter and arrows belong to the candidate list.
+		// Below the chords, so ⌘K can still close the dialog mid-composition.
 		if (e.isComposing) return;
 
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
-			// From `focused`, not `focusedIndex`, so a step down from a list that has
-			// shrunk starts at the row on screen rather than somewhere past the end.
-			// `Math.max(…, 0)`: an empty list gives -1, which parks the index there
-			// until an ArrowUp recovers it.
+			// From `focused`, the row on screen. `Math.max` stops an empty list
+			// setting -1.
 			focusedIndex = Math.min(focused + 1, Math.max(resultCount - 1, 0));
 			scrollFocusedIntoView();
 		}
@@ -773,20 +542,14 @@
 					{inFiles ? 'Search inside files' : 'Search problems'}
 				</Dialog.Title>
 
-				<!-- `value=` + `onValueChange`, not `bind:value`: `TabsPrimitive.RootProps`
-				     types `value` as a bare `string`, so binding it to `$state<SearchMode>`
-				     does not type-check. One cast at the boundary is the honest version, and
-				     it keeps `mode` the single source of truth — the reset effect and the ⌘⇧F
-				     chord go on writing `mode`, and the tabs follow. -->
+				<!-- Not `bind:value`: bits-ui types `value` as `string`, which won't bind to
+				     `SearchMode`. `mode` stays the single source of truth. -->
 				<Tabs.Root
 					value={mode}
 					onValueChange={(v) => (mode = v as SearchMode)}
 					class="min-h-0 flex-1 gap-0"
 				>
-					<!-- Mode row. The switch gets a row of its own rather than a fourth square
-					     in the input row below — see `SearchModeTabs` for why — and the close
-					     button comes up here with it, which is what hands the input back the
-					     width it was costing on a phone. -->
+					<!-- Mode row: the tabs and the close button, keeping the input row narrow. -->
 					<div class="flex items-center gap-2 border-b glass-hairline px-3 py-2">
 						<SearchModeTabs onactivate={() => inputEl?.focus()} />
 						<Dialog.Close
@@ -800,22 +563,11 @@
 						</Dialog.Close>
 					</div>
 
-					<!-- Input row.
-					     `min-w-0` on the input is load-bearing: a flex item's automatic
-					     minimum size is its content's, and an `<input>`'s intrinsic width is
-					     about twenty characters, so with filters beside it the row *overflows*
-					     instead of the input shrinking — and `Dialog.Content` is
-					     `overflow-hidden`, so the visible symptom used to be a clipped close
-					     button. The row now carries at most **two** controls, both `icon-sm`
-					     (32px), since the mode switch and the close button moved to the row
-					     above: at 390px there are 326px inside the padding, leaving ~226px of
-					     input rather than the ~154px four controls left. That is more room,
-					     not a reason to drop the guard — an olympiad name in a filter chip
-					     would eat it again. -->
+					<!-- Input row. Keep `min-w-0` on the input: without it the input won't
+					     shrink below ~20 characters and the row overflows (and is clipped). -->
 					<div class="flex items-center gap-2 border-b glass-hairline px-4 py-3">
 						{#if deepLoading}
-							<!-- The spinner **replaces** the magnifier rather than joining it: the
-							     row has no width to spare. -->
+							<!-- Replaces the magnifier: the row has no width to spare. -->
 							<Spinner class="size-4 shrink-0 text-muted-foreground" />
 						{:else}
 							<Search class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -832,22 +584,10 @@
 							class="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
 						/>
 						<div class="flex shrink-0 items-center gap-1">
-							<!-- The problem filters vanish in files mode rather than greying out. A
-							     disabled `TopicSelect` keeps the `default` fill it had in problem
-							     mode, so it would go on *claiming* a filter is active while it
-							     isn't — worse than absent. The olympiad filter is the mirror image,
-							     present only in files mode, since it is the only one of the three a
-							     file can carry. Nothing is discarded either way; switching back
-							     restores all three.
-
-							     Files mode therefore shows **one** control here and problem mode at
-							     most two, never three: the two problem filters leave as this one
-							     arrives. -->
+							<!-- Each mode shows only its own filters. Hidden, not disabled: a disabled
+							     TopicSelect would still look active. Values are kept across switches. -->
 							{#if inFiles}
-								<!-- Absent until `/api/olympiads` lands, rather than an empty panel:
-								     the fetch starts on entry into this mode, so the gap is one round
-								     trip, and a filter offering nothing to filter by is worse than a
-								     control that appears a moment later. -->
+								<!-- Absent until `/api/olympiads` lands, rather than an empty picker. -->
 								{#if olympiads.length > 0}
 									<OlympiadPicker
 										trigger="icon"
@@ -870,34 +610,24 @@
 									/>
 								{/if}
 								{#if signedIn}
-									<!-- Signed-in only, the same rule as the olympiad page: "Done"
-									     could only ever be empty without a session. -->
+									<!-- Signed-in only: without a session nothing is "Done". -->
 									<StatusFilter bind:value={status} size="icon-sm" />
 								{/if}
 							{/if}
 						</div>
 					</div>
 
-					<!-- One coarse live region, carrying a **count only**. A region echoing
-					     row contents would read the whole list out again on every keystroke. -->
+					<!-- Count only: echoing rows would reread the list on every keystroke. -->
 					<p class="sr-only" role="status" aria-live="polite">
 						{plural(resultCount, 'result')}
 					</p>
 
-					<!-- Two panels, and the `{#if}` inside each one is **load-bearing**.
-					     bits-ui keeps the inactive `Tabs.Content`'s children mounted and merely
-					     sets `hidden` on it, so without the guard the problems panel would read
-					     the `results` derived — a full uFuzzy `rank()` over the whole index —
-					     on every keystroke typed in files mode, and it would break the
-					     `resultCount` invariant that only what is rendered may be addressed by
-					     the keyboard.
+					<!-- Keep the `{#if}` inside each panel: bits-ui leaves the inactive panel
+					     mounted, so without it the problems panel would rerun `rank()` on
+					     every keystroke in files mode.
 
-					     The scroller is the inner `<div>`, not the panel itself: it needs `flex
-					     flex-col` (the empty states centre with `m-auto`, and "No files contain
-					     that phrase." uses `flex-1`), and a `display` utility in
-					     `@layer utilities` beats Tailwind's `[hidden]{display:none}` in
-					     `@layer base` — so `flex` on the panel would leave the hidden one
-					     visible. `Tabs.Content`'s base class already carries `flex-1`. -->
+					     The scroller is the inner `<div>`: `flex` on the panel itself would
+					     override Tailwind's `[hidden]` rule and show the hidden panel. -->
 					<Tabs.Content value="problems" class="min-h-0">
 						<div bind:this={problemsPanelEl} class="flex h-full flex-col overflow-y-auto">
 							{#if !inFiles}
@@ -906,9 +636,7 @@
 										<p class="text-center text-sm text-muted-foreground">Loading search index…</p>
 									</div>
 								{:else if indexFailed}
-									<!-- `boxed={false}` for every empty state in here: the dialog panel
-									     already has edges, and a dashed box inside it reads as a rendering
-									     fault rather than as a state. -->
+									<!-- `boxed={false}` throughout: the dialog already has edges. -->
 									<EmptyState
 										boxed={false}
 										variant="error"
@@ -938,8 +666,7 @@
 										message="No results found"
 										class="m-auto"
 									>
-										<!-- A filled funnel is easy to miss, and "No results found" with a
-										     forgotten topic filter is the classic trap. -->
+										<!-- A forgotten filter is the usual cause of "No results found". -->
 										{#snippet action()}
 											{#if filtering || olympiadFilter !== null}
 												<Button variant="outline" size="sm" onclick={clearFilters}
@@ -950,11 +677,8 @@
 									</EmptyState>
 								{:else}
 									{#if filtering || olympiadFilter !== null}
-										<!-- The converse of files mode's note below, so **neither** switch is
-										     ever silent about what stopped applying. The bar used to render on
-										     `filtering` alone; an olympiad filter set in files mode is
-										     invisible here otherwise, and "search is broken" is what a
-										     forgotten invisible filter comes back as. -->
+										<!-- Also shown for an olympiad filter set in files mode, which is
+										     otherwise invisible here. Mirrors the note in the files panel. -->
 										<div
 											class="flex items-center justify-between gap-2 border-b glass-hairline px-4 py-2 text-xs text-muted-foreground"
 										>
@@ -999,10 +723,8 @@
 						<div bind:this={filesPanelEl} class="flex h-full flex-col overflow-y-auto">
 							{#if inFiles}
 								{#if deepTooLong}
-									<!-- Above `deepFailed` on purpose: this is the one state that is never
-									     sent, so it has to win over any marker a query that *was* sent left
-									     behind. It renders no `<ul>`, and `visibleDeepResults` is empty on
-									     the same condition — the `resultCount` invariant. -->
+									<!-- Before `deepFailed`: this query is never sent, so it must win over
+									     markers left by one that was. -->
 									<div class="m-auto flex flex-col gap-2 px-5">
 										<p class="text-center text-sm text-muted-foreground">
 											That's too long to search inside files.
@@ -1030,8 +752,7 @@
 										<p class="text-center text-sm text-muted-foreground">
 											Search the text inside every uploaded document.
 										</p>
-										<!-- The hints bar is `hidden md:flex`, so the *meaning* of this
-										     mode has to live here, where a phone can see it. -->
+										<!-- Here, not in the hints bar, which phones don't show. -->
 										<p class="text-center text-sm text-muted-foreground">
 											Results are files, not problems — one year's PDF often holds every problem of
 											that year.
@@ -1047,11 +768,8 @@
 										<p class="text-center text-sm text-muted-foreground">Searching inside files…</p>
 									</div>
 								{:else if visibleDeepResults.length === 0}
-									<!-- `indexEmpty` is a claim about the whole pipeline and stays global
-									     under a filter — see `searchFiles`. Naming the olympiad in the other
-									     branch is this side's half of that bargain: the server does not narrow
-									     the field, so the client, which knows its own filter, words the
-									     sentence. -->
+									<!-- `indexEmpty` is global even under a filter, so the client names the
+									     filtered olympiad itself. -->
 									<EmptyState
 										boxed={false}
 										icon={SearchX}
@@ -1065,15 +783,13 @@
 									/>
 								{:else}
 									{#if filtering}
-										<!-- Shown only while a filter is set, so switching modes is never
-										     silent about what stopped applying. -->
+										<!-- Says which problem filters stopped applying. -->
 										<p class="border-b glass-hairline px-4 py-2 text-xs text-muted-foreground">
 											Topic and progress filters don't apply to files — one file can cover a whole
 											year.
 										</p>
 									{/if}
-									<!-- A newer in-flight query dims the last landed list rather than
-									     emptying it. That is the whole anti-flicker contract. -->
+									<!-- A newer in-flight query dims the last list instead of emptying it. -->
 									<ul
 										class={cn(
 											'transition-opacity duration-150 motion-reduce:transition-none',

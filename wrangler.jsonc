@@ -1,7 +1,4 @@
-/**
- * For more details on how to configure Wrangler, refer to:
- * https://developers.cloudflare.com/workers/wrangler/configuration/
- */
+// https://developers.cloudflare.com/workers/wrangler/configuration/
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "phoxiv",
@@ -27,11 +24,8 @@
 			"database_name": "phoxiv",
 			"database_id": "3d506364-c7cb-4e64-a252-d0934437a5c2",
 			"migrations_dir": "./src/lib/server/db/migrations",
-			// Drizzle v1 keeps each migration in its own folder as `migration.sql`,
-			// so wrangler's default `<dir>/*.sql` matches nothing. Wrangler tracks a
-			// migration by this relative path, which is also what lands in the
-			// `d1_migrations` table — see docs/deployment.md for the one-off rename
-			// the v1 upgrade needed.
+			// Drizzle v1 puts each migration in its own folder as `migration.sql`.
+			// Wrangler records applied migrations by this path; see docs/deployment.md.
 			"migrations_pattern": "./src/lib/server/db/migrations/*/migration.sql"
 		}
 	],
@@ -44,27 +38,5 @@
 	"vars": {
 		"BETTER_AUTH_URL": "https://phoxiv.org/"
 	}
-	/**
-	 * Smart Placement
-	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
-	 */
-	// "placement": {  "mode": "smart" }
-	/**
-	 * Bindings
-	 * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
-	 * databases, object storage, AI inference, real-time communication and more.
-	 * https://developers.cloudflare.com/workers/runtime-apis/bindings/
-	 */
-	/**
-	 * Environment Variables
-	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
-	 * Note: Use secrets to store sensitive data.
-	 * https://developers.cloudflare.com/workers/configuration/secrets/
-	 */
-	// "vars": {  "MY_VARIABLE": "production_value" }
-	/**
-	 * Service Bindings (communicate between multiple Workers)
-	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
-	 */
-	// "services": [  {   "binding": "MY_SERVICE",   "service": "my-service"  } ]
+	// Secrets (see .env.example) are set with `wrangler secret put`, not here.
 }

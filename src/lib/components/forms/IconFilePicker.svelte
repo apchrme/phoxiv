@@ -3,14 +3,9 @@
 	import { cn } from '$lib/utils.js';
 
 	/**
-	 * A file input for olympiad icons, with a live preview thumbnail.
-	 *
-	 * Owns the object-URL lifecycle, which is the reason this is a component:
-	 * every preview must be revoked, and one of the two original copies of this
-	 * markup leaked a URL on every file change.
-	 *
-	 * Parents that need to clear the picker after a successful upload can call
-	 * `clear()` through `bind:this`.
+	 * A file input for olympiad icons with a preview. Owns the preview's object
+	 * URL and revokes it on change and unmount. Parents can call `clear()` via
+	 * `bind:this`.
 	 */
 	let {
 		id = 'iconFile',
@@ -20,11 +15,7 @@
 		previewClass = 'h-9 w-auto rounded-md border border-border object-contain',
 		/** Set false when the parent renders its own, larger preview. */
 		showPreview = true,
-		/**
-		 * Notified whenever the selection changes. `previewUrl` is owned by this
-		 * component and revoked on the next change or on unmount, so parents may
-		 * display it but must not hold on to it.
-		 */
+		/** Called on selection change. Display `previewUrl` but don't keep it: it gets revoked. */
 		onchange
 	}: {
 		id?: string;

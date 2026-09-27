@@ -3,19 +3,14 @@
 	import { ExternalLink } from '@lucide/svelte';
 
 	/**
-	 * A link to one uploaded file or external resource.
-	 *
-	 * `href` is always an absolute URL — either a CDN object or a contributor's
-	 * extra link — so it never goes through `resolve()`. That is also why the
-	 * lint rule is suppressed here rather than at each call site.
+	 * A link to an uploaded file or external resource. `href` is always absolute,
+	 * so it skips `resolve()` and the lint rule is disabled here.
 	 */
 	let {
 		href,
 		label,
 		external = false,
-		// The default is what two of the three call sites were passing explicitly.
-		// Note it **replaces** rather than merges, which is what lets the ⌘K result
-		// row shrink the badge to `text-xs` and drop the hover tint in one prop.
+		// Passing `class` replaces this default rather than merging with it.
 		class: className = 'px-2.5 py-2.5 text-sm hover:border-primary/40 dark:hover:border-primary/30',
 		onclick
 	}: {

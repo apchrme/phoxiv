@@ -1,15 +1,8 @@
-/**
- * Date formatting for the whole app.
- *
- * The formatters are built once at module scope rather than per call:
- * `toLocaleDateString` constructs a fresh `Intl.DateTimeFormat` on every
- * invocation, and the admin activity log renders a timestamp per row over a
- * list the operator can extend without bound by pressing "Load more".
- */
+/* Date formatting. Formatters are built once, since the activity log formats one per row. */
 
 type DateInput = Date | string | number | null | undefined;
 
-/** Rendered in place of a missing date, so a nullish value never becomes "today". */
+/** Shown for a missing date, so null never renders as "today". */
 const EMPTY = '—';
 
 const LONG = new Intl.DateTimeFormat('en-GB', {

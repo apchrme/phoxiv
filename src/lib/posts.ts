@@ -1,10 +1,4 @@
-/**
- * Blog post loading.
- *
- * Posts are `.svx` files in `$lib/posts/`, compiled by mdsvex and discovered
- * with `import.meta.glob`. Their frontmatter is untyped, so every field is
- * coerced here rather than at each call site.
- */
+/* Blog posts: mdsvex `.svx` files in `$lib/posts/`, found with `import.meta.glob`. */
 
 export interface PostMeta {
 	slug: string;
@@ -28,11 +22,8 @@ export function toPostMeta(metadata: Record<string, unknown>, slug: string): Pos
 }
 
 /**
- * All posts, newest first. Posts without a `date` are dropped: they are drafts,
- * and there would be no sensible place to sort them.
- *
- * Takes the glob result as a parameter because `import.meta.glob` is rewritten
- * at build time and only resolves relative to the file it is written in.
+ * All posts, newest first. Posts without a `date` are drafts and are dropped.
+ * Takes the glob result because `import.meta.glob` resolves relative to its caller.
  */
 export function loadPostList(modules: Record<string, unknown>): PostMeta[] {
 	return Object.entries(modules)

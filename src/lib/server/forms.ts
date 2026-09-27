@@ -1,27 +1,14 @@
 import { fail, type ActionFailure } from '@sveltejs/kit';
 import { MAX_YEAR, MIN_YEAR } from '$lib/constants';
 
-/**
- * Form-field parsing and the shape every form action returns.
+/*
+ * Form-field parsing and the result shape every action returns:
  *
- * # The action-result envelope
+ *   { action: 'uploadFile', success: true, ...payload }
+ *   { action: 'uploadFile', success: false, error: '...' }
  *
- * Every action in the app resolves to exactly one of two shapes:
- *
- * ```
- * { action: 'uploadFile', success: true }                  // + any extra payload
- * { action: 'uploadFile', success: false, error: '...' }
- * ```
- *
- * Because `success` is a literal `true`/`false`, the `form` union SvelteKit
- * generates in `./$types` is a discriminated union — first on `success`, then on
- * `action`. A page can therefore write `if (!form.success) toast.error(form.error)`
- * and narrow payload fields by checking `form.action`, with no `'x' in form`
- * probing. `$lib/forms.svelte.ts` builds the client-side toast handling on top
- * of this contract, so the two must change together.
- *
- * Actions that end in `redirect()` never return, and so never appear in the
- * union.
+ * The literal `success` makes `form` a discriminated union, narrowed further by
+ * `action`. `$lib/forms.svelte.ts` relies on this shape; change both together.
  */
 
 /** Result of a validation step that either yields a value or a message. */
@@ -41,10 +28,8 @@ export function ok<A extends string>(action: A, data?: Record<string, unknown>) 
 }
 
 /**
- * A failed action result, as a SvelteKit `fail()` so the HTTP status is set too.
- *
- * Prefer this over `error()` inside an action: `error()` replaces the page with
- * the error template, discarding whatever the contributor had typed.
+ * A failed action result, via SvelteKit's `fail()`. Use this, not `error()`, in
+ * actions: `error()` replaces the page and discards what the user typed.
  */
 export function actionFail<A extends string>(
 	status: number,
@@ -86,8 +71,7 @@ export function fileField(data: FormData, name: string): File | null {
 
 // ── Year parsing ────────────────────────────────────────────────────────────
 
-// The range itself lives in `$lib/constants.ts`, where the year inputs can also
-// reach it — re-exported here so server-side callers need only one import.
+// Re-exported from `$lib/constants.ts` for server callers.
 export { MIN_YEAR, MAX_YEAR };
 
 export const YEAR_RANGE_ERROR = `Please enter a valid year (${MIN_YEAR}-${MAX_YEAR})`;

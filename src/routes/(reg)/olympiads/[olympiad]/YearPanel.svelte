@@ -8,11 +8,8 @@
 	import { hasYearLevelContent, type FilteredYear } from './filter';
 
 	/**
-	 * One year of an olympiad: its notes, links and year-level files, then a grid
-	 * of the problems that matched the current filter.
-	 *
-	 * The `id` on the card is the anchor target used by the global search and by
-	 * `#2019`-style deep links.
+	 * One year: its notes, links and files, then the matching problems. The card
+	 * `id` is the target for `#2019`-style links from search.
 	 */
 	let {
 		year,
@@ -22,26 +19,17 @@
 		signedIn
 	}: {
 		year: FilteredYear;
-		/** Whether the year's own notes/links/files should be shown. */
+		/** Whether to show the year's own notes, links and files. */
 		showYearLevel: boolean;
-		/** The signed-in user's tracked problems across the whole olympiad. */
+		/** The user's progress across the whole olympiad. */
 		progress: ProgressMap;
-		/** The page's single tracker, so each problem's buttons can disable themselves. */
+		/** The page's single `Pending`, so each problem's buttons can disable themselves. */
 		pending: Pending;
 		/** Anonymous visitors see no tracking UI and no totals. */
 		signedIn: boolean;
 	} = $props();
 
-	/**
-	 * Computed from `year.problems`, **not** `year.matchedProblems`: a topic or
-	 * search filter narrows what is on screen, and must not change what the year
-	 * is worth.
-	 *
-	 * The list now carries the maximums as well as the membership — `yearTotals`
-	 * reads each problem's `maxScore` off it, not off the progress entry — so the
-	 * filtered list would drop a hidden problem's *denominator* too, not just its
-	 * tick, and the ratio would move as the filter changed.
-	 */
+	/** From `year.problems`, not `matchedProblems`, so filtering doesn't change the totals. */
 	const totals = $derived(yearTotals(year.year, year.problems, progress));
 </script>
 
@@ -51,8 +39,7 @@
 			{year.year}
 		</Card.Title>
 		{#if signedIn && totals.completed > 0}
-			<!-- `card-header.svelte` switches to grid-cols-[1fr_auto] as soon as a
-			     card-action is present, so the top-right slot needs no CSS here. -->
+			<!-- The card header lays out a `Card.Action` top-right by itself. -->
 			<Card.Action class="flex flex-wrap items-center justify-end gap-x-2 gap-y-0.5">
 				<span class="text-sm text-muted-foreground tabular-nums">
 					{totals.completed}/{totals.total} done
@@ -73,7 +60,6 @@
 			</Card.Action>
 		{/if}
 	</Card.Header>
-
 
 	<div class="flex flex-col gap-4 px-3 sm:px-5">
 		{#if showYearLevel && hasYearLevelContent(year)}

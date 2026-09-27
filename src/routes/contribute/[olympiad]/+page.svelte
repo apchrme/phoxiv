@@ -14,21 +14,16 @@
 	let { data, form }: PageProps = $props();
 
 	/**
-	 * The icon currently in force.
-	 *
-	 * Derived from the loaded row but deliberately overwritten by the toast
-	 * handlers below, so an upload or removal shows immediately instead of
-	 * waiting for the load to revalidate. That override is the reason this one
-	 * variable stays on the page: the header, the icon card and the emoji field
-	 * all read it, and re-deriving it in any of them would throw the override
-	 * away on the next render.
+	 * The current icon. Overwritten by the toast handlers below, since the icon
+	 * forms don't reload the page. Lives here because the header, icon card and
+	 * emoji field all read it; don't re-derive it in any of them.
 	 */
 	let icon = $derived(data.olympiad.icon);
 
-	/** In-flight submissions, keyed by the action they belong to. */
+	/** The single `Pending` for the page, passed down to every card. */
 	const pending = new Pending();
 
-	// Both cards hold input state the page has to reset once its action succeeds.
+	// Both cards have inputs the page resets after a successful action.
 	let iconCard: ReturnType<typeof IconCard> | undefined = $state();
 	let importCard: ReturnType<typeof ImportTitlesCard> | undefined = $state();
 
@@ -40,7 +35,7 @@
 		maxScoresFilled: number;
 		kept: number;
 		yearsCreated: number;
-		/** Unreadable `max_score` cells, dropped rather than failing the import. */
+		/** Unreadable `max_score` cells, which were ignored. */
 		badMaxScores: number;
 	};
 	function importSummary(s: ImportStats) {
@@ -52,10 +47,10 @@
 		);
 	}
 
+	// The one `formToasts` call for this page.
 	formToasts(() => form, {
 		updateOlympiad: 'Olympiad updated',
 		uploadIcon: (result) => {
-			// Reflect the new icon immediately, before the load revalidates.
 			if (typeof result.iconUrl === 'string') icon = result.iconUrl;
 			iconCard?.clear();
 			return 'Icon uploaded';

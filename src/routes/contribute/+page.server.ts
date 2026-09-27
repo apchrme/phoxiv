@@ -35,9 +35,7 @@ export const actions: Actions = {
 
 		if (!olympiadId) return actionFail(400, 'selectYear', 'Please select an olympiad');
 
-		// This action needs its own permission check: the layout guard only
-		// establishes that the user is *a* contributor, not that they may edit
-		// this particular olympiad.
+		// The layout guard checks only the role, not this olympiad.
 		if (!canEditOlympiad(locals.user, olympiadId)) {
 			return actionFail(403, 'selectYear', 'You are not permitted to edit this olympiad');
 		}
@@ -56,10 +54,7 @@ export const actions: Actions = {
 		redirect(303, `/contribute/${olympiadId}/${year}`);
 	},
 
-	/**
-	 * Creating brand-new olympiads stays admin-only — contributors work within
-	 * olympiads they've already been assigned, they don't create new ones.
-	 */
+	/** Admin-only: contributors edit assigned olympiads but can't create them. */
 	createOlympiad: async ({ request, locals, platform }) => {
 		const { db, user } = requireAdmin(locals);
 
@@ -72,7 +67,7 @@ export const actions: Actions = {
 		const year = parseYear(field(data, 'year'));
 		const descriptionMd = fieldOrNull(data, 'description');
 		const iconFile = fileField(data, 'iconFile');
-		// Emoji icon field — used when no image file is uploaded.
+		// Used when no image file is uploaded.
 		const emojiIcon = field(data, 'icon');
 
 		if (!id || !name || !summary || !tag || year === null) {

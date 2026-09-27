@@ -1,28 +1,14 @@
-/**
- * Problem tracking: the rules a signed-in user's progress obeys.
+/*
+ * Progress-tracking rules, shared by client and server so the editor, the CSV
+ * import and the `trackProblem` action agree on what a valid score is.
  *
- * Client-safe, for the same reason [`utils/topics.ts`](./utils/topics.ts) is —
- * the year editor, the CSV import, the `trackProblem` action and the problem
- * cards must all agree on exactly one definition of "a valid score", "a valid
- * maximum" and "how a score is written down". A second copy of any of those
- * would eventually disagree with the first, and the disagreement would show up
- * as a save the editor allows and the server rejects.
- *
- * A problem is either untracked or completed; a completed problem *may* carry a
- * score. There is no third state — see `problem_progress` in
- * `server/db/schema.ts`, where the row's existence is the completion flag. That
- * invariant holds on the wire too: in a {@link ProgressMap} the *key's*
- * existence is the completion flag.
+ * A problem is untracked or completed, and a completed one may have a score.
+ * A row in `problem_progress`, or a key in a ProgressMap, means completed.
  */
 
 /**
- * What the tracking UI knows about one problem the user has completed.
- *
- * A score and nothing else. There is deliberately no `completed` field and no
- * maximum: completion is carried by the entry's existence in a
- * {@link ProgressMap}, and the maximum is the same for every visitor, so it
- * rides on `ProblemEntry` in the shared-cached `/api/olympiads/[olympiad]` body
- * rather than travelling per user.
+ * One completed problem. No `completed` flag (the entry's presence is that) and
+ * no maximum (that's on `ProblemEntry`, since it's the same for everyone).
  */
 export type ProblemProgress = {
 	/** The user's score, or null for "completed, no score recorded". */
@@ -30,72 +16,38 @@ export type ProblemProgress = {
 };
 
 /**
- * Progress for one olympiad, keyed by {@link progressKey}.
- *
- * The keys are **exactly** the problems the user has tracked — there are no
- * hollow entries, and an absent key is the only spelling of "untracked". That
- * mirrors `problem_progress`, where the row's existence *is* completion, and it
- * is why a removal has to `delete` the key rather than write a tombstone.
+ * Progress for one olympiad, keyed by {@link progressKey}. Only tracked problems
+ * have keys, so un-tracking must `delete` the key.
  */
 export type ProgressMap = Record<string, ProblemProgress>;
 
 /**
- * One user's progress across **every** olympiad: a {@link ProgressMap} per
- * olympiad id.
- *
- * Nested rather than flat, and the nesting is the point. {@link progressKey} is
- * `(year, number)` only, so a flat cross-archive map would file IPhO 2019 T1 and
- * APhO 2019 T1 under one key and silently confuse the two. Nesting also keeps
- * exactly one spelling of "the key a problem is filed under" in the codebase — a
- * flat `olympiad:year:number` key would be a second one, and `filter.ts`,
- * `ProgressControl` and the `key` that `?/trackProblem` returns as `form.key`
- * would all then have to agree with it.
- *
- * A read costs one extra lookup — `global[olympiadId]?.[progressKey(y, n)]` —
- * and `global[id] ?? {}` is a ready-made argument for anything that already
- * takes a per-olympiad map. Backs `GET /progress`.
+ * Progress across all olympiads, one {@link ProgressMap} per olympiad id. Nested
+ * because {@link progressKey} has no olympiad, so a flat map would mix up, say,
+ * IPhO 2019 T1 and APhO 2019 T1. Backs `GET /progress`.
  */
 export type GlobalProgressMap = Record<string, ProgressMap>;
 
 /**
- * The key a problem is filed under.
- *
- * `(year, number)` rather than `problems.id`: the olympiad page never learns a
- * problem's row id, because `?/trackProblem` resolves the problem server-side
- * from `(olympiad, year, number)`. Nothing on the page has a use for the id, so
- * nothing puts it on the wire.
+ * The key a problem is filed under. Uses `(year, number)`, not `problems.id`,
+ * because the server resolves the problem itself and the page never sees ids.
  */
 export function progressKey(year: number, number: string): string {
 	return `${year}:${number}`;
 }
 
 /**
- * A score as it is written on screen: at most two decimals, trailing zeros
- * dropped — `8.5`, `10`, `8.25`.
- *
- * **Display only.** Anything that gets read back — a form input seeded from a
- * stored value, a CSV cell that will be re-imported — uses {@link exactScore}
- * instead, because a rounded number put into a field the user then saves is a
- * write dressed up as a render.
- *
- * Rounding is the whole point here. Scores are stored exactly as entered, so a
- * year card summing three marks of `8.333` holds `24.999000000000002`; the card
- * is where that is made presentable, and `25` is the honest answer where
- * rounding on the way *in* would have given `24.99`.
+ * A score for display: at most two decimals, trailing zeros dropped (`8.5`,
+ * `10`, `8.25`). Display only; anything that is saved back uses {@link exactScore}.
  */
 export function formatScore(value: number): string {
 	return String(Math.round(value * 100) / 100);
 }
 
 /**
- * A score written out in full, for the places that parse it again.
- *
- * `String(value)` round-trips every double losslessly, so a stored `8.333`
- * survives being seeded into the year editor, the score popover or a
- * `titles.csv` cell and saved straight back. {@link formatScore} returns `8.33`
- * for that, and the next save stores it — which is also how a maximum of `0.001`
- * became `0` and then jammed the year editor on {@link parseMaxScore}'s
- * "must be greater than 0", with no way to save the year until it was retyped.
+ * A score written in full, for inputs and CSV cells that get saved back.
+ * Don't use {@link formatScore} there: it rounds, so a max of `0.001` became `0`
+ * and the year editor then refused to save.
  */
 export function exactScore(value: number): string {
 	return String(value);
@@ -113,16 +65,9 @@ function toNumber(raw: string): number | null {
 }
 
 /**
- * A problem's maximum score, as typed into the year editor or a CSV cell.
- *
- * Blank means "no maximum", which is a legitimate value — most problems have
- * none. A maximum of zero is refused rather than stored: it would be a
- * denominator of zero everywhere it is used.
- *
- * The messages are written to follow a `Maximum score for problem T1:` prefix,
- * because both callers that show one — the year editor and `saveMetadata` — name
- * the offending problem first. {@link parseScore}'s messages stand alone
- * instead, since a rejected score is toasted on its own.
+ * A problem's maximum score from the year editor or CSV. Blank means no maximum;
+ * zero is refused (it would divide by zero). Messages follow a
+ * "Maximum score for problem T1:" prefix added by the callers.
  */
 export function parseMaxScore(raw: string): ScoreParse {
 	const trimmed = raw.trim();
@@ -135,11 +80,8 @@ export function parseMaxScore(raw: string): ScoreParse {
 }
 
 /**
- * A score the user is recording against a problem.
- *
- * Blank means "completed, no score recorded". Where a maximum is configured the
- * score is bounded by it, and an over-max score is *refused* rather than clamped
- * — a silent clamp throws away what the user actually meant to enter.
+ * A score the user records. Blank means completed with no score. Over the max is
+ * refused, not clamped, so the user's input isn't silently changed.
  */
 export function parseScore(raw: string, maxScore: number | null): ScoreParse {
 	const trimmed = raw.trim();
@@ -169,26 +111,14 @@ export type YearTotals = {
 };
 
 /**
- * A year's totals over the problems the user has tracked.
+ * A year's totals. The score ratio counts only problems that are tracked, scored
+ * and have a maximum:
+ * - untracked problems are left out, so 4 of 12 done doesn't look worse than 4 of 4;
+ * - tracked but unscored problems count only toward `completed`, not as a 0;
+ * - scored problems with no maximum go in `unscaled`, which the card shows.
  *
- * The **ratio set is exactly the problems that are tracked *and* scored *and*
- * have a maximum**, and each of those three conditions earns its place:
- *
- * - Untracked problems are excluded so that having done four problems out of
- *   twelve never makes the ratio look worse than four out of four.
- * - Tracked-but-unscored problems count toward `completed` only. Folding their
- *   maximum in with a zero numerator would read as "I scored 0", which is the
- *   opposite of what marking a problem complete means.
- * - Scored problems with no maximum have no denominator to contribute, so they
- *   are counted in `unscaled` instead — the card says so, rather than quietly
- *   under-reporting.
- *
- * Each maximum is read off the **problem**, not off the progress entry, because
- * that is where it now lives. So `problems` supplies the denominators as well as
- * the membership, which makes the next paragraph matter twice over.
- *
- * Always computed from a year's *whole* problem list, never from the filtered
- * one: a topic or search filter must not change the year's total.
+ * Pass the year's whole problem list, never a filtered one, so filters don't
+ * change the total.
  */
 export function yearTotals(
 	year: number,
@@ -205,7 +135,6 @@ export function yearTotals(
 
 	for (const problem of problems) {
 		const entry = progress[progressKey(year, problem.number)];
-		// The key's presence is the completion flag; there is no field to read.
 		if (entry === undefined) continue;
 		totals.completed++;
 		if (entry.score === null) continue;

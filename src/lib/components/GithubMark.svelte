@@ -6,8 +6,7 @@
 	/**
 	 * The GitHub logomark, inline in text.
 	 *
-	 * @param invert for marks placed on an inverted surface, such as the
-	 *   `bg-foreground` login button, where the light theme needs the *white* mark.
+	 * @param invert for an inverted surface, like the `bg-foreground` login button.
 	 */
 	const { invert = false, class: className = 'size-5' }: { invert?: boolean; class?: string } =
 		$props();

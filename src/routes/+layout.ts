@@ -2,11 +2,7 @@ import { redirect } from '@sveltejs/kit';
 import { CDN_BASE_URL } from '$lib/constants';
 import type { LayoutLoad } from './$types';
 
-/**
- * Olympiad ids that used to live at the site root (`/ipho/...`) before the
- * `/olympiads` prefix was introduced. Kept so old links and search-engine
- * results keep working.
- */
+/** Olympiads once served at the site root (`/ipho/...`). Kept so old links still work. */
 const legacyOlympiadIds = [
 	'apho',
 	'eotvos',
@@ -24,11 +20,8 @@ const legacyOlympiadIds = [
 const fileExtensions = ['pdf', 'xlsx', 'zip', 'htm', 'html', 'doc', 'docx'];
 
 /**
- * Redirects legacy URLs, and passes the server layout's data through.
- *
- * The pass-through is not optional: when a universal `+layout.ts` exists,
- * SvelteKit derives `LayoutData` from *this* function's return type, so
- * returning nothing would drop `user` from every page's `data` type.
+ * Redirects legacy URLs and passes the server layout's data through. Always
+ * return `data`, or `user` drops out of every page's data.
  */
 export const load: LayoutLoad = ({ url, data }) => {
 	if (legacyOlympiadIds.find((i) => i == url.pathname.split('/')[1])) {

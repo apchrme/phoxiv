@@ -1,7 +1,6 @@
 <!--
-	A dropdown of checkboxes over the fixed topic list. Used both to assign topics
-	to a problem on the contribute page and to filter problems by topic on the
-	olympiad page, so the two always offer exactly the same options.
+	A dropdown of topic checkboxes, used both to assign topics (contribute page)
+	and to filter by them (olympiad page), so both offer the same options.
 -->
 <script lang="ts">
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
@@ -34,18 +33,13 @@
 		align?: 'start' | 'center' | 'end';
 		variant?: ButtonVariant;
 		size?: ButtonSize;
-		/**
-		 * Collapse the trigger to a funnel icon of fixed width, filled while any
-		 * topic is selected. For the olympiad page, where the trigger shares a row
-		 * with the search input even on a phone and so cannot grow with its label.
-		 */
+		/** Collapse the trigger to a funnel icon, filled while any topic is selected. */
 		iconOnly?: boolean;
 		class?: string;
 	} = $props();
 
 	function toggle(topic: ProblemTopic, checked: boolean) {
-		// Rebuild from PROBLEM_TOPICS so the order (and hence the summary text and
-		// the stored JSON) doesn't depend on the order the user clicked in.
+		// Rebuilt from PROBLEM_TOPICS so the stored order doesn't depend on click order.
 		value = checked
 			? PROBLEM_TOPICS.filter((t) => t === topic || value.includes(t))
 			: value.filter((t) => t !== topic);
@@ -57,9 +51,8 @@
 
 	const triggerSize = $derived(size ?? (iconOnly ? 'icon' : 'default'));
 
-	// Only the icon-only trigger fills in: with a label the summary already says
-	// what is selected, and on the contribute page the dropdown sits in a form,
-	// where a primary fill would read as the submit button.
+	// Only the icon-only trigger fills. A labelled one already shows the selection,
+	// and in a form a filled button would look like the submit button.
 	const triggerVariant = $derived(iconOnly && value.length > 0 ? 'default' : variant);
 </script>
 
@@ -69,7 +62,7 @@
 		title={summary}
 	>
 		{#if iconOnly}
-			<!-- Uncoloured on purpose: it has to inherit text-primary-foreground once filled. -->
+			<!-- Uncoloured so it inherits the foreground when filled. -->
 			<Funnel />
 			<span class="sr-only">{heading}</span>
 		{:else}

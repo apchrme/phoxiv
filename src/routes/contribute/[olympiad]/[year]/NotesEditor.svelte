@@ -4,11 +4,7 @@
 	import Repeater from '$lib/components/forms/Repeater.svelte';
 	import { newNoteRow, type NoteRow } from './metadata';
 
-	/**
-	 * The `note` repeater — fields only, no `<form>`. See `Repeater` for why
-	 * neither this nor its siblings may introduce one, and why `rows` is bound
-	 * rather than passed.
-	 */
+	/** The notes repeater: fields only, no `<form>` (see `Repeater`). */
 	let { rows = $bindable() }: { rows: NoteRow[] } = $props();
 </script>
 

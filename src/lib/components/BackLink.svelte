@@ -4,10 +4,8 @@
 	import type { Snippet } from 'svelte';
 
 	/**
-	 * The "back to X" link that heads every detail page.
-	 *
-	 * Takes an already-resolved `href`: `resolve()` needs literal route arguments
-	 * to type-check, so it has to stay at the call site.
+	 * The "back to X" link at the top of detail pages. Takes a resolved `href`:
+	 * `resolve()` needs literal route arguments, so it stays at the call site.
 	 */
 	let {
 		href,

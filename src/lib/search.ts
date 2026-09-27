@@ -1,25 +1,13 @@
 /**
- * The rules deep (in-file) search obeys, stated once for every side that needs
- * them.
+ * Shared rules for deep (in-file) search. Client-safe, because three sides need
+ * the same rules:
  *
- * Client-safe, and deliberately so — the same
- * `$lib/uploads.ts` versus `$lib/server/uploads.ts` split. Three callers share
- * this module and each would otherwise carry its own copy of a rule:
- *
- * - the ⌘K dialog, which gates on the minimum length and normalises `q` before
- *   it goes on the wire, purely so `?q=Gravitation` and `?q=gravitation ` are one
- *   Cloudflare cache key;
- * - `GET /api/search/files`, which applies the same rules again, so correctness
- *   never depends on the client having applied them;
- * - `$lib/pdf-text.ts` in the browser, `uploadFile` on the server and
- *   `reindex-cli.ts` locally, all of which must normalise extracted text
- *   **identically** or the index and the snippet offsets disagree.
- *
- * The numbers live here and not in `$lib/constants.ts`, which holds
- * `CDN_BASE_URL` and the year range: the endpoint's minimum and the dialog's
- * gate are the *same* rule, not two rules that happen to match, and
- * `DEEP_SEARCH_LIMIT` is what the "showing the N best-matching files" footer
- * reads — the way `MAX_RESULTS` is read straight from `fuzzy.ts` today.
+ * - the ⌘K dialog normalises `q` before sending it, so equivalent queries share
+ *   one Cloudflare cache key;
+ * - `GET /api/search/files` applies the same rules again, so correctness never
+ *   depends on the client;
+ * - `$lib/pdf-text.ts`, `uploadFile` and `reindex-cli.ts` must normalise
+ *   extracted text identically, or the index and snippet offsets disagree.
  */
 
 // ── Query bounds ────────────────────────────────────────────────────────────
@@ -31,70 +19,38 @@ export const MIN_DEEP_QUERY_LENGTH = 5;
 export const MAX_DEEP_QUERY_LENGTH = 200;
 
 /**
- * The cost control on the `AND` and `OR` rungs of `sanitizeFtsQuery`'s ladder:
- * each token there is one more index probe, so this — rather than the character
- * cap — is what keeps a pathological query inside D1's 30-second ceiling.
- *
- * **Raised 8 → 24 when deep search became a ladder**, and the ladder is what made
- * raising it safe. At 8 this was the only control on the only expression, so it
- * had to be two things at once and failed at both: a long query silently stopped
- * narrowing — an 11-word sentence ran as its first 8 words and returned five
- * files from five different olympiads, none of them the one it was quoted from —
- * while raising the cap on its own trades that for the opposite failure, since
- * every extra ANDed term is one more chance to hit a hole in the extracted text
- * and take the result set to zero. Over-constraining is now **recoverable**,
- * because the `OR` rung below catches it; under-constraining never was. Both
- * halves of that are measured in `sanitizeFtsQuery`.
+ * Token cap on the AND and OR rungs of `sanitizeFtsQuery`. Each token is one more
+ * index probe, so this (not the character cap) keeps a pathological query inside
+ * D1's 30-second limit. It can be this high because the OR rung recovers from
+ * over-constrained ANDs.
  */
 export const MAX_DEEP_QUERY_TOKENS = 24;
 
 /**
- * The cap on the phrase rung, deliberately looser than
- * {@link MAX_DEEP_QUERY_TOKENS}: a longer phrase can only match **fewer**
- * documents, so what that rung asks of the index shrinks as the query grows,
- * where an `OR` over the same words grows with it.
- *
- * Belt and braces rather than a bound that bites often.
- * {@link MAX_DEEP_QUERY_LENGTH} already refuses anything over 200 characters,
- * which holds 32 tokens only if they average under 5.3 characters each — so a
- * pasted sentence of short words is the only thing that reaches this at all, and
- * the 11-word, 56-character sentence that motivated the ladder is nowhere near
- * it.
+ * Token cap on the phrase rung. Looser than {@link MAX_DEEP_QUERY_TOKENS}
+ * because a longer phrase matches fewer documents. Rarely reached, since
+ * {@link MAX_DEEP_QUERY_LENGTH} already bounds the query.
  */
 export const MAX_PHRASE_TOKENS = 32;
 
-/** How many file hits a deep search returns. The array order *is* the rank. */
+/** How many file hits a deep search returns. The array order is the rank. */
 export const DEEP_SEARCH_LIMIT = 20;
 
-/**
- * The first debounce anywhere in this codebase, and it earns it: problem search
- * is a local fuzzy match, this one hits the network per keystroke.
- */
+/** Deep search hits the network per keystroke, unlike the local problem search. */
 export const DEEP_DEBOUNCE_MS = 250;
 
 /**
- * `q` reduced to its cache-key form: lowercased, whitespace collapsed, trimmed.
- *
- * Lowercasing is free for matching — FTS5's `unicode61` folds case itself — and
- * it is what collapses `Gravitation`, `gravitation` and `gravitation ` onto one
- * edge-cached URL. Applied by the client for that reason and again by the server
- * so nothing depends on the client having done it.
+ * `q` in its cache-key form: lowercased, whitespace collapsed, trimmed.
+ * Lowercasing costs nothing because unicode61 folds case anyway. Applied by the
+ * client for the cache key and again by the server.
  */
 export function normalizeDeepQuery(raw: string): string {
 	return raw.toLowerCase().replace(/\s+/g, ' ').trim();
 }
 /**
- * The olympiad filter reduced to its cache-key form: `null` when absent.
- *
- * **Absent and empty are one thing**, deliberately: without this, `?q=x` and
- * `?q=x&olympiad=` are two Cloudflare cache keys holding one identical body,
- * and the client has to remember never to emit the second. Trimmed and
- * lowercased for `normalizeDeepQuery`'s reason — olympiad ids are lowercase, so
- * `?olympiad=IPhO` is the same question as `?olympiad=ipho` and must not mint a
- * second key for it.
- *
- * Applied by the client so the url is right, and again by the server so
- * correctness never depends on the client having done it.
+ * The olympiad filter in its cache-key form: `null` when absent or empty, so
+ * `?q=x` and `?q=x&olympiad=` are one cache key. Lowercased because ids are.
+ * Applied by the client and again by the server.
  */
 export function normalizeOlympiadFilter(raw: string | null): string | null {
 	const id = (raw ?? '').trim().toLowerCase();
@@ -102,31 +58,16 @@ export function normalizeOlympiadFilter(raw: string | null): string | null {
 }
 
 /**
- * Whether an olympiad filter is *shaped* like an id.
+ * Whether an olympiad filter is shaped like an id. Not a lookup in the table: an
+ * unknown id just returns no results, and checking would add a read to every
+ * filtered search.
  *
- * **Not validation against the `olympiads` table**, and the distinction is the
- * whole point. A well-formed id that names no olympiad returns an empty result
- * set, which is what the url range does naturally and costs no extra read; only
- * a malformed one is refused. Checking against the table would put a
- * `SELECT 1 FROM olympiads` on the happy path of every filtered search, forever,
- * to catch a state the UI cannot produce.
+ * Its purpose is bounding the cache key space. It is not an injection defence
+ * (the value is a bound parameter). A malformed value gets a 400, which is not
+ * cached.
  *
- * The honest purpose is **bounding the edge key space**. Without a gate,
- * `?olympiad=` accepts arbitrary strings of any length, each one minting a fresh
- * Cloudflare cache key and each one costing a full three-rung ladder walk to
- * come back empty.
- *
- * It is emphatically **not an injection defence** — the value is a bound
- * parameter and the range form cannot be broken by any string — so nobody should
- * later "harden" it in that direction. It is also why the response to a
- * malformed value is a 400 rather than an empty body: a 400 is uncacheable, so a
- * bad bookmark cannot park a wrong answer in the shared cache.
- *
- * The pattern is the tightest one that admits every id in the table, checked
- * against all 22 of them. `createOlympiad` slugifies with
- * `.toLowerCase().replace(/\s+/g, '-')` and does not restrict the charset, so a
- * future id could in principle fall outside this and become unfilterable — the
- * charset there and the pattern here are the two halves of one rule.
+ * `createOlympiad` does not restrict its slug charset, so keep this pattern in
+ * step with the ids it can produce, or a new olympiad becomes unfilterable.
  */
 export function isOlympiadFilter(id: string): boolean {
 	return /^[a-z0-9][a-z0-9-]{0,31}$/.test(id);
@@ -135,8 +76,8 @@ export function isOlympiadFilter(id: string): boolean {
 // ── Extraction ──────────────────────────────────────────────────────────────
 
 /**
- * Bumped when the extraction rules change, to re-queue every row with no
- * migration. Stored on each row as `extractor_version`.
+ * Bump when the extraction rules change: every older row re-enters the backfill
+ * queue, with no migration. Stored on each row as `extractor_version`.
  */
 export const EXTRACTOR_VERSION = 1;
 
@@ -146,53 +87,29 @@ export const EXTRACTOR_ENGINE = 'browser-pdfjs';
 /** D1's row/string limit is 2 MB; near-ASCII physics text leaves 4× headroom. */
 export const TEXT_CHAR_CAP = 512_000;
 
-/**
- * Under this many characters, the extraction is reported as `empty` rather than
- * `ok` — which in practice means **a scanned PDF**. A first-class, visible state,
- * not a failure.
- */
+/** Below this many characters an extraction is `empty`, usually a scanned PDF. */
 export const MIN_EXTRACTED_CHARS = 32;
 
 /**
- * The server's hard gate on the client-submitted `extractedText` field.
- *
- * Well above {@link TEXT_CHAR_CAP}, so a browser that followed the rules is
- * never near it, and well under D1's 2 MB row limit. Anything larger lands as
- * `pending` for the backfill sweep instead of being stored.
+ * The server's hard limit on the client-submitted `extractedText` field. Well
+ * above {@link TEXT_CHAR_CAP} and well under D1's 2 MB row limit. Anything larger
+ * is stored as `pending` for the backfill instead.
  */
 export const MAX_SUBMITTED_TEXT_CHARS = 1_000_000;
 
 /**
- * Extracted document text, normalised for the index.
+ * Extracted document text, normalised for the index. The order matters:
  *
- * **The order of these steps is load-bearing**, and each one earns its place:
- *
- * 1. `NFKC` folds ligatures (`ﬁ` → `fi`) and full-width forms. One line for the
- *    classic PDF ligature bug, which otherwise leaves `find` unfindable.
- * 2. De-hyphenate line-broken words, **before** newlines collapse — after the
- *    collapse there is no newline left to key on. Lowercase→lowercase only, so
- *    `X-\nray` fares better than a blanket rule would. It is a heuristic and it
- *    will occasionally glue a genuine compound back together; that is the
- *    accepted trade for the far commoner justified-text case.
- * 3. Strip control and zero-width characters. **Load-bearing for snippet safety
- *    and for trust**: this is what guarantees the U+0002/U+0003 snippet
- *    sentinels cannot occur in stored text, forged or otherwise. `\t`, `\n` and
- *    `\r` are deliberately spared here so step 4 still sees word boundaries —
- *    removing them outright would glue the last word of one line to the first of
- *    the next.
+ * 1. NFKC folds ligatures (`ﬁ` → `fi`) and full-width forms.
+ * 2. Re-join words hyphenated across a line break. Must run before newlines
+ *    collapse. Lowercase-to-lowercase only.
+ * 3. Strip control and zero-width characters. This guarantees the STX/ETX
+ *    snippet sentinels can never occur in stored text. `\t \n \r` are kept so
+ *    step 4 still sees word boundaries.
  * 4. Collapse whitespace and trim.
  *
- * Two things it deliberately does **not** do:
- *
- * - **It does not lowercase.** `unicode61` folds case for matching, and the
- *   snippet should show real case. Note the contrast with `getSearchIndex`,
- *   which *does* lowercase because uFuzzy matches the raw string — so nobody
- *   should "fix" the inconsistency.
- * - **It does not strip math.** `\alpha` indexes as the token `alpha`, which is
- *   useful.
- *
- * There is no markdown-stripping step: pdf.js yields text items, not markdown,
- * which deleted a whole class of normalisation.
+ * It does not lowercase (unicode61 folds case, and snippets should show real
+ * case) and does not strip math (`\alpha` indexes as `alpha`).
  */
 export function normalizeExtracted(raw: string): string {
 	return (
@@ -202,9 +119,8 @@ export function normalizeExtracted(raw: string): string {
 			// C0 and C1 controls, keeping \t \n \r for the collapse below.
 			// eslint-disable-next-line no-control-regex -- stripping control characters is the entire point of this line, and it is what makes the snippet sentinels unforgeable
 			.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '')
-			// Soft hyphen, zero-width and bidi marks. These survive `\s`, so they
-			// would otherwise split a word in the middle as far as the tokenizer is
-			// concerned.
+			// Soft hyphen, zero-width and bidi marks. `\s` doesn't match them, so
+			// left in they would split a word for the tokenizer.
 			.replace(/[\u00AD\u200B-\u200F\u2060\uFEFF]/g, '')
 			.replace(/\s+/g, ' ')
 			.trim()
@@ -215,18 +131,14 @@ export function normalizeExtracted(raw: string): string {
 export type CappedText = { text: string; truncated: boolean };
 
 /**
- * `text` cut to {@link TEXT_CHAR_CAP} on a whitespace boundary.
- *
- * The boundary matters: cutting mid-word would put a spurious half-token into
- * the index, which a prefix query would then match. `truncated` travels with it
- * so a thin match set on a very long document is explicable rather than a
- * mystery.
+ * `text` cut to {@link TEXT_CHAR_CAP} on a whitespace boundary, so no half-word
+ * enters the index for a prefix query to match.
  */
 export function capExtracted(text: string): CappedText {
 	if (text.length <= TEXT_CHAR_CAP) return { text, truncated: false };
 	const cut = text.slice(0, TEXT_CHAR_CAP);
 	const boundary = cut.lastIndexOf(' ');
-	// `> TEXT_CHAR_CAP / 2` guards the pathological no-whitespace document, where
-	// backing up to the last space would throw away almost everything.
+	// Guards a document with no whitespace, where backing up to the last space
+	// would throw away almost everything.
 	return { text: boundary > TEXT_CHAR_CAP / 2 ? cut.slice(0, boundary) : cut, truncated: true };
 }

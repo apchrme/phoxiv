@@ -14,17 +14,12 @@
 	import { isIconUrl } from '$lib/uploads';
 
 	/**
-	 * The `?/updateOlympiad` form: name, summary, emoji icon, tag, display order
-	 * and the Markdown description.
+	 * The `?/updateOlympiad` form. Each field is a writable `$derived` of the
+	 * loaded row, so any reload of the page data resets it to the saved values.
+	 * That's why the icon forms use `invalidateAll: false`.
 	 *
-	 * Every field is a `$derived` of the loaded row that the inputs then write
-	 * back into — the Svelte 5 derived-override pattern. A save re-runs `load`,
-	 * the derived re-reads the fresh row, and any draft the contributor was
-	 * holding is replaced by what was actually persisted.
-	 *
-	 * `icon` is the exception: it belongs to the page, because the icon card and
-	 * the page header read it too and the upload/remove toast handlers overwrite
-	 * it optimistically. Re-deriving it here would silently discard that override.
+	 * `icon` is owned by the page, which updates it after icon uploads. Don't
+	 * derive it here, or that update is lost.
 	 */
 	let {
 		olympiad,
@@ -32,9 +27,9 @@
 		pending
 	}: {
 		olympiad: PageData['olympiad'];
-		/** The icon in force, owned by the page. */
+		/** Owned by the page. */
 		icon: string;
-		/** The page's single tracker, so the submit button can disable itself. */
+		/** The page's single `Pending`, so the submit button can disable itself. */
 		pending: Pending;
 	} = $props();
 
@@ -45,10 +40,9 @@
 	let displayOrder = $derived(String(olympiad.displayOrder ?? 9999));
 
 	/**
-	 * An uploaded image overrides the emoji, so the field is disabled rather than
-	 * cleared. Browsers drop disabled controls from FormData, which is exactly why
-	 * `updateOlympiad` treats an absent `icon` as "leave it alone" — submitting an
-	 * empty string here used to wipe the uploaded icon's URL.
+	 * With an uploaded icon the emoji field is disabled, so it isn't submitted and
+	 * `updateOlympiad` leaves the icon alone. Don't submit `''` instead: that
+	 * wiped uploaded icons.
 	 */
 	const hasUploadedIcon = $derived(isIconUrl(icon));
 </script>
@@ -114,8 +108,7 @@
 					{/if}
 				</Field>
 
-				<!-- No `for`: `TagSelect`'s trigger is a button, which `<label>` does not
-				     apply to. -->
+				<!-- No `for`: `TagSelect`'s trigger is a button. -->
 				<Field label="Tag">
 					<TagSelect bind:value={tag} placeholder="Select…" />
 				</Field>
@@ -154,8 +147,6 @@
 		</Card.Content>
 	</Card.Root>
 
-	<!-- The spinner used to sit *beside* this button rather than in it, one of the
-	     three competing busy shapes `SubmitButton` settles. -->
 	<SubmitButton {pending} key="updateOlympiad" icon={Save} busyLabel="Saving…" class="self-start">
 		Save changes
 	</SubmitButton>

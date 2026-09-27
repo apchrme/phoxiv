@@ -42,34 +42,23 @@
 		olympiads: PageData['olympiads'];
 		/** The acting admin, whose own row gets no action controls. */
 		currentUserId: string | undefined;
-		/** The page's single tracker, shared by every row. */
+		/** The page's single `Pending`, shared by every row. */
 		pending: Pending;
 	} = $props();
 
 	let globalFilter = $state('');
 	let roleFilter = $state('all');
 	/**
-	 * Oldest-first by join date, matching what the page showed when the load
-	 * carried an `ORDER BY user.createdAt`.
-	 *
-	 * That `ORDER BY` had no supporting index — `user` carries only
-	 * `user_email_unique` — so D1 paid a sort: 224 rows read where the bare scan
-	 * reads 112. Sorting here instead is free, because `getSortedRowModel` was
-	 * already running over the whole array for the sortable headers.
+	 * Oldest-first by join date. Sorted here, not with `ORDER BY` in the load,
+	 * because `user.createdAt` has no index and D1 would bill the sort.
 	 */
 	let sorting = $state<SortingState>([{ id: 'joined', desc: false }]);
 	let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 25 });
 
 	/**
-	 * Back to page 1, called from every control that changes *which* rows exist.
-	 *
-	 * TanStack would do this itself — `autoResetPageIndex` defaults on — but it
-	 * keys off the row model recomputing, which also happens when the `users`
-	 * prop merely changes identity. `setRole` and `banUser` run the default
-	 * `invalidateAll`, so the load re-runs and hands down a fresh array: with the
-	 * automatic reset on, changing a role on page 3 threw the admin back to page
-	 * 1 mid-task. It is off, and the three controls that genuinely need it call
-	 * this instead.
+	 * Back to page 1, called by search, role filter and sorting. TanStack's
+	 * `autoResetPageIndex` is off because it also fires when an action reloads
+	 * `users`, which would jump the admin back to page 1 mid-task.
 	 */
 	function toFirstPage() {
 		pagination = { ...pagination, pageIndex: 0 };
@@ -78,7 +67,7 @@
 		roleFilter !== 'all' ? [{ id: 'role', value: roleFilter }] : []
 	);
 
-	/** The dropdown's label for the filter currently applied. */
+	/** The trigger label for the applied filter. */
 	const ROLE_FILTERS: Record<string, string> = {
 		all: 'All users',
 		admin: 'Admins',
@@ -86,19 +75,14 @@
 		banned: 'Banned'
 	};
 
-	/**
-	 * Every option here is a getter on purpose: that laziness is what makes the
-	 * table re-read `users`, `sorting` and the filters as they change. Passing
-	 * plain values would freeze the table at its construction-time snapshot.
-	 */
+	/** Options are getters so the table sees changes; plain values would freeze it. */
 	const table = createSvelteTable({
 		get data() {
 			return users;
 		},
 		columns: userColumns,
-		// Row ids default to the index in `data`, which would silently re-pair a
-		// keyed `{#each}` block with a different user as soon as a row is inserted
-		// or removed. Keying on the user id makes the mapping stable.
+		// Default row ids are indexes, which would re-pair keyed rows with the
+		// wrong user after an insert or delete.
 		getRowId: (u) => u.id,
 		state: {
 			get sorting() {
@@ -128,14 +112,10 @@
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
-		// **Purely a rendering change — it saves no D1 rows.** Filtering and
-		// sorting already run over the whole `users` array client-side and the
-		// toolbar counter reads `users.length`, so this only bounds how many rows
-		// reach the DOM. Server-paging would cost more than it saved: the search
-		// box and role filter would have to move server-side, buying a debounced
-		// D1 query per keystroke in exchange for ~100 rows.
+		// Client-side paging only limits DOM rows; it saves no D1 reads. Server
+		// paging would need a D1 query per search keystroke.
 		getPaginationRowModel: getPaginationRowModel(),
-		// See `toFirstPage` — the automatic reset fires on a load re-run too.
+		// See `toFirstPage`.
 		autoResetPageIndex: false,
 		globalFilterFn
 	});
@@ -235,7 +215,6 @@
 						</div>
 					</Table.Cell>
 
-					<!-- Email -->
 					<Table.Cell class="max-w-50 truncate text-muted-foreground">
 						{u.email}
 					</Table.Cell>
@@ -245,11 +224,8 @@
 						<div class="flex flex-wrap gap-1">
 							<Badge variant={roleVariant(u.role)} class="text-xs">{roleLabel(u.role)}</Badge>
 							{#if u.role === 'contributor'}
-								<!-- The count alone answers "how many" and never "which", which is the
-								     question an admin scanning this column actually has. The tooltip
-								     answers it without opening the picker. `Tooltip.Provider` is not
-								     needed: `Sidebar.Provider` in the root layout already wraps the app
-								     in one. -->
+								<!-- The tooltip lists which olympiads. The root layout's
+								     `Sidebar.Provider` supplies the `Tooltip.Provider`. -->
 								<Tooltip.Root>
 									<Tooltip.Trigger>
 										<Badge variant="outline" class="text-xs">
@@ -260,10 +236,7 @@
 										{#if assignedIds.length === 0}
 											<span class="text-xs">No olympiads assigned yet</span>
 										{:else}
-											<!-- Resolved against `olympiads` rather than printing the stored
-											     ids: an id whose olympiad was deleted since has no row to show
-											     and is simply dropped, the same way the picker resolves its own
-											     selection. -->
+											<!-- Looked up in `olympiads`, so ids of deleted olympiads drop out. -->
 											<ul class="flex flex-col gap-1">
 												{#each olympiads.filter((o) => assignedIds.includes(o.id)) as o (o.id)}
 													<li class="flex items-center gap-1.5 text-xs">
@@ -282,7 +255,6 @@
 						</div>
 					</Table.Cell>
 
-					<!-- Joined date -->
 					<Table.Cell class="text-xs whitespace-nowrap text-muted-foreground tabular-nums">
 						{formatDate(u.createdAt, 'short')}
 					</Table.Cell>
@@ -311,13 +283,7 @@
 			{/if}
 		</Table.Body>
 
-		<!--
-			Prev/next and a page counter, built from the vendored Button. There is
-			deliberately no shadcn-svelte `pagination` component: `components.json`
-			points at a live registry, so a CLI run over `src/lib/components/ui/`
-			would pull today's upstream over ~40 commits of local customisation
-			(CLAUDE.md rule 2). This needs two buttons.
-		-->
+		<!-- Hand-built pager. Don't add shadcn's `pagination` via the CLI (CLAUDE.md rule 2). -->
 		{#if table.getPageCount() > 1}
 			<Table.Footer>
 				<Table.Row class="hover:bg-transparent">

@@ -17,29 +17,17 @@ import {
 import { extensionOf } from '$lib/uploads';
 
 /**
- * The backfill's two halves: hand out the pending list, accept the results.
+ * The backfill endpoint for `bun run index:backfill` (`reindex-cli.ts`): GET
+ * hands out the pending list, POST accepts results. The Worker never parses a
+ * file here; extraction happens on the maintainer's machine. Don't add a
+ * batch-indexing action to the admin panel: a self-resubmitting form there once
+ * looped forever.
  *
- * **The Worker never parses anything here.** `bun run index:backfill` runs on a
- * maintainer's machine, where dependency weight is free — which is also why the
- * script can cover `.docx`/`.xlsx` that the browser path skips. All this endpoint
- * does is expose the derived work queue and write what comes back.
+ * `requireAdmin` is called here because a `+server.ts` runs no layout loads, so
+ * `admin/+layout.server.ts` does not cover it.
  *
- * There is deliberately **no `indexBatch` action and no batch button**: with the
- * parsing outside, there is nothing for the Worker to loop over, which also
- * sidesteps the infinite-submit-loop shape CLAUDE.md rule 8 records in this exact
- * panel. The admin page is read-only reporting plus three index-maintenance
- * actions.
- *
- * **`requireAdmin` is called here, not inherited.** A `+server.ts` runs no layout
- * loads, so `admin/+layout.server.ts` does not cover it — the same reason
- * `contribute/[olympiad]/titles.csv/+server.ts` guards itself.
- *
- * Authentication is the ordinary session cookie, copied from a signed-in browser
- * into `PHOXIV_SESSION`. Clunky, and deliberately so: a shared-secret header
- * would be a second authentication mechanism in a codebase whose `docs/auth.md`
- * is narrow on purpose, and this adds no new secret and no new auth path.
- *
- * No cache headers, like everything else under `/admin`.
+ * Auth is the ordinary session cookie, so there is no second auth mechanism. No
+ * cache headers, like everything under `/admin`.
  */
 
 /** Batch sizes the script may ask for. Bounded so one request stays small. */
@@ -65,19 +53,11 @@ function asStatus(value: unknown): Status {
 }
 
 /**
- * The candidates the caller should extract next, and — only if asked — how many
- * are left overall.
+ * The next candidates to extract and, only with `?count=1`, how many are left.
  *
- * `exts` is the caller's **own** extractable list, which is what lets a wider
- * extractor pick up rows a narrower one marked `skipped` — see
- * {@link selectIndexCandidates}.
- *
- * **`?count=1` is opt-in, and defaults off, because the count costs ~4,500 D1
- * rows read while the page of candidates costs a bounded scan.** A sweep wants it
- * once, for its progress line; asking per page made the bookkeeping cost more
- * than the work. `remaining` is therefore absent from the body unless requested —
- * a caller must drive its loop off `candidates.length`, which is the only
- * authority on whether there is anything left.
+ * `exts` is the caller's own extractable list, so a wider extractor can pick up
+ * rows a narrower one marked `skipped`. The count is expensive, so it is
+ * opt-in; callers must loop on `candidates.length`, not `remaining`.
  */
 export const GET: RequestHandler = async ({ url, locals }) => {
 	const { db } = requireAdmin(locals);
@@ -100,13 +80,9 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 };
 
 /**
- * Writes a batch of extraction results.
- *
- * **The server re-runs `normalizeExtracted` on every posted text**, exactly as
- * `uploadFile` does and for exactly the same reason: it is what strips the
- * U+0002/U+0003 snippet sentinels so they cannot be forged into a result row, and
- * what applies the character cap. The script is trusted the way an admin is
- * trusted, which is not the same as its output being trusted verbatim.
+ * Writes a batch of extraction results. The posted text is re-normalised, as in
+ * `uploadFile`: that strips forged STX/ETX snippet sentinels. The script is
+ * trusted like an admin, but its output is not taken verbatim.
  *
  * One `index_files` log row per batch, never one per file.
  */
@@ -142,8 +118,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			} else {
 				const normalized = normalizeExtracted(raw);
 				if (normalized.length < MIN_EXTRACTED_CHARS) {
-					// The script said `ok` but there is nothing usable in it. `empty` is
-					// the honest status, and it keeps the scan count truthful.
+					// Posted as `ok` but too short to use: record it as `empty`.
 					write = { ...write, status: 'empty' };
 				} else {
 					const { text, truncated } = capExtracted(normalized);

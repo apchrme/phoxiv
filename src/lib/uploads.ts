@@ -1,23 +1,13 @@
-/**
- * The single source of truth for what may be uploaded.
- *
- * Deliberately client-safe (not under `$lib/server/`) so the `accept` attribute
- * a form advertises and the allow-list the action enforces are derived from the
- * same table and cannot drift apart. The server-side validator that consumes
- * these specs lives in `$lib/server/uploads.ts`.
- *
- * `slugifyLabel` and `collidingLabel` live here for the same reason: the file
- * editor warns about a colliding label before the upload and the action refuses
- * it after, and the two must agree on what "colliding" means.
+/*
+ * What may be uploaded. Client-safe so the form's `accept` attribute and the
+ * server check (`$lib/server/uploads.ts`) share one table. `slugifyLabel` and
+ * `collidingLabel` are here so the editor's warning and the action agree.
  */
 
 export type UploadSpec = {
 	/** Permitted lowercase file extensions, without the leading dot. */
 	readonly exts: readonly string[];
-	/**
-	 * Extension → `Content-Type` written to R2. The extension is authoritative:
-	 * the MIME type the browser reports is attacker-controlled and never trusted.
-	 */
+	/** Extension → `Content-Type` stored in R2. The browser's MIME type is never trusted. */
 	readonly mimeByExt: Readonly<Record<string, string>>;
 	readonly maxBytes: number;
 	/** Ready for an `<input type="file" accept={...}>` attribute. */
@@ -35,7 +25,7 @@ function spec(
 	maxBytes: number,
 	label: string,
 	maxLabel: string,
-	/** Some pickers also list MIME types; images do, documents historically don't. */
+	/** Also list MIME types in `accept` (used for images). */
 	includeMimeInAccept = false
 ): UploadSpec {
 	const exts = Object.keys(mimeByExt);
@@ -87,19 +77,9 @@ export const DOCUMENT_UPLOAD = spec(
 export const CSV_UPLOAD = spec({ csv: 'text/csv' }, 1 * MB, 'CSV', '1 MB');
 
 /**
- * The document extensions the **browser** can extract text from, beside the
- * `DOCUMENT_UPLOAD` spec so the year editor and the server read one table —
- * exactly as `slugifyLabel` is shared.
- *
- * PDF is the overwhelming majority of the corpus; `.htm`/`.html` come along free
- * as a two-line `DOMParser` tag-strip in the same module. Everything else in
- * `DOCUMENT_UPLOAD` is stored `skipped`:
- *
- * - `.zip` and legacy `.doc` are not extractable at all, and stay that way.
- * - `.docx`/`.xlsx` **are** zips of XML, so the local backfill script can read
- *   them with a devDependency at zero shipping cost. They are a script feature,
- *   not a Worker one, which is why they are absent from this list and present in
- *   `reindex-cli.ts`'s own.
+ * Extensions the browser extracts text from on upload. Other document types are
+ * stored as `skipped`; `.docx`/`.xlsx` are extracted only by the backfill
+ * script (`reindex-cli.ts`), and `.zip`/`.doc` never.
  */
 export const EXTRACTABLE_EXTS = ['pdf', 'htm', 'html'] as const;
 
@@ -125,11 +105,8 @@ export function contentTypeFor(spec: UploadSpec, ext: string): string {
 }
 
 /**
- * A file label reduced to a safe key segment.
- *
- * Must stay byte-identical to what produced the keys already in the bucket —
- * a change here means existing objects can no longer be located. See
- * `$lib/server/storage.ts` for the key layout it feeds, and `docs/data-model.md`.
+ * A file label reduced to a safe key segment. Never change this: existing R2
+ * keys were built with it. See `$lib/server/storage.ts` and docs/data-model.md.
  */
 export function slugifyLabel(label: string): string {
 	return label
@@ -141,16 +118,10 @@ export function slugifyLabel(label: string): string {
 /**
  * The existing label whose R2 key `candidate` would overwrite, or `null`.
  *
- * Compared on the *slug*, not on the labels themselves. The slug is what becomes
- * the key's filename and it is lossy — case, punctuation and repeated whitespace
- * all vanish — so `Solutions (official)` and `Solutions official` are two
- * different labels naming one object. The database cannot catch that: its unique
- * index is on the raw label. R2's `put` would then replace the earlier file in
- * place without complaint, leaving both rows pointing at a single object that
- * either row's delete can remove, and the survivor linked to a 404.
- *
- * Blank and punctuation-only candidates are the caller's problem: reject them
- * before asking, or an empty slug will match every other empty slug.
+ * Compares slugs, not labels: `Solutions (official)` and `Solutions official`
+ * share a key, and the DB's unique index on the raw label won't catch it. The
+ * upload would silently replace the old file. Reject blank or punctuation-only
+ * labels first, since empty slugs all match each other.
  */
 export function collidingLabel(existing: readonly string[], candidate: string): string | null {
 	const slug = slugifyLabel(candidate);

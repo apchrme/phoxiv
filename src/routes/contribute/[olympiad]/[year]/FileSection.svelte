@@ -12,20 +12,14 @@
 	import type { Extraction } from '$lib/pdf-text';
 
 	/**
-	 * The files attached to one owner — the year as a whole, or a single problem —
-	 * with a delete button each and a form to add another.
+	 * The files of one owner (the year, or one problem): delete buttons and an
+	 * upload form.
 	 *
-	 * Labels have to be unique within an owner *after slugging*, because the slug
-	 * becomes a path segment in the R2 key and two labels can slug to one key. The
-	 * server rejects a collision outright; the checks below are the friendly half,
-	 * which flag it before the upload happens. Both sides call `collidingLabel`, so
-	 * they cannot disagree about what collides.
+	 * Labels must be unique after slugging, since the slug is an R2 key segment.
+	 * The server rejects collisions; this warns first. Both use `collidingLabel`.
 	 *
-	 * This is also where **text extraction happens**, in the contributor's own
-	 * browser — see `$lib/pdf-text.ts` for why it is not in the Worker. The whole
-	 * dividend of that placement shows up here: the form can say "no text found,
-	 * this looks like a scanned PDF" while the file can still be swapped, instead
-	 * of leaving an admin to notice a counter afterwards.
+	 * PDF text is extracted here, in the browser, on file pick. See
+	 * docs/search.md, "The parser runs in the contributor's browser".
 	 */
 	let {
 		scope,
@@ -40,36 +34,24 @@
 		fileTextStatus: Record<string, string>;
 		/** Required when `scope` is `'problem'`; identifies which one. */
 		problemNumber?: string;
-		/** The page's single tracker, so the buttons can disable themselves. */
+		/** The page's single `Pending`, so the buttons can disable themselves. */
 		pending: Pending;
 	} = $props();
 
 	let label = $state('');
 
-	// Several of these sections are on the page at once, so the field ids have to
-	// be per-instance or every `<label for>` would point at the first section's
-	// input.
+	// Several sections share the page, so field ids must be per-instance.
 	const uid = $props.id();
 
 	/**
-	 * Namespaces this section's entries in the shared `Pending` map.
-	 *
-	 * Prefixed by scope rather than falling back to a bare `'year'`: problem
-	 * numbers are near-free text — only `/` is refused — so a problem numbered
-	 * literally `year` would otherwise share a key with the year-level section and
-	 * the two would disable each other's buttons.
+	 * This section's key in the shared `Pending` map. Prefixed, so a problem
+	 * numbered `year` can't clash with the year-level section.
 	 */
 	const key = $derived(scope === 'problem' ? `problem:${problemNumber}` : 'year');
-	/**
-	 * The label of the existing file this one would overwrite, or `null`.
-	 *
-	 * Often *not* the string the contributor typed: `Solutions (official)` collides
-	 * with an existing `Solutions official`, so the message below names both.
-	 */
+	/** The existing label this one would overwrite, or `null`. May differ from what was typed. */
 	const collision = $derived.by(() => {
 		const trimmed = label.trim();
-		// An unsluggable label is reported on its own account below; left to
-		// `collidingLabel` it would match every other empty slug.
+		// Unsluggable labels are reported separately; they'd match every empty slug.
 		if (!trimmed || !slugifyLabel(trimmed)) return null;
 		return collidingLabel(
 			existingFiles.map((f) => f.label),
@@ -81,7 +63,7 @@
 	const isUnsluggable = $derived(label.trim().length > 0 && !slugifyLabel(label.trim()));
 	const isInvalid = $derived(collision !== null || isUnsluggable);
 
-	/** Shared by the field and the submit guard, so the two always say the same thing. */
+	/** Shared by the field and the submit guard. */
 	function labelError(): string | null {
 		if (isUnsluggable) return 'Label must include a letter or number.';
 		if (collision === null) return null;
@@ -93,23 +75,13 @@
 	// ── Extraction ────────────────────────────────────────────────────────────
 
 	/**
-	 * What the picked file's text extraction produced, or `null` before one has
-	 * been picked.
-	 *
-	 * Extraction runs on `change`, **not on submit**, for two reasons that both
-	 * matter: the contributor sees "no text found" while they can still swap the
-	 * file, and a forty-page parse overlaps with them typing the label rather than
-	 * blocking an upload they have already started.
+	 * The picked file's extraction result. Runs on pick, not submit, so a scanned
+	 * PDF can be swapped before upload and the parse overlaps typing the label.
 	 */
 	let extracted = $state<Extraction | null>(null);
 	let extracting = $state(false);
 
-	/**
-	 * Guards against a slow parse landing after a newer pick.
-	 *
-	 * A contributor who picks a 200-page PDF and then changes their mind would
-	 * otherwise see the first file's page count reported for the second.
-	 */
+	/** Stops a slow parse from reporting over a newer pick. */
 	let pickToken = 0;
 
 	async function onFilePicked(e: Event & { currentTarget: HTMLInputElement }) {
@@ -121,10 +93,8 @@
 			return;
 		}
 
-		// A dynamic import, so pdf.js is fetched the first time a contributor picks
-		// a file and never on any other page. `extractText` never throws — a failure
-		// is `{status: 'error'}` and the upload still goes ahead, landing a
-		// `pending` row for the backfill sweep.
+		// Dynamic import, so pdf.js loads only when a file is picked. A failure
+		// still uploads, leaving a `pending` row for the backfill.
 		extracting = true;
 		try {
 			const { extractText } = await import('$lib/pdf-text');
@@ -138,30 +108,17 @@
 	}
 
 	/**
-	 * The text submitted alongside the file.
-	 *
-	 * Empty for every non-`ok` outcome, which is exactly right: the server maps a
-	 * blank field to a `pending` row for the backfill to pick up, so a browser that
-	 * could not extract degrades to "not indexed yet" rather than to "indexed as
-	 * nothing".
+	 * Empty unless extraction succeeded. The server stores a blank as `pending`
+	 * ("not indexed yet"), not as an empty index entry.
 	 */
 	const extractedText = $derived(extracted?.status === 'ok' ? extracted.text : '');
 
 	/**
-	 * A friendly sentence, and — on a failure only — the parser's own words.
-	 *
-	 * `detail` is kept apart from `text` rather than concatenated into it so the
-	 * two can be styled differently: the sentence in the note's own tone, the raw
-	 * message muted and monospaced, so it reads as machine output rather than as
-	 * more prose. It exists at all because the error branch below used to drop
-	 * `extracted.error` on the floor, which is how a `TypeError` thrown inside
-	 * `extractText` reached the contributor as nothing but "couldn't read the
-	 * text" — and reached the console as nothing at all. Its other half is the
-	 * `console.error` in `$lib/pdf-text.ts`.
+	 * A friendly sentence, plus the parser's raw error on failure. Don't drop
+	 * `detail`: it's often the only clue to the actual fault.
 	 */
 	type ExtractionNote = { tone: 'muted' | 'warn' | 'ok'; text: string; detail?: string };
 
-	/** How the pick is described under the file input. */
 	const extractionNote: ExtractionNote | null = $derived.by(() => {
 		if (extracting) return { tone: 'muted', text: 'Reading text…' };
 		if (!extracted) return null;
@@ -190,10 +147,7 @@
 		};
 	});
 
-	/**
-	 * The badge for an already-uploaded file. `ok` gets nothing at all — the quiet
-	 * state is the common one, and a row of green ticks would be noise.
-	 */
+	/** Badge for an uploaded file. None for `ok`, the common case. */
 	function statusBadge(url: string): string | null {
 		const status = fileTextStatus[url] ?? 'pending';
 		if (status === 'ok') return null;
@@ -239,10 +193,6 @@
 							{#if problemNumber}
 								<input type="hidden" name="problemNumber" value={problemNumber} />
 							{/if}
-							<!-- `variant="destructive"`, matching `IconCard` and `MetadataTab`. A
-							     ghost button with a red icon was this file's own spelling of
-							     "permanent", and the odd one out. It asks before submitting rather
-							     than during — see `ConfirmSubmit`. -->
 							<ConfirmSubmit
 								{pending}
 								key={`${key}/${file.label}`}
@@ -269,9 +219,7 @@
 		enctype="multipart/form-data"
 		use:enhance={pending.track(() => key, {
 			reset: true,
-			// `existingFiles` is a prop, and props are lazy getters — this closure
-			// is captured once when the form mounts but still sees the list as it
-			// stands when the guard actually runs, including files added since.
+			// Props are lazy getters, so this sees the current `existingFiles`.
 			guard: () => labelError(),
 			onDone: () => {
 				label = '';
@@ -285,15 +233,10 @@
 			{#if problemNumber}
 				<input type="hidden" name="problemNumber" value={problemNumber} />
 			{/if}
-			<!-- The text this browser extracted, travelling with the file it came from.
-			     Empty whenever extraction did not produce usable text, which the server
-			     stores as a `pending` row rather than as nothing — see `putFileText`,
-			     which re-normalises and size-gates this field because it is
-			     client-submitted. -->
+			<!-- Client-submitted, so `putFileText` re-normalises and size-gates it. -->
 			<input type="hidden" name="extractedText" value={extractedText} />
 			<Field label="Label" for="{uid}-label" class="flex-1">
-				<!-- The pattern forbids forward slashes: the label becomes a path segment
-				     in the R2 key, so a slash would silently nest the object. -->
+				<!-- No slashes: the label is an R2 key segment. -->
 				<input
 					id="{uid}-label"
 					name="label"
@@ -328,9 +271,6 @@
 			</SubmitButton>
 		</div>
 		{#if extractionNote}
-			<!-- Reported before the upload, not after it: that is the whole reason the
-			     parser runs in the browser. A scan can be swapped for a text PDF while
-			     nothing has been stored. -->
 			<p
 				class={cn(
 					'text-xs',
@@ -341,9 +281,6 @@
 			>
 				{extractionNote.text}
 				{#if extractionNote.detail}
-					<!-- The parser's own message, carried through rather than swallowed: it
-					     is the difference between "couldn't read the text" and "The API
-					     version does not match the Worker version", which names the fix. -->
 					<span class="ml-1 font-mono text-muted-foreground">{extractionNote.detail}</span>
 				{/if}
 			</p>

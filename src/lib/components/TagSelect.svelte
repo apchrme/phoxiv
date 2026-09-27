@@ -1,12 +1,7 @@
 <!--
-	The olympiad `tag` select, shared by the create form and the metadata editor.
-
-	`Select.Root` submits through a hidden input rendered *in place*, even though
-	its list portals to `document.body` — so this component has to stay a DOM
-	descendant of the `<form>` it belongs to. Don't hoist it out.
-
-	The field name is fixed to `tag` rather than exposed as a prop: both actions
-	read `tag`, and a mismatched name would fail silently as an empty field.
+	The olympiad `tag` select, for the create form and the metadata editor.
+	Keep it inside its `<form>`: it submits via a hidden input rendered in place.
+	The name is fixed to `tag` because both actions read that field.
 -->
 <script lang="ts">
 	import * as Select from '$lib/components/ui/select/index.js';
@@ -16,9 +11,8 @@
 		value = $bindable(),
 		placeholder = 'Select a tag...'
 	}: {
-		/** The selected tag, or `undefined` while nothing is chosen. */
 		value?: OlympiadTag;
-		/** Trigger text shown while nothing is selected. */
+		/** Trigger text while nothing is selected. */
 		placeholder?: string;
 	} = $props();
 </script>

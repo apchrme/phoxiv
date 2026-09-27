@@ -1,12 +1,9 @@
 import { toast } from 'svelte-sonner';
 import type { SubmitFunction } from '@sveltejs/kit';
 
-/**
- * Client-side plumbing for progressively-enhanced forms.
- *
- * Both halves here assume the action-result envelope defined in
- * `$lib/server/forms.ts` — `{ action, success, error }` — so the two files change
- * together.
+/*
+ * Client side of enhanced forms. Assumes the `{ action, success, error }` result
+ * shape from `$lib/server/forms.ts`; change both together.
  */
 
 /** The loosely-typed view of an action result these helpers work against. */
@@ -17,19 +14,13 @@ export type FormEnvelope = {
 } & Record<string, unknown>;
 
 export type TrackOptions = {
-	/** Clear the form's inputs on success. Defaults to `false`: the contribute
-	 *  editors are long-lived forms whose values must survive a save. */
+	/** Clear inputs on success. Defaults to `false` so editor values survive a save. */
 	reset?: boolean;
-	/** Re-run load functions afterwards. Defaults to SvelteKit's own behaviour. */
+	/** Re-run load functions afterwards. Defaults to SvelteKit's behaviour. */
 	invalidateAll?: boolean;
 	/**
 	 * Return a message to block the submission and toast it; `null` to allow.
-	 *
-	 * This is the only thing left here that can stop a submit, and it is
-	 * deliberately not a confirmation. A `confirm` option used to sit beside it,
-	 * cancelling inline against `window.confirm()`; confirmations are
-	 * `ConfirmSubmit` now, which asks *before* submitting rather than during — see
-	 * its header for why that order had to change.
+	 * Not for confirmations: use `ConfirmSubmit`, which asks before submitting.
 	 */
 	guard?: () => string | null;
 	/** Runs once the response is in, before the page data updates. */
@@ -37,11 +28,9 @@ export type TrackOptions = {
 };
 
 /**
- * Tracks which submissions are in flight, so buttons can disable themselves.
- *
- * One instance per component that owns forms. The optional key lets a single
- * component drive several independent buttons; components split down to one form
- * each can omit it entirely.
+ * Tracks in-flight submissions so buttons can disable themselves. Create one
+ * per form-owning component and pass that same instance down: `has()` only sees
+ * what this instance's `track()` wrote. Keys separate independent buttons.
  */
 export class Pending {
 	#busy = $state<Record<string, boolean>>({});
@@ -57,12 +46,9 @@ export class Pending {
 	}
 
 	/**
-	 * A drop-in `use:enhance` value that flips {@link has} around the request.
-	 *
-	 * `use:enhance` captures this callback once when the form element mounts, so a
-	 * key that depends on reactive state must be passed as a getter — a plain
-	 * string would freeze at its mount-time value and the busy flag would be
-	 * written under one key and read under another.
+	 * A `use:enhance` value that sets {@link has} during the request. `use:enhance`
+	 * captures it once at mount, so pass a reactive key as a getter; a plain
+	 * string would stay at its mount-time value.
 	 */
 	track(key?: string | (() => string), options: TrackOptions = {}): SubmitFunction {
 		return ({ cancel }) => {
@@ -88,12 +74,12 @@ export class Pending {
 }
 
 /**
- * Wires a page's form results up to toasts. Call once, at the top level of a
- * component's `<script>`.
+ * Shows toasts for form results. Call it exactly once, in the component that
+ * owns `form`, at the top level of its `<script>`; a second call toasts twice.
  *
- * Failures always toast `form.error`. Successes look up `form.action` in
- * `success`: a string is toasted as-is, while a function may also do local
- * cleanup and return the message to show (or nothing, to stay silent).
+ * Failures toast `form.error`. Successes look up `form.action` in `success`: a
+ * string is shown as-is; a function can do cleanup and return a message (or
+ * nothing).
  *
  * @param form a getter, so the effect tracks the prop rather than a snapshot
  */
@@ -101,10 +87,8 @@ export function formToasts(
 	form: () => FormEnvelope | null | undefined,
 	success: Record<string, string | ((form: FormEnvelope) => string | void)> = {}
 ): void {
-	// Deliberately not $state: this is bookkeeping about what has already been
-	// shown, and making it reactive would re-run the effect that writes it.
-	// Comparing identity means two submissions with the same outcome still toast
-	// twice, because each response is a fresh object.
+	// Not $state, or writing it would re-run the effect. Compared by identity, so
+	// two identical results still each toast (each response is a new object).
 	let lastSeen: unknown;
 
 	$effect(() => {

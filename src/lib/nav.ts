@@ -6,12 +6,7 @@ import FileTextIcon from '@lucide/svelte/icons/file-text';
 import { HandHelping, Shield, LockKeyhole } from '@lucide/svelte';
 import type { Component } from 'svelte';
 
-/**
- * A top-level site navigation entry.
- *
- * `href` is already passed through `resolve()`, so consumers must render it
- * as-is rather than resolving it again.
- */
+/** A top-level nav entry. `href` is already resolved; don't `resolve()` it again. */
 export type NavLink = {
 	href: string;
 	label: string;
@@ -37,10 +32,8 @@ export const SECONDARY_NAV: NavLink[] = [
 const ADMIN_NAV: NavLink = { href: resolve('/admin'), label: 'admin', icon: Shield };
 
 /**
- * The secondary links for `user`, with the admin panel appended for admins.
- *
- * Derived from the user on every call rather than pushed once at mount, so the
- * admin link appears and disappears across client-side sign-in and sign-out.
+ * Secondary links, plus the admin link for admins. Call it on each render so
+ * the admin link follows sign-in and sign-out.
  */
 export function secondaryNavFor(user: { role?: string | null } | null | undefined): NavLink[] {
 	return user?.role === 'admin' ? [...SECONDARY_NAV, ADMIN_NAV] : SECONDARY_NAV;

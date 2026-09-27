@@ -14,11 +14,8 @@ const config = {
 		mdsvex({
 			extensions: ['.svx'],
 			smartypants: true,
-			// A named layout map: mdsvex picks the entry whose key matches a folder in
-			// the file's path, and falls back to `_`. Blog posts need a layout of their
-			// own because mdsvex passes front matter to the layout as props — under
-			// `prose.svelte` every post reprinted its title and description below the
-			// header its route had already drawn. See `src/lib/post.svelte`.
+			// Picked by folder name in the file's path, else `_`. Posts get their own
+			// layout so their title isn't printed twice; see `src/lib/post.svelte`.
 			layout: {
 				posts: join(lib, 'post.svelte'),
 				_: join(lib, 'prose.svelte')

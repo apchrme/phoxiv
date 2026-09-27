@@ -17,15 +17,9 @@
 	} from './metadata';
 
 	/**
-	 * Phase 1 of the year editor: the notes, links and problems the year is made
-	 * of, saved in one shot by `?/saveMetadata`.
-	 *
-	 * The three repeaters live here rather than in the editors below because the
-	 * form, the submit button and the validity checks all have to agree on the
-	 * same array. In particular `hasDuplicates` gates both `use:enhance`'s guard
-	 * and the button's `disabled` — splitting them across a component boundary
-	 * would let one drift out of step with the other. A refused maximum score is
-	 * gated exactly the same way, by the same triple.
+	 * The year's notes, links and problems, saved together by `?/saveMetadata`.
+	 * The row state lives here so the form guard and the button's `disabled` use
+	 * the same checks.
 	 */
 	let {
 		olympiadName,
@@ -36,13 +30,11 @@
 		olympiadName: string;
 		year: PageData['year'];
 		problems: PageData['problems'];
-		/** The page's single tracker, so the buttons can disable themselves. */
+		/** The page's single `Pending`, so the buttons can disable themselves. */
 		pending: Pending;
 	} = $props();
 
-	// Seeded from the load exactly once. These are the contributor's draft, so
-	// they must survive a tab switch and a failed save; deep `$state` is what
-	// lets the row editors bind straight into the objects.
+	// Seeded once: the draft must survive a tab switch and a failed save.
 	// svelte-ignore state_referenced_locally
 	let notes = $state(toNoteRows(year.notes));
 	// svelte-ignore state_referenced_locally
@@ -53,13 +45,10 @@
 	const duplicates = $derived(duplicateProblemNumbers(problemList));
 	const hasDuplicates = $derived(duplicates.size > 0);
 
-	// Keyed by problem number so `ProblemsEditor` can flag the offending row, and
-	// so the message below can name it. Duplicate numbers are refused separately,
-	// so in practice each key belongs to exactly one row.
+	// Keyed by problem number so `ProblemsEditor` can flag the row.
 	const badMaxScores = $derived(invalidMaxScores(problemList));
 	const maxScoreErrors = $derived(new Map(badMaxScores.map((b) => [b.number, b.error])));
 
-	/** The one message shown for whichever problem is blocking the save. */
 	function saveError(): string | null {
 		if (hasDuplicates) {
 			return 'Duplicate problem numbers found — please make them unique before saving.';
@@ -76,14 +65,11 @@
 	use:enhance={pending.track('metadata', { guard: saveError })}
 	class="flex flex-col gap-5 pb-2"
 >
-	<!-- Bound, not merely passed: each editor adds and removes its own rows, and
-	     Svelte only allows a child to mutate state the parent owns across `bind:`. -->
+	<!-- Bound: the editors add and remove rows in the parent's state. -->
 	<NotesEditor bind:rows={notes} />
 	<LinksEditor bind:rows={extraLinks} />
 	<ProblemsEditor bind:rows={problemList} {duplicates} {maxScoreErrors} />
 
-	<!-- The spinner used to sit *beside* this button rather than in it, one of the
-	     three competing busy shapes `SubmitButton` settles. -->
 	<SubmitButton
 		{pending}
 		key="metadata"
@@ -96,18 +82,13 @@
 	</SubmitButton>
 </form>
 
-<!--
-	A sibling of the form above, never a descendant of it. HTML forbids nested
-	forms: the parser would drop this `<form>` tag and the button below would
-	quietly submit `?/saveMetadata` instead of deleting the year.
--->
+<!-- Keep this a sibling of the form above. Nested, the parser drops this tag and
+     the button would submit `?/saveMetadata` instead. -->
 <form
 	method="POST"
 	action="?/deleteYear"
 	use:enhance={pending.track('deleteYear', { reset: true })}
 >
-	<!-- This asks first and submits after, where the `window.confirm()` it replaced
-	     submitted first and cancelled inline. See `ConfirmSubmit`. -->
 	<ConfirmSubmit
 		{pending}
 		key="deleteYear"

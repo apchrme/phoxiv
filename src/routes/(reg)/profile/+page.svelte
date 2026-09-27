@@ -37,10 +37,9 @@
 	<!-- Avatar + name card -->
 	<Card.Root class="mb-4">
 		<Card.Content class="flex flex-col items-center gap-4 py-8">
-			<!-- Avatar -->
 			<div class="relative">
 				<UserAvatar {user} class="size-24 ring-4 ring-primary/20" iconClass="size-10" />
-				<!-- Online indicator -->
+				<!-- Signed-in indicator -->
 				<span
 					class="absolute right-1 bottom-1 size-4 rounded-full border-2 border-card bg-green-500"
 					title="Signed in"
@@ -59,8 +58,6 @@
 
 	<!-- Details card -->
 	<Card.Root class="mb-4">
-		<!-- No `pb-4`: `card-header.svelte` already sets `[.border-b]:pb-6`, and
-		     overriding it here was the only card in the app whose header sat tighter. -->
 		<Card.Header class="border-b">
 			<Card.Title>Account details</Card.Title>
 		</Card.Header>

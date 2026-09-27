@@ -6,13 +6,8 @@
 	import { cn } from '$lib/utils.js';
 
 	/**
-	 * The nav's account control: the signed-in user's avatar linking to their
-	 * profile, or a sign-in button.
-	 *
-	 * The avatar is `UserAvatar`, which this used to re-implement inline — with a
-	 * bare `<User>` glyph as the fallback where every other call site gets the
-	 * tinted circle. Sizing and ring come from the anchor rather than the avatar,
-	 * because the anchor is the button and has to own its own hit area.
+	 * The nav's account control: the user's avatar linking to their profile, or a
+	 * sign-in button. The anchor owns the size and ring, since it is the hit area.
 	 */
 	const { user } = $props();
 </script>

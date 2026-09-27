@@ -13,16 +13,9 @@ const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 export default defineConfig(
 	includeIgnoreFile(gitignorePath),
 	{
-		// Vendored or generated code, where lint findings in upstream's formatting
-		// are noise: `ui/` came from the shadcn-svelte CLI and has been customised
-		// by hand ever since (never re-run the CLI over it — CLAUDE.md rule 2), and
-		// worker-configuration.d.ts comes from `bun run cf-typegen`. Note `ui/` is
-		// excluded from prettier too, so an edit there is checked by nothing.
-		//
-		// `static/vendor/**` is the pdf.js build the year editor dynamic-imports by
-		// URL. It is minified upstream output copied verbatim (see the README beside
-		// it), so linting it reports thousands of findings about Mozilla's code and
-		// hides ours. Prettier already skips all of `/static/`.
+		// Vendored or generated code: `ui/` (shadcn-svelte, hand-customised; never
+		// re-run the CLI over it, and prettier skips it too, so edits there go
+		// unchecked), the `cf-typegen` output, and the vendored pdf.js build.
 		ignores: ['src/lib/components/ui/**', 'src/worker-configuration.d.ts', 'static/vendor/**']
 	},
 	js.configs.recommended,
@@ -34,13 +27,11 @@ export default defineConfig(
 		languageOptions: { globals: { ...globals.browser, ...globals.node } },
 
 		rules: {
-			// typescript-eslint strongly recommend that you do not use the no-undef lint rule on TypeScript projects.
-			// see: https://typescript-eslint.io/troubleshooting/faqs/eslint/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
+			// TypeScript already checks this; typescript-eslint recommends turning it off.
 			'no-undef': 'off',
 
-			// `_`-prefixed bindings are intentional discards. The main use is declaring
-			// an extra reactive dependency inside `$effect`, where a bare `foo;`
-			// statement would trip no-unused-expressions instead.
+			// `_`-prefixed bindings are intentional discards, e.g. to add a dependency
+			// inside `$effect`.
 			'@typescript-eslint/no-unused-vars': [
 				'error',
 				{

@@ -1,11 +1,9 @@
 import { contentTypeFor, extensionOf, isAllowedExt, type UploadSpec } from '$lib/uploads';
 import type { Validated } from './forms';
 
-/**
- * Server-side enforcement of the upload rules declared in `$lib/uploads.ts`.
- *
- * The `accept` attribute on the form is a hint to the file picker and nothing
- * more — it is trivially bypassed. This is where the rules are actually applied.
+/*
+ * Server-side enforcement of the rules in `$lib/uploads.ts`. The form's `accept`
+ * attribute is only a hint and is easily bypassed.
  */
 
 export type ValidatedUpload = {
@@ -17,12 +15,10 @@ export type ValidatedUpload = {
 };
 
 /**
- * Checks `file` against `spec`, returning the extension and the `Content-Type`
- * to store it under.
+ * Checks `file` against `spec` and returns its extension and `Content-Type`.
  *
- * The extension decides the `Content-Type`: `file.type` comes from the browser,
- * so an attacker could claim `image/png` for an HTML payload, which R2 would then
- * serve back with that type from our own CDN origin.
+ * The type comes from the extension, never `file.type`, which the browser sets:
+ * trusting it would let someone serve HTML from our CDN under a false type.
  *
  * @param subject sentence-initial noun for the size error, e.g. `'Icon file'`
  *   yields "Icon file too large (max 2 MB)".

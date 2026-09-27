@@ -5,12 +5,8 @@
 	import FileSection from './FileSection.svelte';
 
 	/**
-	 * Phase 2 of the year editor: one upload section for the year itself, then one
-	 * per problem.
-	 *
-	 * Reads the loaded problem list rather than the metadata tab's draft — a
-	 * problem has to exist in the database before a file can be attached to it,
-	 * which is what the "go to Phase 1 first" note below is about.
+	 * Upload sections for the year and each problem. Uses the saved problems, not
+	 * the metadata draft: a problem must be saved before files can attach to it.
 	 */
 	let {
 		yearFiles,
@@ -20,9 +16,9 @@
 	}: {
 		yearFiles: PageData['yearFiles'];
 		problems: PageData['problems'];
-		/** Extraction status per file url, for the quiet badges. */
+		/** Extraction status per file url. */
 		fileTextStatus: PageData['fileTextStatus'];
-		/** The page's single tracker, so the buttons can disable themselves. */
+		/** The page's single `Pending`, so the buttons can disable themselves. */
 		pending: Pending;
 	} = $props();
 </script>

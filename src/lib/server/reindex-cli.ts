@@ -1,5 +1,5 @@
 /**
- * The one-time backfill of the existing corpus, run from a maintainer's machine.
+ * Backfills the index for the existing corpus, run from a maintainer's machine.
  *
  * ```sh
  * PHOXIV_URL=https://phoxiv.org PHOXIV_SESSION='<cookie value>' bun run index:backfill
@@ -10,49 +10,22 @@
  * $env:PHOXIV_URL = 'https://phoxiv.org'; $env:PHOXIV_SESSION = '<cookie value>'; bun run index:backfill
  * ```
  *
- * **Never imported by application code**, exactly like `auth-cli.ts` beside it —
- * same `-cli` suffix, same rule. It lives under `src/lib/server/` rather than in
- * a top-level `scripts/` directory for a reason that is not cosmetic:
- * `.svelte-kit/tsconfig.json`'s `include` covers `../src/**` but **not** a
- * top-level `scripts/`, so a script there would be linted by eslint yet invisible
- * to `bun run check` — a silent hole in a project whose only safety net is
- * `svelte-check` plus a click-through.
+ * Never imported by application code (like `auth-cli.ts`). It lives under
+ * `src/` rather than `scripts/` so `bun run check` type-checks it.
  *
- * # Why the work happens here and not in the Worker
+ * Extraction runs locally, so heavy devDependencies (`unpdf`, `fflate`) never
+ * enter a bundle, and it can read `.docx`/`.xlsx`, which the browser skips.
  *
- * Locally, dependency weight is free. That is what lets this cover `.docx` and
- * `.xlsx` — zips of XML — which the browser path deliberately skips, and it is
- * why `unpdf` and `fflate` are **devDependencies**: they never enter either
- * bundle.
+ * Results are POSTed to `/admin/reindex`, where the text is a bound parameter.
+ * Don't use `wrangler d1 execute`: D1 caps a statement at 100 KB.
  *
- * # Why results travel over HTTP rather than `wrangler d1 execute`
+ * Bytes come from the local `files/` rclone mirror, else the public CDN, so no
+ * R2 credentials are needed.
  *
- * `wrangler d1 execute` is unusable for 40 kB–500 kB texts: D1 caps a *statement*
- * at 100 KB, and `--command` additionally hits Windows' 8191-character
- * command-line limit. Posting to `/admin/reindex` sends the text as a **bound
- * parameter** instead, so only D1's 2 MB row limit applies.
- *
- * # Where the bytes come from
- *
- * The local `files/` rclone mirror first — `docs/deployment.md` already documents
- * it as a scratch copy of the bucket — falling back to a plain `fetch` of the
- * public CDN url. Either way **no R2 credentials are needed**.
- *
- * # Authentication
- *
- * The ordinary session cookie, copied out of a signed-in admin's browser.
- * Clunky, and deliberate: a shared-secret header would be a second
- * authentication mechanism in a codebase whose `docs/auth.md` is narrow on
- * purpose, and this adds no new secret and no new auth path.
- *
- * **The cookie is not called the same thing in both places.** BetterAuth adds the
- * `__Secure-` prefix whenever it believes it is in production, so `phoxiv.org`
- * sets `__Secure-better-auth.session_token` while `bun run dev` sets the bare
- * `better-auth.session_token`. Nothing here can tell which name the target
- * expects, and getting it wrong is invisible: the Worker simply sees no session
- * and `requireAdmin` returns 403, exactly as it would for a non-admin. So
- * {@link authHeaders} sends the value under **both** names — a server reads only
- * the one it asked for and ignores the other.
+ * Auth is the ordinary session cookie of a signed-in admin, so there is no
+ * second auth mechanism. BetterAuth names it `__Secure-better-auth.session_token`
+ * in production and `better-auth.session_token` in dev, and a wrong name is a
+ * silent 403, so {@link authHeaders} sends both.
  */
 
 import { readFile } from 'node:fs/promises';
@@ -68,13 +41,9 @@ import { CDN_BASE_URL } from '$lib/constants';
 import { extensionOf } from '$lib/uploads';
 
 /**
- * What this script can read, which is deliberately **wider** than the browser's
- * `EXTRACTABLE_EXTS`.
- *
- * The endpoint takes this list and re-queues rows a narrower extractor already
- * marked `skipped`, so adding an extension here is all it takes to sweep up the
- * files that were passed over. `.zip` and legacy `.doc` are in nobody's list and
- * therefore converge to `skipped` forever, which is the intent.
+ * What this script can read, wider than the browser's `EXTRACTABLE_EXTS`. The
+ * endpoint re-queues `skipped` rows with these extensions, so adding one here
+ * sweeps up files the browser passed over.
  */
 const EXTS = ['pdf', 'htm', 'html', 'docx', 'xlsx'] as const;
 
@@ -83,7 +52,7 @@ const ENGINE = 'cli-unpdf';
 /** Batch sizes. Small enough that one POST body stays well under a megabyte. */
 const FETCH_BATCH = 20;
 const POST_BATCH = 20;
-/** Parsing is local and CPU-bound; four at a time saturates a laptop nicely. */
+/** Parsing is local and CPU-bound. */
 const CONCURRENCY = 4;
 
 type Candidate = { url: string; ext: string };
@@ -100,11 +69,7 @@ type Result = {
 
 const BASE = (process.env.PHOXIV_URL ?? 'http://localhost:5173').replace(/\/+$/, '');
 
-/**
- * The cookie value, tolerant of what actually arrives on a clipboard: wrapping
- * quotes, stray whitespace, and a whole `name=value` pair copied out of a
- * devtools row rather than the value on its own.
- */
+/** The cookie value, tolerating quotes, whitespace, or a pasted `name=value` pair. */
 const SESSION = (process.env.PHOXIV_SESSION ?? '')
 	.trim()
 	.replace(/^['"]|['"]$/g, '')
@@ -120,7 +85,7 @@ if (!SESSION) {
 	process.exit(1);
 }
 
-/** Both spellings, for the reason recorded in the header. */
+/** Both names; see the header. */
 const COOKIE_NAMES = ['better-auth.session_token', '__Secure-better-auth.session_token'];
 
 function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
@@ -128,11 +93,8 @@ function authHeaders(extra: Record<string, string> = {}): Record<string, string>
 }
 
 /**
- * A failed response as one line, **body included**.
- *
- * The status on its own is not actionable. A 403 from `requireAdmin` and a 403
- * from a Cloudflare rule are the same three digits until you can see that one
- * says `{"message":"Unauthorised"}` and the other is a Ray ID wrapped in HTML.
+ * A failed response as one line, body included: a 403 from `requireAdmin` and
+ * one from a Cloudflare rule look the same without it.
  */
 async function describe(res: Response): Promise<string> {
 	const body = (await res.text().catch(() => '')).replace(/\s+/g, ' ').trim().slice(0, 300);
@@ -140,12 +102,9 @@ async function describe(res: Response): Promise<string> {
 }
 
 /**
- * Who the cookie authenticates as, asked once before any work is fetched.
- *
- * `requireAdmin` answers "there is no session" and "there is one, but it is not
- * an admin's" with the same `error(403, 'Unauthorised')` — right for a guard,
- * useless for a script. BetterAuth's own session endpoint separates the two, so
- * one extra request turns a blind 403 into a message that names the cause.
+ * Who the cookie authenticates as, checked before any work. `requireAdmin`
+ * returns the same 403 for "no session" and "not an admin"; this tells them
+ * apart.
  */
 async function whoami(): Promise<{ email?: string; role?: string } | null> {
 	const res = await fetch(`${BASE}/api/auth/get-session`, { headers: authHeaders() });
@@ -157,11 +116,9 @@ async function whoami(): Promise<{ email?: string; role?: string } | null> {
 }
 
 /**
- * One page of work, and with `withCount` how much is left across the archive.
- *
- * The count is asked for **once per sweep**, on the first page: it is a whole-union
- * `count(*)` on the server, far dearer than the page of candidates beside it, and
- * it feeds nothing but the progress line below. See `selectIndexCandidates`.
+ * One page of work and, with `withCount`, how much is left. Ask for the count
+ * only once per sweep: it is expensive on the server and only feeds the
+ * progress line.
  */
 async function fetchCandidates(
 	withCount = false
@@ -185,11 +142,9 @@ async function postResults(results: Result[]): Promise<{ written: number }> {
 }
 
 /**
- * The object's bytes, from the local mirror if it is there and from the CDN
- * otherwise.
- *
- * The mirror's layout **is** the key layout — `docs/deployment.md` says so — so
- * stripping `CDN_BASE_URL` off the url yields the relative path under `files/`.
+ * The object's bytes, from the local mirror if present, else the CDN. The
+ * mirror uses the R2 key layout, so the url minus `CDN_BASE_URL` is its path
+ * under `files/`.
  */
 async function readBytes(url: string): Promise<{ data: Uint8Array; etag: string | null }> {
 	const key = url.startsWith(`${CDN_BASE_URL}/`) ? url.slice(CDN_BASE_URL.length + 1) : null;
@@ -222,12 +177,8 @@ function extractHtml(data: Uint8Array): string {
 }
 
 /**
- * The text of an Office Open XML file.
- *
- * `.docx` and `.xlsx` are zips of XML, so this is a zip read plus the same tag
- * strip — no Office library, and nothing that could ever end up in a bundle. For
- * `.xlsx` the strings live in one shared table, which is why that one file is
- * enough.
+ * The text of a `.docx` or `.xlsx`: both are zips of XML, so unzip and strip
+ * tags. An `.xlsx` keeps most strings in `sharedStrings.xml`.
  */
 function extractOoxml(data: Uint8Array, ext: string): string {
 	const files = unzipSync(data);
@@ -268,9 +219,8 @@ async function extractOne(candidate: Candidate): Promise<Result> {
 			return { url: candidate.url, status: 'empty', etag, bytes: data.length, engine: ENGINE };
 		}
 
-		// Capped here as well as server-side, so the POST body stays small. The
-		// server re-normalises and re-caps regardless — that is the security step,
-		// not a duplicate of this one.
+		// Capped here only to keep the POST small. The server re-normalises and
+		// re-caps regardless; that is the security step.
 		const { text } = capExtracted(normalized);
 		return {
 			url: candidate.url,
@@ -330,13 +280,9 @@ async function main() {
 	let done = 0;
 	let counted = false;
 	/**
-	 * The progress countdown, asked of the server **once** and decremented here.
-	 *
-	 * Approximate on purpose, which is why it prints with a `~`: a retryable
-	 * failure re-enters the queue, so the true figure can fall more slowly than
-	 * this does. The loop's termination never depends on it — `candidates.length`
-	 * is the only authority on whether work is left — so drift costs nothing but
-	 * the precision of a log line, and it saves a whole-union `count(*)` per page.
+	 * Progress countdown, fetched once and decremented locally. Approximate
+	 * (retries re-enter the queue), hence the `~`. The loop ends on
+	 * `candidates.length`, never on this.
 	 */
 	let left: number | undefined;
 

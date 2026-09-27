@@ -11,22 +11,10 @@
 
 	let tab = $state('existing');
 
-	/**
-	 * In-flight submissions, keyed by action.
-	 *
-	 * One instance for the whole page, passed down: `has()` has to read the same
-	 * map that `track()` writes, so a per-component instance would leave the
-	 * buttons permanently enabled.
-	 */
+	/** The single `Pending` for the page, passed down to both forms. */
 	const pending = new Pending();
 
-	/**
-	 * Both actions redirect on success, so there is nothing to toast but failures —
-	 * hence no success map. The call itself is not optional: without it this page
-	 * was the only one in the app whose children rendered their own errors inline,
-	 * which is the arrangement `YearsCard` and `ImportTitlesCard` explicitly forbid
-	 * after it once showed the same message twice.
-	 */
+	// The one `formToasts` call. Failures only: both actions redirect on success.
 	formToasts(() => form);
 </script>
 

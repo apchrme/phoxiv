@@ -10,12 +10,7 @@ export const YEAR_NOT_FOUND = 'Year not found';
 /** A newly created year starts with empty JSON arrays, not SQL NULLs. */
 const EMPTY_YEAR = { notes: '[]', extraLinks: '[]' } as const;
 
-/**
- * One year of one olympiad, or `undefined`.
- *
- * Years are identified by the `(olympiadId, year)` pair everywhere in the app —
- * the surrogate `id` never appears in a URL.
- */
+/** One year of one olympiad, or `undefined`. URLs use `(olympiadId, year)`, never `id`. */
 export async function getYear(
 	db: DB,
 	olympiadId: string,
@@ -40,21 +35,16 @@ export async function listYearNumbers(db: DB, olympiadId: string): Promise<numbe
 }
 
 /**
- * Creates the year if it is missing, and reports whether it did.
- *
- * The `created` flag drives the `add_year` activity-log entry: re-submitting an
- * existing year should navigate to it, not log a second creation.
+ * Creates the year if missing. `created` decides whether an `add_year` log
+ * entry is written.
  */
 export async function ensureYear(
 	db: DB,
 	olympiadId: string,
 	year: number
 ): Promise<{ created: boolean }> {
-	// One atomic statement rather than a check-then-insert: two callers racing on
-	// the same year would both read "absent" and both report `created: true`,
-	// logging two `add_year` entries for the single row the unique index allows.
-	// `RETURNING` reports what this statement actually did, so exactly one of them
-	// can claim the creation.
+	// One atomic insert, not check-then-insert, so two racing requests can't
+	// both report `created: true`.
 	const inserted = await db
 		.insert(years)
 		.values({ olympiadId, year, ...EMPTY_YEAR })
@@ -65,12 +55,7 @@ export async function ensureYear(
 	return { created: inserted.length > 0 };
 }
 
-/**
- * Creates a year unconditionally and returns its id.
- *
- * For callers that already know the year is new — the CSV import, and the first
- * year of a freshly created olympiad.
- */
+/** Creates a year that is known to be new and returns its id. */
 export async function insertYear(db: DB, olympiadId: string, year: number): Promise<number> {
 	const inserted = await db
 		.insert(years)

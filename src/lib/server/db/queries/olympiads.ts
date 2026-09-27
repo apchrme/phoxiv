@@ -9,10 +9,7 @@ export type OlympiadRow = typeof olympiads.$inferSelect;
 
 export const OLYMPIAD_NOT_FOUND = 'Olympiad not found';
 
-/**
- * The canonical display order: curated `displayOrder` first, id as a stable
- * tiebreaker so the list never shuffles between requests.
- */
+/** `displayOrder`, then id as a stable tiebreaker. */
 function displayOrder() {
 	return [asc(olympiads.displayOrder), asc(olympiads.id)] as const;
 }
@@ -27,14 +24,8 @@ export async function listOlympiads(db: DB): Promise<OlympiadRow[]> {
 }
 
 /**
- * Just what a picker renders — id, name and icon — in display order.
- *
- * Narrower than {@link toOlympiadEntry} on purpose: this feeds `OlympiadPicker`
- * on `/contribute` and `/admin`, neither of which shows a summary or a
- * description, and both of which read the whole table on every request.
- *
- * Its two callers are both outside `(reg)` and outside `/api/`, so nothing it
- * returns reaches Cloudflare's shared cache and widening it purges nothing.
+ * Id, name and icon in display order, for `OlympiadPicker` on `/contribute` and
+ * `/admin`. Not cached, so its shape can change freely.
  */
 export async function listOlympiadOptions(db: DB): Promise<OlympiadOption[]> {
 	return db
@@ -50,10 +41,8 @@ export async function getOlympiad(db: DB, id: string): Promise<OlympiadRow | und
 }
 
 /**
- * One olympiad, throwing a 404 if it doesn't exist.
- *
- * For loads and endpoints. Form actions should use {@link getOlympiad} and
- * return `actionFail`, so the contributor keeps their unsaved input.
+ * One olympiad, or a 404. For loads and endpoints only: actions should use
+ * {@link getOlympiad} and `actionFail`, so typed input isn't lost.
  */
 export async function requireOlympiad(db: DB, id: string): Promise<OlympiadRow> {
 	const row = await getOlympiad(db, id);
@@ -62,12 +51,9 @@ export async function requireOlympiad(db: DB, id: string): Promise<OlympiadRow> 
 }
 
 /**
- * The public DTO, as served by `/api/olympiads` and the olympiad page.
- *
- * Deliberately narrower than `OlympiadRow`: `descriptionMd` (the contributor's
- * unrendered draft) and `displayOrder` must never reach the publicly cached API.
- * `descriptionHtml` collapses to `undefined` rather than `null` so
- * `JSON.stringify` omits the key entirely, which is the existing wire format.
+ * The public DTO for `/api/olympiads` and the olympiad page. `descriptionMd` and
+ * `displayOrder` must not reach the public cache. A missing `descriptionHtml`
+ * is `undefined` so the key is omitted from JSON.
  */
 export function toOlympiadEntry(row: OlympiadRow): OlympiadEntry {
 	return {

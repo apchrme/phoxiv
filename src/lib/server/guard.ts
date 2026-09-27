@@ -3,17 +3,13 @@ import { eq } from 'drizzle-orm';
 import { user, type DB } from './db';
 import { parseStringArray } from '$lib/utils/json';
 
-/**
+/*
  * Authorisation for loads, actions and endpoints.
  *
- * The three roles are `user` (the default: read-only), `contributor` (may edit
- * only the olympiads assigned to them) and `admin` (may edit everything and
- * manage users). A superadmin is an admin whose email matches
- * `SUPERADMIN_EMAIL`; they cannot be demoted, banned or unbanned.
- *
- * Every `require*` helper returns `{ db, user }` so a caller can replace the
- * two-line `requireX(locals); const db = locals.db;` prologue with one line and
- * get a non-nullable `user` for `logActivity`. See `docs/auth.md`.
+ * Roles: `user` (read-only), `contributor` (edits assigned olympiads only) and
+ * `admin` (everything). The superadmin (`SUPERADMIN_EMAIL`) can't be demoted,
+ * banned or unbanned. `require*` helpers return `{ db, user }` with a non-null
+ * user. See docs/auth.md.
  */
 
 /** The signed-in user, once a guard has established there is one. */
@@ -45,11 +41,8 @@ export function requireAdmin(locals: App.Locals): GuardedContext {
 }
 
 /**
- * Throws 403 unless the current user may reach the contribute area at all.
- *
- * Anonymous visitors are redirected to the login page instead, since signing in
- * is the action they need to take. Per-olympiad permission is a separate,
- * narrower check — see {@link requireOlympiadEditor}.
+ * Throws 403 unless the user is a contributor or admin; redirects anonymous
+ * visitors to login. Per-olympiad checks use {@link requireOlympiadEditor}.
  */
 export function requireContributor(locals: App.Locals): GuardedContext {
 	if (!locals.user) redirect(303, '/login');
@@ -66,12 +59,8 @@ export function requireOlympiadEditor(locals: App.Locals, olympiadId: string): G
 }
 
 /**
- * True if `userId` is the superadmin, who must not be modified by anyone.
- *
- * Compared by email rather than id because `SUPERADMIN_EMAIL` is configuration
- * written before the account exists. Returns `false` when the variable is unset,
- * which disables the protection — deliberate, so a self-hosted instance need not
- * designate one.
+ * True if `userId` is the superadmin, who must not be modified. Matched by email
+ * since the config predates the account. If `SUPERADMIN_EMAIL` is unset, nobody is.
  */
 export async function isProtectedSuperadmin(
 	db: DB,

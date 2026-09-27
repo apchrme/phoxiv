@@ -5,10 +5,8 @@
 	import { newLinkRow, type LinkRow } from './metadata';
 
 	/**
-	 * The `linkLabel` / `linkUrl` repeater — fields only, no `<form>`.
-	 *
-	 * The two inputs are zipped by index on the server, so each row renders both,
-	 * always, in this order.
+	 * The links repeater: fields only, no `<form>`. The server zips the two
+	 * inputs by index, so every row renders both, always, in this order.
 	 */
 	let { rows = $bindable() }: { rows: LinkRow[] } = $props();
 </script>

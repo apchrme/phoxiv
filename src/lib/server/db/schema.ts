@@ -6,9 +6,8 @@ export const olympiads = sqliteTable('olympiads', {
 	name: text('name').notNull(),
 	summary: text('summary').notNull(),
 	icon: text('icon').notNull().default(''),
-	// Must stay in sync with OLYMPIAD_TAGS in $lib/types.ts. It cannot be imported
-	// here: drizzle-kit bundles this file with its own resolver, which does not
-	// understand the $lib alias.
+	// Keep in sync with OLYMPIAD_TAGS in $lib/types.ts. It can't be imported:
+	// drizzle-kit bundles this file and doesn't resolve $lib.
 	tag: text('tag', { enum: ['International', 'Regional', 'National', 'Open'] }).notNull(),
 	displayOrder: integer('display_order').notNull().default(9999),
 	descriptionMd: text('description_md'),
@@ -41,10 +40,8 @@ export const yearFiles = sqliteTable(
 	},
 	(t) => [
 		uniqueIndex('year_files_year_label_idx').on(t.yearId, t.label),
-		// Every deep-search hit joins back on `url`, and the backfill's candidate
-		// query left-joins `file_text` on it — without this each is a full scan of
-		// this table. Not unique: two labels in one parent may legitimately name one
-		// object, which is exactly what `collidingLabel` exists to catch.
+		// Deep search and the backfill join on `url`. Not unique: two labels in one
+		// parent may name the same object (which `collidingLabel` catches).
 		index('year_files_url_idx').on(t.url)
 	]
 );
@@ -58,15 +55,11 @@ export const problems = sqliteTable(
 			.references(() => years.id, { onDelete: 'cascade' }),
 		number: text('number').notNull(),
 		title: text('title'),
-		// JSON-encoded array of topic names (see PROBLEM_TOPICS in $lib/types).
-		// Same convention as `notes`/`extraLinks` elsewhere in this schema.
-		// Never exposed next to a problem in the UI — only used for filtering.
+		// JSON array of topic names (PROBLEM_TOPICS in $lib/types). Used only for
+		// filtering, never shown next to a problem.
 		topics: text('topics').notNull().default('[]'),
-		// The denominator a tracked score is shown against, or NULL when no
-		// contributor has set one. REAL rather than INTEGER because a marking
-		// scheme's maximum is not always whole (4.5), and neither are the scores
-		// compared against it — see `problem_progress.score`. Nullable, so the
-		// column could be added without backfilling every existing problem.
+		// Max score a tracked score is shown against, or NULL if unset. REAL because
+		// marking schemes can have fractional maxima (4.5).
 		maxScore: real('max_score')
 	},
 	(t) => [uniqueIndex('problems_year_number_idx').on(t.yearId, t.number)]
@@ -84,19 +77,15 @@ export const problemFiles = sqliteTable(
 	},
 	(t) => [
 		uniqueIndex('problem_files_problem_label_idx').on(t.problemId, t.label),
-		// See `year_files_url_idx` — same join, same reason, same non-uniqueness.
+		// Same as `year_files_url_idx`.
 		index('problem_files_url_idx').on(t.url)
 	]
 );
 
-// `user.email` and `session.token` are unique via an explicit `uniqueIndex`
-// below rather than a `.unique()` on the column, and must stay that way. The two
-// are equivalent in v0, which rendered either as a `CREATE UNIQUE INDEX`, but
-// drizzle-kit v1 renders `.unique()` as an inline column constraint instead —
-// and SQLite cannot add one to an existing table. Switching back therefore makes
-// `db:generate` emit a full rebuild (create/copy/drop/rename) of `user` and
-// `session` for no logical change, dropping `session_userId_idx` on the way.
-// The index names match what `curvy_the_hunter` actually created.
+// Don't replace the `uniqueIndex` on `user.email` / `session.token` with
+// `.unique()`: drizzle-kit v1 renders that as an inline constraint, which makes
+// `db:generate` emit a full rebuild of both tables. Index names match the
+// existing migration.
 export const user = sqliteTable(
 	'user',
 	{
@@ -116,8 +105,7 @@ export const user = sqliteTable(
 		banned: integer('banned', { mode: 'boolean' }).default(false),
 		banReason: text('ban_reason'),
 		banExpires: integer('ban_expires', { mode: 'timestamp_ms' }),
-		// JSON-encoded array of olympiad IDs this user (as a contributor) may edit.
-		// Same convention as `notes`/`extraLinks` elsewhere in this schema.
+		// JSON array of olympiad IDs this user may edit as a contributor.
 		assignedOlympiads: text('assigned_olympiads').notNull().default('[]')
 	},
 	(table) => [uniqueIndex('user_email_unique').on(table.email)]
@@ -152,19 +140,10 @@ export const account = sqliteTable(
 	'account',
 	{
 		id: text('id').primaryKey(),
-		// better-auth 1.7 identifies an external account by (issuer, accountId)
-		// rather than (providerId, accountId), so this column is required: without
-		// it the OAuth callback dies with `The field "issuer" does not exist in the
-		// schema for the model "account"`. For a provider that declares no issuer of
-		// its own, better-auth writes the synthetic
-		// `local:oauth:<encodeURIComponent(providerId)>` — GitHub is such a provider,
-		// so every row here is `local:oauth:github`.
-		//
-		// The default is deliberate. SQLite cannot add a NOT NULL column without one
-		// ("Cannot add a NOT NULL column with default value NULL"), and it doubles as
-		// the backfill for the rows that predate 1.7 — all of which were GitHub.
-		// better-auth always writes `issuer` explicitly on insert, so the running app
-		// never relies on it. Dropping it later costs a full table rebuild.
+		// Required by better-auth 1.7+, which keys accounts on (issuer, accountId);
+		// without it the OAuth callback fails. GitHub has no issuer, so better-auth
+		// writes `local:oauth:github`. The default lets SQLite add the NOT NULL
+		// column and backfills older rows (all GitHub); better-auth always sets it.
 		issuer: text('issuer').notNull().default('local:oauth:github'),
 		accountId: text('account_id').notNull(),
 		providerId: text('provider_id').notNull(),
@@ -213,15 +192,13 @@ export const verification = sqliteTable(
 	(table) => [index('verification_identifier_idx').on(table.identifier)]
 );
 
-// Records contributor/admin actions (creating olympiads, editing metadata,
-// uploading/deleting files, etc.) for display on the admin "Log" tab.
+// Contributor/admin actions, shown on the admin "Log" tab.
 export const activityLog = sqliteTable(
 	'activity_log',
 	{
 		id: integer('id').primaryKey({ autoIncrement: true }),
 		userId: text('user_id').references(() => user.id, { onDelete: 'set null' }),
-		// Snapshot of the user's name at the time of the action, so the log still
-		// reads sensibly even if the user is later deleted or renamed.
+		// Name at the time of the action, so the log survives deletes and renames.
 		userName: text('user_name').notNull(),
 		action: text('action', {
 			enum: [
@@ -235,9 +212,7 @@ export const activityLog = sqliteTable(
 				'upload_file',
 				'delete_file',
 				'import_titles',
-				// One row per posted batch from `bun run index:backfill`, never one per
-				// file: `upload_file` already covers the single-file event, and per-file
-				// rows would flood the log the first time the corpus is indexed.
+				// One row per `index:backfill` batch, not per file, so the log isn't flooded.
 				'index_files'
 			]
 		}).notNull(),
@@ -248,30 +223,17 @@ export const activityLog = sqliteTable(
 			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 			.notNull()
 	}
-	// **No index on `created_at`, deliberately.** There was one, back when the
-	// admin panel read the newest 100 rows with `ORDER BY created_at DESC`. The
-	// panel now pages by keyset on `id` — an AUTOINCREMENT rowid alias, so a
-	// backwards rowid scan reads the page and no index rows at all, which is
-	// strictly cheaper than the index it replaced. Nothing else in the codebase
-	// orders or filters on `created_at`; it is only ever selected. Left in place
-	// the index would cost a second `rows_written` on every logged action,
-	// including one per posted batch of `bun run index:backfill`, and buy
-	// nothing. Add it back only alongside a reader that actually needs it — a
-	// date filter over the log would be the obvious one.
+	// No index on `created_at`: the admin panel pages by `id` (the rowid), and
+	// nothing filters on the date. An index would only add a write per action.
 );
 
 /**
- * One signed-in user's progress on one problem.
+ * One user's progress on one problem. A row means completed; `score` is null
+ * if no score was recorded. Un-marking deletes the row.
  *
- * The row's existence *is* completion; `score` is null for "completed, but no
- * score recorded". There is no third state and no `completed` column — a user
- * who un-marks a problem has their row deleted.
- *
- * Both foreign keys cascade, matching `session`/`account`: progress is the
- * user's own data and dies with the account, unlike `activity_log`, which is an
- * audit trail and must outlive it. The cascade from `problems` is also why
- * renaming a problem number in the year editor throws away every user's progress
- * on it — that save is a delete plus an insert. See docs/data-model.md.
+ * Both foreign keys cascade. Renaming a problem number in the year editor is a
+ * delete plus insert, so it discards everyone's progress on that problem.
+ * See docs/data-model.md.
  */
 export const problemProgress = sqliteTable(
 	'problem_progress',
@@ -283,31 +245,19 @@ export const problemProgress = sqliteTable(
 		problemId: integer('problem_id')
 			.notNull()
 			.references(() => problems.id, { onDelete: 'cascade' }),
-		// Stored exactly as entered — validated finite and non-negative, never
-		// rounded. Rounding on the way in would make three marks of 8.333 sum to
-		// 24.99 where the honest total is 25. `formatScore` rounds for the cards
-		// and the year totals; anything that seeds an input uses `exactScore`.
+		// Stored as entered, never rounded, so totals stay exact. `formatScore`
+		// rounds for display; inputs are seeded with `exactScore`.
 		score: real('score'),
 		createdAt: integer('created_at', { mode: 'timestamp_ms' })
 			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 			.notNull(),
-		// `onConflictDoUpdate` builds its SET with the same helper as `db.update`,
-		// so this `$onUpdate` already fires on the conflict branch. The upsert in
-		// `queries/progress.ts` names `updatedAt` anyway — an explicit value wins
-		// over the fn, and it keeps the refresh visible where the write is.
 		updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
 			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 			.$onUpdate(() => new Date())
 			.notNull()
 	},
-	// A surrogate `id` plus a unique index, never a composite primary key — the
-	// pattern every other child table here uses. Two indexes, one per foreign
-	// key: the composite's leading `user_id` serves both the "all of one user's
-	// rows" read `getOlympiadProgress` issues and the cascade from `user`, but the
-	// cascade from `problems` seeks on `problem_id` alone, which a
-	// (user_id, problem_id) B-tree cannot answer — SQLite falls back to scanning
-	// the whole index, once per deleted problem. Every `saveMetadata` that renames
-	// a problem number deletes a problem, and deleting a year deletes all of them.
+	// The second index serves the cascade from `problems`, which looks up by
+	// `problem_id` alone and would otherwise scan the whole table per deleted problem.
 	(t) => [
 		uniqueIndex('problem_progress_user_problem_idx').on(t.userId, t.problemId),
 		index('problem_progress_problem_idx').on(t.problemId)
@@ -315,48 +265,20 @@ export const problemProgress = sqliteTable(
 );
 
 /**
- * Extracted plain text for one uploaded document, and the state of its
- * extraction.
+ * Extracted plain text for one uploaded file, plus its extraction state.
  *
- * # Keyed by the whole CDN url
- *
- * `url` is byte-identical to the string `year_files.url` / `problem_files.url`
- * already hold, and that is the decisive property: it is **already the join key
- * of both file tables**, so the deep-search read joins straight back to them and
- * a row whose url is no longer referenced becomes *invisible rather than wrong*.
- * Correctness therefore never depends on cleanup running.
- *
- * Not a row id: renaming a problem number is a delete plus an insert in
- * `saveMetadata`, which cascades `problem_files` away and would throw out an
- * extraction for a file whose bytes never moved. Not a content hash: that needs
- * 50 MB read *and* hashed before we can decide to skip it, for no user-visible
- * gain.
- *
- * # Why a separate table
- *
- * The text is not a column on `year_files`/`problem_files` because both are read
- * with a bare `db.select()` by `getYearContent` and fanned out over LEFT JOINs by
- * `getOlympiadYearEntries` and `getSearchIndex` — the exact shape that once
- * dragged `olympiads.description_md` onto every row of the corpus. A 40 kB blob
- * on that path would be far worse.
- *
- * # Why no foreign key
- *
- * `url` is not unique in either file table — two labels in one parent may name
- * one object — so a foreign key is not expressible. That is also why every
- * cleanup below is explicit, and why the read path is written to tolerate a
- * stale row instead of trusting one.
+ * Keyed by the full CDN url, the same string the file tables hold, so search
+ * joins straight back to them. A row whose url is no longer referenced is
+ * simply not found. Not keyed by row id, because renaming a problem recreates
+ * its `problem_files` rows. No foreign key, because `url` is not unique in the
+ * file tables. Kept out of the file tables so bulk reads don't carry the text.
+ * See docs/search.md.
  */
 export const fileText = sqliteTable(
 	'file_text',
 	{
+		// A rowid alias, which lets the FTS5 index use `content_rowid='id'`.
 		id: integer('id').primaryKey({ autoIncrement: true }),
-		/**
-		 * The full CDN url, byte-identical to the `url` column it mirrors.
-		 *
-		 * `id` is an `integer primary key autoincrement`, hence a rowid alias, which
-		 * is what lets the FTS5 index declare `content_rowid='id'`.
-		 */
 		url: text('url').notNull(),
 		status: text('status', { enum: ['pending', 'ok', 'empty', 'skipped', 'error'] })
 			.notNull()
@@ -364,21 +286,15 @@ export const fileText = sqliteTable(
 		/**
 		 * Normalised plain text, capped at `TEXT_CHAR_CAP`. NULL unless `ok`.
 		 *
-		 * **No endpoint may select this column.** Only `snippet()` reads it, inside
-		 * the FTS5 query, and what leaves the server is a bounded excerpt. Exposing
-		 * a query function that returns it would make the whole corpus text
-		 * downloadable, which is a copyright question for third-party papers.
+		 * Never select this column in an endpoint. Only FTS5 `snippet()` reads it,
+		 * so only short excerpts leave the server (third-party papers are copyrighted).
 		 */
 		text: text('text'),
 		chars: integer('chars').notNull().default(0),
 		truncated: integer('truncated', { mode: 'boolean' }).notNull().default(false),
 		/**
-		 * The object's ETag and size, for change detection — nullable and often
-		 * null, because the browser upload path has no reason to read R2 and the
-		 * Worker deliberately never does. Only the backfill script fills these, from
-		 * the `ETag`/`Content-Length` the CDN returns; that is enough, since a
-		 * re-upload under the same label is refused by `collidingLabel` and a
-		 * delete-then-re-upload resets the row outright.
+		 * ETag and size for change detection. Only the backfill script sets these;
+		 * browser uploads leave them null. The Worker never reads R2.
 		 */
 		etag: text('etag'),
 		bytes: integer('bytes'),

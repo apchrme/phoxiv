@@ -13,39 +13,23 @@ import {
 } from '$lib/server/db/queries/files';
 
 /**
- * How many activity-log entries one page of the panel shows.
- *
- * The load fetches the first page and `admin/activity/+server.ts` serves the
- * rest behind "Load more". It was 100 unpaginated, which both cost four times
- * as much on every open and made everything older than the newest 100 entries
- * unreachable.
+ * Activity-log entries per page. The load fetches page 1;
+ * `admin/activity/+server.ts` serves the rest behind "Load more".
  */
 const LOG_PAGE_SIZE = 25;
 
 /**
- * What `setRole` accepts: the roles the dropdown offers, plus `''`.
- *
- * The empty string clears the role back to NULL. It is input-only — no control
- * submits it deliberately — which is why it is added here rather than kept in
- * the shared `ASSIGNABLE_ROLES` the dropdown iterates.
+ * The roles the dropdown offers, plus `''`, which clears the role to NULL.
+ * No control submits `''`, so it isn't in `ASSIGNABLE_ROLES`.
  */
 const ACCEPTED_ROLES: readonly string[] = [...ASSIGNABLE_ROLES, ''];
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const { db } = requireAdmin(locals);
 
-	// Three independent reads — one of them used to hide inside the return object,
-	// which is why this read like two sequential awaits rather than three.
-	//
-	// There were four. `getFileTextStats` left because it was ~4,500 of the
-	// ~4,870 D1 rows this load cost, and the panel it feeds opens on Users — most
-	// visits never looked at it. `admin/index-stats/+server.ts` serves it on the
-	// first open of the Index tab instead.
-	//
-	// **Streaming the promise from here looks like it solves that in one round
-	// trip, but it defers delivery, not cost**: an unawaited promise in the
-	// returned object still runs the query on every page open, which is the
-	// entire thing being avoided. Do not put it back that way.
+	// Index stats are expensive, so `admin/index-stats/+server.ts` serves them
+	// when the Index tab opens. Don't stream them from here as an unawaited
+	// promise: that still runs the query on every page open.
 	const [users, olympiads, log] = await Promise.all([
 		db
 			.select({
@@ -60,17 +44,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 				assignedOlympiads: user.assignedOlympiads
 			})
 			.from(user)
-			// **No `ORDER BY`, deliberately.** `user` has no index on `created_at`
-			// — only `user_email_unique` — so ordering here made D1 sort, reading
-			// 224 rows where the bare scan reads 112. The table sorts oldest-first
-			// on the client instead, which is free: `getSortedRowModel` already
-			// runs over the whole array for the sortable headers. Same visible
-			// order, half the rows. See `UsersTable.svelte`'s initial `sorting`.
+			// No `ORDER BY`: `created_at` has no index, so D1 would bill a sort.
+			// `UsersTable.svelte` sorts on the client instead.
 			.all(),
 		listOlympiadOptions(db),
-		// The same function the endpoint calls, so page 1 over-fetches by one too.
-		// If only the endpoint did, `hasMore` would be unknown here and the button
-		// would show even when the log holds exactly `LOG_PAGE_SIZE` rows.
+		// Same function as the endpoint, so page 1 also knows `hasMore`.
 		listActivity(db, { limit: LOG_PAGE_SIZE })
 	]);
 
@@ -148,8 +126,7 @@ export const actions: Actions = {
 		const userId = field(data, 'userId');
 
 		if (!userId) return actionFail(400, 'unbanUser', 'User ID required');
-		// The superadmin check belongs here too: unbanning is a modification, and
-		// leaving it off made the protection inconsistent with its siblings.
+		// Unbanning is a modification too, so the superadmin is protected here as well.
 		if (await isProtectedSuperadmin(db, platform, userId)) {
 			return actionFail(403, 'unbanUser', 'This account cannot be modified');
 		}
@@ -160,12 +137,8 @@ export const actions: Actions = {
 	},
 
 	/**
-	 * Re-runs the FTS5 DDL idempotently, then rebuilds the index from `file_text`.
-	 *
-	 * The recovery path for the one hand-written migration. Because the index is
-	 * **external content**, a rebuild reconstructs it from the stored text with no
-	 * re-extraction at all — which is what makes losing the FTS objects (to a stray
-	 * `db:push`, say) an inconvenience rather than a re-index of the whole corpus.
+	 * Recreates the FTS5 table and triggers if missing, then rebuilds the index
+	 * from `file_text` (no re-extraction). See docs/data-model.md, "Recovery".
 	 */
 	ensureIndex: async ({ locals }) => {
 		const { db } = requireAdmin(locals);
@@ -174,11 +147,8 @@ export const actions: Actions = {
 	},
 
 	/**
-	 * Merges the index's segments. Worth one run after a large backfill.
-	 *
-	 * Bounded work per call rather than a single `('optimize')`, which is
-	 * unbounded and would risk D1's 30-second query cap on a large corpus. Run it
-	 * again if it has more to do.
+	 * Merges index segments, with bounded work per call to stay under D1's query
+	 * time limit. Run again if there is more to do.
 	 */
 	optimizeIndex: async ({ locals }) => {
 		const { db } = requireAdmin(locals);
@@ -186,13 +156,7 @@ export const actions: Actions = {
 		return ok('optimizeIndex');
 	},
 
-	/**
-	 * Drops `file_text` rows whose url no longer appears in either file table.
-	 *
-	 * Hygiene only. `searchFiles` INNER JOINs back to those tables, so an orphan
-	 * row is unreachable rather than wrong — this reclaims the bytes, it does not
-	 * fix a bug.
-	 */
+	/** Drops `file_text` rows for files that no longer exist. Reclaims space only. */
 	pruneIndex: async ({ locals }) => {
 		const { db } = requireAdmin(locals);
 		return ok('pruneIndex', { pruned: await pruneFileText(db) });

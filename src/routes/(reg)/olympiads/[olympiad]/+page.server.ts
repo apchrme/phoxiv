@@ -9,11 +9,8 @@ import { actionFail, field, ok, parseYear } from '$lib/server/forms';
 import { parseScore, progressKey, type ProblemProgress } from '$lib/progress';
 
 /**
- * Only the olympiad's own metadata. The years, problems and files are fetched
- * client-side from `/api/olympiads/[olympiad]` so they come out of Cloudflare's
- * shared cache instead of costing a D1 read per visit; the signed-in user's
- * progress comes from `./progress` for the opposite reason — it must never be
- * cached at all.
+ * Only the olympiad's metadata. Years, problems and files come from the cached
+ * `/api/olympiads/[olympiad]`; the user's progress from the uncached `./progress`.
  */
 export const load: PageServerLoad = async ({ params, locals }) => {
 	return { olympiad: toOlympiadEntry(await requireOlympiad(locals.db, params.olympiad)) };
@@ -21,28 +18,12 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 export const actions: Actions = {
 	/**
-	 * Marks a problem completed, records a score against it, or un-marks it.
+	 * Marks a problem done, records a score, or un-marks it.
 	 *
-	 * The guard is a plain `locals.user` check rather than one of `guard.ts`'s
-	 * three: **any** signed-in user may track **any** problem. This is not an
-	 * editing permission, and routing it through `requireOlympiadEditor` would
-	 * limit tracking to contributors.
-	 *
-	 * The problem is resolved from `(olympiad, year, number)` server-side, which
-	 * is what lets the page stay ignorant of `problems.id`. The maximum a submitted
-	 * score is validated against comes from that row too, never from the browser —
-	 * even though the browser can now read a maximum out of the public
-	 * `/api/olympiads/[olympiad]` payload, a submitted one is still not trusted.
-	 *
-	 * The result carries the score and nothing else. It deliberately does **not**
-	 * send `maxScore` back, even though the row is right here: the maximum belongs
-	 * to the problem, the page already has it from `/api/olympiads/[olympiad]`, and
-	 * a second copy arriving by a second route is a second thing that can disagree.
-	 * A maximum changes rarely enough that waiting for the shared cache is the right
-	 * trade — see `docs/data-model.md`.
-	 *
-	 * Nothing here is written to `activity_log`: that is the *content* audit
-	 * trail shown on the admin panel, and one row per problem click would bury it.
+	 * Any signed-in user may track any problem, so this checks `locals.user`, not
+	 * `requireOlympiadEditor`. The max score used for validation comes from the
+	 * database, never the browser. The result omits `maxScore`; the page already
+	 * has it from the API. Not logged to `activity_log`, which is for content edits.
 	 */
 	trackProblem: async ({ request, params, locals }) => {
 		if (!locals.user) return actionFail(401, 'trackProblem', 'Sign in to track problems');
@@ -60,9 +41,7 @@ export const actions: Actions = {
 
 		if (intent === 'remove') {
 			await clearProblemProgress(locals.db, locals.user.id, problem.id);
-			// `null`, not a hollow entry: "untracked" has exactly one spelling on the
-			// client too — an absent key in the `ProgressMap` — so the page deletes the
-			// key rather than storing a tombstone that would then need checking for.
+			// `null` tells the page to delete the key; an absent key means untracked.
 			return ok('trackProblem', { key, entry: null });
 		}
 
@@ -70,21 +49,14 @@ export const actions: Actions = {
 			return actionFail(400, 'trackProblem', 'Unknown tracking action');
 		}
 
-		// `complete` marks the problem done without looking at the score field at
-		// all, so the "I did this one, never mind the mark" path cannot be blocked
-		// by whatever happens to be sitting in the input.
+		// `complete` ignores the score field, so a bad value can't block it.
 		const parsed = parseScore(intent === 'complete' ? '' : field(data, 'score'), problem.maxScore);
-		// Refused, not clamped: a silent clamp would store a number the user never
-		// typed, and `actionFail` keeps the popover's input intact where `error()`
-		// would replace the whole page.
+		// Rejected, not clamped. `actionFail`, not `error()`, keeps the popover's input.
 		if (!parsed.ok) return actionFail(400, 'trackProblem', parsed.error);
 
 		await setProblemProgress(locals.db, locals.user.id, problem.id, parsed.value);
 		const entry: ProblemProgress = { score: parsed.value };
-		// The canonical entry travels back with the result, so the page can merge
-		// it straight into its map instead of refetching the whole olympiad. Two
-		// `ok('trackProblem', …)` shapes means SvelteKit types `form.entry` as
-		// `ProblemProgress | null`, which narrows on `=== null` — see `forms.ts`.
+		// Returned so the page merges it without refetching.
 		return ok('trackProblem', { key, entry });
 	}
 };

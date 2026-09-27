@@ -11,22 +11,16 @@
 	import { CSV_UPLOAD } from '$lib/uploads';
 
 	/**
-	 * Round-trips problem titles, topics and maximum scores through a CSV.
-	 *
-	 * The export link is a plain `href` with `data-sveltekit-reload`: the endpoint
-	 * responds with a file download rather than a page, so the client router must
-	 * not try to handle it.
-	 *
-	 * Import failures are left to the page's `formToasts`, which toasts every
-	 * failed action — rendering them inline here as well showed the same message
-	 * twice.
+	 * CSV export and import of problem titles, topics and max scores. The export
+	 * link uses `data-sveltekit-reload` because it downloads a file, not a page.
+	 * Don't render errors inline: the page's `formToasts` already toasts them.
 	 */
 	let {
 		olympiadId,
 		pending
 	}: {
 		olympiadId: string;
-		/** The page's single tracker, so the submit button can disable itself. */
+		/** The page's single `Pending`, so the submit button can disable itself. */
 		pending: Pending;
 	} = $props();
 

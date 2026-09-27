@@ -36,17 +36,13 @@ import { parseMaxScore } from '$lib/progress';
 const DEFAULT_DISPLAY_ORDER = 9999;
 
 export const load: PageServerLoad = async ({ params, locals }) => {
-	// Authorise before reading. The layout guard establishes only that this is a
-	// contributor, not that they may edit *this* olympiad — without this the
-	// editor for any olympiad was a URL away for any contributor, unrendered
-	// `descriptionMd` draft and `displayOrder` included. Permission first,
-	// existence second, matching `titles.csv/+server.ts`.
+	// Authorise before reading: the layout guard only checks the role, not this
+	// olympiad. Permission first, existence second.
 	const { db } = requireOlympiadEditor(locals, params.olympiad);
 	const olympiadRow = await requireOlympiad(db, params.olympiad);
 
 	return {
-		// The editor's own view of an olympiad: unlike the public `OlympiadEntry`
-		// it carries the unrendered Markdown draft and the display order.
+		// Unlike the public `OlympiadEntry`, includes the Markdown source and display order.
 		olympiad: {
 			id: olympiadRow.id,
 			name: olympiadRow.name,
@@ -76,14 +72,9 @@ export const actions: Actions = {
 		}
 		if (!isOlympiadTag(tag)) return actionFail(400, 'updateOlympiad', 'Invalid tag');
 
-		// The emoji field is `disabled` whenever an uploaded image icon is in force,
-		// and browsers omit disabled controls from FormData. An absent `icon` therefore
-		// means "the form had nothing to say about the icon", not "clear it" — writing
-		// the empty string here used to silently delete the uploaded icon's URL while
-		// the page cheerfully toasted "Olympiad updated". Keying off presence rather
-		// than value keeps the fix independent of how the form is split into
-		// components; a hidden input would only work for as long as it stayed a DOM
-		// descendant of this form.
+		// The emoji field is `disabled` while an uploaded icon is set, so it's
+		// missing from FormData. Missing means "leave the icon alone". Don't write
+		// `''` here: that silently deleted uploaded icons.
 		const iconPatch = data.has('icon') ? { icon: field(data, 'icon') } : {};
 
 		await db
@@ -112,15 +103,10 @@ export const actions: Actions = {
 		const bucket = getBucket(platform);
 		if (!bucket) return actionFail(500, 'uploadIcon', STORAGE_UNAVAILABLE);
 
-		// An action does not run the page load, so the load's 404 does not cover
-		// this, and an admin passes the guard for *any* id: `POST
-		// /contribute/nope?/uploadIcon` used to reach the `put` below with nothing
-		// having checked that `nope` exists. R2 has no foreign keys and nothing
-		// sweeps the bucket, so the object it wrote was unreachable for good — the
-		// `update` matched no row, so no `icon` column ever pointed at it, and
-		// `deleteStaleIcons` only ever runs for an id someone uploads to a second
-		// time. `getOlympiad` and not `requireOlympiad`, per rule 6: a 404 page
-		// would discard the description draft in the other half of this form.
+		// Actions don't run the load, and admins pass the guard for any id, so check
+		// the olympiad exists or the upload leaves an orphaned R2 object.
+		// `actionFail`, not `requireOlympiad`'s `error()`, which would discard the
+		// description draft on the same page.
 		const olympiad = await getOlympiad(db, params.olympiad);
 		if (!olympiad) return actionFail(404, 'uploadIcon', OLYMPIAD_NOT_FOUND);
 
@@ -153,9 +139,7 @@ export const actions: Actions = {
 	removeIcon: async ({ params, locals }) => {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
 
-		// Cleared to an empty string rather than NULL so the emoji/flag fallback
-		// in OlympiadIcon takes over. The R2 object is left in place; re-uploading
-		// overwrites it, and an orphan icon costs nothing.
+		// '' so OlympiadIcon falls back. The R2 object is left; a re-upload replaces it.
 		await db.update(olympiads).set({ icon: '' }).where(eq(olympiads.id, params.olympiad)).run();
 
 		await logActivity(db, user, 'remove_icon', 'Removed the uploaded icon', {
@@ -165,10 +149,7 @@ export const actions: Actions = {
 		return ok('removeIcon');
 	},
 
-	/**
-	 * Same as the top-level `/contribute` selectYear, except the olympiad is
-	 * fixed to the current page rather than submitted.
-	 */
+	/** Like `/contribute`'s selectYear, with the olympiad taken from the URL. */
 	selectYear: async ({ request, params, locals }) => {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
 		const data = await request.formData();
@@ -188,12 +169,8 @@ export const actions: Actions = {
 	},
 
 	/**
-	 * Bulk-imports problem numbers, titles, topics and maximum scores from the CSV
-	 * produced by `titles.csv`.
-	 *
-	 * Fill-only by design: an existing problem is never overwritten, only
-	 * completed. A re-import can therefore not clobber work done through the year
-	 * editor, which makes the round-trip safe to repeat.
+	 * Bulk-imports problems from a `titles.csv`-format CSV. Fill-only: existing
+	 * values are never overwritten, so re-importing is safe.
 	 */
 	importTitles: async ({ request, params, locals }) => {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
@@ -217,8 +194,7 @@ export const actions: Actions = {
 
 		if (records.length === 0) return actionFail(400, 'importTitles', 'CSV appears to be empty');
 
-		// Still only three required columns: "topics" and "max_score" are both
-		// optional, so every CSV exported before either existed still imports.
+		// "topics" and "max_score" are optional, so older CSVs still import.
 		const header = Object.keys(records[0]);
 		if (!header.includes('year') || !header.includes('number') || !header.includes('title')) {
 			return actionFail(400, 'importTitles', 'CSV must have "year", "number", and "title" columns');
@@ -238,17 +214,13 @@ export const actions: Actions = {
 			const year = parseYear((r.year ?? '').trim());
 			const number = (r.number ?? '').trim();
 			const title = (r.title ?? '').trim() || null;
-			// The "topics" column is optional, so older CSVs still import cleanly.
-			// Unrecognised topic names are ignored rather than failing the import.
+			// Unrecognised topic names are ignored.
 			const topics = parseTopicsCsvCell(r.topics);
 			if (year === null || !number) {
 				skippedInvalid++;
 				continue;
 			}
-			// So is "max_score". An unreadable cell is dropped rather than failing the
-			// whole import — the same tolerance `parseTopicsCsvCell` shows an
-			// unrecognised topic — but it is counted and reported back, so a typo in
-			// one cell of a thousand-row spreadsheet is visible instead of silent.
+			// An unreadable max score is dropped but counted and reported back.
 			const parsedMaxScore = parseMaxScore(r.max_score ?? '');
 			if (!parsedMaxScore.ok) badMaxScores++;
 			entries.push({
@@ -343,8 +315,6 @@ export const actions: Actions = {
 			if (existing.topics.length === 0 && e.topics.length > 0) {
 				patch.topics = serializeTopics(e.topics);
 			}
-			// Fill-only like the two above: a maximum already set through the year
-			// editor is never replaced by one from a spreadsheet.
 			if (existing.maxScore === null && e.maxScore !== null) patch.maxScore = e.maxScore;
 
 			if (patch.title === undefined && patch.topics === undefined && patch.maxScore === undefined) {

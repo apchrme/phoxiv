@@ -14,20 +14,15 @@
 	import { ICON_UPLOAD } from '$lib/uploads';
 
 	/**
-	 * Creates an olympiad and its first year, then redirects into the year editor.
-	 *
-	 * Admin-only on the server; the tab is shown to every contributor, and the
-	 * action refuses. Both icon fields are submitted — the server prefers the
-	 * uploaded file and falls back to the emoji.
-	 *
-	 * `TagSelect` submits `tag` through a hidden input rendered in place while its
-	 * list portals to `document.body`, so it has to stay inside the `<form>`.
-	 * Errors are the page's to toast — see its `formToasts` call.
+	 * Creates an olympiad and its first year, then opens the year editor.
+	 * Admin-only on the server, though every contributor sees the tab. The server
+	 * prefers the uploaded icon over the emoji. `TagSelect` must stay inside the
+	 * `<form>`: it submits via a hidden input.
 	 */
 	let {
 		pending
 	}: {
-		/** The page's single tracker, so the submit button can disable itself. */
+		/** The page's single `Pending`, so the submit button can disable itself. */
 		pending: Pending;
 	} = $props();
 
@@ -84,9 +79,7 @@
 				/>
 			</Field>
 			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-				<!-- No `for`: `TagSelect`'s trigger is a button, which `<label>` does not
-				     apply to. `Field` renders a `<span>` instead, which is why this no
-				     longer needs an `a11y_label_has_associated_control` suppression. -->
+				<!-- No `for`: `TagSelect`'s trigger is a button. -->
 				<Field label="Tag">
 					<TagSelect bind:value={tag} />
 				</Field>

@@ -13,24 +13,16 @@
 	import { MAX_YEAR, MIN_YEAR } from '$lib/constants';
 
 	/**
-	 * Picks an existing olympiad and jumps to one of its years, creating the year
-	 * record if it doesn't exist yet. A blank year edits the olympiad's own
-	 * metadata instead — the server branches on that, not this component.
-	 *
-	 * The picker and the "Edit olympiad metadata" button both read the selected id,
-	 * which is why they belong in the same component. Splitting them would make
-	 * `olympiadId` `$bindable` for no gain, and `OlympiadPicker` has to stay a DOM
-	 * descendant of the `<form>` regardless: it submits through a hidden input
-	 * rendered in place, even though its panel portals to `document.body`.
-	 *
-	 * Errors are the page's to toast — see its `formToasts` call.
+	 * Picks an olympiad and goes to one of its years, creating the year if needed.
+	 * A blank year goes to the olympiad's metadata instead (decided server-side).
+	 * `OlympiadPicker` must stay inside the `<form>`: it submits via a hidden input.
 	 */
 	let {
 		olympiads,
 		pending
 	}: {
 		olympiads: PageData['olympiads'];
-		/** The page's single tracker, so the submit button can disable itself. */
+		/** The page's single `Pending`, so the submit button can disable itself. */
 		pending: Pending;
 	} = $props();
 
@@ -52,13 +44,9 @@
 			use:enhance={pending.track('selectYear')}
 			class="flex flex-col gap-4"
 		>
-			<!-- No `for`: the picker's trigger is a button, which `<label>` does not
-			     apply to. `Field` renders a `<span>` instead, and the picker's own
-			     `heading` is its accessible name. -->
+			<!-- No `for`: the picker's trigger is a button. The server rejects an
+			     empty choice, since a button can't be `required`. -->
 			<Field label="Olympiad">
-				<!-- No browser `required`, which a button cannot carry anyway: `selectYear`
-				     already answers an empty submit with "Please select an olympiad", and the
-				     page toasts it. -->
 				<OlympiadPicker name="olympiadId" bind:value={olympiadId} {olympiads} />
 			</Field>
 			<Field label="Year" for="year" hint="— leave blank to edit olympiad metadata">

@@ -10,26 +10,13 @@
 	import { exactScore, formatScore, progressKey, type ProblemProgress } from '$lib/progress';
 
 	/**
-	 * The tracking control in a problem card's top-right corner: a state icon that
-	 * opens a small form for recording, changing or removing a score.
+	 * A problem card's tracking control: a state icon that opens a form to record,
+	 * change or remove a score. Signed-in only; `SignInToTrack` is the signed-out
+	 * version. Keep the trigger's position classes in sync with it.
 	 *
-	 * Rendered only for signed-in users — `ProblemCard` decides that, and shows
-	 * `SignInToTrack.svelte` instead for everyone else. That sibling duplicates the
-	 * trigger's position classes below so the circle lands in the same spot either
-	 * way; **change them here and change them there too.**
-	 *
-	 * **A `Popover` from `bits-ui` directly, not from the vendored
-	 * `$lib/components/ui/` tree**, which CLAUDE.md rule 2 puts off limits.
-	 * `GlobalSearch.svelte` is the precedent for hand-styling a bits-ui primitive
-	 * outside it; the classes below deliberately mirror `dropdown-menu-content`'s.
-	 *
-	 * Two choices here are load-bearing rather than aesthetic:
-	 *
-	 * - **Portalled.** `Card.Root` carries `overflow-hidden`, so content rendered
-	 *   in place would be clipped by the year card it sits in.
-	 * - **A popover, not a `DropdownMenu`.** bits-ui menus implement roving focus
-	 *   and typeahead, both of which fight a text input. `TopicSelect` can use a
-	 *   menu because it has no input to fight with.
+	 * Uses bits-ui `Popover` directly (CLAUDE.md rule 2). Portalled, because the
+	 * card is `overflow-hidden`. A popover, not a `DropdownMenu`, because menu
+	 * roving focus and typeahead fight the text input.
 	 */
 	let {
 		year,
@@ -38,49 +25,33 @@
 		entry,
 		pending
 	}: {
-		/** The competition year; submitted so the action can resolve the problem. */
 		year: number;
 		/** The problem number, e.g. `T1`. */
 		number: string;
-		/**
-		 * The denominator to show a score against, or `null` when no contributor has
-		 * set one. Comes from the problem rather than from `entry`, because it is the
-		 * same for every visitor — the server still validates against the stored
-		 * value, so nothing here is trusted for anything but display.
-		 */
+		/** Display only, or `null` if unset. The server validates against the stored value. */
 		maxScore: number | null;
-		/** Progress for this problem, or `undefined` when the user has not tracked it. */
+		/** `undefined` when the user hasn't tracked this problem. */
 		entry: ProblemProgress | undefined;
-		/** The page's single tracker, so the buttons can disable themselves. */
+		/** The page's single `Pending`, so the buttons can disable themselves. */
 		pending: Pending;
 	} = $props();
 
-	/** The entry's *existence* is completion; there is no flag on it to read. */
+	/** Completion is the entry existing; there is no flag. */
 	const completed = $derived(entry !== undefined);
 	const score = $derived(entry?.score ?? null);
 
-	/** Namespaces this problem's entry in the page-wide `Pending` map. */
 	const key = $derived(progressKey(year, number));
 	const busy = $derived(pending.has(key));
 
-	// One `<label for>` per instance — dozens of these are on the page at once.
 	const uid = $props.id();
 
 	let open = $state(false);
-	/** What is in the score box. Seeded from `score`, then owned by the user. */
 	let draft = $state('');
 
 	/**
-	 * Re-seeds the box whenever the popover opens *and* whenever a save lands, so
-	 * what is shown is the value the server actually stored, and so a removal
-	 * empties the box rather than leaving a number behind that a second click
-	 * would silently re-save.
-	 *
-	 * Through `exactScore` and never `formatScore`: this is an input the user
-	 * saves back, so rounding it would mean reopening the popover and pressing
-	 * Save turned their `8.333` into `8.33`.
-	 *
-	 * Runs before paint, so there is no flash of an empty input.
+	 * Re-seed the box on open and after each save, so it shows the stored value
+	 * and a removal empties it. Use `exactScore`, not `formatScore`: rounding
+	 * here would change the score on the next Save.
 	 */
 	$effect(() => {
 		if (!open) return;
@@ -99,8 +70,7 @@
 	<Popover.Trigger
 		class={cn(
 			buttonVariants({ variant: 'ghost', size: 'xs' }),
-			// Pulled into the card's padding so the icon lines up with the problem
-			// number rather than hanging below it.
+			// Pulled into the card's padding to line up with the problem number.
 			'-mt-1 -mr-2 shrink-0 gap-1 px-1.5 font-mono tabular-nums',
 			completed ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
 		)}
@@ -127,22 +97,13 @@
 			sideOffset={6}
 			class="z-50 w-60 rounded-2xl bg-popover p-3 text-popover-foreground shadow-2xl ring-1 ring-foreground/5 duration-100 outline-none dark:ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95"
 		>
-			<!--
-				The `<form>` lives inside the portalled content, so the input and the
-				form travel together and no hidden mirror input is needed — unlike
-				`ProblemsEditor.svelte`, whose TopicSelect renders outside its form.
-				`use:enhance` resolves `?/trackProblem` against the page URL, not
-				against wherever the node ended up in the DOM.
-			-->
+			<!-- The form is inside the portal with its input, so no hidden mirror is needed. -->
 			<form
 				method="POST"
 				action="?/trackProblem"
 				use:enhance={pending.track(() => key, {
-					// The page holds `years` and `progress` in component state and merges
-					// the action's canonical entry itself. Revalidating would re-run the
-					// page load, which hands `+page.svelte` a fresh `data.olympiad` — and
-					// that is a tracked dependency of the effect that refetches every
-					// year of the olympiad and clears the search and topic filters.
+					// The page merges the result itself. Revalidating would give it a new
+					// `data.olympiad`, which refetches every year and clears the filters.
 					invalidateAll: false
 				})}
 				class="flex flex-col gap-3"
@@ -158,12 +119,8 @@
 							Score for {number}, out of {formatScore(maxScore)}
 						{/if}
 					</label>
-					<!-- `type="text"` for the same reason as the maximum-score box in
-					     `ProblemsEditor`: a number input whose contents the browser judges
-					     invalid reads back as `''`, which here would quietly record
-					     "completed, no score" instead of refusing what was typed. The
-					     server refuses an out-of-range score rather than clamping it, and
-					     that message is what the user should see. -->
+					<!-- `type="text"`: an invalid number input reads as `''`, which would
+					     silently save "done, no score". The server rejects bad scores. -->
 					<Input
 						id="{uid}-score"
 						name="score"
@@ -196,8 +153,7 @@
 							Remove
 						</Button>
 					{:else}
-						<!-- Ignores the box entirely, so "I did this one, never mind the
-						     mark" cannot be blocked by whatever is sitting in it. -->
+						<!-- Ignores the score box, so a bad value can't block it. -->
 						<Button
 							type="submit"
 							name="intent"

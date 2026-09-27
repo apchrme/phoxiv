@@ -14,17 +14,13 @@
 	let phase = $state<'metadata' | 'files'>('metadata');
 
 	/**
-	 * In-flight submissions, shared by both tabs.
-	 *
-	 * Keys are section-scoped rather than label-scoped: `'metadata'`,
-	 * `'deleteYear'`, `'year'` or the problem number for uploads, and
-	 * `<section>/<label>` for deletions. A key must not depend on a typed label,
-	 * because `use:enhance` captures its callback once when the form mounts — a
-	 * label-derived key would be written under the mount-time value and read
-	 * under the current one, and the button would never re-enable.
+	 * The single `Pending` for the page, shared by both tabs. Upload keys are per
+	 * section (`'year'`, `'problem:<number>'`), never per typed label: `use:enhance`
+	 * captures its callback at mount, so a label-based key would never re-enable.
 	 */
 	const pending = new Pending();
 
+	// The one `formToasts` call for this page.
 	formToasts(() => form, {
 		saveMetadata: 'Metadata saved',
 		uploadFile: 'File uploaded',
@@ -56,8 +52,7 @@
 		<Tabs.Trigger value="files">Phase 2 — Files</Tabs.Trigger>
 	</Tabs.List>
 
-	<!-- bits-ui hides the inactive panel rather than unmounting it, which is what
-	     lets the metadata draft survive a switch to the files tab and back. -->
+	<!-- bits-ui hides inactive panels without unmounting, so the draft survives tab switches. -->
 	<Tabs.Content value="metadata">
 		<MetadataTab
 			olympiadName={data.olympiad.name}

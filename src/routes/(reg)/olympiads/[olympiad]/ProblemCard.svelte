@@ -7,13 +7,8 @@
 	import SignInToTrack from './SignInToTrack.svelte';
 
 	/**
-	 * One problem: its number, optional title, its files, and the control that
-	 * marks it done — live for a signed-in user, and a dimmed stand-in that
-	 * explains itself for everyone else, so the feature is at least discoverable
-	 * without an account.
-	 *
-	 * Topics are deliberately not rendered — knowing a problem's topic would
-	 * spoil it. They exist only to drive the filter.
+	 * One problem: number, title, files, and the tracking control (or a sign-in
+	 * stand-in). Never render topics here: they would spoil the problem.
 	 */
 	let {
 		problem,
@@ -23,11 +18,10 @@
 		signedIn
 	}: {
 		problem: ProblemEntry;
-		/** The competition year, which the tracking action needs to resolve the problem. */
 		year: number;
-		/** This problem's progress, or `undefined` when the user has not tracked it. */
+		/** `undefined` when the user hasn't tracked this problem. */
 		entry: ProblemProgress | undefined;
-		/** The page's single tracker, so the buttons can disable themselves. */
+		/** The page's single `Pending`, so the buttons can disable themselves. */
 		pending: Pending;
 		signedIn: boolean;
 	} = $props();
@@ -42,9 +36,6 @@
 			{/if}
 		</div>
 		{#if signedIn}
-			<!-- The maximum comes off the problem, not off `entry`: it is public metadata
-			     that arrives with the rest of the problem, and `?? null` is only the
-			     omitted-vs-nullable translation between `ProblemEntry` and the control. -->
 			<ProgressControl
 				{year}
 				number={problem.number}

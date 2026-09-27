@@ -2,13 +2,7 @@
 	import { User } from '@lucide/svelte';
 	import { cn } from '$lib/utils.js';
 
-	/**
-	 * A user's profile picture, falling back to a glyph when they have none.
-	 *
-	 * `class` carries the sizing and ring so the three call sites (admin table,
-	 * mobile sidebar, profile page) can stay visually distinct without this
-	 * component growing a prop per difference.
-	 */
+	/** A user's profile picture, or a glyph if none. `class` sets size and ring. */
 	let {
 		user,
 		class: className = 'size-9 ring-2 ring-border',

@@ -5,18 +5,8 @@
 	import { cn } from '$lib/utils.js';
 
 	/**
-	 * The four sizes this is actually rendered at, named.
-	 *
-	 * Eight call sites had spelled out seven slightly different recipes for the same
-	 * handful of sizes, because each had to set the image's height *and* the font
-	 * size the emoji fallback renders at — two numbers that must agree, with nothing
-	 * keeping them in step. `size-4` appeared as well, which fixes *both* axes and
-	 * so squashes a flag's aspect ratio; every size here sets a height and lets the
-	 * width follow.
-	 *
-	 * `shrink-0` is in the base rather than per size: five of the eight passed it,
-	 * and an icon that shrinks to nothing inside a flex row is never what was
-	 * wanted.
+	 * Each size sets the image height and the emoji fallback's font size together.
+	 * Don't use `size-*`: fixing both axes squashes a flag's aspect ratio.
 	 */
 	const SIZES = {
 		xs: 'h-3.5 w-auto text-sm leading-none',
@@ -40,17 +30,14 @@
 		 */
 		id?: string;
 		size?: keyof typeof SIZES;
-		/** Merged after the size, so it stays the escape hatch for the odd case. */
+		/** Merged after the size, so it can override it. */
 		class?: string;
 	} = $props();
 
 	const classes = $derived(cn('shrink-0', SIZES[size], className));
 
-	// -------------------------------------------------------------------------
-	// Local icon overrides (build-time)
-	// Build a map of { olympiadId → resolvedAssetUrl } at module-evaluation time
-	// so Vite can include them in the asset pipeline and fingerprint them.
-	// -------------------------------------------------------------------------
+	// Local icon overrides, { olympiadId → asset url }, resolved at build time so
+	// Vite fingerprints them.
 	const overrideModules = import.meta.glob('/src/lib/assets/icons/olympiads/*.*', {
 		eager: true,
 		query: '?url',
@@ -59,29 +46,24 @@
 
 	const iconOverrides: Record<string, string> = {};
 	for (const [path, url] of Object.entries(overrideModules)) {
-		// '/src/lib/icons/olympiads/ipho.svg' → 'ipho'
+		// '/src/lib/assets/icons/olympiads/ipho.svg' → 'ipho'
 		const filename = path.split('/').pop() ?? '';
 		const contestId = filename.replace(/\.[^.]+$/, '');
 		iconOverrides[contestId] = url;
 	}
 
-	// -------------------------------------------------------------------------
-	// Derived values
-	// -------------------------------------------------------------------------
-
-	// Check if the icon field itself is a URL (uploaded to R2 at runtime). It is possible for contributors to inject a custom URL through the icon emoji field, but that isn't dangerous, so I won't fix it.
+	// An uploaded icon is stored as a URL. Contributors can also type a URL into
+	// the emoji field; that is harmless, so it is allowed.
 	const isUrl = $derived(isIconUrl(icon));
 
-	// Build-time local override (only relevant when icon is not a URL)
 	const overrideUrl = $derived(!isUrl && id ? (iconOverrides[id] ?? null) : null);
 
-	// Flag emoji (only relevant when not a URL and no local override)
 	const countryCode = $derived(isUrl || overrideUrl ? null : getFlagCountryCode(icon));
 
-	// Per-instance error state for the Flagpedia CDN fallback.
+	// Set when the flag CDN fails; falls back to the raw emoji.
 	let imageError = $state(false);
 
-	// A new icon deserves a fresh attempt at loading it.
+	// Retry loading when the icon changes.
 	$effect(() => {
 		const _icon = icon; // tracked dependency
 		imageError = false;
@@ -89,12 +71,8 @@
 </script>
 
 <!--
-	Priority order:
-	  1. URL icon (uploaded to R2 at runtime — stored as full URL in the icon column)
-	  2. Local override image  (/src/lib/assets/icons/olympiads/<id>.*)
-	  3. Flagpedia CDN SVG     (flag emoji detected)
-	  4. Raw emoji <span>      (everything else, or CDN error)
-	  5. Blank / fallback
+	Priority: uploaded URL, local override, flag CDN (for flag emoji), raw emoji,
+	then a fallback icon.
 -->
 {#if isUrl}
 	<img src={icon} alt={id ?? 'olympiad icon'} class={classes} />

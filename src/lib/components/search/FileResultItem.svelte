@@ -6,34 +6,16 @@
 	import { cn } from '$lib/utils.js';
 
 	/**
-	 * One hit in deep search: a **file** that contains the phrase, the olympiad and
-	 * year it belongs to, the problems it is attached to, and an excerpt.
+	 * One deep-search hit: a file, its olympiad and year, the problems it is
+	 * attached to, and an excerpt.
 	 *
-	 * **A separate component, not a `kind` prop on `SearchResultItem`.** The two
-	 * rows disagree on their primary action, their highlighting, their identity
-	 * line and their coverage line; one component would be two with an `{#if}`
-	 * around every row.
+	 * The anchor is a plain new-tab link to the CDN url, with no click
+	 * interception, so middle-click and "Save link as" work. The dialog stays open
+	 * so the user can come back to the list.
 	 *
-	 * # Activation: the anchor is left completely alone
-	 *
-	 * `href` is the absolute CDN url with `target="_blank"`, and there is **no
-	 * `preventDefault` and no `onactivate`**. The target is not an internal
-	 * navigation, so the browser should handle the click — which is also what keeps
-	 * middle-click, ⌘-click and "Save link as" working, without any of
-	 * `SearchResultItem`'s interception. The dialog stays **open**: the file opens
-	 * in a new tab, so coming back should land on the same result list, which for
-	 * "check the next hit" is the point.
-	 *
-	 * # There is deliberately no secondary "go to year" link
-	 *
-	 * That is a finding rather than a preference. `SearchResultItem` already nests
-	 * `<a>` inside `<a>` through `FileBadge` — invalid markup the browser repairs
-	 * by closing the outer anchor, which the compiler cannot see across the
-	 * component boundary and is very likely why the `stopPropagation` there is
-	 * load-bearing. Knowingly reproducing that shape is worse than losing an
-	 * affordance problem mode already provides. If it is wanted later, the pattern
-	 * is an `absolute inset-0` primary anchor under a `pointer-events-none` content
-	 * wrapper.
+	 * Don't add a nested "go to year" link: `<a>` inside `<a>` is invalid markup.
+	 * If one is wanted, use an `absolute inset-0` primary anchor under a
+	 * `pointer-events-none` content wrapper.
 	 */
 	let {
 		hit,
@@ -50,19 +32,12 @@
 	} = $props();
 
 	/**
-	 * The excerpt, split into marked and unmarked parts.
-	 *
-	 * Real elements rather than an `{@html}` string, which is the whole reason the
-	 * server sends offsets: the text is a PDF's body, and `snippet()` does not
-	 * escape what surrounds a match. `splitMarks` skips any range it cannot trust,
-	 * so a server-side change degrades to unmarked text rather than to a throw.
+	 * The excerpt as marked and unmarked parts, rendered as real elements. Never
+	 * `{@html}`: the text is an unescaped PDF body.
 	 */
 	const parts = $derived(splitMarks(hit.snippet, hit.matches));
 
-	/**
-	 * Capped so that a whole-year PDF attached to every problem individually cannot
-	 * fill the row.
-	 */
+	/** Capped so a whole-year PDF attached to every problem can't fill the row. */
 	const SHOWN_PROBLEMS = 4;
 	const shownProblems = $derived(hit.problems.slice(0, SHOWN_PROBLEMS));
 	const extraProblems = $derived(Math.max(hit.problems.length - SHOWN_PROBLEMS, 0));
@@ -80,8 +55,7 @@
 			focused ? 'bg-white/50 dark:bg-white/8' : 'hover:bg-white/35 dark:hover:bg-white/5'
 		)}
 	>
-		<!-- **No `query`, deliberately**: the query matched the file's text, not its
-		     metadata, and marking the name would claim a match that did not happen. -->
+		<!-- No `query`: it matched the file's text, not this metadata. -->
 		<ResultMeta
 			olympiadId={hit.olympiadId}
 			olympiadIcon={hit.olympiadIcon}
@@ -115,9 +89,7 @@
 </li>
 
 <style>
-	/* A plain scoped rule, with no `:global` and no eslint-disable — the marks here
-	   are real elements the compiler can see, unlike `SearchResultItem`'s, which
-	   `uFuzzy.highlight` hands over as a string. */
+	/* Scoped, unlike SearchResultItem's: these marks are real elements. */
 	mark {
 		background: transparent;
 		color: var(--primary);

@@ -1,27 +1,18 @@
 import uFuzzy from '@leeoniya/ufuzzy';
 
-/**
- * Two ways a match is marked, and they are deliberately different.
+/*
+ * Two ways a match is marked:
  *
- * {@link highlight} is for the **problem** index: uFuzzy hands back a marked-up
- * *string*, so the result has to be interpolated with `{@html}`. It is safe
- * because `highlight` HTML-escapes every slice of `text` itself and only then
- * wraps the matched ones — the `<mark>` tags it adds are the only markup in what
- * it returns. "It came from our own database" is **not** what makes it safe: the
- * titles in there are typed by contributors, who are not admins.
- *
- * {@link splitMarks} is for **deep search**, where the text is a PDF's body.
- * Escaping is not what saves that one — the server sends plain text plus offsets,
- * this turns them into parts, and the template renders real elements, so the
- * marks go through the compiler and nothing reaches `{@html}` at all.
+ * - {@link highlight} (problem search) returns HTML for `{@html}`. It is safe
+ *   because it escapes every slice itself. Titles are contributor-typed, so
+ *   "it came from our database" is not a reason.
+ * - {@link splitMarks} (deep search) turns server offsets into parts that the
+ *   template renders as real elements. Nothing reaches `{@html}`.
  */
 
 /**
- * Fuzzy search over the global problem index.
- *
- * One shared uFuzzy instance, configured to allow a single inserted character
- * within a term (`intraMode: 1`, `intraIns: 1`) — enough to absorb a typo
- * without matching everything.
+ * Fuzzy search over the global problem index. Allows one inserted character
+ * per term, enough to absorb a typo without matching everything.
  */
 const uf = new uFuzzy({ intraMode: 1, intraIns: 1 });
 
@@ -58,11 +49,7 @@ const HTML_ESCAPES: Record<string, string> = {
 
 /**
  * `text` with every character in {@link HTML_ESCAPES} replaced by its entity.
- *
- * One pass over a character class with a lookup, rather than five chained
- * `replace` calls: a chain is only correct if `&` goes first, or the later steps
- * re-escape the ampersands the earlier ones just introduced. A single pass cannot
- * get that order wrong.
+ * One pass, so there is no ordering bug (chained replaces must do `&` first).
  */
 function escapeHtml(text: string): string {
 	return text.replace(/[&<>"']/g, (ch) => HTML_ESCAPES[ch]);
@@ -70,41 +57,22 @@ function escapeHtml(text: string): string {
 
 /**
  * uFuzzy's `mark` callback: escape the slice, then wrap it if it matched.
- *
- * Escaping belongs *here*, inside uFuzzy's own walk, rather than before the call:
- * the ranges index the unescaped string, so escaping first would shift every
- * offset past the first `&`.
+ * Escape here, not before the call: the ranges index the unescaped string.
  */
 const markEscaped = (part: string, matched: boolean) =>
 	matched ? `<mark>${escapeHtml(part)}</mark>` : escapeHtml(part);
 
 /**
  * `text`, HTML-escaped, with the characters that matched `query` wrapped in
- * `<mark>`.
+ * `<mark>`. Run per display field so marks land on the field the user sees.
  *
- * Run per display field rather than over the whole search string, so the marks
- * land on the field the user is actually looking at.
+ * Every return path escapes, including the no-match and empty-query paths,
+ * because those still deliver the field to `{@html}`. This function is the only
+ * thing between a contributor-typed title and the DOM, and `/api/search` is
+ * shared-cached for a day.
  *
- * # Why the `{@html}` at the call site is safe
- *
- * **Every slice is escaped**, on all three paths — and the two that mark nothing
- * matter as much as the one that does, because they are what carries a field to
- * the DOM unchanged:
- *
- * | Path           | Returns                   | Rendered when                             |
- * | -------------- | ------------------------- | ----------------------------------------- |
- * | uFuzzy matched | escaped slices + `<mark>` | this field matched the typed query         |
- * | no match       | the whole field, escaped  | another field matched and this one did not |
- * | empty `query`  | the whole field, escaped  | a topic or status filter lists the pool    |
- *
- * A field therefore never has to match anything to be delivered, and
- * `/api/search` sits in Cloudflare's shared cache for a day. The fields are
- * contributor-typed — `sanitize-html` runs only over olympiad descriptions, on
- * the server — so this function is the only thing between a title and the DOM.
- *
- * uFuzzy computes the ranges against `text.toLowerCase()`, which is not
- * length-preserving for every Unicode case pair, so on such a title a mark can
- * land a character out. Pre-existing, cosmetic, and independent of the escaping.
+ * Known cosmetic issue: uFuzzy matches against `text.toLowerCase()`, which is
+ * not length-preserving for every Unicode character, so a mark can be off by one.
  */
 export function highlight(text: string, query: string): string {
 	if (!text) return '';
@@ -120,21 +88,15 @@ export type MarkPart = { text: string; marked: boolean };
 /**
  * `text` split into marked and unmarked parts by `[start, end)` offsets.
  *
- * The offsets crossed the wire, so **every range is validated rather than
- * trusted**: anything reversed, out of order, overlapping a range already
- * emitted, or out of bounds is *skipped* — as is a `ranges` that is not an array
- * at all. A server-side change must degrade to unmarked text, never to lost or
- * duplicated characters and never to a throw — which is why the cursor only ever
- * moves forward and why the tail is always emitted.
+ * The offsets came over the wire, so every range is validated. Reversed,
+ * out-of-order, overlapping or out-of-bounds ranges are skipped. Bad input must
+ * degrade to unmarked text, never to lost or duplicated characters or a throw.
  *
- * Offsets are UTF-16 code units, because `slice` is what consumes them; the
- * server produces them with an indexed walk for the same reason.
+ * Offsets are UTF-16 code units, since `slice` consumes them.
  */
 export function splitMarks(text: string, ranges: readonly [number, number][]): MarkPart[] {
-	// The container is checked as carefully as its contents, because both crossed
-	// the same wire. `for (const range of undefined)` throws, and this runs inside
-	// a `$derived`, where a throw takes down the entire result list rather than the
-	// one snippet — the opposite of degrading to unmarked text.
+	// This runs inside a `$derived`, where a throw would take down the whole
+	// result list, so check the containers too.
 	if (typeof text !== 'string') return [];
 	if (!Array.isArray(ranges)) return [{ text, marked: false }];
 
@@ -146,20 +108,12 @@ export function splitMarks(text: string, ranges: readonly [number, number][]): M
 		const [rawStart, rawEnd] = range;
 		if (!Number.isInteger(rawStart) || !Number.isInteger(rawEnd)) continue;
 
-		// **A bad start is rejected, never repaired**, which is what the docstring
-		// promises and what clamping it forward to the cursor quietly failed to do:
-		// the clamp looks like a no-op for an overlapping or out-of-order range, but
-		// whatever survives it still gets marked, so a range that failed validation
-		// still colours characters as "this is what you searched for". A range we
-		// cannot trust must mark nothing. Accepting only a start at or after the
-		// cursor is also what keeps the cursor moving forward, and it rejects a
-		// negative start for free, the cursor starting at 0.
+		// Reject a bad start, don't clamp it: a clamped range would still mark
+		// characters it shouldn't. This also keeps the cursor moving forward and
+		// rejects negative starts.
 		if (rawStart < cursor || rawStart > text.length) continue;
 
-		// The end is the one bound still clamped, and only downwards: shortening a
-		// range can only *unmark* characters, and `slice` would stop at
-		// `text.length` regardless. Moving a start repairs a range into one that
-		// still marks; trimming an end cannot.
+		// Clamping the end is fine: shortening a range can only unmark.
 		const end = Math.min(rawEnd, text.length);
 		if (end <= rawStart) continue;
 

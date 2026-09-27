@@ -1,39 +1,13 @@
 import type { ProblemTopic, SearchItem } from '$lib/types';
 import { progressKey, type GlobalProgressMap } from '$lib/progress';
 
-/**
- * The two filters a problem list can be narrowed by: topic and completion.
- *
- * Client-safe and route-agnostic, because two places apply exactly the same two
- * rules — the olympiad detail page's toolbar and the ⌘K dialog. The dialog lives
- * under `$lib/components/search/` and cannot import from a route directory, so
- * the rules had to move somewhere both sides can reach rather than be written
- * twice; a second copy of "what counts as done" would eventually disagree with
- * the first, and the disagreement would show up as two screens marking different
- * problems complete.
- *
- * {@link matchesOlympiadText} sits here for the same reason one level up. The
- * olympiad *list* is narrowed by typed text in three unrelated places — the
- * olympiads page's own search box, and both trigger shapes of the shared
- * `OlympiadPicker` — and each had written the same substring test out by hand.
- * So this module is not only about problems: it holds the filter predicates the
- * archive's browsing surfaces share, at whatever level they apply.
- *
- * Deliberately **not** folded into [`progress.ts`](./progress.ts). That module is
- * the domain model — what a score is, how a problem is filed, what completion
- * means. These are filter predicates *over* that model, chosen by the user and
- * discarded when they close the dialog. Keeping them apart is why
- * {@link ProblemStatus} sits here and {@link GlobalProgressMap} does not.
+/*
+ * Filter predicates shared by the olympiad page toolbar, the search dialog and
+ * `OlympiadPicker`, so they all agree on what matches and what counts as done.
+ * Kept separate from `progress.ts`, which defines the data model.
  */
 
-/**
- * Which completion states a problem list should show.
- *
- * UI state, so it lives beside the domain model in `$lib/progress.ts` rather
- * than *in* it. `'all'` is a real member rather than `null` so that "no progress
- * filter" has exactly one spelling — every read would otherwise have to handle
- * both — and so the dropdown has a real option to select for it.
- */
+/** Which completion states to show. `'all'` rather than `null` means no filter. */
 export type ProblemStatus = 'all' | 'done' | 'todo';
 
 /** The problem-level filters, as the user has them set. */
@@ -43,27 +17,15 @@ export type ProblemFilter = {
 };
 
 /**
- * True when a filter is narrowing the problem list *itself*, as opposed to a
- * text query.
- *
- * The olympiad page reads this to decide whether a year with no matching
- * problems may be dropped: a year with no problems at all still has notes, links
- * and files worth showing when nothing is being filtered. The dialog reads it to
- * decide whether an empty query should list the filtered pool instead of
- * nothing.
+ * True when a topic or status filter is set (text queries aside). The olympiad
+ * page then hides years with no matching problems; the dialog lists the filtered
+ * pool for an empty query.
  */
 export function isFiltering({ topics, status }: ProblemFilter): boolean {
 	return topics.length > 0 || status !== 'all';
 }
 
-/**
- * Whether a problem's topics satisfy the topic filter.
- *
- * The selected topics are ORed within themselves — a problem tagged `Relativity`
- * matches a filter of `Relativity` *or* `Mechanics` — and an untagged problem
- * matches no topic filter at all, which is what makes the filter a way of
- * finding tagged problems rather than a way of hiding them.
- */
+/** True if the problem has any selected topic (OR). Untagged problems never match. */
 export function matchesTopics(
 	problemTopics: readonly ProblemTopic[] | undefined,
 	topics: readonly ProblemTopic[]
@@ -78,36 +40,19 @@ export function matchesStatus(done: boolean, status: ProblemStatus): boolean {
 	return status === 'done' ? done : !done;
 }
 
-/**
- * Whether the user has tracked one problem, given a whole-archive progress map.
- *
- * **The olympiad level is load-bearing.** {@link progressKey} is `(year, number)`
- * only, because the olympiad page holds one olympiad's map and has no need for
- * more. Flattening the cross-archive map to those same keys would collide IPhO
- * 2019 T1 with APhO 2019 T1 and silently mark the wrong problems done — a wrong
- * answer with no visible symptom, which is the worst kind. Hence the nesting in
- * {@link GlobalProgressMap} and the two lookups here.
- */
+/** Whether the user has tracked a problem. See {@link GlobalProgressMap} for the nesting. */
 export function isDone(
 	progress: GlobalProgressMap,
 	olympiadId: string,
 	year: number,
 	number: string
 ): boolean {
-	// The key's existence is the completion flag; there is no field to read.
 	return progress[olympiadId]?.[progressKey(year, number)] !== undefined;
 }
 
 /**
- * The ⌘K dialog's pool: every search item that satisfies both filters.
- *
- * The early return is not merely an optimisation, and it earns its place three
- * times over. With no filter active this never reads `progress`, so marking a
- * problem done does not re-filter the corpus. It returns the **same array**
- * rather than a copy, so `$derived`'s referential-identity check skips every
- * downstream recomputation — the parallel haystack is never rebuilt and the
- * whole layer costs one comparison per keystroke, not even an allocation over
- * the corpus.
+ * Search items matching both filters. With no filter it returns the same array
+ * without reading `progress`, so `$derived` values downstream don't recompute.
  */
 export function filterSearchItems(
 	items: readonly SearchItem[],
@@ -123,24 +68,9 @@ export function filterSearchItems(
 }
 
 /**
- * Whether an olympiad matches a typed needle: a plain, case-insensitive
- * substring test over its id, its name, and its summary where it has one.
- *
- * **A substring test and not a fuzzy score, deliberately.** The two ways people
- * name an olympiad — `ipho`, and "International Physics Olympiad" — must be
- * equally good, and a score would rank one above the other for no reason a
- * reader could predict. It also answers with a boolean rather than a rank, which
- * is what lets `OlympiadPicker` keep `Command`'s own filter switched off and so
- * hold its pinned group and its reset row in the positions it put them.
- *
- * `needle` is taken **already trimmed and lowercased**, because every caller
- * derives it once per keystroke and then tests it against the whole list;
- * lowercasing it here would redo that work once per row. An empty needle matches
- * everything, which is what makes filtering an untouched search box a no-op.
- *
- * `summary` is read when the caller hands over a whole `OlympiadEntry` and
- * simply absent when it hands over the leaner `OlympiadOption` — the same call
- * either way.
+ * Case-insensitive substring match on id, name and summary (if present). A plain
+ * boolean, not a fuzzy rank, so `OlympiadPicker` can keep its own row order.
+ * `needle` must already be trimmed and lowercased; empty matches everything.
  */
 export function matchesOlympiadText(
 	olympiad: { id: string; name: string; summary?: string },
