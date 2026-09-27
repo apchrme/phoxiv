@@ -82,9 +82,6 @@ T1 would collide. That is why `/progress` returns a nested `GlobalProgressMap`.
 
 In the dialog:
 
-- **The topic filter is hidden if the cached payload has no `topics`.**
-  `indexHasTopics` guards the deploy window only and is marked for deletion a day
-  after the purge.
 - **The progress filter shows only when signed in.** Signing out resets `status`
   to `all`, so nobody filters by a control that has gone.
 - **In files mode both disappear, rather than grey out**, and the olympiad filter

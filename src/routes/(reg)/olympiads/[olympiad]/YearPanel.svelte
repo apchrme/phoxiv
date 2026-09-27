@@ -1,6 +1,5 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
-	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import FileBadge from '$lib/components/FileBadge.svelte';
 	import type { Pending } from '$lib/forms.svelte';
 	import { formatScore, progressKey, yearTotals, type ProgressMap } from '$lib/progress';

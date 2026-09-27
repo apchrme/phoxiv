@@ -131,14 +131,15 @@ async function fetchCandidates(
 	return res.json() as Promise<{ candidates: Candidate[]; remaining?: number }>;
 }
 
-async function postResults(results: Result[]): Promise<{ written: number }> {
+/** `failed` lists urls the server could not write; older deployments omit it. */
+async function postResults(results: Result[]): Promise<{ written: number; failed?: string[] }> {
 	const res = await fetch(`${BASE}/admin/reindex`, {
 		method: 'POST',
 		headers: authHeaders({ 'content-type': 'application/json' }),
 		body: JSON.stringify({ results })
 	});
 	if (!res.ok) throw new Error(`POST /admin/reindex → ${await describe(res)}`);
-	return res.json() as Promise<{ written: number }>;
+	return res.json() as Promise<{ written: number; failed?: string[] }>;
 }
 
 /**
@@ -299,9 +300,19 @@ async function main() {
 		}
 
 		const results = await extractAll(candidates);
+		const failed: string[] = [];
 		for (let i = 0; i < results.length; i += POST_BATCH) {
-			const { written } = await postResults(results.slice(i, i + POST_BATCH));
-			done += written;
+			const res = await postResults(results.slice(i, i + POST_BATCH));
+			done += res.written;
+			failed.push(...(res.failed ?? []));
+		}
+		// A row the server failed to write is still pending and would come back
+		// in the next GET, so stop instead of looping on it.
+		if (failed.length > 0) {
+			throw new Error(
+				`${failed.length} write(s) failed on the server (see the Worker logs); ` +
+					`${done} files processed. Rerun to retry:\n  ${failed.join('\n  ')}`
+			);
 		}
 
 		if (left !== undefined) left = Math.max(left - candidates.length, 0);

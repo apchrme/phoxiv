@@ -208,17 +208,6 @@
 	/** Created once in the shell, so the deep-search cache survives open and close. */
 	const deep = new DeepSearch();
 
-	/**
-	 * Hides the topic filter if a stale cached `/api/search` body lacks
-	 * `problem.topics`, where it would match nothing. True until the index lands,
-	 * so the control doesn't pop in.
-	 *
-	 * A temporary deploy-window guard: delete it a day after the cache purge.
-	 */
-	const indexHasTopics = $derived(
-		index.length === 0 || index.some((i) => i.problem.topics !== undefined)
-	);
-
 	const filtering = $derived(isFiltering({ topics: activeTopics, status }));
 
 	/**
@@ -599,16 +588,14 @@
 									/>
 								{/if}
 							{:else}
-								{#if indexHasTopics}
-									<TopicSelect
-										bind:value={activeTopics}
-										label="All topics"
-										heading="Filter by topic"
-										align="end"
-										size="icon-sm"
-										iconOnly
-									/>
-								{/if}
+								<TopicSelect
+									bind:value={activeTopics}
+									label="All topics"
+									heading="Filter by topic"
+									align="end"
+									size="icon-sm"
+									iconOnly
+								/>
 								{#if signedIn}
 									<!-- Signed-in only: without a session nothing is "Done". -->
 									<StatusFilter bind:value={status} size="icon-sm" />

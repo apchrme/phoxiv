@@ -94,6 +94,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 	const counts: Record<string, number> = {};
 	let written = 0;
+	const failed: string[] = [];
 
 	for (const result of posted) {
 		if (typeof result?.url !== 'string' || !result.url) continue;
@@ -127,7 +128,15 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			}
 		}
 
-		await writeFileText(db, write);
+		// One D1 error must not lose the rest of the batch. A failed row stays
+		// pending, so the script is told and stops rather than refetching it forever.
+		try {
+			await writeFileText(db, write);
+		} catch (err) {
+			console.error(`reindex: writing ${url} failed:`, err);
+			failed.push(url);
+			continue;
+		}
 		counts[write.status] = (counts[write.status] ?? 0) + 1;
 		written++;
 	}
@@ -139,5 +148,5 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		await logActivity(db, user, 'index_files', `Indexed ${written} files (${summary})`);
 	}
 
-	return json({ written, counts });
+	return json({ written, counts, failed });
 };

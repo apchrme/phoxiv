@@ -137,7 +137,7 @@
 						icon={X}
 						class="ml-4 shrink-0"
 						title="Remove the uploaded icon?"
-						description="The uploaded image is deleted from storage and the olympiad falls back to the emoji or flag set in its metadata. This cannot be undone."
+						description="The olympiad stops using the uploaded image and falls back to the emoji or flag set in its metadata. To use an image again, upload one."
 						confirmLabel="Remove icon"
 					>
 						Remove icon

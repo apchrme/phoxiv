@@ -185,7 +185,7 @@
 					key="pruneIndex"
 					variant="outline"
 					title="Prune orphaned index rows?"
-					description="Index rows for files that no longer exist are deleted. Nothing a reader can see changes, and rebuilding the index restores them."
+					description="Index rows for files that no longer exist are deleted. Nothing a reader can see changes: those rows could never appear in search results."
 					confirmLabel="Prune orphans"
 				>
 					Prune orphans

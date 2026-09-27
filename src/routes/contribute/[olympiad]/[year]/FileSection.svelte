@@ -141,7 +141,7 @@
 		const pages = plural(extracted.pages, 'page');
 		return {
 			tone: 'ok',
-			text: `${pages}, ${extracted.chars.toLocaleString()} characters — searchable${
+			text: `${pages}, ${extracted.chars} characters — searchable${
 				extracted.truncated ? ' (text was very long and has been trimmed)' : ''
 			}`
 		};

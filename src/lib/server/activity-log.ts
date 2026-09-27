@@ -13,8 +13,9 @@ export type LogAction = NonNullable<(typeof activityLog.$inferInsert)['action']>
 type ActingUser = { id: string; name: string } | null | undefined;
 
 /**
- * Records a contributor action for the admin "Log" tab. Without a user it
- * silently does nothing rather than throw: the log must never fail a write.
+ * Records a contributor action for the admin "Log" tab. Never throws: the log
+ * must never fail a write that has already happened. Without a user it does
+ * nothing; a failed insert is logged to the console and swallowed.
  */
 export async function logActivity(
 	db: DB,
@@ -24,17 +25,21 @@ export async function logActivity(
 	opts: { olympiadId?: string; year?: number } = {}
 ) {
 	if (!user) return;
-	await db
-		.insert(activityLog)
-		.values({
-			userId: user.id,
-			userName: user.name,
-			action,
-			detail,
-			olympiadId: opts.olympiadId,
-			year: opts.year
-		})
-		.run();
+	try {
+		await db
+			.insert(activityLog)
+			.values({
+				userId: user.id,
+				userName: user.name,
+				action,
+				detail,
+				olympiadId: opts.olympiadId,
+				year: opts.year
+			})
+			.run();
+	} catch (err) {
+		console.error(`logActivity(${action}) failed:`, err);
+	}
 }
 
 /**

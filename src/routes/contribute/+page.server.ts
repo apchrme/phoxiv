@@ -4,7 +4,7 @@ import { olympiads } from '$lib/server/db';
 import { canEditOlympiad, requireAdmin } from '$lib/server/guard';
 import { logActivity } from '$lib/server/activity-log';
 import { renderMarkdownOrNull } from '$lib/server/markdown';
-import { listOlympiadOptions } from '$lib/server/db/queries/olympiads';
+import { getOlympiad, listOlympiadOptions } from '$lib/server/db/queries/olympiads';
 import { ensureYear, insertYear } from '$lib/server/db/queries/years';
 import {
 	actionFail,
@@ -75,6 +75,12 @@ export const actions: Actions = {
 		}
 		if (!isOlympiadTag(tag)) return actionFail(400, 'createOlympiad', 'Invalid tag');
 
+		// Check before uploading: the icon key is derived from the id, so uploading
+		// first would overwrite an existing olympiad's icon when the insert then fails.
+		if (await getOlympiad(db, id)) {
+			return actionFail(400, 'createOlympiad', `An olympiad with the ID "${id}" already exists`);
+		}
+
 		let iconValue = emojiIcon;
 		if (iconFile) {
 			const bucket = getBucket(platform);
@@ -104,7 +110,7 @@ export const actions: Actions = {
 				})
 				.run();
 		} catch {
-			// The only realistic failure is the primary-key conflict.
+			// A primary-key conflict from a concurrent create; the check above covers the rest.
 			return actionFail(400, 'createOlympiad', `An olympiad with the ID "${id}" already exists`);
 		}
 

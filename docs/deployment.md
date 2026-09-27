@@ -237,6 +237,9 @@ How the script behaves:
 - A file that fails three times drops out and appears under **Failures** in the
   admin panel's Index tab. Until then a `pending` row stays retryable, so one run
   repairs any spell of failed browser extraction.
+- If the Worker fails to save a result (a D1 error), it still saves the rest of
+  the batch and reports the failed urls. The script then stops and lists them;
+  the error itself is in the Worker logs. Rerun once D1 is healthy.
 - It reads bytes from the local `files/` mirror if present, otherwise from the
   public CDN, so it needs no R2 credentials. It also reads `.docx` and `.xlsx`,
   using devDependencies that never enter either bundle.
