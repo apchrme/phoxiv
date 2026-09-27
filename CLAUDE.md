@@ -3,114 +3,100 @@
 An archive of high-school physics olympiad problems. SvelteKit on a single
 Cloudflare Worker, with metadata in D1 and files in R2.
 
-Full documentation lives in [`docs/`](./docs). Read the relevant one before
-changing anything in that area — each records invariants that are not obvious
-from the code:
+The docs in [`docs/`](./docs) record rules that aren't obvious from the code.
+Read the relevant one first:
 
-| Doc                                       | Read it before…                                                |
-| ----------------------------------------- | -------------------------------------------------------------- |
-| [architecture.md](./docs/architecture.md) | touching routes, caching, `$lib/server/`, or form plumbing     |
-| [data-model.md](./docs/data-model.md)     | touching the schema, the R2 key layout, or `titles.csv`        |
-| [search.md](./docs/search.md)             | touching either search mode, PDF extraction, or the FTS5 index |
-| [auth.md](./docs/auth.md)                 | touching auth, roles, or any permission check                  |
-| [contributing.md](./docs/contributing.md) | running the project, or writing code in it                     |
-| [deployment.md](./docs/deployment.md)     | deploying, migrating production, or changing an API response   |
+| Doc                                       | Read it before changing…                                 |
+| ----------------------------------------- | -------------------------------------------------------- |
+| [architecture.md](./docs/architecture.md) | routes, caching, `$lib/server/`, or form handling        |
+| [data-model.md](./docs/data-model.md)     | the schema, the R2 key layout, or `titles.csv`           |
+| [search.md](./docs/search.md)             | either search mode, PDF extraction, or the FTS5 index    |
+| [auth.md](./docs/auth.md)                 | auth, roles, or any permission check                     |
+| [contributing.md](./docs/contributing.md) | anything — it covers setup and code conventions          |
+| [deployment.md](./docs/deployment.md)     | deploys, production migrations, or an API response shape |
 
 ## Stack
 
 - **SvelteKit** (Svelte 5, runes) on `@sveltejs/adapter-cloudflare`
-- **shadcn-svelte** over bits-ui, in `src/lib/components/ui/` — vendored from the
-  CLI, then **deliberately customised**; excluded from linting and formatting
-- **Drizzle** over Cloudflare **D1**; olympiad files in **R2**, served from
-  `cdn.phoxiv.org`
+- **shadcn-svelte** over bits-ui in `src/lib/components/ui/`, vendored and then
+  customised. Excluded from eslint and prettier.
+- **Drizzle** over Cloudflare **D1**. Files in **R2**, served from `cdn.phoxiv.org`.
 - **BetterAuth** with GitHub OAuth and the `admin` plugin
 - **Bun** as package manager and script runner
 
-## The shape of it, in one screen
+## Overview
 
-`src/hooks.server.ts` builds the per-request context: `locals.db` (Drizzle over
-the `DB` binding), `locals.auth` (a per-request BetterAuth instance), and
-`locals.user` / `locals.session` from a single session lookup. Loads, actions and
-endpoints read those.
+`src/hooks.server.ts` sets up each request:
+
+- `locals.db`: Drizzle over the `DB` binding
+- `locals.auth`: a per-request BetterAuth instance
+- `locals.user` and `locals.session`: from one session lookup
+
+Loads, actions and endpoints use these.
+
+Routes are grouped by how they are cached:
 
 ```
 src/routes/
-├── +page          landing (outside (reg); sets its own private cache header)
-├── (reg)/         a route group whose ONLY purpose is the private cache header:
-│                  olympiads/, blog/, resources/, privacy/, login/, profile/
-│                  …except olympiads/[olympiad]/progress/, an endpoint that sets
-│                  its own `private, no-store` — it serves per-user progress
-├── admin/         deliberately outside (reg) — must never be cached
-│                  …including reindex/, index-stats/ and activity/, which each
-│                  call requireAdmin THEMSELVES: a +server.ts runs no layout
-│                  loads, so the layout guard misses them
-├── progress/      also outside (reg); one GlobalProgressMap for the ⌘K dialog,
-│                  `private, no-store` — the status filter spans the archive
-├── contribute/    also outside (reg); [olympiad]/ and [olympiad]/[year]/ editors
-└── api/           Cloudflare's SHARED cache (s-maxage=86400) …
-                   olympiads/, olympiads/[olympiad]/, search/, search/files/, stats/
-                   …except auth/[...all]/, which sets no cache headers
+├── +page         landing page; sets the private cache header itself
+├── (reg)/        private browser cache (4h): olympiads, blog, resources, privacy, login, profile
+│                 except olympiads/[olympiad]/progress/ — per-user, `private, no-store`
+├── admin/        never cached
+├── contribute/   never cached; the olympiad and year editors
+├── progress/     per-user progress for the ⌘K dialog, `private, no-store`
+└── api/          Cloudflare's shared cache (s-maxage=86400)
+                  except auth/[...all]/, which sets no cache headers
 ```
 
-`src/lib/server/` has one module per concern: `auth`, `auth-cli`, `guard`,
-`cache`, `forms`, `uploads`, `storage`, `markdown`, `activity-log`, `reindex-cli`,
-and `db/` (`schema.ts`, `relations.ts`, `index.ts`, plus
-`queries/{olympiads,years,content,progress,files}.ts`). Client-safe shared code
-sits directly under `src/lib/`: `types`, `uploads`, `constants`, `nav`, `posts`,
-`activity`, `progress`, `filters`, `search`, `pdf-text`, `forms.svelte`,
-`resource.svelte`, `auth-client`, `utils` (just `cn`),
-`utils/{date,flag,fuzzy,json,plural,topics}`, `hooks/is-mobile.svelte`, and the
-two mdsvex layouts, `prose.svelte` and `post.svelte`.
+**A `+server.ts` does not run layout loads, so layout guards don't protect it.**
+Endpoints under `admin/` (`reindex/`, `index-stats/`, `activity/`) each call
+`requireAdmin` themselves. Do the same for any new endpoint.
 
-`src/lib/components/` holds the route-agnostic UI: `OlympiadPicker`,
-`OlympiadIcon`, `TopicSelect`, `StatusFilter`, `TagSelect`, `EmptyState`,
-`PageHeader`, `FileBadge`, `UserAvatar` and friends, plus `forms/` (`Field`,
-`SubmitButton`, `ConfirmSubmit`, `Repeater`, `IconFilePicker`) and `search/`.
-Reach for these before writing markup — see
+The full module inventory is in
+[architecture.md](./docs/architecture.md#the-module-map). Shared UI lives in
+`src/lib/components/`. Check there before writing new markup; see
 [contributing.md](./docs/contributing.md#reach-for-the-shared-primitives-before-writing-markup).
 
-**Roles are `user`, `contributor` and `admin`.** `contributor` is real and
-load-bearing: contributors may edit the olympiads listed in their
-`assignedOlympiads`, enforced entirely by `$lib/server/guard.ts` — BetterAuth's
-plugin is pinned to `adminRoles: ['admin']` and knows nothing about it. Only
-`createOlympiad` is admin-only within `/contribute`.
+**Roles are `user`, `contributor` and `admin`.** Contributors can edit the
+olympiads in their `assignedOlympiads`. That check lives only in
+`$lib/server/guard.ts`. BetterAuth's admin plugin is pinned to
+`adminRoles: ['admin']` and knows nothing about contributors. Within
+`/contribute`, only `createOlympiad` is admin-only.
 
 ## Rules
 
 1. **Never hand-edit `src/lib/server/db/migrations/`.** Change `schema.ts`, then
-   `bun run db:generate`. There is **one documented exception**, the FTS5 virtual
-   table and its triggers — see
-   [data-model.md](./docs/data-model.md#the-full-text-index), which also records
-   why `db:generate` can never drop them and why **`db:push` now must never be
-   pointed at anything real**.
-2. **Never re-run the shadcn-svelte CLI over `src/lib/components/ui/`.** Those
-   files came from the CLI but have been customised since — glass styles, the
-   sheet overlay, `input.svelte`, `tabs-trigger.svelte`'s dark active state —
-   across ~40 commits, and `components.json`
-   points at a _live_ registry, so a re-add pulls today's upstream and discards
-   all of it. Edit the vendored file, and say in the commit message why. The
-   directory is excluded from eslint _and_ prettier, so a tidy-up there is
-   invisible to the gate and will not be caught for you.
+   run `bun run db:generate`. The one exception is the FTS5 virtual table and its
+   triggers, which are written by hand. Because of them, **never point `db:push`
+   at a real database**. See
+   [data-model.md](./docs/data-model.md#the-full-text-index).
+2. **Never re-run the shadcn-svelte CLI over `src/lib/components/ui/`.** The files
+   have been customised heavily since they were generated. `components.json`
+   points at the live registry, so re-adding a component overwrites those changes
+   with today's upstream. Edit the file directly and explain why in the commit
+   message. The folder is excluded from eslint and prettier, so mistakes there
+   won't be caught for you.
 3. **Never change `CDN_BASE_URL`, the R2 key layout, or `slugifyLabel`.** The
-   database stores whole CDN URLs and recovers keys by stripping the prefix; a
-   change orphans every object _and_ silently breaks deletion.
-4. **Colocate page-only components** next to their route, flat, no `+` prefix, no
-   subfolder. They import `PageData` / `ActionData` from `./$types`, which cannot
-   resolve under `$lib`. See
+   database stores full CDN URLs and gets R2 keys back by stripping the prefix.
+   Changing any of these orphans every stored object and breaks deletion.
+4. **Put page-only components next to their route**: flat, no `+` prefix, no
+   subfolder. They import `PageData` / `ActionData` from `./$types`, which only
+   resolves inside route folders. See
    [`(reg)/olympiads/[olympiad]/`](<./src/routes/(reg)/olympiads/[olympiad]>) for
    the reference style.
 5. **Call `formToasts` exactly once**, on the component that owns `form`, and pass
-   a **single** `Pending` instance down — `has()` must read the map `track()` wrote.
-6. **Prefer `actionFail()` over `error()` inside an action.** `error()` replaces
-   the page and discards whatever the contributor had typed.
+   a **single** `Pending` instance down as a prop. `has()` only sees submissions
+   tracked by the same instance's `track()`.
+6. **Use `actionFail()`, not `error()`, inside an action.** `error()` replaces the
+   page and throws away whatever the contributor had typed.
 7. **Run `bun run format && bun run check && bun run lint` before every commit,**
-   and smoke-test the route under `bun run dev`. There is **no test suite**;
-   `svelte-check` plus a click-through is the entire safety net.
-8. **Comment the _why_.** Several comments in this codebase record real
-   incidents — an infinite submit loop in the admin panel, a data-loss bug in the
-   olympiad editor. Do not delete one without understanding what it protects.
-9. **Warn me before changing an `/api/*` response shape.** The old body sits in
-   Cloudflare's shared cache for up to a day, so I need to purge it — see
+   and click through the affected route under `bun run dev`. There is no test
+   suite.
+8. **Comment the _why_.** Some comments record real incidents, such as an
+   infinite submit loop in the admin panel and a data-loss bug in the olympiad
+   editor. Don't delete one without understanding what it prevents.
+9. **Warn me before changing an `/api/*` response shape.** The old response stays
+   in Cloudflare's shared cache for up to a day, so I need to purge it. See
    [deployment.md](./docs/deployment.md#purging-the-cache-after-an-api-change).
 
 # Svelte usage

@@ -1,39 +1,37 @@
 # phoXiv
 
-phoXiv intends to be a comprehensive archive of the high school physics olympiad problems. In particular, we aim to have the most complete and up-to-date set of files for the canonical physics olympiads, with a secondary goal of showcasing the lesser-known olympiads.
+phoXiv aims to be a comprehensive archive of high-school physics olympiad
+problems. The main goal is the most complete and up-to-date set of files for the
+canonical olympiads. A secondary goal is to showcase the lesser-known ones.
 
 Live at **[phoxiv.org](https://phoxiv.org)**.
 
 ## What the site does
 
-**Browse the archive.** `/olympiads` lists every olympiad — international,
-regional, national and open — and each olympiad's page expands year by year into
-its problems, with the papers, solutions and any extra links attached to each.
-Files are served from `cdn.phoxiv.org`.
+- **Browse.** `/olympiads` lists every olympiad: international, regional,
+  national and open. Each olympiad's page lists its years, and each year lists
+  its problems with the papers, solutions and links attached. Files are served
+  from `cdn.phoxiv.org`.
+- **Search, from ⌘K.** There are two modes:
+  - The default mode fuzzy-matches problems by olympiad, year, number and title. It runs entirely in the browser, and can filter by topic and by whether you've done a problem.
+  - _Deep search_ matches the text inside every uploaded document. Its results are files, not problems, because one PDF often holds a whole year's problems.
+- **Track progress.** Signed-in visitors can mark problems done, optionally with
+  a score, and see per-year totals. Progress is private and never cached.
+- **Contribute.** Contributors edit the olympiads assigned to them:
+  - add years
+  - upload and label files
+  - edit problem metadata
+  - import and export titles, topics and maximum scores as CSV
 
-**Search it two ways, both from ⌘K.** The default mode fuzzy-matches problems by
-olympiad, year, number and title, and runs entirely in the browser. The second
-mode — **deep search** — matches the _text inside_ every uploaded document, so a
-visitor who remembers "a rod pivoting on a frictionless bearing" but not which
-olympiad it was in has a route to it. Results there are **files, not problems**,
-deliberately: one year's PDF often holds every problem of that year. The first
-mode has a topic filter and a completion filter that span the whole archive.
+  PDFs are text-extracted in the browser when they are picked. That way the editor can warn about a scanned (unsearchable) PDF before it is saved.
 
-**Track what you have solved.** A signed-in visitor can mark any problem done,
-optionally with a score, and see per-year totals against each problem's maximum.
-Progress is private, never cached, and filterable from the search dialog — "every
-relativity problem I haven't done" is a question the archive can answer.
+- **Administer.** Admins do four things:
+  - manage roles and olympiad assignments
+  - ban and unban accounts
+  - read the activity log
+  - maintain the search index
 
-**Contribute.** Contributors edit the olympiads they are assigned: adding years,
-uploading and labelling files, editing problem metadata, and importing or
-exporting titles, topics and maximum scores as CSV. Uploaded PDFs are text-extracted
-**in the browser at the moment they are picked**, so the editor can say "this looks
-like a scanned PDF, it won't be searchable" while the file can still be swapped.
-
-**Administer it.** Admins manage roles and per-olympiad assignments, ban and
-unban accounts, read an audit log of every change, and maintain the text index.
-
-There is also a blog and a resources page, both written as `.svx`.
+There is also a blog and a resources page, both written in mdsvex (`.svx`).
 
 ## Quickstart
 
@@ -44,8 +42,8 @@ bun run db:migrate        # create the local D1 database
 bun run dev               # http://localhost:5173
 ```
 
-You will have an empty database and no admin. Sign in once through GitHub, then
-promote yourself — there is no bootstrap admin:
+You start with an empty database and no admin. Sign in once with GitHub, then
+promote yourself:
 
 ```sh
 bunx wrangler d1 execute DB --local \
@@ -58,37 +56,38 @@ Before committing:
 bun run format && bun run check && bun run lint
 ```
 
-There is **no test suite**. `svelte-check` plus a manual click-through is the
-entire safety net, which is why [contributing.md](./docs/contributing.md) carries
-a click-through checklist and why running it matters.
+There is **no test suite**. Type-checking plus a manual click-through is the
+whole safety net. [contributing.md](./docs/contributing.md#the-gates) has the
+checklist.
 
 ## Documentation
 
-Each document records the invariants that are not obvious from the code. Read the
-relevant one before changing anything in that area.
+Each doc records the rules that aren't obvious from the code. Read the relevant
+one before changing that area.
 
-| Doc                                       | Contents                                                                         |
-| ----------------------------------------- | -------------------------------------------------------------------------------- |
-| [architecture.md](./docs/architecture.md) | Request lifecycle, why the route tree is shaped the way it is, the module map    |
-| [data-model.md](./docs/data-model.md)     | Every D1 table, the JSON columns, the R2 key layout, `titles.csv`, migrations    |
-| [search.md](./docs/search.md)             | Both search modes end to end: extraction, the FTS5 index, the API, the ⌘K dialog |
-| [auth.md](./docs/auth.md)                 | BetterAuth on Workers, the three roles, the superadmin, which guard goes where   |
-| [contributing.md](./docs/contributing.md) | Setup, every script, local D1/R2, code conventions, the gates                    |
-| [deployment.md](./docs/deployment.md)     | Bindings and secrets, deploying, remote migrations, purging the CDN cache        |
+| Doc                                       | Covers                                                                 |
+| ----------------------------------------- | ---------------------------------------------------------------------- |
+| [architecture.md](./docs/architecture.md) | Request lifecycle, caching and the route tree, the module map          |
+| [data-model.md](./docs/data-model.md)     | The D1 tables, JSON columns, R2 key layout, `titles.csv`, migrations   |
+| [search.md](./docs/search.md)             | Both search modes: text extraction, the FTS5 index, the API, ⌘K dialog |
+| [auth.md](./docs/auth.md)                 | BetterAuth on Workers, the three roles, the superadmin, the guards     |
+| [contributing.md](./docs/contributing.md) | Setup, scripts, local D1/R2, code conventions, the pre-commit checks   |
+| [deployment.md](./docs/deployment.md)     | Bindings and secrets, deploying, production migrations, cache purges   |
 
-[CLAUDE.md](./CLAUDE.md) holds the nine standing rules that apply repo-wide —
-including the ones about never hand-editing migrations, never re-running the
-shadcn-svelte CLI, and never changing the R2 key layout.
+[CLAUDE.md](./CLAUDE.md) lists the repo-wide rules. Examples: never hand-edit
+migrations, never re-run the shadcn-svelte CLI, never change the R2 key layout.
 
 ## Stack
 
-SvelteKit (Svelte 5, runes) on a single Cloudflare Worker via
-`adapter-cloudflare` · shadcn-svelte over bits-ui, vendored and customised ·
-Drizzle over Cloudflare D1, with an FTS5 index for deep search · Cloudflare R2
-for the files · BetterAuth with GitHub OAuth · Bun.
+- SvelteKit (Svelte 5, runes), deployed as a single Cloudflare Worker
+- shadcn-svelte over bits-ui, vendored and customised
+- Drizzle over Cloudflare D1, with an SQLite FTS5 index for deep search
+- Cloudflare R2 for the files
+- BetterAuth with GitHub sign-in
+- Bun
 
-Metadata lives in D1, the files in R2. There is no separate backend: every read
-is a Drizzle query from inside the Worker.
+There is no separate backend. Every read is a Drizzle query made from inside the
+Worker.
 
 ## Licence
 

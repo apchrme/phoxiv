@@ -1,117 +1,74 @@
 # Architecture
 
-phoXiv is a SvelteKit app deployed as a single Cloudflare Worker. Metadata lives
-in **D1** (SQLite), the olympiad files themselves live in **R2** and are served
-from `cdn.phoxiv.org`. There is no separate backend: every read is a Drizzle
-query against D1 from inside the Worker.
+phoXiv is a SvelteKit app on a single Cloudflare Worker. Metadata lives in D1
+(SQLite); olympiad files live in R2, served from `cdn.phoxiv.org`. There is no
+separate backend.
 
 ## Request lifecycle
 
-Everything starts in [`src/hooks.server.ts`](../src/hooks.server.ts), which
-builds the per-request context:
+[`src/hooks.server.ts`](../src/hooks.server.ts) builds the per-request context,
+typed in [`src/app.d.ts`](../src/app.d.ts):
 
 ```
 request
   → hooks.server.ts
       platform.env.DB   ──drizzle()──────────→ locals.db
       platform.env      ──createAuth(db, env)→ locals.auth
-      locals.auth.api.getSession(headers)    → locals.user, locals.session
+      locals.auth.api.getSession(headers)    → locals.user, locals.session  (or null)
   → +layout.server.ts / +page.server.ts / +server.ts
-  → response
 ```
 
-Two things are worth understanding about that.
+- `db` and `auth` cannot be module-level singletons. Both need `platform.env`,
+  which exists only inside a request. See [auth.md](./auth.md#why-createauth-is-a-function).
+- The session is resolved once, in the hook. Routes read `locals.user`; don't
+  call `getSession` again.
+- App code reads `locals.db`, never the `DB` binding.
 
-**Neither the database handle nor the auth instance can be a module-level
-singleton.** Both are derived from `platform.env`, which only exists inside a
-Worker request. That is why `createAuth` is a function rather than a constant —
-see [auth.md](./auth.md).
+## Caching and the route tree
 
-**The session is resolved once, in the hook.** Loads, actions and endpoints read
-`locals.user` synchronously instead of each awaiting their own `getSession`
-round-trip. `App.Locals` is declared in [`src/app.d.ts`](../src/app.d.ts):
+The route tree is shaped by two cache policies, in
+[`$lib/server/cache.ts`](../src/lib/server/cache.ts):
 
-| Field            | What it is                                |
-| ---------------- | ----------------------------------------- |
-| `locals.db`      | `DrizzleD1Database` over the `DB` binding |
-| `locals.auth`    | the per-request BetterAuth instance       |
-| `locals.user`    | the signed-in user, or `null`             |
-| `locals.session` | the session record, or `null`             |
+| Policy              | Header                                       | Used by             |
+| ------------------- | -------------------------------------------- | ------------------- |
+| `setPrivateCache()` | `max-age=14400, must-revalidate, private`    | pages under `(reg)` |
+| `setSharedCache()`  | `max-age=0, s-maxage=86400, must-revalidate` | `/api/*` endpoints  |
 
-> `DB` is the _wrangler binding name_ declared in `wrangler.jsonc`. Application
-> code never touches it directly — it reads `locals.db`.
+- **Private.** `(reg)` is a route group that exists only so
+  [`(reg)/+layout.server.ts`](<../src/routes/(reg)/+layout.server.ts>) can call
+  `setPrivateCache()`. Pages are cached for four hours in the visitor's browser;
+  `private` keeps them out of shared caches because a page can show the
+  signed-in user.
+- **Shared.** Cloudflare keeps the body for up to a day, so D1 is hit at most
+  once a day per key. The browser must revalidate on every use, so a dashboard
+  purge reaches everyone on their next request. A wrong payload persists until
+  purged — see [deployment.md](./deployment.md).
 
-## Why the route tree is shaped as it is
+About the shared cache:
 
-The shape of `src/routes/` is driven almost entirely by **caching**. There are
-two policies, both defined in [`$lib/server/cache.ts`](../src/lib/server/cache.ts):
+- Tiered Cache is already on and cannot be changed on the Free plan.
+- At this traffic level objects are evicted (LRU) long before `s-maxage`
+  expires, so raising it buys little. To cut an endpoint's D1 cost, make the
+  query cheaper.
+- `adapter-cloudflare`'s worker wraps the app in `caches.default`, so a hit
+  returns before `hooks.server.ts` runs. Don't add a second Cache API layer.
+  Under `bun run preview` it persists in `.wrangler/state/v3/cache`; clear that
+  if a preview serves a stale body.
 
-| Policy              | Header                                       | Where                   |
-| ------------------- | -------------------------------------------- | ----------------------- |
-| `setPrivateCache()` | `max-age=14400, must-revalidate, private`    | pages under `(reg)`     |
-| `setSharedCache()`  | `max-age=0, s-maxage=86400, must-revalidate` | `/api/*` data endpoints |
+### Routes outside `(reg)`
 
-Two routes set their own third policy: `/olympiads/[olympiad]/progress` and
-`/progress` both answer `private, no-store`, because each carries one user's
-answers. See [below](#why-some-pages-fetch-their-own-data).
+- `/` sets the private header itself in [`+page.server.ts`](../src/routes/+page.server.ts).
+- `/admin` and `/contribute` must never be cached, so they set no header.
+  SvelteKit sends no `cache-control` for a server-rendered page and Cloudflare
+  does not cache HTML by default.
+- The admin endpoints `reindex/`, `index-stats/` and `activity/` also set no
+  headers. They are not under `/api/` because every handler there is shared-cached.
+- `/progress` is per-user and sets `private, no-store` itself. See
+  [per-user progress](#per-user-progress).
 
-`(reg)` is a route _group_ — it adds nothing to the URL. Its only member is
-[`(reg)/+layout.server.ts`](<../src/routes/(reg)/+layout.server.ts>), which calls
-`setPrivateCache()`. **That is the entire reason the group exists.** Pages in it
-are cached for four hours in the visitor's own browser; `private` keeps them out
-of any shared cache, because a page can embed the signed-in user's name and
-avatar.
-
-`/api/*` goes the other way. `max-age=0` plus `must-revalidate` lets a browser
-store a copy but never reuse one without revalidating, so a "Purge cache" in the
-Cloudflare dashboard reaches every visitor on their next request;
-`s-maxage=86400` means Cloudflare's shared cache hits D1 at most once a day.
-The trade is that **a wrong payload persists for up to a day and needs a manual
-purge** — see [deployment.md](./deployment.md).
-
-Two things about that shared cache are worth knowing before reasoning about load,
-because both are counter-intuitive and will otherwise be rediscovered:
-
-- **Tiered Cache is already on** at the zone, with Smart topology, and on the
-  Free plan it is not editable — so the per-PoP fill multiplier is already
-  collapsed as far as it goes. There is no lever there to pull.
-- **`s-maxage=86400` is an upper bound, not a description.** At this traffic
-  level fills are driven by **LRU eviction, not TTL expiry**: `/api/stats` was
-  measured filling ~30 times a day and `/api/olympiads/[olympiad]` ~350 times a
-  day across 33 keys, because a low-traffic site's rarely-requested objects get
-  evicted from a busy PoP long before a day passes. **Raising `s-maxage` therefore
-  buys much less than the arithmetic suggests.** If an endpoint's D1 cost
-  matters, make the query cheap rather than trying to cache it harder — which is
-  exactly what happened to deep search in [search.md](./search.md).
-
-Below the shared cache there is one more layer that is easy to miss:
-`adapter-cloudflare`'s own `files/worker.js` wraps the Worker in
-`caches.default`, so a hit is returned **before `hooks.server.ts` runs**. It is
-data-center-local and does not participate in Tiered Cache, and adding a second
-Cache API layer of our own would be redundant. It is also visible under
-`bun run preview`, where miniflare persists it in `.wrangler/state/v3/cache` —
-worth clearing when a preview seems to be serving a stale body.
-
-Four things sit outside `(reg)` on purpose:
-
-- **`/`** — the landing page could have lived inside the group; it sits at the
-  route root instead and applies the same header itself, in
-  [`+page.server.ts`](../src/routes/+page.server.ts).
-- **`/admin`** — must never be cached at all, so it sets no header. SvelteKit
-  emits no `cache-control` of its own for a server-rendered page and Cloudflare
-  does not cache HTML by default, so "no header" really does mean "not cached".
-  Its three endpoints — `reindex/`, `index-stats/` and `activity/` — set no
-  headers either, and none of them lives under `/api/` for exactly that reason:
-  every handler there calls `setSharedCache()`, and one admin's index report or
-  audit trail must never reach Cloudflare's shared cache.
-- **`/contribute`** — same reasoning: it renders unsaved editor state.
-- **`/progress`** — the ⌘K dialog's cross-olympiad progress endpoint. It sets
-  `private, no-store` itself, and it is outside the group because a `+server.ts`
-  never receives a layout's header anyway; sitting beside `admin/` and
-  `contribute/` is what makes "deliberately uncached" legible at a glance.
-
-And within `/api`, **`/api/auth/[...all]` sets no cache headers**, which it must
-not: it carries `Set-Cookie` and session state.
+`/olympiads/[olympiad]/progress` is inside `(reg)` but is a `+server.ts`, so it
+gets no layout header and sets `private, no-store` itself. `/api/auth/[...all]`
+sets no cache headers, and must not: it carries `Set-Cookie` and session state.
 
 ## Route map
 
@@ -119,297 +76,214 @@ not: it carries `Set-Cookie` and session state.
 src/routes/
 ├── +layout.svelte              shell: sidebar, nav, GlobalSearch, toaster
 ├── +layout.server.ts           exposes locals.user to every page
-├── +layout.ts                  legacy 308 redirects (see below), passes data through
-├── +error.svelte
-├── AppSidebar.svelte           mobile navigation
-├── +page.svelte / .server.ts   landing page (fetches /api/stats client-side)
+├── +layout.ts                  legacy 308 redirects; passes data through
+├── +error.svelte, AppSidebar.svelte
+├── +page.svelte / .server.ts   landing page; fetches /api/stats and /api/olympiads
+├── CorpusBand, CorpusTile, FeatureBlocks (.svelte), corpus.ts   landing-page parts
 │
-├── (reg)/                      ← private browser cache, nothing else
-│   ├── olympiads/              index; [olympiad]/ detail + YearPanel/ProblemCard/
-│   │                           ProgressControl/SignInToTrack/filter,
-│   │                           and [olympiad]/progress/, an endpoint that answers
-│   │                           private, no-store
+├── (reg)/                      private browser cache
+│   ├── olympiads/              index, and [olympiad]/ with YearPanel, ProblemCard,
+│   │                           ProgressControl, SignInToTrack, filter.ts,
+│   │                           and progress/ (endpoint, private, no-store)
 │   ├── blog/                   index and [slug]/, from $lib/posts/*.svx
-│   ├── resources/              .svx page
-│   ├── privacy/                .svx page
-│   ├── login/                  redirects to /profile if already signed in
+│   ├── resources/, privacy/    .svx pages
+│   ├── login/                  redirects to /profile if signed in
 │   └── profile/                redirects to /login if not
 │
-├── admin/                      ← deliberately outside (reg); requireAdmin in +layout.server.ts
-│   ├── columns.ts              TanStack column model
-│   ├── reindex/                the backfill's two halves; calls requireAdmin ITSELF,
-│   │                           because a +server.ts runs no layout loads
-│   ├── index-stats/            the Index tab's counts, fetched on its first open
-│   │                           rather than by the page load; calls requireAdmin ITSELF
-│   ├── activity/               pages of the log past the first, keyset on id;
-│   │                           calls requireAdmin ITSELF
-│   └── UsersTable.svelte, UserRowActions.svelte, ActivityLogTable.svelte,
-│       IndexPanel.svelte
+├── admin/                      requireAdmin in +layout.server.ts; never cached
+│   ├── reindex/, index-stats/, activity/   endpoints; each calls requireAdmin itself
+│   └── columns.ts, UsersTable, UserRowActions, ActivityLogTable, IndexPanel
 │
-├── progress/                   ← outside (reg); one GlobalProgressMap for the ⌘K
-│                               dialog, private, no-store
+├── progress/                   GlobalProgressMap for the ⌘K dialog; private, no-store
 │
-├── contribute/                 ← outside (reg); requireContributor in +layout.server.ts
+├── contribute/                 requireContributor in +layout.server.ts; never cached
 │   ├── SelectYearForm.svelte, NewOlympiadForm.svelte
-│   └── [olympiad]/             olympiad metadata editor (4 colocated components)
+│   └── [olympiad]/             olympiad editor (4 colocated components)
 │       ├── titles.csv/         CSV export endpoint
 │       └── [year]/             year editor (metadata.ts + 6 colocated components)
 │
-└── api/                        ← Cloudflare shared cache…
+└── api/                        shared cache
     ├── olympiads/              OlympiadEntry[]
     ├── olympiads/[olympiad]/   YearEntry[]
-    ├── search/                 SearchItem[] — the whole corpus, matched in the browser
-    ├── search/files/           FileSearchResponse — deep search, matched in D1 by FTS5
-    ├── stats/                  the three landing-page counters
-    └── auth/[...all]/          …except this one, which sets no cache headers
+    ├── search/                 SearchItem[]: the whole corpus, matched in the browser
+    ├── search/files/           FileSearchResponse: deep search, matched in D1 by FTS5
+    ├── stats/                  landing-page counters
+    └── auth/[...all]/          the exception: no cache headers
 ```
 
-[`+layout.ts`](../src/routes/+layout.ts) holds the legacy URL redirects: olympiad
-ids that used to live at the site root (`/ipho/…` → `/olympiads/ipho/…`),
-`/contests/…` → `/olympiads/…`, and document extensions that used to be served
-from `/static` and now redirect to the CDN. It also passes the server layout's
-data straight through, which is **not** optional: when a universal `+layout.ts`
-exists, SvelteKit derives `LayoutData` from _its_ return type, so returning
-nothing would drop `user` from every page's `data`.
+[`+layout.ts`](../src/routes/+layout.ts) redirects legacy URLs (`/ipho/…`,
+`/contests/…`, and document extensions, which go to the CDN). It must return the
+server layout's `data`: SvelteKit derives `LayoutData` from a universal
+`+layout.ts`'s return type, so returning nothing drops `user` from every page.
 
 ### The two mdsvex layouts
 
-Three files are markdown, not Svelte: `resources/+page.svx`, `privacy/+page.svx`
-and the blog posts in `$lib/posts/`. mdsvex wraps each in a layout and passes its
-front matter to that layout as props, so the layout is where a `.svx` file's
-title and description turn into markup. The two kinds want opposite things from
-that, which is why [`svelte.config.js`](../svelte.config.js) configures a _named_
-layout map rather than one layout — mdsvex chooses the entry whose key matches a
-folder in the file's path, and falls back to `_`:
+`resources/+page.svx`, `privacy/+page.svx` and the posts in `$lib/posts/` are
+markdown. mdsvex wraps each in a layout and passes front matter as props.
+[`svelte.config.js`](../svelte.config.js) maps layouts by name: mdsvex picks the
+key matching a folder in the file's path, else `_`.
 
-- [`prose.svelte`](../src/lib/prose.svelte) (the `_` fallback) is the whole page
-  for a standalone `.svx` route. It renders a `PageHeader` and a `SvelteSeo` from
-  the front matter, because nothing else does.
-- [`post.svelte`](../src/lib/post.svelte) (the `posts` key) renders only the prose
-  wrapper. A blog post is embedded in
-  [`blog/[slug]/+page.svelte`](<../src/routes/(reg)/blog/[slug]/+page.svelte>),
-  which already draws a richer header — date, author, tags — and its own
-  `SvelteSeo`. While posts shared the fallback, every one of them printed its
-  title and description a second time and emitted two competing `<title>` tags.
+- [`prose.svelte`](../src/lib/prose.svelte) (`_`) is the whole page: a
+  `PageHeader` and `SvelteSeo` from front matter, plus the prose wrapper.
+- [`post.svelte`](../src/lib/post.svelte) (`posts`) is only the prose wrapper.
+  [`blog/[slug]/+page.svelte`](<../src/routes/(reg)/blog/[slug]/+page.svelte>)
+  draws the header and `SvelteSeo`. On `_`, a post would print its title twice
+  and emit two `<title>` tags.
 
-The blog route owns a post's header and SEO because only it has the date, author
-and tags to show; the layout owns only the typography.
+## Why some pages fetch their own data
 
-### Why some pages fetch their own data
+The landing page, the olympiads index and the olympiad page `fetch()` from
+`/api/*` in the browser instead of using a server `load`. A load costs a D1 read
+per visit; the fetch is answered by the shared cache. The data can be up to a day
+old, which is fine for an archive that changes rarely. Changing an `/api/*`
+response shape needs a purge — see
+[deployment.md](./deployment.md#purging-the-cache-after-an-api-change).
 
-The olympiads index, the olympiad detail page and the landing page all `fetch()`
-from `/api/*` on mount instead of using a server `load`. This is deliberate: a
-server load would cost a D1 read per visit, while the `fetch` is answered by
-Cloudflare's shared cache.
+### Per-user progress
 
-Be precise about how stale that can get. `max-age=0` does not keep a browser from
-holding its own copy — that directive governs reuse, not storage — but
-`must-revalidate` forbids reusing a held copy without a successful revalidation,
-so every load asks the edge. The staleness that remains is Cloudflare's own copy:
-up to 24 hours, identical for a first-time visitor and a returning one, and
-cleared for both by a purge. A contributor's edit therefore appears when the edge
-refreshes rather than on someone's _second_ load. This is accepted rather than
-overlooked: the archive changes rarely, and a payload that is a little behind
-renders as incomplete, never as wrong.
+`/olympiads/[olympiad]/progress` returns the user's tracked problems in one
+olympiad as a `ProgressMap`: one key per tracked problem, nothing else.
 
-The public response shapes are near-frozen for a related reason — a changed
-shape lives in the cache for a day, and only a manual dashboard purge clears it
-early. `YearEntry[]` has been changed once deliberately, to carry each problem's
-`maxScore`, and `SearchItem[]` once, to carry each problem's `topics`;
-[deployment.md](./deployment.md#purging-the-cache-after-an-api-change) holds the
-procedure and the cost of skipping it.
+- It is outside `/api/` so nobody adds `setSharedCache()`, which would serve one
+  user's answers to everyone. `no-store` is the second line of defence.
+- It is a `fetch`, not a page load. `(reg)`'s layout already sets the four-hour
+  header and SvelteKit won't set a header twice, so a load could not switch to
+  `no-store`. A `+server.ts` runs no layout loads.
+- `maxScore` is the same for everyone, so it lives on `ProblemEntry` in the
+  shared payload, not here.
 
-**`/olympiads/[olympiad]/progress` is a `fetch` for the opposite reason.** It
-serves the signed-in user's tracked problems and nothing else, and two things
-follow from that:
+`?/trackProblem` resolves `problems.id` on the server from
+`(olympiad, year, number)`, so no row id enters a cached payload.
 
-- It sits **outside `/api/`** so that nobody reflexively adds `setSharedCache()`
-  to it, which would serve one user's answers to every visitor. The header it
-  sets instead is the second line of defence, not the first.
-- It is **not a page load**. `(reg)/+layout.server.ts` has already set the
-  four-hour private cache header and SvelteKit refuses to set the same header
-  twice, so a page load could not downgrade itself to `no-store` — and four
-  hours of privately cached `__data.json` would serve stale progress. A
-  `+server.ts` runs no layout loads, so neither that header nor `+layout.ts`'s
-  legacy redirects apply to it.
+`/progress` does the same for the whole archive, for the ⌘K dialog. It returns a
+`GlobalProgressMap`: one `ProgressMap` per olympiad id.
 
-It carries **only** what differs per user. A problem's `maxScore` is the same
-for every visitor, so it sits on `ProblemEntry` in the shared payload instead —
-and what comes back here is one key per tracked problem, with no `completed`
-flag, because the key's existence is the flag.
+- Keep the nesting. `progressKey` is `(year, number)`, so a flat map would merge
+  IPhO 2019 T1 with APhO 2019 T1 and mark the wrong problems done.
+- Its only input is `locals.user.id`. Don't add a `?user=` parameter.
+- It lives at the root because `/olympiads/progress` would shadow an olympiad
+  whose id is `progress`.
 
-The tracking action itself, `?/trackProblem`, resolves `problems.id` server-side
-from `(olympiad, year, number)`. That is what lets the page stay ignorant of
-problem ids — so no row id ever has to enter a cached payload — and what lets a
-progress entry be keyed on `(year, number)` at all.
+`StatusFilter.svelte` (All / Done / To do) filters these maps in the browser and
+shows only when signed in. The olympiad page and the ⌘K dialog share it and
+`$lib/filters.ts`, so they agree on what "Done" means — see
+[search.md](./search.md#the-filters-and-why-they-vanish). Signed-out visitors see
+`SignInToTrack.svelte`, a dimmed circle with a hint; it is not a guard.
 
-**`/progress` is the same endpoint one scope wider.** The ⌘K dialog's status
-filter spans the archive, so it cannot use the per-olympiad route, and it answers
-a `GlobalProgressMap` — a `ProgressMap` per olympiad id. The nesting is
-load-bearing rather than tidy: `progressKey` is `(year, number)` only, so
-flattening the archive onto those keys would file IPhO 2019 T1 and APhO 2019 T1
-under one key and mark the wrong problems done, silently. It reads **nothing**
-from the URL — its only input is `locals.user.id` — so there is no id to confuse,
-and a future `?user=` would be wrong on its face. It sits at the route root
-rather than at `/olympiads/progress`, where a static segment would win over
-`olympiads/[olympiad]` and permanently shadow an olympiad whose id happened to be
-`progress`.
+## The module map
 
-Two things are built on top of that map, both entirely in the browser:
+Everything in `src/lib/` outside `components/`.
 
-- **The progress filter** — `StatusFilter.svelte`'s icon-only `All problems /
-Done / To do` dropdown — is a client-side filter over the map the page
-  already holds; see `filter.ts`, where it joins the topic filter in
-  `visibleProblems`. No new endpoint, no new field, and nothing new on the wire.
-  It is rendered only for signed-in users, since "Done" could only ever be empty
-  without a session. The component lives in `$lib/components/` beside
-  `TopicSelect.svelte` and `OlympiadPicker.svelte`, and is **shared with the ⌘K
-  dialog**, which offers the same
-  two filters over the whole archive: a `$lib` component cannot import from a
-  route directory, and the predicates behind both — `$lib/filters.ts` — are shared
-  for the same reason, so the two screens cannot disagree about what "Done" means.
-  See [search.md](./search.md#the-filters-and-why-they-vanish).
-- **The tracking affordance itself is rendered for everyone.** A signed-out
-  visitor gets `SignInToTrack.svelte` in the same corner of the same card — the
-  same circle, dimmed and inert, explaining on hover, focus or tap that tracking
-  needs an account. The permission is still enforced server-side by
-  `?/trackProblem`'s `locals.user` check; the disabled circle is discoverability,
-  not a guard.
+### `$lib/server/`
 
-## The `$lib/server/` module map
+Server-only; SvelteKit refuses to bundle it into the client.
 
-Server-only code. SvelteKit refuses to bundle anything under `$lib/server/` into
-the client, so this boundary is enforced by the build, not by convention.
+| Module            | Responsibility                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------ |
+| `auth.ts`         | BetterAuth configuration, as a function of `(database, env)`                         |
+| `auth-cli.ts`     | static auth instance for the schema generator                                        |
+| `guard.ts`        | `requireAdmin`, `requireContributor`, `requireOlympiadEditor`, permission predicates |
+| `cache.ts`        | the two cache policies                                                               |
+| `forms.ts`        | form-field parsing and the action-result envelope                                    |
+| `uploads.ts`      | server-side enforcement of `$lib/uploads.ts`                                         |
+| `storage.ts`      | every R2 read and write, and the object-key layout                                   |
+| `markdown.ts`     | the only place Markdown is rendered and sanitised                                    |
+| `activity-log.ts` | the audit trail: `logActivity` writes, `listActivity` reads by keyset                |
+| `reindex-cli.ts`  | text-index backfill (`bun run index:backfill`)                                       |
+| `thumbs-cli.ts`   | landing-page thumbnail renderer (`bun run thumbs:render`)                            |
+| `db/index.ts`     | re-exports the schema; aliases the `DB` handle type                                  |
+| `db/schema.ts`    | the Drizzle schema, source of generated migrations                                   |
+| `db/relations.ts` | Drizzle relational definitions                                                       |
+| `db/queries/`     | every query, by concern (below)                                                      |
 
-| Module            | Responsibility                                                                                                                                                                                               |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `auth.ts`         | the BetterAuth configuration, as a function of `(database, env)`                                                                                                                                             |
-| `auth-cli.ts`     | a module-level instance for the schema generator only — never imported by app code                                                                                                                           |
-| `guard.ts`        | `requireAdmin` / `requireContributor` / `requireOlympiadEditor`, each returning `{ db, user }`                                                                                                               |
-| `cache.ts`        | the two cache policies described above                                                                                                                                                                       |
-| `forms.ts`        | form-field parsing and the action-result envelope                                                                                                                                                            |
-| `uploads.ts`      | server-side enforcement of the upload rules declared in `$lib/uploads.ts`                                                                                                                                    |
-| `storage.ts`      | every R2 read and write, and the object-key layout                                                                                                                                                           |
-| `markdown.ts`     | the _only_ place Markdown is rendered and sanitised                                                                                                                                                          |
-| `activity-log.ts` | the audit trail, both sides — `logActivity` writes it, `listActivity` reads it by keyset. The one query module outside `db/queries/`, because the action enum and the never-fail-a-write policy live with it |
-| `reindex-cli.ts`  | the backfill driver, run by `bun run index:backfill` — never imported by app code                                                                                                                            |
-| `db/index.ts`     | re-exports the schema and aliases the `DB` handle type                                                                                                                                                       |
-| `db/schema.ts`    | the Drizzle schema — the source drizzle-kit generates migrations from                                                                                                                                        |
-| `db/relations.ts` | Drizzle's relational definitions, kept separate from the table declarations                                                                                                                                  |
-| `db/queries/`     | `olympiads.ts`, `years.ts`, `content.ts`, `progress.ts`, `files.ts`: every query, one module per concern                                                                                                     |
+The three `-cli` modules are never imported by app code. They live here, not in
+a top-level `scripts/`, so `bun run check` covers them. `activity-log.ts` stays
+out of `db/queries/` because the action enum and its never-fail-a-write policy
+live with it.
 
-What each query module is for, since the names only half say it:
+| Query module   | Reads / writes                                                               |
+| -------------- | ---------------------------------------------------------------------------- |
+| `olympiads.ts` | the olympiad list and metadata; create, edit, delete                         |
+| `years.ts`     | years, and year-level notes, links and files                                 |
+| `content.ts`   | joined reads for the public API shapes and the year editor; `getSearchIndex` |
+| `progress.ts`  | a user's tracked problems, per olympiad and archive-wide                     |
+| `files.ts`     | the full-text index: query sanitising, reads, writes, upkeep                 |
 
-| Module         | Reads / writes                                                                                                                             |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `olympiads.ts` | the olympiad list and one olympiad's metadata; the create/edit/delete writes                                                               |
-| `years.ts`     | years within an olympiad, and the year-level notes, links and files                                                                        |
-| `content.ts`   | the joined reads that assemble years, problems and their files — the frozen public shapes and the year editor. `getSearchIndex` lives here |
-| `progress.ts`  | one user's tracked problems, per olympiad and across the archive                                                                           |
-| `files.ts`     | the full-text index: sanitising a query, reading it, writing it, keeping it tidy                                                           |
+### Client-safe `$lib/`
 
-Client-safe modules sit directly under `$lib/`: `types.ts`, `uploads.ts`,
-`constants.ts`, `nav.ts`, `posts.ts`, `activity.ts`, `progress.ts`, `filters.ts`,
-`search.ts`, `pdf-text.ts`, `forms.svelte.ts`, `auth-client.ts`, `utils.ts` (just
-`cn`), `utils/{date,flag,fuzzy,json,topics}.ts`, `hooks/is-mobile.svelte.ts` and
-the two mdsvex layouts, `prose.svelte` and `post.svelte`.
-Several of them exist specifically so a rule is stated once and consumed from
-both sides — the upload allow-list is the clearest example, `progress.ts` carries
-the score rules the year editor, the CSV import, the `trackProblem` action and
-the problem cards all go through, and `filters.ts` is the newest: it holds the
-topic and progress predicates that the olympiad page's toolbar and the ⌘K dialog
-both apply, which is what stops the two screens disagreeing about what "Done" or
-"Relativity" selects.
+| Module                        | Responsibility                                                             |
+| ----------------------------- | -------------------------------------------------------------------------- |
+| `types.ts`                    | shared types and enums, including the public API shapes                    |
+| `uploads.ts`                  | the upload allow-list, `slugifyLabel`, `collidingLabel`                    |
+| `constants.ts`                | constants both sides need, including `CDN_BASE_URL`                        |
+| `nav.ts`                      | navigation links and `secondaryNavFor(user)`                               |
+| `posts.ts`                    | loads blog posts from `$lib/posts/*.svx`                                   |
+| `activity.ts`                 | display labels for activity-log entries                                    |
+| `progress.ts`                 | score rules for the editor, CSV import, `trackProblem` and problem cards   |
+| `filters.ts`                  | topic and progress predicates for the olympiad page and ⌘K dialog          |
+| `search.ts`                   | deep-search normalisation for the dialog, the endpoint and text extraction |
+| `pdf-text.ts`                 | browser-side PDF text extraction                                           |
+| `forms.svelte.ts`             | `formToasts` and `Pending`                                                 |
+| `resource.svelte.ts`          | `Resource`: fetches a JSON endpoint, tracking value, loading and failure   |
+| `auth-client.ts`              | the BetterAuth browser client                                              |
+| `utils.ts`                    | `cn` only                                                                  |
+| `utils/`                      | `date`, `flag`, `fuzzy`, `json`, `plural`, `topics`                        |
+| `hooks/is-mobile.svelte.ts`   | `IsMobile`, a viewport media query                                         |
+| `prose.svelte`, `post.svelte` | the two mdsvex layouts                                                     |
+
+`uploads.ts`, `progress.ts`, `filters.ts` and `search.ts` are client-safe so the
+browser and the server apply the same rule.
 
 ## The colocation convention
 
-**A component used by exactly one route lives next to that route**, flat, with
-no `+` prefix and no subfolder. Only genuinely route-agnostic pieces go in
-`$lib/components/`.
+A component used by one route lives next to it: flat, no `+` prefix, no
+subfolder. Only route-agnostic pieces go in `$lib/components/`.
 
-SvelteKit only treats `+`-prefixed files as route files, so a plain
-`YearPanel.svelte` beside a `+page.svelte` is inert as far as routing is
-concerned. The reason it has to be _there_ rather than in `$lib` is types: these
-components import `PageData` / `ActionData` from `./$types`, and that specifier
-is resolved through the `rootDirs` mapping that `.svelte-kit/tsconfig.json` sets
-up for route directories only. The same file under `$lib` cannot resolve it.
-
-Child components import `PageData` / `ActionData`, **not** `PageProps` — that
-bundle belongs to the page.
+Non-`+` files are inert to the router. The component must live beside the route
+because it imports `PageData` / `ActionData` from `./$types`, which resolves only
+in route directories. Children import those, not `PageProps`, which belongs to
+the page.
 
 [`(reg)/olympiads/[olympiad]/`](<../src/routes/(reg)/olympiads/[olympiad]>) is
-the reference for the style: a `+page.svelte` that owns state and data fetching,
-presentational children beside it, and the fiddly pure logic in a plain `.ts`
-module.
-
-The converse pull is just as real. Three routes had each grown their own olympiad
-picker, their own labelled-field wrapper and their own spinner-swap submit button,
-because each was written where it was needed and nothing said they were the same
-thing. `$lib/components/` now holds the shared set — the picker, `Field`,
-`SubmitButton`, `ConfirmSubmit`, `Repeater`, `EmptyState`, `PageHeader` — and
-[contributing.md](./contributing.md#reach-for-the-shared-primitives-before-writing-markup)
-says which to reach for. Colocation is about where a component _may_ live, not an
-argument for writing a second one.
+the reference: `+page.svelte` owns state and fetching, presentational children
+sit beside it, and pure logic goes in a plain `.ts` file. Check the shared
+primitives before writing a new component — see
+[contributing.md](./contributing.md#reach-for-the-shared-primitives-before-writing-markup).
 
 ## The action-result envelope
 
-Every form action in the app resolves to exactly one of two shapes:
+Every form action returns one of two shapes, built by `ok()` and `actionFail()`
+in [`$lib/server/forms.ts`](../src/lib/server/forms.ts):
 
 ```ts
 { action: 'uploadFile', success: true }                   // plus any payload
 { action: 'uploadFile', success: false, error: '…' }
 ```
 
-built by `ok()` and `actionFail()` in
-[`$lib/server/forms.ts`](../src/lib/server/forms.ts). Because `success` is a
-literal `true` / `false`, the `form` union SvelteKit generates in `./$types` is a
-discriminated union — first on `success`, then on `action`. A page can write
-`if (!form.success) …` and narrow payload fields by checking `form.action`, with
-no `'x' in form` probing.
+`success` is a literal, so `form` is a discriminated union on `success`, then
+`action`. Write `if (!form.success)` and narrow by `form.action`. Actions that end
+in `redirect()` are not in the union.
 
-[`$lib/forms.svelte.ts`](../src/lib/forms.svelte.ts) is the client half of that
-contract, and the two files change together:
+[`$lib/forms.svelte.ts`](../src/lib/forms.svelte.ts) is the client half; change
+both files together.
 
-- **`formToasts(() => form, { … })`** — call **once**, on the component that owns
-  `form`. Failures toast `form.error`; successes look `form.action` up in the map.
-- **`Pending`** — tracks in-flight submissions so buttons can disable themselves.
-  `track()` is a drop-in `use:enhance` value. `has()` must read the same map
-  `track()` wrote, so a page with several forms uses **one** instance passed down
-  as a plain prop; per-component instances leave every button permanently enabled.
+- `formToasts(() => form, { … })`: call once, on the component that owns `form`.
+  Failures toast `form.error`; successes look up `form.action`.
+- `Pending`: tracks in-flight submissions. `track()` is a drop-in `use:enhance`
+  value. `has()` must read the map `track()` wrote, so a page creates one
+  instance and passes it down. Separate instances leave every button enabled.
 
-Actions that end in `redirect()` never return, and so never appear in the union.
+## What the Worker does not do
 
-**Two parts of `/admin` need JavaScript, and that costs nothing new.** The Index
-tab fetches its counts on first open and the log's "Load more" fetches its next
-page, so neither renders without JS — but `/admin` already needs JS to _switch
-tabs_ at all (bits-ui drives them), so the Index tab was unreachable without it
-long before either fetch existed. The panel's three maintenance forms remain
-native POSTs to named actions, enhanced rather than replaced, so the writes are
-progressively enhanced even where the reporting around them is not.
+- **It never parses a PDF.** Text extraction runs in the contributor's browser,
+  and the backfill in a local `bun` script. pdf.js is about 0.5 MB gzipped, more
+  than the whole 0.43 MB server bundle, and every route would pay for it at cold
+  start. The vendored `static/vendor/pdfjs/` is loaded by a runtime string URL so
+  the bundler can't pull it in; the
+  [bundle check](./deployment.md#the-bundle-check) guards this.
+- **It never matches a problem search.** `/api/search` ships the whole corpus
+  once and the ⌘K dialog matches in the browser. Deep search takes one parameter
+  (each extra one multiplies cache keys) and never reads a cookie, which makes it
+  safe to share-cache.
 
-## Work the Worker deliberately does not do
-
-Two jobs that would naturally sit in the Worker are pushed out of it, and both
-are worth knowing as architecture rather than as feature detail.
-
-**The Worker never parses a PDF.** Text extraction for deep search runs in the
-contributor's browser, and the one-time backfill runs in a local `bun` script.
-The reason is measured, not aesthetic: the whole server bundle is about 0.43 MB
-gzipped and pdf.js is roughly +0.5 MB, so a Worker-side parser would be **larger
-than the entire application** and would be charged to cold-start parse time on
-_every_ route, to serve a path that runs a few times a month. It would fit inside
-the 10 MB limit; it is simply disproportionate. The vendored build in
-`static/vendor/pdfjs/` is therefore a static asset served by `ASSETS`, reached
-through a **runtime string URL** so neither Vite nor Rollup can pull it into the
-server bundle — guarded by the one-command bundle check in
-[deployment.md](./deployment.md#the-bundle-check).
-
-**The Worker never matches a problem search.** `/api/search` ships the whole
-corpus once per session and the ⌘K dialog matches it in the browser, so typing
-costs no D1 read at all. Only deep search queries the server, once per settled
-query, and its endpoint takes **one parameter** — every accepted parameter
-multiplies cache keys, and it reads no cookie and never touches `locals.user`,
-which is what makes its body safe in the shared cache.
-
-Both pipelines, the two search modes and everything between an uploaded PDF and a
-highlighted snippet are documented end to end in [search.md](./search.md).
+Details for both are in [search.md](./search.md).

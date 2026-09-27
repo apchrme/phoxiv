@@ -6,48 +6,42 @@ and deployed with wrangler.
 
 ## What `wrangler.jsonc` declares
 
-| Key                  | Value                                                      |
-| -------------------- | ---------------------------------------------------------- |
-| `name`               | `phoxiv`                                                   |
-| `main`               | `.svelte-kit/cloudflare/_worker.js` — the adapter's output |
-| `compatibility_date` | `2026-04-24`, with `nodejs_compat`                         |
-| `route`              | `phoxiv.org`, as a custom domain                           |
-| `observability`      | enabled                                                    |
+| Key                  | Value                                                     |
+| -------------------- | --------------------------------------------------------- |
+| `name`               | `phoxiv`                                                  |
+| `main`               | `.svelte-kit/cloudflare/_worker.js`, the adapter's output |
+| `compatibility_date` | `2026-04-24`, with `nodejs_compat`                        |
+| `route`              | `phoxiv.org`, as a custom domain                          |
+| `observability`      | enabled                                                   |
 
 ### Bindings
 
-| Binding  | Kind   | Notes                                                                                                                                          |
-| -------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ASSETS` | assets | `.svelte-kit/cloudflare` — the static build output                                                                                             |
-| `DB`     | D1     | database `phoxiv`; `migrations_dir` points at `src/lib/server/db/migrations`, with `migrations_pattern` for Drizzle v1's per-migration folders |
-| `FILES`  | R2     | bucket `phoxiv-files`                                                                                                                          |
+| Binding  | Kind   | Notes                                                                                                                     |
+| -------- | ------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `ASSETS` | assets | `.svelte-kit/cloudflare`, the static build output                                                                         |
+| `DB`     | D1     | database `phoxiv`. `migrations_dir` is `src/lib/server/db/migrations`, and `migrations_pattern` matches `*/migration.sql` |
+| `FILES`  | R2     | bucket `phoxiv-files`                                                                                                     |
 
-**Three bindings, and the shortness of that list is a standing design
-constraint rather than an accident.** Full-text search — the most infrastructural
-feature in the app — added none of them: the PDF parser lives in the browser and
-the backfill script runs on a maintainer's machine, so it needed no binding, no
-`wrangler.jsonc` edit and no `cf-typegen` run. Reach for a plain library, a
-browser-side step or a local script before a fourth binding; see
-[Why the PDF parser is not in the Worker](#why-the-pdf-parser-is-not-in-the-worker)
-for what that trade looked like with real numbers.
+Keep it to three. Before adding a fourth binding, try a plain library, a step in
+the browser, or a local script. Full-text search needed no new binding: the PDF
+parser runs in the browser and the backfill runs on a maintainer's machine.
 
-The app reads these off `platform.env`. `DB` is reached through `locals.db`
-(built once per request in `hooks.server.ts`); `FILES` through `getBucket()` in
-`$lib/server/storage.ts`, which returns `null` when the binding is absent so a
-form action can `fail()` with a toast instead of replacing the page with an
-error template.
+The app reads bindings from `platform.env`. `DB` is reached through `locals.db`.
+`FILES` is reached through `getBucket()` in `$lib/server/storage.ts`, which
+returns `null` when the binding is missing so a form action can `fail()` with a
+toast instead of showing an error page.
 
-After editing bindings, regenerate the ambient types:
+After editing bindings, regenerate the types:
 
 ```sh
 bun run cf-typegen        # rewrites src/worker-configuration.d.ts
-bun run cf-typegen:check  # verifies it is up to date, without writing
+bun run cf-typegen:check  # checks it is up to date, without writing
 ```
 
 ### Environment variables
 
 `BETTER_AUTH_URL` is a plain `var` in `wrangler.jsonc` (`https://phoxiv.org/`).
-Everything else is a **Worker secret**:
+The rest are Worker secrets:
 
 ```sh
 bunx wrangler secret put BETTER_AUTH_SECRET
@@ -57,13 +51,12 @@ bunx wrangler secret put TRUSTED_ORIGINS
 bunx wrangler secret put SUPERADMIN_EMAIL     # optional
 ```
 
-`.env.example` documents what each one is. Locally the same values live in
-`.env`; see [contributing.md](./contributing.md).
+`.env.example` explains each one. Locally they live in `.env`; see
+[contributing.md](./contributing.md#first-run).
 
-The CDN origin is **not** an environment variable — `CDN_BASE_URL` is a constant
-in [`$lib/constants.ts`](../src/lib/constants.ts), because it is baked into every
-`url` already stored in D1. Changing it orphans every object in the bucket; see
-[data-model.md](./data-model.md#r2-key-layout).
+The CDN origin is not an environment variable. `CDN_BASE_URL` is a constant in
+[`$lib/constants.ts`](../src/lib/constants.ts) because every `url` in D1 contains
+it. Never change it; see [data-model.md](./data-model.md#r2-key-layout).
 
 ## Deploying
 
@@ -73,50 +66,50 @@ bun run preview                                   # build + wrangler dev, locall
 bun run deploy                                    # build + wrangler deploy
 ```
 
-`deploy` is `bun run build && wrangler deploy`, so a failing build never reaches
-Cloudflare. `preview` is the same build served through `wrangler dev`, which is
-the only local mode that exercises the real Worker runtime and the real bindings.
+`deploy` runs `bun run build && wrangler deploy`, so a failed build never ships.
+`preview` serves the same build through `wrangler dev`. It is the only local mode
+that runs the real Worker runtime.
 
-Two things routinely outlive the deploy itself, and both are easier to plan for
-than to discover. A change to what an `/api/*` endpoint returns needs a
-[cache purge](#purging-the-cache-after-an-api-change). And a change anywhere near
-extraction needs a [backfill sweep](#backfilling-the-text-index), because rows
-that landed `pending` stay `pending` — shipping the code that would have read
-those files does not go back and read them.
+After deploying, check whether you also need to:
+
+- [purge the cache](#purging-the-cache-after-an-api-change), if anything an
+  `/api/*` endpoint returns has changed;
+- [run the backfill](#backfilling-the-text-index), if the change touched text
+  extraction. Rows that landed `pending` stay `pending` until something reads
+  them.
 
 ## Migrations against production
 
-Migration files are generated locally, committed, and applied to the remote
-database as a separate step:
+Generate migrations locally, commit them, then apply them to production as a
+separate step:
 
 ```sh
-bun run db:generate        # after editing schema.ts — writes migrations/<timestamp>_<name>/
+bun run db:generate        # after editing schema.ts
 bun run db:migrate         # local D1
 bun run db:migrate-remote  # production D1  (wrangler d1 migrations apply DB --remote)
 ```
 
-Wrangler identifies an applied migration by the **path** it matched, relative to
-`migrations_dir`, and stores that string in the `d1_migrations` table. Under the
-Drizzle v1 layout that is `<timestamp>_<name>/migration.sql`, which is why the
-`DB` binding must set `migrations_pattern` — with wrangler's default `*.sql` it
-matches nothing and reports "No migrations folder found".
+Wrangler records each applied migration by its path relative to
+`migrations_dir` (for example `<timestamp>_<name>/migration.sql`) in the
+`d1_migrations` table. Two consequences:
 
-Because the name _is_ the identity, renaming a migration folder makes an
-already-applied migration look new and wrangler will try to run it again. Check
-what production believes before applying anything after a layout change:
+- The `DB` binding must set `migrations_pattern`. With wrangler's default
+  `*.sql` it finds nothing and reports "No migrations folder found".
+- Renaming a migration folder makes an applied migration look new, and wrangler
+  will try to run it again. Before applying anything after a layout change, check
+  what production has recorded:
 
 ```sh
 bunx wrangler d1 migrations list DB --remote
 ```
 
-Order matters when a change is not backwards-compatible: apply the migration
-**before** deploying code that depends on it if the change is additive, and
-**after** if it removes something the running code still reads. Most changes here
-are additive.
+Order matters for changes that are not backwards-compatible. Apply an additive
+migration before deploying the code that needs it. Apply a migration that removes
+something after deploying the code that stops reading it.
 
-`db:push` never touches production and must not be used for anything you intend
-to ship — it bypasses the migration files entirely, so the remote database would
-have no record of the change.
+Never use `db:push` for anything you intend to ship. It bypasses the migration
+files, and it will try to drop the search index; see
+[data-model.md](./data-model.md#the-full-text-index).
 
 ### Ad-hoc SQL
 
@@ -125,118 +118,92 @@ bunx wrangler d1 execute DB --remote --command "SELECT count(*) FROM problems;"
 bunx wrangler d1 execute DB --remote --file=path/to/statements.sql
 ```
 
-This is how the database was originally seeded, and it remains the way to make a
-bulk correction that the contribute UI cannot express. Remember that
-`years.notes`, `years.extra_links`, `problems.topics` and `user.assigned_olympiads`
-hold **JSON strings** — the parsers tolerate malformed values by returning empty,
-so a bad hand-edit shows up as silently missing data rather than an error.
+Use this for bulk corrections the contribute UI cannot make. Four columns hold
+JSON strings (see [data-model.md](./data-model.md#json-encoded-text-columns)).
+Their parsers turn malformed values into empty ones, so a bad hand edit shows up
+as missing data, not as an error.
 
 ## Bulk-loading R2
 
-For anything larger than a handful of files, [rclone](https://rclone.org/) against
-an R2 remote beats the contribute UI:
+For more than a handful of files, use [rclone](https://rclone.org/) with an R2
+remote instead of the contribute UI:
 
 ```sh
 rclone sync files/ r2:phoxiv-files/ --progress
 ```
 
-`files/` is gitignored precisely so it can be used as a local scratch copy of the
-bucket. The directory layout must match the key layout exactly —
-`olympiads/<id>/<year>/[<problem>/]<slug>.<ext>` and
-`icons/olympiads/<id>.<ext>` — because the database's `url` columns are written
-independently and nothing reconciles the two. An object at the wrong key is
-invisible; a row pointing at a missing object is a dead link.
+`files/` at the repo root is gitignored so it can hold a local copy of the
+bucket. Its layout must match the [key layout](./data-model.md#r2-key-layout)
+exactly: `olympiads/<id>/<year>/[<problem>/]<slug>.<ext>` and
+`icons/olympiads/<id>.<ext>`. The D1 rows are written separately and nothing
+reconciles the two. An object at the wrong key is invisible, and a row pointing
+at a missing object is a dead link.
 
 ## Why the PDF parser is not in the Worker
 
-Text extraction for deep search runs in the **contributor's browser**, and the
-one-time backfill of everything older runs in a local `bun` script. The Worker
-never parses a PDF, holds no PDF library, and gained no binding for any of it.
+Text extraction runs in the contributor's browser. The backfill of older files
+runs in a local `bun` script. The Worker never parses a PDF and holds no PDF
+library.
 
-The reason is a measurement, not a preference:
-
-|                                                         | gzipped       |
-| ------------------------------------------------------- | ------------- |
-| the whole phoXiv server bundle, before full-text search | 0.396 MB      |
-| the whole phoXiv server bundle, after                   | 0.425 MB      |
-| pdf.js, if it were bundled into the Worker              | **≈ +0.5 MB** |
-
-A Worker-side parser would be **larger than the entire application**, and that
-size is paid as cold-start parse time on _every_ route, to serve a path that runs
-a few times a month. It would fit inside the 10 MB limit; it is simply
-disproportionate.
+pdf.js is about 0.5 MB gzipped. The whole server bundle is about 0.43 MB. A
+Worker-side parser would more than double it, and every route would pay for that
+in cold-start time, to serve a path that runs a few times a month.
 
 ### The bundle check
 
-This is the one command that keeps the design honest, and it belongs in the gates
-for any change near `$lib/pdf-text.ts`:
+Run this for any change near `$lib/pdf-text.ts` or the vendored build:
 
 ```sh
 bun run build && find .svelte-kit/output/server -name '*.js' -print0 \
   | xargs -0 cat | gzip -9 -c | wc -c
 ```
 
-**A little over 430 000 bytes is right. ≈ 900 000 means pdf.js was resolved into
-the server build** — the dynamic import got resolved at build time and must go
-back to the runtime-URL form. Everything still _works_ when that happens, which is
-exactly why it needs a number rather than a glance.
+A little over 430 000 bytes is right. About 900 000 means pdf.js got bundled into
+the server build, and the import must go back to the runtime-URL form below. The
+number drifts by a percent or two with ordinary changes; you are looking for a
+doubling. Everything still works when pdf.js leaks in, which is why this needs a
+number.
 
-Read that as an order of magnitude, not a threshold to match. The figure drifts
-by a percent or two with any ordinary change and is not worth chasing; what the
-check is looking for is a doubling. The two greps below are the exact form of the
-same question, and they are the ones to trust when the number is ambiguous.
-
-The number survives `$lib/pdf-text.ts` importing pdf.js's own
-`PDFDocumentLoadingTask`, `PDFDocumentProxy`, `PDFPageProxy` and `PDFWorker` from
-the `pdfjs-dist` devDependency, because that is an **`import type`** and
-TypeScript erases it: no `pdfjs-dist` code is emitted into either bundle, and the
-runtime string URL below stays the only way the parser is ever loaded. Dropping
-the `type` keyword, or reaching for a runtime value out of the same module, puts
-the parser in the Worker while looking like a tidy-up — which is what the number
-is there to catch. And the types are not decoration: hand-written structural ones
-are what let a call to a method pdf.js 6 had removed pass `svelte-check` while
-turning every successful extraction into an error, in every browser.
-
-Two supporting checks when it looks wrong:
+Two exact checks, to trust when the number is unclear:
 
 ```sh
 grep -rl GlobalWorkerOptions .svelte-kit/output/server/   # must find nothing
 ls .svelte-kit/cloudflare/vendor/pdfjs/                   # must list the build
 ```
 
-A 404 on the second is a silent no-extraction: uploads keep succeeding and every
-row quietly lands `pending`.
+If the second fails, the parser 404s in production. Uploads keep working, but
+every row lands `pending`.
+
+`$lib/pdf-text.ts` imports pdf.js's types from the `pdfjs-dist` devDependency
+with `import type`, which TypeScript erases. Don't drop the `type` keyword or
+import a runtime value from that module: that puts the parser in the Worker.
+Don't swap in hand-written types either; they let a call to a removed pdf.js
+method pass `svelte-check`.
 
 ### The vendored build
 
-`static/vendor/pdfjs/` holds `pdf.min.mjs` and `pdf.worker.min.mjs`, copied
-verbatim from a pinned `pdfjs-dist` — the version is recorded in the README
-beside them, along with the update procedure. About 1.7 MB is checked into git,
-in keeping with the vendored `src/lib/components/ui/`, and it costs the Worker
-nothing: these are static assets served by `ASSETS`, not Worker script size.
+`static/vendor/pdfjs/` holds `pdf.min.mjs` and `pdf.worker.min.mjs`, copied from
+a pinned `pdfjs-dist`. The README beside them records the version and the update
+steps. Both files must come from the same version, because pdf.js refuses a
+worker whose version differs. They are static assets served by `ASSETS`, so they
+add nothing to the Worker's size.
 
-`$lib/pdf-text.ts` reaches them through a **runtime string URL**:
+`$lib/pdf-text.ts` loads them through a runtime string URL:
 
 ```ts
 const pdfjs = await import(/* @vite-ignore */ '/vendor/pdfjs/pdf.min.mjs');
 ```
 
-The `@vite-ignore` and the non-literal specifier are the whole point. A dynamic
-import Vite _can_ resolve joins the module graph, and Rollup then emits it into
-the **server** build as well — which `adapter-cloudflare` bundles into the Worker.
-A runtime string is the only form guaranteed absent from both bundles. Do not
-"tidy" it into a static import.
-
-The two files must come from the same `pdfjs-dist` version: pdf.js refuses to run
-a worker whose version does not match the API's.
+Don't turn this into a normal import. If Vite can resolve an import, Rollup also
+puts it in the server build, which the adapter bundles into the Worker. A runtime
+string is the only form kept out of both bundles.
 
 ## Backfilling the text index
 
-New uploads are indexed as they arrive — **when the contributor's browser
-managed to read them**. Extraction runs there, so a browser with JavaScript off,
-a 404 on the vendored parser and a parser that throws all end the same way: the
-file uploads and the row lands `pending`. Everything already in R2, and every one
-of those, is swept up by:
+New uploads are indexed when the contributor's browser manages to read them. If
+it cannot (JavaScript off, a 404 on the parser, a parser error), the upload still
+succeeds and the row lands `pending`. Those rows, and every file uploaded before
+search existed, are handled by the backfill script:
 
 ```sh
 PHOXIV_URL=https://phoxiv.org PHOXIV_SESSION='<cookie>' bun run index:backfill
@@ -247,74 +214,44 @@ PHOXIV_URL=https://phoxiv.org PHOXIV_SESSION='<cookie>' bun run index:backfill
 $env:PHOXIV_URL = 'https://phoxiv.org'; $env:PHOXIV_SESSION = '<cookie>'; bun run index:backfill
 ```
 
-`PHOXIV_SESSION` is the **value** of the session cookie, copied from a signed-in
-**admin** browser. Clunky, and deliberately so: a shared-secret header would be a
-second authentication mechanism in a codebase whose [auth.md](./auth.md) is
-narrow on purpose, and the cookie adds no new secret and no new auth path.
+`PHOXIV_SESSION` is the value of the session cookie from a browser signed in as
+an admin. This reuses the existing auth path instead of adding a shared secret;
+see [auth.md](./auth.md).
 
-**Mind the cookie's name.** BetterAuth prefixes it with `__Secure-` whenever it
-believes it is in production, so the two environments do not agree:
+The cookie name differs by environment:
 
 | Origin                  | Cookie                               |
 | ----------------------- | ------------------------------------ |
 | `https://phoxiv.org`    | `__Secure-better-auth.session_token` |
 | `http://localhost:5173` | `better-auth.session_token`          |
 
-Copying the wrong one fails **in a way that looks like a permission problem**:
-the Worker sees no session at all, and `requireAdmin` answers that with the same
-`403 Unauthorised` it gives a signed-in non-admin. The script now sends the value
-under both names to sidestep the question entirely, and asks
-`/api/auth/get-session` who it is before fetching any work — so a rejected cookie
-says so, instead of surfacing as a bare 403 from `/admin/reindex`. A token is
-only valid for the origin that issued it: a localhost session means nothing to
-`phoxiv.org`.
+The script sends the value under both names and checks `/api/auth/get-session`
+before doing any work, so a bad cookie is reported clearly. A token only works on
+the origin that issued it.
 
-The script loops until nothing is left, so re-running it is always safe:
+How the script behaves:
 
-- The work queue is **derived, not stored** — no queue table and no cursor.
-  Processing a candidate writes its row, which removes it from the set, so
-  idempotency and resumability are free.
-- Because the candidate set _is_ the file tables, files loaded out of band by
-  rclone (see [Bulk-loading R2](#bulk-loading-r2), where the D1 rows are written
-  independently) are picked up automatically. An event-driven queue would miss
-  them entirely.
-- A file that fails three times drops out of the set, so one poison document
-  cannot block the queue forever. It shows up under **Failures** in the admin
-  panel's Index tab.
-- Bytes come from the local `files/` rclone mirror when it is there and from the
-  public CDN url otherwise, so **no R2 credentials are needed**.
-- The script reads `.docx` and `.xlsx` as well as PDF and HTML — locally,
-  dependency weight is free, so `unpdf` and `fflate` are devDependencies and
-  never enter either bundle.
+- Re-running it is always safe. There is no queue table: the work list is derived
+  from the file tables, so it also picks up files loaded
+  [by rclone](#bulk-loading-r2).
+- A file that fails three times drops out and appears under **Failures** in the
+  admin panel's Index tab. Until then a `pending` row stays retryable, so one run
+  repairs any spell of failed browser extraction.
+- It reads bytes from the local `files/` mirror if present, otherwise from the
+  public CDN, so it needs no R2 credentials. It also reads `.docx` and `.xlsx`,
+  using devDependencies that never enter either bundle.
+- It posts results to `/admin/reindex`, with the text as a bound parameter.
+  Don't switch to `wrangler d1 execute`: D1 caps a statement at 100 KB, and
+  `--command` hits Windows' 8191-character command-line limit.
 
-So a spell of failed browser-side extraction is repaired by **one run of the
-script and nothing else**: a `pending` row is inside `selectIndexCandidates`'
-retry window until `attempts` reaches 3, so it is still a candidate, and the
-sweep reads the bytes and writes the text the browser never produced. Nothing has
-to be re-uploaded and no row has to be deleted first.
+**Don't bump `EXTRACTOR_VERSION` to force a re-run.** The bump is for changes to
+what extraction produces, and it re-queues the whole archive at 14 % of the daily
+write quota (see [below](#staying-inside-d1s-daily-quotas)).
 
-**Do not bump `EXTRACTOR_VERSION` to force that.** The bump exists for a change
-in what extraction _produces_, and it re-queues the entire archive: one full
-sweep of ~2,250 files writes 14,228 rows, 14 % of the daily write cap (see
-[Staying inside D1's daily quotas](#staying-inside-d1s-daily-quotas)), to
-reproduce text that is already correct. The retry window is the mechanism; the
-version bump is the sledgehammer beside it.
-
-The admin panel's **Index** tab is how to tell the run landed: `pending` falls to
-whatever genuinely cannot be read, and `ok` rises by the same amount. Press
-**Refresh** on the Maintenance card to see it move. The tab fetches its counts
-once, when it is first opened, and then holds them — they are ~4,500 D1 rows and
-the panel is long-lived, so re-reading them on a timer or on every tab switch
-would cost more than the sweep being watched. Without that press the numbers
-sit frozen at whatever they were when the tab was opened.
-
-Results travel over HTTP rather than `wrangler d1 execute`, and that is not a
-style choice: D1 caps a _statement_ at 100 KB, which a 40 kB–500 kB text blows
-through once escaped, and `--command` additionally hits Windows' 8191-character
-command-line limit. Posting to `/admin/reindex` sends the text as a **bound
-parameter**, so only D1's 2 MB row limit applies.
-
-After a large run, press **Merge segments** once in the admin panel.
+To confirm a run worked, press **Refresh** on the Index tab's Maintenance card:
+`pending` should fall and `ok` rise. The tab never refreshes its counts on its
+own, because reading them costs thousands of D1 rows. After a large run, press
+**Merge segments** once.
 
 ### Measuring the corpus
 
@@ -327,33 +264,25 @@ bunx wrangler d1 execute DB --remote --command \
   "SELECT count(*), sum(length(text)), max(length(text)) FROM file_text;"
 ```
 
-Rough estimate to check the answer against: a page of dense physics text is about
-3 kB normalised and a twelve-page problem set about 40 kB; an external-content
-FTS5 index is 30–60 % of the source text, and `prefix='2 3'` adds 30–50 % of
-that. So roughly 70 kB per 40 kB file — **1 000 files ≈ 70 MB, 5 000 files ≈
-350 MB**. Free D1 is 500 MB; paid is 10 GB and effectively unbounded.
+Rough estimate: stored text plus its index costs about 70 kB per typical 40 kB
+file, so 1,000 files is about 70 MB and 5,000 about 350 MB. Free D1 allows
+500 MB.
 
 ## Staying inside D1's daily quotas
 
-Free D1 allows **5,000,000 rows read** and **100,000 rows written** per day, and
-since 2026-09-01 Cloudflare _enforces_ them rather than merely metering: once a
-limit is hit, queries **fail until midnight UTC**. On this project a quota
-overrun is a total outage, not a slow afternoon, which is what justifies leaving
-generous headroom.
+phoXiv stays on Cloudflare's free tier. Free D1 allows **5,000,000 rows read**
+and **100,000 rows written** per day. Cloudflare enforces these: once a limit is
+hit, every query fails until midnight UTC. A quota overrun is a full outage, so
+leave plenty of headroom.
 
-Reads are not the meter to watch. Steady-state traffic sits at **180,000–330,000
-rows read per day** — around 5 % of the ceiling, and flat — on roughly 1,500
-olympiad page views per day.
+- **Reads** are not the concern. Normal traffic reads 180,000–330,000 rows a day,
+  about 5 % of the limit.
+- **Writes** are the tighter limit. One full re-index sweep writes about 14,000
+  rows (14 % of the limit), because each `file_text` write fans out through the
+  FTS triggers. Spread sweeps, tokenizer changes and index rebuilds across days,
+  and prefer one sweep that covers everything over several narrow ones.
 
-**Rows written is the tighter of the two.** One full re-index sweep of ~2,250
-files wrote **14,228 rows, 14 % of the daily write cap**, because every
-`file_text` write fans out through the FTS triggers. Two or three sweeps in a day
-— an `EXTRACTOR_VERSION` bump, a tokenizer change, a couple of index rebuilds —
-would approach the write limit long before the read limit came into view. Spread
-them across days, and prefer one sweep that covers everything to several narrow
-ones.
-
-Ask the numbers rather than estimating them. The GraphQL analytics API answers
+Check the real numbers instead of estimating. The GraphQL analytics API gives
 both meters per day:
 
 ```sh
@@ -363,93 +292,54 @@ curl -s https://api.cloudflare.com/client/v4/graphql \
   --data '{"query":"query($account:String!,$from:Date!,$to:Date!){viewer{accounts(filter:{accountTag:$account}){d1AnalyticsAdaptiveGroups(limit:100,filter:{date_geq:$from,date_leq:$to},orderBy:[date_DESC]){dimensions{date databaseId} sum{readQueries writeQueries rowsRead rowsWritten}}}}}","variables":{"account":"<account id>","from":"2026-08-18","to":"2026-09-05"}}'
 ```
 
-Swap `d1AnalyticsAdaptiveGroups` for `d1QueriesAdaptiveGroups` to get the same
-window broken down **per query**, which is how the deep-search snippet cost in
-[search.md](./search.md) was found — it reported 2,243 rows per call against an
-estimate of "a few hundred". Two fields that look like they should exist do not:
-`queryBatchTimeMs` and `queryHash` are not on either dataset.
+Replace `d1AnalyticsAdaptiveGroups` with `d1QueriesAdaptiveGroups` for a
+per-query breakdown. `queryBatchTimeMs` and `queryHash` do not exist on either
+dataset.
 
-For a single query, `wrangler d1 execute --remote --json` reports `rows_read` in
-its `meta`, which is the cheapest way to check a change before shipping it —
-compare the two variants directly instead of reasoning about the plan.
+To check one query before shipping it, run it with
+`wrangler d1 execute --remote --json` and read `rows_read` in the `meta`. Compare
+variants directly instead of reasoning about the query plan.
 
-**The paid plan is the backstop, not the plan.** Workers Paid is $5/month and
-includes about 25 billion rows/month, so if rows read run sustained above
-**~3,500,000/day** or rows written above **~70,000/day**, upgrade rather than
-optimise further; the archive going dark is worth more than $5. At current
-volumes that trigger is a long way off, and the free-tier quotas are treated as
-engineering constraints in the meantime — the same posture as the
-[three-binding limit](#bindings).
+The paid plan is a backstop, not the plan. Workers Paid costs $5/month. Upgrade
+rather than optimise further if reads stay above about **3,500,000/day** or
+writes above about **70,000/day**; the archive going dark costs more than $5.
+Until then, treat the free-tier quotas as engineering limits.
 
 ## Purging the cache after an API change
 
-This is the step that is easy to forget.
+`/api/*` responses sit in Cloudflare's shared cache with `s-maxage=86400`, so a
+changed payload can stay stale for up to a day. Content edits through
+`/contribute` have the same delay.
 
-`/api/*` responses are held in **Cloudflare's shared cache** with
-`s-maxage=86400`. A wrong or changed payload therefore persists for up to a day.
-Editing content through `/contribute` has the same delay — the contribute page
-says so in its own description.
+They also send `max-age=0, must-revalidate`. A browser may keep a copy but must
+check with the edge before using it, so once you purge, every visitor gets the
+new payload on their next request. See
+[architecture.md](./architecture.md#why-some-pages-fetch-their-own-data).
 
-That day is the whole of it. `max-age=0, must-revalidate` on those responses is
-deliberate: a browser may still store a copy, but it may not reuse one without
-revalidating first, so a dashboard purge reaches every visitor on their next
-request — returning visitors included.
-
-After deploying a change to what any `/api/*` endpoint **returns** — a new shape,
-or the same shape carrying different values:
+After deploying any change to what an `/api/*` endpoint returns (a new shape, or
+different values in the same shape):
 
 1. Cloudflare dashboard → the `phoxiv.org` zone → **Caching → Configuration**.
-2. **Purge Everything**, or purge by URL for the affected endpoints:
+2. **Purge Everything**, or purge these URLs:
    - `https://phoxiv.org/api/olympiads`
    - `https://phoxiv.org/api/olympiads/<id>` (one per olympiad)
    - `https://phoxiv.org/api/search`
    - `https://phoxiv.org/api/stats`
-3. Reload the site and confirm the new payload is being served.
+3. Reload the site and check the new payload is served.
 
-**`/api/search/files` can only be cleared by Purge Everything.** Its bodies are
-keyed by query string, so there is no finite list of URLs to enumerate and
-purge-by-URL cannot reach them. Read the trigger as **any change to what that
-endpoint answers**, not only to the shape it answers in: a change to how a query
-becomes a `MATCH` expression leaves `FileSearchResponse` exactly as it was and
-still makes every cached body a stale answer to its own url, for a day. Taking
-the rule narrowly is how a fix that works locally looks like it never deployed.
-Purge Everything is the only option either way — plan for it rather than
-discovering it.
+**`/api/search/files` can only be cleared with Purge Everything.** Its responses
+are keyed by query string, so there is no list of URLs to purge. This applies to
+any change in what it answers, not just its shape. For example, changing how a
+query becomes a `MATCH` expression leaves the shape alone but makes every cached
+answer stale. Skip the purge and a fix that works locally looks like it never
+deployed.
 
-The public shapes are near-frozen for this reason — `OlympiadEntry[]`,
-`YearEntry[]`, `SearchItem[]`, `FileSearchResponse` and the stats triple. A newly
-deployed client
-paired with a day-old cached payload is the failure mode to think about before
-changing one.
+The public shapes are `OlympiadEntry[]`, `YearEntry[]`, `SearchItem[]`,
+`FileSearchResponse` and the stats triple. Before changing one, consider a newly
+deployed client reading a day-old cached body.
 
-`SearchItem[]` gained `problem.topics` when the ⌘K dialog got the olympiad page's
-two filters, and that change is the reason `getSearchIndex` emits `topics: []`
-rather than omitting the key for an untagged problem: on the client `undefined`
-then means exactly "this body predates the field", which is what lets the dialog
-hide the topic filter for the day the old payload lingers instead of offering a
-filter that silently matches nothing. **Purge after deploying that change.**
-Skipping it costs a day in which the ⌘K dialog has no topic filter — degraded,
-not wrong.
+Purging also publishes content edits early. For example, a new `maxScore` shows
+in the year editor at once but on the olympiad page only after the cache turns
+over; purge `https://phoxiv.org/api/olympiads/<id>` to speed it up.
 
-`YearEntry[]`'s problems carry `maxScore`, which makes the delay a _content_
-problem and not only a deploy-time one: a contributor raising a problem's maximum
-sees it in the year editor at once, but the olympiad page keeps showing the old
-denominator for up to a day, exactly as it does for an edited title. A purge of
-`https://phoxiv.org/api/olympiads/<id>` is how to expedite it, and there is no
-in-app path that beats it: `?/trackProblem` deliberately does not send the
-maximum back to the page, so that the shared-cached payload stays the one source
-of it.
-
-**A purge reaches every visitor on their next request.** `must-revalidate`
-stops a browser serving a copy it already holds without checking with the edge
-first, so there is no returning-visitor lag to wait out and no second load to
-account for. Once the purge has landed there is nothing else holding the old
-payload. See
-[architecture.md](./architecture.md#why-some-pages-fetch-their-own-data).
-
-Skipping the purge after a shape change to `YearEntry[]` is survivable rather
-than destructive: a fresh client reading a day-old body renders scores bare, with
-no `/10` and every scored problem counted as `unscaled` in the year ratio. It is
-a stale denominator, not lost data, and it self-heals when the cache turns over.
-
-`/api/auth/[...all]` sets no cache headers at all and must never be given any.
+`/api/auth/[...all]` sets no cache headers and must never be given any.
