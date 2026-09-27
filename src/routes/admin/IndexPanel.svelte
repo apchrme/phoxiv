@@ -102,6 +102,17 @@
 					{stats.indexed} files in the archive. Extraction runs in the contributor's browser on upload;
 					run <code>bun run index:backfill</code> for everything older.
 				</Card.Description>
+				<!-- The panel stays mounted, so this is how to watch a backfill progress. -->
+				<Card.Action>
+					<Button variant="ghost" size="sm" onclick={refresh} disabled={source.loading}>
+						{#if source.loading}
+							<Spinner class="size-3.5" />
+						{:else}
+							<RefreshCw class="size-3.5" />
+						{/if}
+						Refresh
+					</Button>
+				</Card.Action>
 			</Card.Header>
 			<Card.Content class="flex flex-col gap-3">
 				<dl class="flex flex-col gap-2">
@@ -136,70 +147,93 @@
 		<Card.Header class="border-b">
 			<Card.Title>Maintenance</Card.Title>
 			<Card.Description>
-				The index is disposable: it is external-content FTS5, so a rebuild reconstructs it from the
-				stored text with no re-extraction.
+				None of these is routine upkeep. None re-extracts text or touches the files themselves: the
+				index is rebuilt from the text already stored.
 			</Card.Description>
 		</Card.Header>
-		<Card.Content class="flex flex-wrap gap-2">
-			<!--
-				`invalidateAll: false`: these actions change nothing the page load
-				reads, and invalidating would reset the activity log's "Load more"
-				pages. `onDone` runs after the write commits, so the refetch sees it.
-			-->
-			<form
-				method="POST"
-				action="?/ensureIndex"
-				use:enhance={pending.track(() => 'ensureIndex', {
-					invalidateAll: false,
-					onDone: refresh
-				})}
-			>
-				<SubmitButton {pending} key="ensureIndex" variant="outline" busyLabel="Rebuilding…">
-					Rebuild index
-				</SubmitButton>
-			</form>
-			<form
-				method="POST"
-				action="?/optimizeIndex"
-				use:enhance={pending.track(() => 'optimizeIndex', {
-					invalidateAll: false,
-					onDone: refresh
-				})}
-			>
-				<SubmitButton {pending} key="optimizeIndex" variant="outline" busyLabel="Merging…">
-					Merge segments
-				</SubmitButton>
-			</form>
-			<form
-				method="POST"
-				action="?/pruneIndex"
-				use:enhance={pending.track(() => 'pruneIndex', {
-					invalidateAll: false,
-					onDone: refresh
-				})}
-			>
-				<!-- Confirms because it can't be undone, but `outline`, not destructive:
-				     it only removes rows whose files are already gone. -->
-				<ConfirmSubmit
-					{pending}
-					key="pruneIndex"
-					variant="outline"
-					title="Prune orphaned index rows?"
-					description="Index rows for files that no longer exist are deleted. Nothing a reader can see changes: those rows could never appear in search results."
-					confirmLabel="Prune orphans"
+		<!--
+			`invalidateAll: false`: these actions change nothing the page load
+			reads, and invalidating would reset the activity log's "Load more"
+			pages. `onDone` runs after the write commits, so the refetch sees it.
+		-->
+		<Card.Content class="flex flex-col divide-y">
+			<div class="flex flex-col gap-3 pb-4 sm:flex-row sm:items-center sm:justify-between">
+				<div class="flex flex-col gap-1 text-sm">
+					<p class="font-medium">Rebuild index</p>
+					<p class="text-muted-foreground">
+						Re-creates the search index and the triggers that keep it in sync, then refills it from
+						the text already stored. Use it when full-text search returns nothing or errors, for
+						example after a stray <code>db:push</code> dropped the index.
+					</p>
+				</div>
+				<form
+					method="POST"
+					action="?/ensureIndex"
+					class="shrink-0"
+					use:enhance={pending.track(() => 'ensureIndex', {
+						invalidateAll: false,
+						onDone: refresh
+					})}
 				>
-					Prune orphans
-				</ConfirmSubmit>
-			</form>
-			<!-- The panel stays mounted, so this is how to watch a backfill progress. -->
-			<Button variant="ghost" onclick={refresh} disabled={source.loading} class="ml-auto">
-				{#if source.loading}
-					<Spinner class="size-3.5" />
-				{:else}
-					<RefreshCw class="size-3.5" />
-				{/if}
-				Refresh
-			</Button>
+					<SubmitButton {pending} key="ensureIndex" variant="outline" busyLabel="Rebuilding…">
+						Rebuild index
+					</SubmitButton>
+				</form>
+			</div>
+			<div class="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+				<div class="flex flex-col gap-1 text-sm">
+					<p class="font-medium">Merge segments</p>
+					<p class="text-muted-foreground">
+						Compacts the index so searches read fewer pieces of it. Worth running after a large
+						backfill. Each click does a bounded amount of work, so click again if a lot was added.
+					</p>
+				</div>
+				<form
+					method="POST"
+					action="?/optimizeIndex"
+					class="shrink-0"
+					use:enhance={pending.track(() => 'optimizeIndex', {
+						invalidateAll: false,
+						onDone: refresh
+					})}
+				>
+					<SubmitButton {pending} key="optimizeIndex" variant="outline" busyLabel="Merging…">
+						Merge segments
+					</SubmitButton>
+				</form>
+			</div>
+			<div class="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
+				<div class="flex flex-col gap-1 text-sm">
+					<p class="font-medium">Prune orphans</p>
+					<p class="text-muted-foreground">
+						Deletes stored text for files that no longer exist. Those rows never show up in results,
+						so this only reclaims database space and makes the "unseen" count above accurate. Cannot
+						be undone.
+					</p>
+				</div>
+				<form
+					method="POST"
+					action="?/pruneIndex"
+					class="shrink-0"
+					use:enhance={pending.track(() => 'pruneIndex', {
+						invalidateAll: false,
+						onDone: refresh
+					})}
+				>
+					<!-- Confirms because it can't be undone, but `outline`, not destructive:
+					     it only removes rows whose files are already gone. -->
+					<ConfirmSubmit
+						{pending}
+						key="pruneIndex"
+						variant="outline"
+						title="Prune orphaned index rows?"
+						description="Index rows for files that no longer exist are deleted. Nothing a reader can see changes: those rows could never appear in search results."
+						confirmLabel="Prune orphans"
+					>
+						Prune orphans
+					</ConfirmSubmit>
+				</form>
+			</div>
 		</Card.Content>
 	</Card.Root>
 
