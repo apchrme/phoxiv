@@ -170,40 +170,43 @@ export const actions: Actions = {
 			if (!bucket) return actionFail(500, 'saveMetadata', STORAGE_UNAVAILABLE);
 		}
 
-		// ── Nothing below this line may fail the save. ──────────────────────────
-		// There is no transaction, so an `actionFail` after a write reports a failed
-		// save that has half happened. Keep every check above this line.
-		await db
-			.update(years)
-			.set({ notes: JSON.stringify(notes), extraLinks: JSON.stringify(extraLinks) })
-			.where(eq(years.id, yearRow.id))
-			.run();
-
-		for (const { number, title, topics, maxScore: rawMaxScore } of submitted) {
+		// ── Every check is above this line. ─────────────────────────────────────
+		// The writes below are one D1 batch, which is a transaction: the save
+		// happens completely or not at all. Keep every `actionFail` above, so a
+		// refusal never follows a write.
+		const upserts = submitted.map(({ number, title, topics, maxScore: rawMaxScore }) => {
 			// Already validated above; a branch rather than a cast keeps it type-safe.
 			const parsedMaxScore = parseMaxScore(rawMaxScore);
 			const maxScore = parsedMaxScore.ok ? parsedMaxScore.value : null;
-			await db
-				.insert(problems)
-				.values({ yearId: yearRow.id, number, title, topics, maxScore })
-				// `maxScore` must be in `set` too, or blanking it would never clear it.
-				.onConflictDoUpdate({
-					target: [problems.yearId, problems.number],
-					set: { title, topics, maxScore }
-				})
-				.run();
-		}
+			return (
+				db
+					.insert(problems)
+					.values({ yearId: yearRow.id, number, title, topics, maxScore })
+					// `maxScore` must be in `set` too, or blanking it would never clear it.
+					.onConflictDoUpdate({
+						target: [problems.yearId, problems.number],
+						set: { title, topics, maxScore }
+					})
+			);
+		});
+		await db.batch([
+			db
+				.update(years)
+				.set({ notes: JSON.stringify(notes), extraLinks: JSON.stringify(extraLinks) })
+				.where(eq(years.id, yearRow.id)),
+			...upserts,
+			db.delete(problems).where(removed)
+		]);
 
+		// Cleanup after the commit, and best-effort. R2 goes after the rows on
+		// purpose: a failure here leaves unreferenced objects, never rows pointing
+		// at deleted files.
 		if (bucket) {
 			await deleteByUrls(
 				bucket,
 				orphaned.map((f) => f.url)
 			);
 		}
-
-		await db.delete(problems).where(removed).run();
-
-		// Best-effort, like everything below the line.
 		await deleteFileTextForUrls(
 			db,
 			orphaned.map((f) => f.url)
