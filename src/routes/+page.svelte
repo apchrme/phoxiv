@@ -80,7 +80,7 @@
 <div bind:this={pageRoot} class="flex flex-col">
 	<!-- Hero. Shorter than the viewport so the corpus band shows above the fold. -->
 	<section
-		class="relative flex min-h-[calc(100svh-20rem)] flex-col items-center justify-center gap-5 py-6 text-center"
+		class="relative flex min-h-160 flex-col items-center justify-center gap-5 py-6 text-center"
 	>
 		<!-- Blurred logo watermark -->
 		<div
