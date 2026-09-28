@@ -14,14 +14,21 @@ request
   → hooks.server.ts
       platform.env.DB   ──drizzle()──────────→ locals.db
       platform.env      ──createAuth(db, env)→ locals.auth
-      locals.auth.api.getSession(headers)    → locals.user, locals.session  (or null)
+      /api/*:  locals.user, locals.session = null  (no lookup)
+      else:    locals.auth.api.getSession(headers) → locals.user, locals.session  (or null)
   → +layout.server.ts / +page.server.ts / +server.ts
+  → hooks.server.ts appends any Set-Cookie the session lookup produced
 ```
 
 - `db` and `auth` cannot be module-level singletons. Both need `platform.env`,
   which exists only inside a request. See [auth.md](./auth.md#why-createauth-is-a-function).
 - The session is resolved once, in the hook. Routes read `locals.user`; don't
   call `getSession` again.
+- `/api/*` never gets a user. Its responses are shared-cached, so none may
+  depend on who asked or carry `Set-Cookie`; with `locals.user` always null
+  there, none can. `/api/auth/*` reads its cookie through `locals.auth.handler`.
+- The hook forwards the cookie BetterAuth issues when it extends a session, and
+  treats a banned user as signed out. See [auth.md](./auth.md#sessions).
 - App code reads `locals.db`, never the `DB` binding.
 
 ## Caching and the route tree
@@ -39,21 +46,29 @@ The route tree is shaped by two cache policies, in
   `setPrivateCache()`. Pages are cached for four hours in the visitor's browser;
   `private` keeps them out of shared caches because a page can show the
   signed-in user.
-- **Shared.** Cloudflare keeps the body for up to a day, so D1 is hit at most
-  once a day per key. The browser must revalidate on every use, so a dashboard
-  purge reaches everyone on their next request. A wrong payload persists until
-  purged — see [deployment.md](./deployment.md).
+- **Shared.** Cloudflare keeps the body for up to a day. The browser must
+  revalidate on every use, so a dashboard purge reaches everyone on their next
+  request. A wrong payload persists until purged — see
+  [deployment.md](./deployment.md).
 
 About the shared cache:
 
-- Tiered Cache is already on and cannot be changed on the Free plan.
+- It is the Workers Cache API. `adapter-cloudflare`'s worker wraps the app in
+  `caches.default`, so a hit returns before `hooks.server.ts` runs. Don't add a
+  second Cache API layer. Under `bun run preview` it persists in
+  `.wrangler/state/v3/cache`; clear that if a preview serves a stale body.
+- The Cache API is **per data centre**. It is not tiered and does not collapse
+  concurrent misses, and the zone's Tiered Cache setting does not apply to it.
+  So D1 is hit up to once a day per key _per data centre that serves a
+  visitor_, not once a day in total. That matters for `/api/search`, which reads
+  the whole corpus on a miss, now that D1's free-tier daily row limits are
+  enforced.
 - At this traffic level objects are evicted (LRU) long before `s-maxage`
   expires, so raising it buys little. To cut an endpoint's D1 cost, make the
   query cheaper.
-- `adapter-cloudflare`'s worker wraps the app in `caches.default`, so a hit
-  returns before `hooks.server.ts` runs. Don't add a second Cache API layer.
-  Under `bun run preview` it persists in `.wrangler/state/v3/cache`; clear that
-  if a preview serves a stale body.
+- **Purge Everything** clears Cache API entries in every data centre.
+  `caches.default.delete()` from the Worker would clear only the data centre it
+  runs in, so the app cannot purge its own entries after an edit.
 
 ### Routes outside `(reg)`
 
@@ -132,12 +147,16 @@ key matching a folder in the file's path, else `_`.
 
 ## Why some pages fetch their own data
 
-The landing page, the olympiads index and the olympiad page `fetch()` from
-`/api/*` in the browser instead of using a server `load`. A load costs a D1 read
-per visit; the fetch is answered by the shared cache. The data can be up to a day
-old, which is fine for an archive that changes rarely. Changing an `/api/*`
-response shape needs a purge — see
+The landing page, the olympiads index and the olympiad page `fetch()` their
+lists from `/api/*` in the browser instead of using a server `load`. A load costs
+a D1 read per visit; the fetch is answered by the shared cache. The data can be
+up to a day old, which is fine for an archive that changes rarely. Changing an
+`/api/*` response shape needs a purge — see
 [deployment.md](./deployment.md#purging-the-cache-after-an-api-change).
+
+The olympiad page still has a small load: one read of the olympiad's own row, so
+an unknown id is a real 404 and the title and description are server-rendered.
+Its years, problems and files come from `/api/olympiads/[olympiad]`.
 
 ### Per-user progress
 
@@ -193,18 +212,25 @@ Server-only; SvelteKit refuses to bundle it into the client.
 | `thumbs-cli.ts`   | landing-page thumbnail renderer (`bun run thumbs:render`)                            |
 | `db/index.ts`     | re-exports the schema; aliases the `DB` handle type                                  |
 | `db/schema.ts`    | the Drizzle schema, source of generated migrations                                   |
-| `db/relations.ts` | Drizzle relational definitions                                                       |
-| `db/queries/`     | every query, by concern (below)                                                      |
+| `db/queries/`     | shared queries, by concern (below)                                                   |
 
 The three `-cli` modules are never imported by app code. They live here, not in
-a top-level `scripts/`, so `bun run check` covers them. `activity-log.ts` stays
-out of `db/queries/` because the action enum and its never-fail-a-write policy
-live with it.
+a top-level `scripts/`, so `bun run check` covers them.
+
+`db/queries/` holds the reads more than one route needs and the writes with
+rules of their own. A write only one action performs, such as `saveMetadata`'s
+batch or the admin panel's account updates, stays inline in that action, next
+to the checks that guard it. `activity-log.ts` stays out of `db/queries/`
+because its never-fail-a-write policy lives with it. The action enum itself is in
+`schema.ts`, and `LogAction` is derived from it.
+
+Drizzle's relational queries (`db.query`) are not set up: `drizzle()` gets no
+`relations`, and every read uses the core query builder.
 
 | Query module   | Reads / writes                                                               |
 | -------------- | ---------------------------------------------------------------------------- |
-| `olympiads.ts` | the olympiad list and metadata; create, edit, delete                         |
-| `years.ts`     | years, and year-level notes, links and files                                 |
+| `olympiads.ts` | the olympiad list and one olympiad's row; `toOlympiadEntry`, the public DTO  |
+| `years.ts`     | one year's row, an olympiad's year numbers, and creating a year              |
 | `content.ts`   | joined reads for the public API shapes and the year editor; `getSearchIndex` |
 | `progress.ts`  | a user's tracked problems, per olympiad and archive-wide                     |
 | `files.ts`     | the full-text index: query sanitising, reads, writes, upkeep                 |
@@ -213,20 +239,20 @@ live with it.
 
 | Module                        | Responsibility                                                             |
 | ----------------------------- | -------------------------------------------------------------------------- |
-| `types.ts`                    | shared types and enums, including the public API shapes                    |
-| `uploads.ts`                  | the upload allow-list, `slugifyLabel`, `collidingLabel`                    |
+| `types.ts`                    | shared types and enums, the public API shapes, `isOlympiadId`              |
+| `uploads.ts`                  | the upload allow-list, `slugifyLabel`, `collidingLabel`, `isHttpUrl`       |
 | `constants.ts`                | constants both sides need, including `CDN_BASE_URL`                        |
 | `nav.ts`                      | navigation links and `secondaryNavFor(user)`                               |
 | `posts.ts`                    | loads blog posts from `$lib/posts/*.svx`                                   |
-| `activity.ts`                 | display labels for activity-log entries                                    |
+| `activity.ts`                 | activity-log labels, and the assignable roles with their labels            |
 | `progress.ts`                 | score rules for the editor, CSV import, `trackProblem` and problem cards   |
 | `filters.ts`                  | topic and progress predicates for the olympiad page and ⌘K dialog          |
 | `search.ts`                   | deep-search normalisation for the dialog, the endpoint and text extraction |
 | `pdf-text.ts`                 | browser-side PDF text extraction                                           |
 | `forms.svelte.ts`             | `formToasts` and `Pending`                                                 |
 | `resource.svelte.ts`          | `Resource`: fetches a JSON endpoint, tracking value, loading and failure   |
-| `auth-client.ts`              | the BetterAuth browser client                                              |
-| `utils.ts`                    | `cn` only                                                                  |
+| `auth-client.ts`              | the BetterAuth browser client, for sign-in and sign-out                    |
+| `utils.ts`                    | `cn`, and the prop-type helpers the vendored `ui/` components import       |
 | `utils/`                      | `date`, `flag`, `fuzzy`, `json`, `plural`, `topics`                        |
 | `hooks/is-mobile.svelte.ts`   | `IsMobile`, a viewport media query                                         |
 | `prose.svelte`, `post.svelte` | the two mdsvex layouts                                                     |

@@ -65,7 +65,8 @@ This is all of `authOptions`. Everything else is BetterAuth's default.
 | `user.additionalFields` | `assignedOlympiads`, with `input: false`                         |
 | `plugins`               | `admin({ adminRoles: ['admin'] })`                               |
 
-- No session lifetime is configured; BetterAuth's defaults apply.
+- No session lifetime is configured; BetterAuth's defaults apply. See
+  [Sessions](#sessions).
 - Sign-out is BetterAuth's own endpoint, called through `$lib/auth-client.ts`.
 - The session cookie is named `__Secure-better-auth.session_token` on
   `https://phoxiv.org` and `better-auth.session_token` on localhost. A token is
@@ -75,6 +76,29 @@ This is all of `authOptions`. Everything else is BetterAuth's default.
   [deployment.md](./deployment.md#backfilling-the-text-index).
 - `api/auth/[...all]` is the only `/api/` route that reads a cookie. It must
   never get cache headers.
+
+## Sessions
+
+A session lasts seven days, and BetterAuth extends it to seven days again on
+the first lookup after it turns a day old (`expiresIn` and `updateAge`, both
+defaults). Signed-in visitors therefore stay signed in as long as they come
+back within a week.
+
+[`hooks.server.ts`](../src/hooks.server.ts) makes the one lookup per request,
+with three rules:
+
+- **It forwards the refreshed cookie.** When a session is extended, BetterAuth
+  also re-issues the cookie with a new max-age. Called from server code it only
+  hands that `Set-Cookie` back when asked (`returnHeaders: true`), so the hook
+  asks and appends it to the response. Without this, the database row was
+  extended but the cookie still expired seven days after sign-in.
+- **It skips `/api/*`.** Those responses are shared-cached, so they must never
+  depend on the user or carry `Set-Cookie`. `locals.user` is always `null`
+  there. `/api/auth/*` reads its cookie through `locals.auth.handler` instead.
+- **A banned user is signed out.** BetterAuth checks `banned` only when it
+  creates a session, not when it reads one. `banUser` deletes the user's
+  sessions, and the hook ignores any session whose user is banned, which covers
+  bans set by hand in SQL.
 
 ## How an account is identified
 
@@ -116,7 +140,7 @@ Drizzle updates directly.
 | ---------------------- | ---------------------------------------------------------------- | ------------------------------------------- |
 | `setRole`              | sets `role` (`user`, `contributor`, `admin`, or `''` for `null`) | target is you or a superadmin; unknown role |
 | `setAssignedOlympiads` | rewrites `assigned_olympiads`                                    | target is you or a superadmin               |
-| `banUser`              | sets `banned` and a reason                                       | target is you or a superadmin               |
+| `banUser`              | sets `banned` and a reason; deletes the user's sessions          | target is you or a superadmin               |
 | `unbanUser`            | clears them                                                      | target is a superadmin                      |
 | `ensureIndex`          | re-runs the FTS5 DDL, then `'rebuild'`                           | —                                           |
 | `optimizeIndex`        | `('merge', 500)` on the text index                               | —                                           |
@@ -126,6 +150,12 @@ Drizzle updates directly.
   admin can't lock everyone out. `unbanUser` needs no self-check, since you can't
   ban yourself.
 - Every account action checks the superadmin, including `unbanUser`.
+- `banUser` deletes the user's sessions, as BetterAuth's own ban endpoint does.
+  A flag alone is not enough: BetterAuth reads `banned` only when creating a
+  session, so a banned contributor kept editing until their cookie expired. The
+  hook ignores a banned user's sessions too (see [Sessions](#sessions)).
+- Role and assignment changes take effect on the user's next request, because
+  the hook reads the user row fresh each time; nothing is cached in the cookie.
 - The index actions target no account. See
   [search.md](./search.md#operating-the-index).
 
@@ -145,11 +175,13 @@ for `logActivity` ([data-model.md](./data-model.md#activity_log)).
 | Guard                               | Behaviour                                                      |
 | ----------------------------------- | -------------------------------------------------------------- |
 | `requireAdmin(locals)`              | 403 unless `role === 'admin'`                                  |
-| `requireContributor(locals)`        | 303 to `/login` if signed out; 403 unless admin or contributor |
+| `requireContributor(locals, url)`   | 303 to `/login` if signed out; 403 unless admin or contributor |
 | `requireOlympiadEditor(locals, id)` | 403 unless admin, or a contributor assigned to `id`            |
 
 `requireContributor` redirects anonymous visitors because signing in is what they
-need to do. The predicates behind the guards, `canEditOlympiad(user, id)` and
+need to do. It passes the page along as `/login?redirect=<path>`, and the login
+page hands that to BetterAuth as the `callbackURL`, which BetterAuth checks
+against the trusted origins. The predicates behind the guards, `canEditOlympiad(user, id)` and
 `getAssignedOlympiadIds(user)`, accept any `{ role?, assignedOlympiads? }`, so a
 plain DB row works too.
 
@@ -187,8 +219,9 @@ Rules:
 
 ## The client side
 
-[`$lib/auth-client.ts`](../src/lib/auth-client.ts) is a `createAuthClient` with
-the `adminClient` plugin, used for sign-in and sign-out. Components get the user
+[`$lib/auth-client.ts`](../src/lib/auth-client.ts) is a plain `createAuthClient`,
+used only for sign-in and sign-out. It has no `adminClient` plugin: the admin
+panel acts through form actions, never `authClient.admin.*`. Components get the user
 as `data.user` from the root
 [`+layout.server.ts`](../src/routes/+layout.server.ts). It drives the avatar, the
 sign-in button, and whether `secondaryNavFor()` adds the admin link.

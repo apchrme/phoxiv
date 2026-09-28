@@ -61,12 +61,14 @@ it. Never change it; see [data-model.md](./data-model.md#r2-key-layout).
 ## Deploying
 
 ```sh
-bun run format && bun run check && bun run lint   # the gates
+bun run format && bun run check && bun run lint   # the gates, less the build deploy runs
 bun run preview                                   # build + wrangler dev, locally
 bun run deploy                                    # build + wrangler deploy
 ```
 
 `deploy` runs `bun run build && wrangler deploy`, so a failed build never ships.
+The per-commit gates in [contributing.md](./contributing.md#the-gates) include
+the build too, so a broken build is caught before it is committed.
 `preview` serves the same build through `wrangler dev`. It is the only local mode
 that runs the real Worker runtime.
 
@@ -191,7 +193,9 @@ add nothing to the Worker's size.
 `$lib/pdf-text.ts` loads them through a runtime string URL:
 
 ```ts
-const pdfjs = await import(/* @vite-ignore */ '/vendor/pdfjs/pdf.min.mjs');
+const PDFJS_URL = '/vendor/pdfjs/pdf.min.mjs';
+// …
+pdfjsPromise ??= import(/* @vite-ignore */ PDFJS_URL).then(/* set workerSrc */);
 ```
 
 Don't turn this into a normal import. If Vite can resolve an import, Rollup also

@@ -197,12 +197,15 @@ exactly one upsert, as below. That upsert can still reject on a D1 error, so
 3. A hard size gate before the write, well under D1's 2 MB row limit.
 4. The text never becomes HTML. It leaves the server only as a bounded snippet.
 
-Because extraction finishes before submit, the editor reports the outcome before
-anything is stored ("12 pages, 34 000 characters — searchable", "No text found.
-This looks like a scanned PDF…", or "ZIPs aren't searchable" from
-`isExtractable`), so a scan can be swapped for a text PDF. The year editor also
-shows a per-file badge from `getFileTextStatuses`: nothing for `ok`, "no text",
-"not searchable" or "pending".
+Extraction runs on file pick, and **Upload** stays disabled while it runs
+("Reading text…"). Submitting mid-parse would send no text, and the file would
+wait as `pending` for the manual backfill. So the editor reports the outcome
+before anything is stored ("12 pages, 34000 characters — searchable", "No text
+found — this looks like a scanned PDF…", or "This file type isn't searchable,
+but it will upload fine." from `isExtractable`), and a scan can be swapped for a
+text PDF. The year editor also shows a per-file badge from `getFileTextStatuses`:
+nothing for `ok`, "no text", "not searchable", "indexing failed" (`error`) or
+"indexing pending".
 
 ## The index
 
@@ -470,8 +473,9 @@ answer is the same for everyone.
 | well-formed but unknown | 200 with no results (the range finds none) | yes    |
 
 The 400 stops arbitrary strings minting cache keys, each costing a ladder walk.
-An unknown id needs no `SELECT` on `olympiads`. `createOlympiad` only lowercases
-and hyphenates, so its charset and the pattern above must change together.
+An unknown id needs no `SELECT` on `olympiads`. "Well-formed" is
+`isOlympiadId` in `$lib/types.ts`, the same rule `createOlympiad` enforces, so
+every olympiad that can exist can be filtered.
 
 It is `GET` because Cloudflare caches by URL including query string, and never
 caches a POST. `AbortController` on the client saves bandwidth and keeps responses
@@ -528,14 +532,18 @@ because it opens the dialog.
 | `/api/olympiads`   | on first entry into files mode                          |
 | deep-search bodies | once per (query, olympiad) key                          |
 
-- **"Fetched" guards are set only on success**, so a failure retries next open.
-- **Each guard also checks an in-flight flag**, so rapid ⌘K presses don't fire
-  duplicates. (`/progress` is `no-store`, so each would be a D1 read.) The progress
-  flag holds a user id, so a different user's map is still fetched.
-- **The guard flags are plain `let`s, not `$state`.** The fetches run from an
-  `$effect`; guarding on a `$state` loading cell the same function writes would
-  re-run the effect on failure and loop forever. The loading cells stay `$state`
-  for the markup.
+- **The index and the olympiad list are `Resource`s**, loaded with `loadOnce()`
+  from the effects that watch `open` and `mode`. `Resource` remembers only a
+  success, so a failure retries on the next open, and it joins a request already
+  in flight, so rapid ⌘K presses send one.
+- **Progress is hand-rolled, with the same two guards**: a "fetched for" user id
+  set only on success, and an in-flight user id. It is per-user (a response for a
+  user who has since changed is discarded), and `/progress` is `no-store`, so
+  every duplicate would be a D1 read.
+- **Every guard is a plain field, not `$state`.** The fetches run from an
+  `$effect`. Guarding on a `$state` loading cell that the same function writes
+  would re-run the effect on failure and loop forever. The loading cells stay
+  `$state` for the markup.
 - **The olympiad list is fetched, not derived from the problem index**, which only
   knows olympiads with problems. It is fetched on entering files mode so ⌘K costs
   nothing extra for everyone else.
@@ -578,10 +586,12 @@ component, because the debounce depends on being an effect.
 ```ts
 $effect(() => {
 	if (mode !== 'files') return;
-	const key = deepQuery;
+	const key = deepKey; // deepCacheKey(deepQuery, olympiadFilter)
+	const query = deepQuery;
+	const olympiad = olympiadFilter;
 	const _attempt = deep.attempt; // tracked: lets "Try again" re-fire the same query
-	if (key.length < MIN_DEEP_QUERY_LENGTH) return;
-	if (key.length > MAX_DEEP_QUERY_LENGTH) return; // refused, never truncated
+	if (query.length < MIN_DEEP_QUERY_LENGTH) return;
+	if (query.length > MAX_DEEP_QUERY_LENGTH) return; // refused, never truncated
 	if (deep.has(key)) {
 		deep.show(key);
 		return;
@@ -589,7 +599,10 @@ $effect(() => {
 
 	deep.schedule(key); // pending from here, not from inside the timer
 	const controller = new AbortController();
-	const timer = setTimeout(() => void deep.run(key, controller.signal), DEEP_DEBOUNCE_MS);
+	const timer = setTimeout(
+		() => void deep.run(key, query, olympiad, controller.signal),
+		DEEP_DEBOUNCE_MS
+	);
 	return () => {
 		clearTimeout(timer);
 		controller.abort();
@@ -608,16 +621,16 @@ adds no dependency and a landing response can't re-trigger itself. `schedule` an
 
 States are chosen by branch order, in this order:
 
-| State                 | Driven by                   | Shows                                                                    |
-| --------------------- | --------------------------- | ------------------------------------------------------------------------ |
-| Too long              | `deepTooLong`               | "That's too long to search inside files.", with the length and the limit |
-| Failed                | `deep.hasFailed(deepQuery)` | "Couldn't search inside files." + **Try again**                          |
-| Idle / too short      | `deepQuery.length < MIN`    | the explainer, plus "type at least 5 characters" once anything is typed  |
-| Loading, nothing kept | `deepLoading` and no rows   | "Searching inside files…", from the keystroke                            |
-| Still indexing        | `deep.indexEmpty`           | "No files have been indexed yet — this is still catching up."            |
-| No matches            | rows empty, index non-empty | "No files contain that phrase."                                          |
-| Results               | otherwise                   | the list, dimmed (`opacity-60`) while a newer query is in flight         |
-| Truncated             | `deep.truncated`            | "Showing the 20 best-matching files"                                     |
+| State                 | Driven by                   | Shows                                                                                              |
+| --------------------- | --------------------------- | -------------------------------------------------------------------------------------------------- |
+| Too long              | `deepTooLong`               | "That's too long to search inside files.", with the length and the limit                           |
+| Failed                | `deep.hasFailed(deepKey)`   | "Couldn't search inside files." + **Try again**                                                    |
+| Idle / too short      | `deepQuery.length < MIN`    | the explainer, plus "type at least 5 characters" once anything is typed                            |
+| Loading, nothing kept | `deepLoading` and no rows   | "Searching inside files…", from the keystroke                                                      |
+| Still indexing        | `deep.indexEmpty`           | "No files indexed yet", with "The archive is still catching up."                                   |
+| No matches            | rows empty, index non-empty | "No files contain that phrase.", or "No &lt;olympiad&gt; files contain that phrase" under a filter |
+| Results               | otherwise                   | the list, dimmed (`opacity-60`) while a newer query is in flight                                   |
+| Truncated             | `deep.truncated`            | "Showing the 20 best-matching files"                                                               |
 
 "Too long" beats "failed" because it is never sent, so it must override a failure
 left by an earlier query. The spinner replaces the magnifier in the input row.

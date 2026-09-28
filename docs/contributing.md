@@ -108,7 +108,8 @@ each route, focusing on things that break silently:
 **`/admin`**
 
 - Change a role, assign olympiads to a contributor, ban and unban. Confirm the
-  busy state appears on each button.
+  busy state appears on each button, and that a banned user signed in elsewhere
+  is signed out on their next request.
 - Page through the users table; changing a role must not send you back to page 1.
 - Log tab: press **Load more** and check the seam for duplicates.
 - Index tab: counts load on first open and not before (check the network tab),
@@ -116,12 +117,14 @@ each route, focusing on things that break silently:
 
 **`/contribute`** and its editors
 
-- `/contribute`: select an existing olympiad; create a new one.
+- `/contribute`: select an existing olympiad; create a new one, and check an id
+  with `/` or `.` is refused. As a contributor, the "New olympiad" tab is absent.
 - `/contribute/<olympiad>`: add a year, upload and remove an icon, save metadata
   and confirm the icon survived, export and re-import the CSV.
 - `/contribute/<olympiad>/<year>`: a duplicate problem number must be blocked
-  client-side. Reorder and remove rows, save, and confirm the right records
-  changed. Upload a file, delete a file, delete the year.
+  client-side, and a `javascript:` link refused on save. Reorder and remove
+  rows, save, and confirm the right records changed. Upload a file, delete a
+  file, delete the year.
 
 **⌘K search, problem mode**
 
@@ -364,9 +367,10 @@ Tailwind v4, configured in CSS; there is no `tailwind.config.js`.
   | `glass`          | the frosted panel of the nav pills                       |
   | `glass-hairline` | the divider between rows inside a `glass` panel          |
   | `file-input`     | a bare `<input type="file">` styled to match the buttons |
+  | `no-scrollbar`   | scrolls without a visible scrollbar (the sidebar)        |
 
 - **`data-*` variants.** `data-open`, `data-closed`, `data-checked`,
-  `data-selected`, `data-disabled`, `data-active`, `data-horizontal` and
+  `data-unchecked`, `data-selected`, `data-disabled`, `data-active`, `data-horizontal` and
   `data-vertical` cover both of bits-ui's spellings (`[data-state='open']` and
   `[data-open]`). Use them rather than matching either attribute.
 - **Fonts.** DM Sans and JetBrains Mono, self-hosted through

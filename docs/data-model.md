@@ -12,23 +12,38 @@ olympiads ──< years ──< year_files
                              └──< problem_progress >── user
 ```
 
-Every arrow is `ON DELETE CASCADE`: deleting an olympiad removes its years,
-files, problems and every user's progress on them. The cascade only reaches D1.
-Each action must delete its R2 objects itself, and only `deleteYear` currently
-does so in full.
+Every arrow is `ON DELETE CASCADE`: deleting a row removes everything below it,
+including every user's progress on the problems. The cascade only reaches D1, so
+each action deletes its R2 objects itself. Collect the urls before the rows go,
+since the rows are the only record of the keys:
+
+- `deleteYear` removes every object of the year and its problems;
+- `deleteFile` removes the one object;
+- `saveMetadata` removes the objects of problems it drops or renumbers, after
+  its batch commits;
+- `removeIcon` is the only action that leaves an object behind (the next icon
+  upload replaces it).
+
+There is no action that deletes an olympiad; that is done by hand, R2 included.
 
 ### `olympiads`
 
-| Column             | Type    | Notes                                                           |
-| ------------------ | ------- | --------------------------------------------------------------- |
-| `id`               | TEXT PK | The acronym (`ipho`, `apho`). Appears in URLs and R2 keys       |
-| `name`             | TEXT    | not null                                                        |
-| `summary`          | TEXT    | not null; one line, shown on the listing                        |
-| `icon`             | TEXT    | not null, default `''`. An emoji/flag, or a full CDN URL        |
-| `tag`              | TEXT    | not null; `International` \| `Regional` \| `National` \| `Open` |
-| `display_order`    | INTEGER | not null, default `9999`. Lower sorts first; `id` breaks ties   |
-| `description_md`   | TEXT    | nullable. The contributor's draft; never served publicly        |
-| `description_html` | TEXT    | nullable. Rendered and sanitised at write time                  |
+| Column             | Type    | Notes                                                                |
+| ------------------ | ------- | -------------------------------------------------------------------- |
+| `id`               | TEXT PK | The acronym (`ipho`, `apho`). Appears in URLs and R2 keys; see below |
+| `name`             | TEXT    | not null                                                             |
+| `summary`          | TEXT    | not null; one line, shown on the listing                             |
+| `icon`             | TEXT    | not null, default `''`. An emoji/flag, or a full CDN URL             |
+| `tag`              | TEXT    | not null; `International` \| `Regional` \| `National` \| `Open`      |
+| `display_order`    | INTEGER | not null, default `9999`. Lower sorts first; `id` breaks ties        |
+| `description_md`   | TEXT    | nullable. The contributor's draft; never served publicly             |
+| `description_html` | TEXT    | nullable. Rendered and sanitised at write time                       |
+
+`createOlympiad` turns whitespace in the typed id into hyphens, then refuses
+anything `isOlympiadId` rejects: 1-32 lowercase letters, digits and hyphens, not
+starting with a hyphen. The id is a URL segment and an R2 key prefix, so `/`,
+`?`, `#` or `.` would break both. The same rule is what deep search's olympiad
+filter accepts.
 
 `description_html` is the only HTML the app renders with `{@html}`, and only
 [`$lib/server/markdown.ts`](../src/lib/server/markdown.ts) produces it. Don't add
@@ -40,15 +55,20 @@ of `icon` apart by its `http://` or `https://` prefix.
 
 ### `years`
 
-| Column        | Type       | Notes                                          |
-| ------------- | ---------- | ---------------------------------------------- |
-| `id`          | INTEGER PK | autoincrement; never appears in a URL          |
-| `olympiad_id` | TEXT       | → `olympiads.id`, cascade                      |
-| `year`        | INTEGER    | not null                                       |
-| `notes`       | TEXT       | not null, default `'[]'`; JSON `string[]`      |
-| `extra_links` | TEXT       | not null, default `'[]'`; JSON `{label,url}[]` |
+| Column        | Type       | Notes                                                             |
+| ------------- | ---------- | ----------------------------------------------------------------- |
+| `id`          | INTEGER PK | autoincrement; never appears in a URL                             |
+| `olympiad_id` | TEXT       | → `olympiads.id`, cascade                                         |
+| `year`        | INTEGER    | not null                                                          |
+| `notes`       | TEXT       | not null, default `'[]'`; JSON `string[]`                         |
+| `extra_links` | TEXT       | not null, default `'[]'`; JSON `{label,url}[]`, http(s) urls only |
 
 Unique on `(olympiad_id, year)`, which is how the app addresses a year.
+
+Nothing makes notes or link labels unique, so the olympiad page keys those lists
+by index. Link urls become `href`s on a public page, so `saveMetadata` refuses
+anything but `http:` and `https:` (a `javascript:` url would run for whoever
+clicks it), and the page skips any stored before that check existed.
 
 ### `year_files` and `problem_files`
 
@@ -78,6 +98,11 @@ renaming a number deletes the problem, and cascades away its files and every
 user's progress on it. The editor warns about this. The fix is an in-place
 `UPDATE` (`EditableProblem` already carries the row `id`), but it needs its own
 change.
+
+**A save is all or nothing.** The year's notes and links, every problem upsert
+and the delete go in one `db.batch()`, which D1 runs as a transaction. Every
+refusal happens before it, and the R2 and `file_text` cleanup after it. A failed
+cleanup leaves unreferenced objects, never rows pointing at deleted files.
 
 **Topics are never rendered next to a problem**, because that would spoil it.
 They do travel on `/api/olympiads/[olympiad]` and `/api/search`, because both
@@ -331,7 +356,8 @@ Also:
   `collidingLabel` in `$lib/uploads.ts` catches this: `uploadFile` refuses the
   upload and the editor warns first. A label that slugs to nothing is refused.
 - **`<problemNumber>` is not slugified**, because existing keys use the raw
-  number. `saveMetadata` refuses a number containing `/`.
+  number. `saveMetadata` refuses a number containing `/`, and `importTitles`
+  skips such a row as invalid.
 - **Icons are keyed by extension**, so `deleteStaleIcons` removes the other
   extensions before an upload.
 
