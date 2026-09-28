@@ -5,28 +5,14 @@
 	import brand from '$lib/assets/branding/brand.svg';
 	import logo from '$lib/assets/branding/logo.svg';
 	import { onMount } from 'svelte';
-	import { Resource } from '$lib/resource.svelte';
 	import { gsap } from 'gsap';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 	import CorpusBand from './CorpusBand.svelte';
 	import FeatureBlocks from './FeatureBlocks.svelte';
+	import StatsBand from './StatsBand.svelte';
 	import type { PageProps } from './$types';
 
 	const { data }: PageProps = $props();
-
-	/**
-	 * Null until the counts arrive, and on failure. Don't seed it with zeroes, or
-	 * a failed fetch shows an empty archive.
-	 */
-	const stats = new Resource<Record<string, number>>('/api/stats');
-
-	onMount(() => void stats.loadOnce());
-
-	const statItems = $derived([
-		{ value: stats.value?.olympiads, label: 'Olympiads' },
-		{ value: stats.value?.years, label: 'Years' },
-		{ value: stats.value?.files, label: 'Files' }
-	]);
 
 	let pageRoot: HTMLElement | undefined = $state();
 	onMount(() => {
@@ -40,14 +26,10 @@
 
 		const ctx = gsap.context(() => {
 			// Hide synchronously so nothing flashes before the reveal.
-			gsap.set(
-				['.hero-brand', '.hero-phonetic', '.hero-headline', '.hero-desc', '.hero-cta', '.stat'],
-				{
-					autoAlpha: 0,
-					y: 20
-				}
-			);
-			gsap.set('.stat-item', { autoAlpha: 0, y: 30 });
+			gsap.set(['.hero-brand', '.hero-phonetic', '.hero-headline', '.hero-desc', '.hero-cta'], {
+				autoAlpha: 0,
+				y: 20
+			});
 
 			gsap
 				.timeline({ defaults: { ease: 'power3.out' } })
@@ -59,18 +41,18 @@
 					'.hero-cta',
 					{ autoAlpha: 1, y: 0, duration: dur(0.5), stagger: dur(0.1), ease: 'power3.out' },
 					'-=0.5'
-				)
-				.to('.stat', { autoAlpha: 1, y: 0, duration: dur(0.5) }, '-=0.5')
-				.to(
-					'.stat-item',
-					{ autoAlpha: 1, y: 0, duration: dur(0.7), stagger: dur(0.12), ease: 'power3.out' },
-					'-=0.4'
 				);
 
 			// Scroll reveals. The context is rooted at `pageRoot`, so these selectors
-			// reach into CorpusBand and FeatureBlocks. Keep using `dur()`, not
+			// reach into CorpusBand, StatsBand and FeatureBlocks. Keep using `dur()`, not
 			// skipping the tweens: under reduced motion the sections would stay hidden.
-			const revealed = ['.corpus-lede', '.corpus-band', '.feature-block', '.closing'];
+			const revealed = [
+				'.corpus-lede',
+				'.corpus-band',
+				'.stats-band',
+				'.feature-block',
+				'.closing'
+			];
 			gsap.set(revealed, { autoAlpha: 0, y: 30 });
 
 			for (const el of gsap.utils.toArray<HTMLElement>(revealed)) {
@@ -145,26 +127,10 @@
 				{data.user ? 'Contribute' : 'Login'}
 			</Button>
 		</div>
-
-		<div class="stat mx-auto flex w-[80vw] max-w-md flex-row overflow-hidden rounded-2xl glass">
-			{#each statItems as { value, label }, i (label)}
-				<div class="stat-item flex flex-1 flex-col items-center gap-1.5 px-4 py-4">
-					<span class="font-mono text-2xl leading-none font-bold text-foreground tabular-nums">
-						{value ?? '—'}
-					</span>
-					<span class="font-mono text-xs tracking-widest text-muted-foreground uppercase">
-						{label}
-					</span>
-				</div>
-				{#if i < statItems.length - 1}
-					<div class="h-auto w-px self-stretch bg-border/60" aria-hidden="true"></div>
-				{/if}
-			{/each}
-		</div>
 	</section>
 
 	<!-- Corpus band -->
-	<section class="flex flex-col gap-5 pb-20 sm:pb-28">
+	<section class="flex flex-col gap-5 pb-12 sm:pb-16">
 		<div class="corpus-lede flex flex-col gap-1.5">
 			<h2
 				class="m-0 text-center text-2xl leading-tight font-[1000] tracking-tight text-foreground sm:text-3xl"
@@ -174,6 +140,11 @@
 		</div>
 
 		<CorpusBand />
+	</section>
+
+	<!-- Counts. Below the band so the hero stays to the brand, pitch and CTAs. -->
+	<section class="pb-20 sm:pb-28">
+		<StatsBand />
 	</section>
 
 	<!-- Features -->

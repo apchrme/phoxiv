@@ -130,14 +130,16 @@
 				{@render children?.()}
 			</main>
 
-			<footer class="mt-auto pt-12 pb-5 px-5">
+			<footer class="mt-auto px-2 pt-5 pb-5">
 				<Separator class="mb-3" />
 				<!-- ScrollToTop is fixed over the bottom-right corner (right-6, size-10), so
 				     below `lg`, where this column runs to the edge, `pr-14` keeps the buttons
 				     clear of it. From `lg` the column's own margin is wide enough. -->
-				<div class="flex flex-col items-baseline md:items-center justify-between gap-4 md:flex-row">
+				<div class="flex flex-col items-baseline justify-between gap-2 lg:flex-row lg:items-center">
 					<!-- Placeholder until the quote is chosen. -->
-					<a class="m-0 text-sm text-muted-foreground italic" href="https://olimpicos.net/">"Imitation is the sincerest form of flattery that mediocrity can pay to greatness" - Charles Colton
+					<a class="m-0 text-sm text-muted-foreground italic" href="https://olimpicos.net/"
+						>"Imitation is the sincerest form of flattery that mediocrity can pay to greatness" -
+						Charles Colton
 					</a>
 					<div class="flex shrink-0 flex-row gap-1">
 						<GitHubButton /><DiscordButton />

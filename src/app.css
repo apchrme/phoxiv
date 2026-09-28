@@ -187,7 +187,7 @@ html.dark {
    make a component instead.
    ================================================ */
 
-/** Frosted-glass panel: the nav pills and the landing stat bar. */
+/** Frosted-glass panel: the nav pills. */
 @utility glass {
 	@apply border border-white/65 bg-white/45 shadow-lg ring-1 shadow-violet-500/5 ring-white/50 backdrop-blur-xl ring-inset;
 	@apply dark:border-white/10 dark:bg-white/5 dark:shadow-black/40 dark:ring-white/5;

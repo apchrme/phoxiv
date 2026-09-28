@@ -359,11 +359,11 @@ Tailwind v4, configured in CSS; there is no `tailwind.config.js`.
 - **Surface utilities.** `@utility` rules, because the same look applies to
   different elements. If the markup repeats too, make a component instead.
 
-  | Utility          | What it is                                                  |
-  | ---------------- | ----------------------------------------------------------- |
-  | `glass`          | the frosted panel of the nav pills and the landing stat bar |
-  | `glass-hairline` | the divider between rows inside a `glass` panel             |
-  | `file-input`     | a bare `<input type="file">` styled to match the buttons    |
+  | Utility          | What it is                                               |
+  | ---------------- | -------------------------------------------------------- |
+  | `glass`          | the frosted panel of the nav pills                       |
+  | `glass-hairline` | the divider between rows inside a `glass` panel          |
+  | `file-input`     | a bare `<input type="file">` styled to match the buttons |
 
 - **`data-*` variants.** `data-open`, `data-closed`, `data-checked`,
   `data-selected`, `data-disabled`, `data-active`, `data-horizontal` and

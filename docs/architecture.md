@@ -79,7 +79,7 @@ src/routes/
 ├── +layout.ts                  legacy 308 redirects; passes data through
 ├── +error.svelte, AppSidebar.svelte
 ├── +page.svelte / .server.ts   landing page; fetches /api/stats and /api/olympiads
-├── CorpusBand, CorpusTile, FeatureBlocks (.svelte), corpus.ts   landing-page parts
+├── CorpusBand, CorpusTile, StatsBand, FeatureBlocks (.svelte), corpus.ts   landing-page parts
 │
 ├── (reg)/                      private browser cache
 │   ├── olympiads/              index, and [olympiad]/ with YearPanel, ProblemCard,
