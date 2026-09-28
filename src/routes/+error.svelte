@@ -9,8 +9,8 @@
 
 <!-- Only the status goes in the title; a full sentence is too big at heading size. -->
 
-<div class="flex flex-col gap-5 items-center justify-center h-[80svh]">
-	<h1 class="text-4xl text-center">Error {page.status}: {page.error?.message}</h1>
+<div class="flex h-[80svh] flex-col items-center justify-center gap-5">
+	<h1 class="text-center text-4xl">Error {page.status}: {page.error?.message}</h1>
 	{#if descriptions[page.status]}
 		<p class="m-0 prose text-center text-muted-foreground">{descriptions[page.status]}</p>
 	{/if}

@@ -82,7 +82,7 @@
 </script>
 
 <section bind:this={bandEl} class="stats-band">
-	<dl class="m-0 grid grid-cols-1 xs:grid-cols-3 gap-5 sm:gap-8">
+	<dl class="m-0 grid grid-cols-1 gap-5 xs:grid-cols-3 sm:gap-8">
 		{#each items as { value, label } (label)}
 			<!-- Reversed so the dt can come first in the markup, as <dl> requires. -->
 			<div class="flex flex-col-reverse items-center gap-2 text-center">
@@ -90,10 +90,10 @@
 					{label}
 				</dt>
 				<!-- Weight 1000 to match the headlines; see the note in +page.svelte. -->
-				<dd class="m-0 font-[1000] font-mono tracking-tight text-foreground">
+				<dd class="m-0 font-mono font-[1000] tracking-tight text-foreground">
 					{#if value === undefined}
 						<!-- Same line box as a reel, so the band doesn't jump when counts land. -->
-						<span class="block text-4xl md:text-6xl text-foreground/15">—</span>
+						<span class="block text-4xl text-foreground/15 md:text-6xl">—</span>
 					{:else}
 						<span class="sr-only">{value}</span>
 						<!--
@@ -102,7 +102,7 @@
 							drum turning, not a list sliding.
 						-->
 						<span
-							class="stat-reels flex h-[2.5em] md:h-[4em] items-start overflow-hidden tabular-nums gap-1"
+							class="stat-reels flex h-[2.5em] items-start gap-1 overflow-hidden tabular-nums md:h-[4em]"
 							style="mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent); -webkit-mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent);"
 							aria-hidden="true"
 						>
