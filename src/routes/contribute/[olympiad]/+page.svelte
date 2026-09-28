@@ -35,6 +35,8 @@
 		maxScoresFilled: number;
 		kept: number;
 		yearsCreated: number;
+		/** Rows with no valid year or number (or a `/` in it), which were skipped. */
+		skippedInvalid: number;
 		/** Unreadable `max_score` cells, which were ignored. */
 		badMaxScores: number;
 	};
@@ -43,6 +45,7 @@
 			`Import complete — ${s.created} created, ${s.filled} titles filled, ` +
 			`${s.topicsFilled} topics filled, ${s.maxScoresFilled} max scores filled, ${s.kept} kept` +
 			`${s.yearsCreated ? `, ${s.yearsCreated} years added` : ''}` +
+			`${s.skippedInvalid ? `, ${s.skippedInvalid} invalid rows skipped` : ''}` +
 			`${s.badMaxScores ? `, ${s.badMaxScores} max scores ignored` : ''}.`
 		);
 	}

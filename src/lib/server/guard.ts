@@ -42,10 +42,11 @@ export function requireAdmin(locals: App.Locals): GuardedContext {
 
 /**
  * Throws 403 unless the user is a contributor or admin; redirects anonymous
- * visitors to login. Per-olympiad checks use {@link requireOlympiadEditor}.
+ * visitors to login, which sends them back to `url` afterwards. Per-olympiad
+ * checks use {@link requireOlympiadEditor}.
  */
-export function requireContributor(locals: App.Locals): GuardedContext {
-	if (!locals.user) redirect(303, '/login');
+export function requireContributor(locals: App.Locals, url: URL): GuardedContext {
+	if (!locals.user) redirect(303, `/login?redirect=${encodeURIComponent(url.pathname)}`);
 	if (locals.user.role !== 'admin' && locals.user.role !== 'contributor') {
 		error(403, 'Unauthorised');
 	}

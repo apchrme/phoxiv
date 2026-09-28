@@ -10,6 +10,8 @@
  *   extracted text identically, or the index and snippet offsets disagree.
  */
 
+import { isOlympiadId } from '$lib/types';
+
 // ── Query bounds ────────────────────────────────────────────────────────────
 
 /** Below this, no D1 read happens at all. A ⌘K box is nothing but prefixes. */
@@ -66,11 +68,10 @@ export function normalizeOlympiadFilter(raw: string | null): string | null {
  * (the value is a bound parameter). A malformed value gets a 400, which is not
  * cached.
  *
- * `createOlympiad` does not restrict its slug charset, so keep this pattern in
- * step with the ids it can produce, or a new olympiad becomes unfilterable.
+ * The same rule `createOlympiad` enforces, so every olympiad is filterable.
  */
 export function isOlympiadFilter(id: string): boolean {
-	return /^[a-z0-9][a-z0-9-]{0,31}$/.test(id);
+	return isOlympiadId(id);
 }
 
 // ── Extraction ──────────────────────────────────────────────────────────────

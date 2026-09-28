@@ -63,6 +63,15 @@
 	const isUnsluggable = $derived(label.trim().length > 0 && !slugifyLabel(label.trim()));
 	const isInvalid = $derived(collision !== null || isUnsluggable);
 
+	/**
+	 * The submit guard. Also refuses while the text is still being read: the
+	 * upload would carry no text and wait for the manual backfill.
+	 */
+	function submitError(): string | null {
+		if (extracting) return 'Still reading the file — wait a moment before uploading.';
+		return labelError();
+	}
+
 	/** Shared by the field and the submit guard. */
 	function labelError(): string | null {
 		if (isUnsluggable) return 'Label must include a letter or number.';
@@ -220,7 +229,7 @@
 		use:enhance={pending.track(() => key, {
 			reset: true,
 			// Props are lazy getters, so this sees the current `existingFiles`.
-			guard: () => labelError(),
+			guard: () => submitError(),
 			onDone: () => {
 				label = '';
 				extracted = null;
@@ -266,7 +275,13 @@
 					class="file-input"
 				/>
 			</Field>
-			<SubmitButton {pending} {key} busyLabel="Uploading…" disabled={isInvalid} class="shrink-0">
+			<SubmitButton
+				{pending}
+				{key}
+				busyLabel="Uploading…"
+				disabled={isInvalid || extracting}
+				class="shrink-0"
+			>
 				Upload
 			</SubmitButton>
 		</div>

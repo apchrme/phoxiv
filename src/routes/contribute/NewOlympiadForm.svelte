@@ -15,7 +15,7 @@
 
 	/**
 	 * Creates an olympiad and its first year, then opens the year editor.
-	 * Admin-only on the server, though every contributor sees the tab. The server
+	 * Admin-only on the server; the page shows the tab only to admins. The server
 	 * prefers the uploaded icon over the emoji. `TagSelect` must stay inside the
 	 * `<form>`: it submits via a hidden input.
 	 */

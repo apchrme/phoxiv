@@ -11,6 +11,9 @@
 
 	let tab = $state('existing');
 
+	/** `createOlympiad` is admin-only, so contributors don't get a form that always fails. */
+	const isAdmin = $derived(data.user?.role === 'admin');
+
 	/** The single `Pending` for the page, passed down to both forms. */
 	const pending = new Pending();
 
@@ -28,14 +31,18 @@
 <Tabs.Root class="mx-auto max-w-xl gap-5" bind:value={tab}>
 	<Tabs.List variant="default">
 		<Tabs.Trigger value="existing">Existing olympiad</Tabs.Trigger>
-		<Tabs.Trigger value="new">New olympiad</Tabs.Trigger>
+		{#if isAdmin}
+			<Tabs.Trigger value="new">New olympiad</Tabs.Trigger>
+		{/if}
 	</Tabs.List>
 
 	<Tabs.Content value="existing">
 		<SelectYearForm olympiads={data.olympiads} {pending} />
 	</Tabs.Content>
 
-	<Tabs.Content value="new">
-		<NewOlympiadForm {pending} />
-	</Tabs.Content>
+	{#if isAdmin}
+		<Tabs.Content value="new">
+			<NewOlympiadForm {pending} />
+		</Tabs.Content>
+	{/if}
 </Tabs.Root>

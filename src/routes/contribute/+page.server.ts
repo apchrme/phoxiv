@@ -17,7 +17,7 @@ import {
 import { cdnUrl, getBucket, iconKey, STORAGE_UNAVAILABLE } from '$lib/server/storage';
 import { validateUpload } from '$lib/server/uploads';
 import { ICON_UPLOAD } from '$lib/uploads';
-import { isOlympiadTag } from '$lib/types';
+import { isOlympiadId, isOlympiadTag } from '$lib/types';
 
 /** The olympiads this user may pick from — all of them for admins. */
 export const load: PageServerLoad = async ({ locals }) => {
@@ -59,7 +59,8 @@ export const actions: Actions = {
 		const { db, user } = requireAdmin(locals);
 
 		const data = await request.formData();
-		// Ids appear in URLs and R2 keys, so they are slugified rather than validated.
+		// Ids appear in URLs and R2 keys: whitespace becomes a hyphen, then the result
+		// is validated below.
 		const id = field(data, 'id').toLowerCase().replace(/\s+/g, '-');
 		const name = field(data, 'name');
 		const summary = field(data, 'summary');
@@ -72,6 +73,15 @@ export const actions: Actions = {
 
 		if (!id || !name || !summary || !tag || year === null) {
 			return actionFail(400, 'createOlympiad', 'All required fields must be filled in');
+		}
+		// Anything else (`/`, `?`, `#`, `.`) would break URLs and R2 keys, and the
+		// olympiad couldn't be picked in deep search's filter.
+		if (!isOlympiadId(id)) {
+			return actionFail(
+				400,
+				'createOlympiad',
+				'The ID may use only lowercase letters, digits and hyphens (at most 32), and cannot start with a hyphen'
+			);
 		}
 		if (!isOlympiadTag(tag)) return actionFail(400, 'createOlympiad', 'Invalid tag');
 

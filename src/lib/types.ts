@@ -11,6 +11,16 @@ export function isOlympiadTag(value: string): value is OlympiadTag {
 	return (OLYMPIAD_TAGS as readonly string[]).includes(value);
 }
 
+/**
+ * Whether `id` is a well-formed olympiad id: 1-32 lowercase letters, digits and
+ * hyphens, not starting with a hyphen. Ids are URL segments and R2 key prefixes,
+ * so `createOlympiad` refuses anything else, and deep search's olympiad filter
+ * accepts exactly this set.
+ */
+export function isOlympiadId(id: string): boolean {
+	return /^[a-z0-9][a-z0-9-]{0,31}$/.test(id);
+}
+
 /** An olympiad, as served publicly. */
 export type OlympiadEntry = {
 	id: string;

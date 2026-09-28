@@ -216,7 +216,9 @@ export const actions: Actions = {
 			const title = (r.title ?? '').trim() || null;
 			// Unrecognised topic names are ignored.
 			const topics = parseTopicsCsvCell(r.topics);
-			if (year === null || !number) {
+			// A `/` would nest the problem's R2 keys, and `saveMetadata` refuses it, so
+			// an imported one would block every later save of that year.
+			if (year === null || !number || number.includes('/')) {
 				skippedInvalid++;
 				continue;
 			}

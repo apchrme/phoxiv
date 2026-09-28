@@ -29,7 +29,7 @@
 
 	const olympiads = $derived(source.value ?? []);
 
-	const filtered = $derived(() => {
+	const filtered = $derived.by(() => {
 		const q = query.trim().toLowerCase();
 		return olympiads.filter(
 			(c) => (activeTag === null || c.tag === activeTag) && matchesOlympiadText(c, q)
@@ -85,9 +85,9 @@
 				<Button variant="outline" size="sm" onclick={() => location.reload()}>Reload</Button>
 			{/snippet}
 		</EmptyState>
-	{:else if filtered().length > 0}
+	{:else if filtered.length > 0}
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">
-			{#each filtered() as olympiad (olympiad.id)}
+			{#each filtered as olympiad (olympiad.id)}
 				<a href={resolve(`/olympiads/${olympiad.id}`)} class="group z-10 block">
 					<Card.Root
 						class="h-full p-5 inset-ring shadow-primary inset-ring-accent transition-all duration-250 hover:-translate-y-2 hover:shadow-lg/15 hover:inset-ring-primary/50"
