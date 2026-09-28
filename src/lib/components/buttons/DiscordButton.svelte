@@ -6,6 +6,6 @@
 	import DiscordBlack from '$lib/assets/icons/Discord-Symbol-Black.svg';
 </script>
 
-<Button variant="outline" size="icon" href="https://discord.gg/SNBDY5nsgf" target="_blank">
+<Button variant="ghost" size="icon" href="https://discord.gg/SNBDY5nsgf" target="_blank">
 	<ThemedImage light={DiscordBlack} dark={DiscordWhite} alt="Discord" class="scale-60 opacity-75" />
 </Button>

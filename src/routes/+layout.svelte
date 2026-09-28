@@ -18,6 +18,9 @@
 	import brand from '$lib/assets/branding/brand.svg';
 	import * as Kbd from '$lib/components/ui/kbd/index.js';
 	import DarkModeButton from '$lib/components/buttons/DarkModeButton.svelte';
+	import GitHubButton from '$lib/components/buttons/GitHubButton.svelte';
+	import DiscordButton from '$lib/components/buttons/DiscordButton.svelte';
+	import { Separator } from '$lib/components/ui/separator/index.js';
 	import { PRIMARY_NAV, secondaryNavFor } from '$lib/nav';
 
 	const secondaryNav = $derived(secondaryNavFor(data.user));
@@ -43,7 +46,8 @@
 	<AppSidebar navLinks={[...PRIMARY_NAV, ...secondaryNav]} user={data.user} />
 	<!-- CorpusBand's full-bleed margins undo this column's `px-4` and widths. -->
 	<div class="flex min-h-screen w-full flex-col items-center bg-background px-4 pt-6 pb-3">
-		<div class="w-full lg:w-5/6 xl:w-2/3">
+		<!-- A flex column so the footer's `mt-auto` pins it to the bottom of short pages. -->
+		<div class="flex w-full flex-1 flex-col lg:w-5/6 xl:w-2/3">
 			<!-- Mobile nav — glass pill -->
 			<nav
 				class="sticky top-3 z-40 flex flex-row flex-wrap items-center justify-between gap-2 rounded-full glass p-1.5 md:hidden"
@@ -125,6 +129,21 @@
 			<main>
 				{@render children?.()}
 			</main>
+
+			<footer class="mt-auto pt-12 pb-5 px-5">
+				<Separator class="mb-3" />
+				<!-- ScrollToTop is fixed over the bottom-right corner (right-6, size-10), so
+				     below `lg`, where this column runs to the edge, `pr-14` keeps the buttons
+				     clear of it. From `lg` the column's own margin is wide enough. -->
+				<div class="flex flex-col items-baseline md:items-center justify-between gap-4 md:flex-row">
+					<!-- Placeholder until the quote is chosen. -->
+					<p class="m-0 text-sm text-muted-foreground italic">"Imitation is the sincerest form of flattery that mediocrity can pay to greatness" - Charles Colton
+</p>
+					<div class="flex shrink-0 flex-row gap-1">
+						<GitHubButton /><DiscordButton />
+					</div>
+				</div>
+			</footer>
 		</div>
 	</div>
 </Sidebar.Provider>

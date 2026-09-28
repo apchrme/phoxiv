@@ -74,7 +74,7 @@ sets no cache headers, and must not: it carries `Set-Cookie` and session state.
 
 ```
 src/routes/
-├── +layout.svelte              shell: sidebar, nav, GlobalSearch, toaster
+├── +layout.svelte              shell: sidebar, nav, footer, GlobalSearch, toaster
 ├── +layout.server.ts           exposes locals.user to every page
 ├── +layout.ts                  legacy 308 redirects; passes data through
 ├── +error.svelte, AppSidebar.svelte

@@ -6,8 +6,6 @@
 	import logo from '$lib/assets/branding/logo.svg';
 	import { onMount } from 'svelte';
 	import { Resource } from '$lib/resource.svelte';
-	import GitHubButton from '$lib/components/buttons/GitHubButton.svelte';
-	import DiscordButton from '$lib/components/buttons/DiscordButton.svelte';
 	import { gsap } from 'gsap';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
 	import CorpusBand from './CorpusBand.svelte';
@@ -136,21 +134,16 @@
 		</p>
 
 		<!-- CTAs -->
-		<div class="relative z-10 flex flex-col justify-center gap-3 xs:flex-row">
-			<div class="hero-cta flex flex-row justify-center gap-2">
-				<Button href={resolve('/olympiads')}>Browse olympiads</Button>
+		<div class="hero-cta relative z-10 flex flex-row justify-center gap-2">
+			<Button href={resolve('/olympiads')}>Browse olympiads</Button>
 
-				<Button
-					href={data.user ? resolve('/contribute') : resolve('/login')}
-					variant="outline"
-					class="border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10"
-				>
-					{data.user ? 'Contribute' : 'Login'}
-				</Button>
-			</div>
-			<div class="hero-cta flex flex-row justify-center gap-2">
-				<GitHubButton /><DiscordButton />
-			</div>
+			<Button
+				href={data.user ? resolve('/contribute') : resolve('/login')}
+				variant="outline"
+				class="border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10"
+			>
+				{data.user ? 'Contribute' : 'Login'}
+			</Button>
 		</div>
 
 		<div class="stat mx-auto flex w-[80vw] max-w-md flex-row overflow-hidden rounded-2xl glass">
