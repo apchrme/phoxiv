@@ -37,7 +37,7 @@
 			</div>
 			<div class="flex flex-col items-center gap-1 text-center">
 				<h1 class="text-2xl font-bold tracking-tight">Sign in/Sign up</h1>
-				<p class="text-sm text-muted-foreground">Watch out for upcoming features!</p>
+				<p class="text-sm text-muted-foreground">Sign in to track your progress as you do problems!</p>
 			</div>
 		</div>
 
@@ -61,12 +61,6 @@
 				</button>
 			</div>
 
-			<div class="border-t border-border bg-muted/30 px-6 py-4">
-				<p class="text-center text-xs leading-relaxed text-muted-foreground">
-					Only contributors need an account. Browsing olympiad problems is open to everyone — no
-					sign-in required.
-				</p>
-			</div>
 		</div>
 	</div>
 </div>
