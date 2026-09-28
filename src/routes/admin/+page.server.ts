@@ -1,6 +1,6 @@
 import type { Actions, PageServerLoad } from './$types';
 import { eq } from 'drizzle-orm';
-import { user } from '$lib/server/db';
+import { session, user } from '$lib/server/db';
 import { isProtectedSuperadmin, requireAdmin } from '$lib/server/guard';
 import { listActivity } from '$lib/server/activity-log';
 import { listOlympiadOptions } from '$lib/server/db/queries/olympiads';
@@ -116,6 +116,10 @@ export const actions: Actions = {
 		}
 
 		await db.update(user).set({ banned: true, banReason: reason }).where(eq(user.id, userId)).run();
+		// BetterAuth only checks `banned` when a session is created, so without
+		// this a banned user kept every session they already had. Its own
+		// `banUser` endpoint does the same; `hooks.server.ts` is the backstop.
+		await db.delete(session).where(eq(session.userId, userId)).run();
 
 		return ok('banUser');
 	},

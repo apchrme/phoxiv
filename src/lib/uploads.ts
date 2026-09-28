@@ -132,3 +132,18 @@ export function collidingLabel(existing: readonly string[], candidate: string): 
 export function isIconUrl(icon: string): boolean {
 	return icon.startsWith('https://') || icon.startsWith('http://');
 }
+
+/**
+ * True when `value` is an absolute http(s) URL. Contributor-typed links are
+ * rendered as `href`s on public pages, and `type="url"` accepts
+ * `javascript:alert(1)`, so `saveMetadata` checks this and the olympiad page
+ * re-checks stored links.
+ */
+export function isHttpUrl(value: string): boolean {
+	try {
+		const { protocol } = new URL(value);
+		return protocol === 'http:' || protocol === 'https:';
+	} catch {
+		return false;
+	}
+}

@@ -18,7 +18,7 @@ import {
 	STORAGE_UNAVAILABLE
 } from '$lib/server/storage';
 import { validateUpload } from '$lib/server/uploads';
-import { collidingLabel, DOCUMENT_UPLOAD } from '$lib/uploads';
+import { collidingLabel, DOCUMENT_UPLOAD, isHttpUrl } from '$lib/uploads';
 import { parseLabelledUrls, parseStringArray } from '$lib/utils/json';
 import { parseTopics, serializeTopics } from '$lib/utils/topics';
 import { parseMaxScore } from '$lib/progress';
@@ -94,6 +94,17 @@ export const actions: Actions = {
 		const extraLinks = linkLabels
 			.map((label, i) => ({ label: label.trim(), url: (linkUrls[i] ?? '').trim() }))
 			.filter((l) => l.label && l.url);
+
+		// The olympiad page renders these as `href`s, so a `javascript:` URL would be
+		// stored XSS against whoever clicks it, admins included.
+		const badLink = extraLinks.find((l) => !isHttpUrl(l.url));
+		if (badLink) {
+			return actionFail(
+				400,
+				'saveMetadata',
+				`Link "${badLink.label}" must be a web address starting with http:// or https://`
+			);
+		}
 
 		const rawNumbers = fieldList(data, 'problemNumber').map((n) => n.trim());
 		const rawTitles = fieldList(data, 'problemTitle');

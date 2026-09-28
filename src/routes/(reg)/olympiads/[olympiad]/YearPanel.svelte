@@ -5,6 +5,7 @@
 	import { formatScore, progressKey, yearTotals, type ProgressMap } from '$lib/progress';
 	import ProblemCard from './ProblemCard.svelte';
 	import { hasYearLevelContent, type FilteredYear } from './filter';
+	import { isHttpUrl } from '$lib/uploads';
 
 	/**
 	 * One year: its notes, links and files, then the matching problems. The card
@@ -30,6 +31,12 @@
 
 	/** From `year.problems`, not `matchedProblems`, so filtering doesn't change the totals. */
 	const totals = $derived(yearTotals(year.year, year.problems, progress));
+
+	/**
+	 * `saveMetadata` refuses non-http(s) links; this drops any stored before it
+	 * did, since a `javascript:` href here would run for whoever clicks it.
+	 */
+	const links = $derived(year.extraLinks.filter((link) => isHttpUrl(link.url)));
 </script>
 
 <Card.Root id={String(year.year)}>
@@ -63,12 +70,14 @@
 	<div class="flex flex-col gap-4 px-3 sm:px-5">
 		{#if showYearLevel && hasYearLevelContent(year)}
 			<div class="flex flex-col gap-2">
-				{#each year.notes as note (note)}
+				<!-- Keyed by index: nothing makes notes or link labels unique, and a
+				     duplicate key breaks the list. -->
+				{#each year.notes as note, i (i)}
 					<p class="m-0 text-sm text-muted-foreground">{note}</p>
 				{/each}
-				{#if year.extraLinks.length > 0 || year.yearFiles.length > 0}
+				{#if links.length > 0 || year.yearFiles.length > 0}
 					<div class="flex flex-wrap gap-2">
-						{#each year.extraLinks as link (link.label)}
+						{#each links as link, i (i)}
 							<FileBadge href={link.url} label={link.label} external />
 						{/each}
 						{#each year.yearFiles as file (file.label)}
