@@ -106,7 +106,7 @@
 		<h1
 			class="hero-headline relative z-10 m-0 max-w-[30ch] text-3xl leading-[1.05] font-[1000] tracking-tight text-balance text-foreground sm:text-5xl"
 		>
-			Every olympiad. One place.
+			Every olympiad, one place.
 		</h1>
 
 		<p class="hero-desc relative z-10 m-0 prose max-w-[46ch] text-foreground/75">
@@ -135,7 +135,7 @@
 			<h2
 				class="m-0 text-center text-2xl leading-tight font-[1000] tracking-tight text-foreground sm:text-3xl"
 			>
-				Thousands of problems, at your fingertips
+				Pick any problem. Really, any.
 			</h2>
 		</div>
 
@@ -144,11 +144,28 @@
 
 	<!-- Counts. Below the band so the hero stays to the brand, pitch and CTAs. -->
 	<section class="pb-20 sm:pb-28">
+			<h2
+				class="mb-2 text-center text-2xl leading-tight font-[1000] tracking-tight text-foreground sm:text-3xl"
+			>
+				Yes, I meant any problem.
+			</h2>
+
+			<p
+				class="mb-10 text-center text-md text-muted-foreground sm:text-lg"
+			>
+				There's so many, <a class="text-blue-200 underline" href="https://olimpicos.net">other archives</a> copy their files from us.
+		</p>
 		<StatsBand />
 	</section>
 
 	<!-- Features -->
 	<section class="pb-20 sm:pb-28">
+
+			<h2
+				class="mb-15 text-center text-3xl leading-tight font-[1000] tracking-tight text-foreground sm:text-4xl"
+			>
+				So, what can you do here?
+			</h2>
 		<FeatureBlocks signedIn={!!data.user} />
 	</section>
 
@@ -157,9 +174,9 @@
 		<h2
 			class="m-0 max-w-[16ch] text-3xl leading-[1.05] font-[1000] tracking-tight text-balance text-foreground sm:text-5xl"
 		>
-			Go find a problem.
+			Stop reading this >:(
 		</h2>
-		<p class="m-0 max-w-[44ch] text-base text-foreground/75">Your journey begins here.</p>
+		<p class="m-0 max-w-[44ch] text-base text-foreground/75">Time to lock in.</p>
 		<Button href={resolve('/olympiads')} size="lg">Browse olympiads</Button>
 	</section>
 </div>

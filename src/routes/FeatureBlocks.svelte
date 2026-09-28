@@ -34,12 +34,12 @@
 			n: '02',
 			title: 'Search it two ways',
 			body: `The site includes two different types of search. The default search allows you to find a problem you remember the number/title of. Can't remember that?
-			Fret not. Deep search matches the text inside the PDFs, so you can search for problems that you remember a phrase from.`,
+			Deep search matches the text inside the PDFs, so you can search for problems that you remember a phrase from.`,
 			shortcut: true
 		},
 		{
 			n: '03',
-			title: 'Track what you have solved',
+			title: 'Track what you\'ve solved',
 			body: `Mark any problem you have done, optionally with a score, and see per-year totals. Filter by completion status to narrow down your search.`,
 			href: signedIn ? resolve('/profile') : resolve('/login'),
 			cta: signedIn ? 'See your progress' : 'Sign in to track'
@@ -75,7 +75,7 @@
 					: 'sm:text-left'}"
 			>
 				<h2
-					class="m-0 text-3xl leading-tight font-[1000] tracking-tight text-foreground sm:text-4xl"
+					class="m-0 text-2xl leading-tight font-[1000] tracking-tight text-foreground sm:text-3xl"
 				>
 					{block.title}
 				</h2>
