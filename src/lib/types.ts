@@ -28,7 +28,6 @@ export type OlympiadEntry = {
 	summary: string;
 	icon: string;
 	tag: OlympiadTag;
-	description?: string;
 	descriptionHtml?: string;
 };
 

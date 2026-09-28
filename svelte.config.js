@@ -25,12 +25,7 @@ const config = {
 	kit: {
 		adapter: adapter()
 	},
-	extensions: ['.svelte', '.svx'],
-	compilerOptions: {
-		experimental: {
-			async: true
-		}
-	}
+	extensions: ['.svelte', '.svx']
 };
 
 export default config;

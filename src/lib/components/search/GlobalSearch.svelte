@@ -21,6 +21,7 @@
 	import StatusFilter from '$lib/components/StatusFilter.svelte';
 	import OlympiadPicker from '$lib/components/OlympiadPicker.svelte';
 	import { filterSearchItems, isFiltering, type ProblemStatus } from '$lib/filters';
+	import { Resource } from '$lib/resource.svelte';
 	import type { GlobalProgressMap } from '$lib/progress';
 	import type { FileSearchResult, OlympiadEntry } from '$lib/types.js';
 	import {
@@ -78,48 +79,19 @@
 	// ---------------------------------------------------------------------------
 
 	/**
-	 * `$state.raw`: replaced wholesale, and a deep proxy over thousands of items
-	 * would slow the per-keystroke filter and haystack build.
+	 * `Resource` holds the body in `$state.raw` (a deep proxy over thousands of
+	 * items would slow the per-keystroke filter), keeps only a success, so a
+	 * failure is retried on the next open, and joins a request already in flight,
+	 * so repeated ⌘K presses send one.
 	 */
-	let index = $state.raw<SearchItem[]>([]);
-	let indexLoading = $state(false);
-	let indexFailed = $state(false);
-	let indexFetched = false;
-	/** Whether a request is out right now. See `fetchIndex` for why it is not `indexLoading`. */
-	let indexInFlight = false;
-
-	/**
-	 * `indexFetched` is set only on success, so a failure is retried on the next
-	 * open. `indexInFlight` stops repeated ⌘K presses from firing duplicate
-	 * requests.
-	 *
-	 * Both guards must be plain `let`s. This runs synchronously inside an
-	 * `$effect`, so any `$state` it reads becomes a dependency. Guarding on
-	 * `indexLoading`, which this function writes, would rerun the effect when the
-	 * request settles, and after a failure it would refetch in a loop.
-	 *
-	 * Check `res.ok`: an HTML error body makes `res.json()` throw.
-	 */
-	async function fetchIndex() {
-		if (indexFetched || indexInFlight) return;
-		indexInFlight = true;
-		indexLoading = true;
-		indexFailed = false;
-		try {
-			const res = await fetch('/api/search');
-			if (!res.ok) throw new Error(`HTTP ${res.status}`);
-			index = await res.json();
-			indexFetched = true;
-		} catch {
-			indexFailed = true;
-		} finally {
-			indexInFlight = false;
-			indexLoading = false;
-		}
-	}
+	const indexSource = new Resource<SearchItem[]>('/api/search');
+	const NO_ITEMS: SearchItem[] = [];
+	const index = $derived(indexSource.value ?? NO_ITEMS);
+	const indexLoading = $derived(indexSource.loading);
+	const indexFailed = $derived(indexSource.failed);
 
 	$effect(() => {
-		if (open) fetchIndex();
+		if (open) void indexSource.loadOnce();
 	});
 
 	// ---------------------------------------------------------------------------
@@ -244,33 +216,16 @@
 	 *
 	 * Don't derive it from `index`: that has one entry per problem, so it would
 	 * miss an olympiad with files but no problems.
-	 */
-	let olympiads = $state.raw<OlympiadEntry[]>([]);
-	/**
-	 * Plain `let`s, for the same reason as `indexFetched` / `indexInFlight`.
+	 *
 	 * No loading or error UI: until the list lands the filter just isn't shown,
 	 * and a failure retries on the next entry into files mode.
 	 */
-	let olympiadsFetched = false;
-	let olympiadsInFlight = false;
-
-	async function fetchOlympiads() {
-		if (olympiadsFetched || olympiadsInFlight) return;
-		olympiadsInFlight = true;
-		try {
-			const res = await fetch('/api/olympiads');
-			if (!res.ok) throw new Error(`HTTP ${res.status}`);
-			olympiads = await res.json();
-			olympiadsFetched = true;
-		} catch {
-			// No failure UI; the next entry into files mode retries.
-		} finally {
-			olympiadsInFlight = false;
-		}
-	}
+	const olympiadsSource = new Resource<OlympiadEntry[]>('/api/olympiads');
+	const NO_OLYMPIADS: OlympiadEntry[] = [];
+	const olympiads = $derived(olympiadsSource.value ?? NO_OLYMPIADS);
 
 	$effect(() => {
-		if (open && mode === 'files') fetchOlympiads();
+		if (open && mode === 'files') void olympiadsSource.loadOnce();
 	});
 
 	// ---------------------------------------------------------------------------

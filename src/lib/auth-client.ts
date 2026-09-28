@@ -1,6 +1,7 @@
 import { createAuthClient } from 'better-auth/svelte';
-import { adminClient } from 'better-auth/client/plugins';
 
-export const authClient = createAuthClient({
-	plugins: [adminClient()]
-});
+/**
+ * Sign-in and sign-out only. No `adminClient()` plugin: the admin panel acts
+ * through form actions, never `authClient.admin.*`.
+ */
+export const authClient = createAuthClient();

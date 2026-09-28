@@ -3,7 +3,8 @@
  * Implements the fetching rules in docs/contributing.md:
  * - Check `res.ok` before `res.json()`, so an error page (e.g. a 403 after the
  *   session expires) shows as a failure, not as "no data".
- * - `loadOnce` remembers only successes, so a failure is retried.
+ * - `loadOnce` remembers only successes, so a failure is retried, and joins a
+ *   `loadOnce` already in flight rather than sending a second request.
  * - Only the newest call writes (`#seq`), so a refresh during the first fetch
  *   isn't lost.
  *
@@ -19,6 +20,7 @@ export class Resource<T> {
 	// them reactive would make a failing fetch retry in a loop.
 	#seq = 0;
 	#loaded = false;
+	#once: Promise<void> | null = null;
 
 	readonly #url: () => string;
 
@@ -42,10 +44,14 @@ export class Resource<T> {
 		return this.#failed;
 	}
 
-	/** Fetch unless a previous fetch succeeded. Safe to call repeatedly. */
-	async loadOnce(): Promise<void> {
-		if (this.#loaded) return;
-		await this.refresh();
+	/**
+	 * Fetch unless a previous fetch succeeded. Safe to call repeatedly, including
+	 * from an `$effect` that reruns (the ⌘K dialog calls it on every open).
+	 */
+	loadOnce(): Promise<void> {
+		if (this.#loaded) return Promise.resolve();
+		this.#once ??= this.refresh().finally(() => (this.#once = null));
+		return this.#once;
 	}
 
 	/** Fetch again, e.g. for a refresh button. */
