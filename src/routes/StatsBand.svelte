@@ -109,7 +109,7 @@
 							{#each digitsOf(value) as digit, j (j)}
 								<span class="stat-strip flex flex-col will-change-transform" data-digit={digit}>
 									{#each CELLS as cell, c (c)}
-										<span class="block text-center text-foreground text-4xl md:text-6xl">{cell}</span>
+										<span class="block text-center text-4xl md:text-6xl">{cell}</span>
 									{/each}
 								</span>
 							{/each}

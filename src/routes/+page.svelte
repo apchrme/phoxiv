@@ -153,7 +153,7 @@
 			<p
 				class="mb-10 text-center text-md text-muted-foreground sm:text-lg"
 			>
-				There's so many, <a class="text-blue-200 underline" href="https://olimpicos.net">other archives</a> copy their files from us.
+				There's so many, <a class="text-blue-800 dark:text-blue-200 underline" href="https://olimpicos.net">other archives</a> copy their files from us.
 		</p>
 		<StatsBand />
 	</section>

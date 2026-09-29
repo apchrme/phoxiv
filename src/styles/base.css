@@ -11,14 +11,6 @@
 		@apply text-lg font-semibold sm:text-xl;
 	}
 
-	p {
-		@apply text-base;
-	}
-
-	span {
-		@apply text-base text-muted-foreground;
-	}
-
 	button {
 		cursor: pointer;
 	}

@@ -15,7 +15,7 @@
 	--background: oklch(96.13% 0.009 247.88); /* Base      #eff1f5 */
 	--foreground: oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
 
-	--card: oklch(93.74% 0.01 249.13); /* Mantle    #e6e9ef */
+	--card: oklch(94.74% 0.01 249.13); /* Mantle    #e6e9ef */
 	--card-foreground: oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
 
 	--popover: oklch(91.36% 0.011 250.38); /* Crust     #dce0e8 */
@@ -27,7 +27,7 @@
 	--secondary: oklch(84.7% 0.013 252.63); /* Surface 0 #ccd0da */
 	--secondary-foreground: oklch(37.99% 0.018 264.19); /* Text     #4c4f69 */
 
-	--muted: oklch(84.7% 0.013 252.63); /* Surface 0 #ccd0da */
+	--muted: oklch(89.7% 0.013 252.63); /* Surface 0 #ccd0da */
 	--muted-foreground: oklch(54.26% 0.019 263.95); /* Subtext 0 #6c6f85 */
 
 	--accent: oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
