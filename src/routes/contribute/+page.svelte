@@ -25,7 +25,7 @@
 
 <PageHeader
 	title="Contribute"
-	description="This is Houston. Right here, you can edit almost every piece of content on the olympiads page. Note that due to caching, your changes may only be reflected on the corresponding olympiad pages after a day or so. Reloading will not expedite it — the delay is in Cloudflare's shared cache, which only an admin can purge early."
+	description="This is Houston. Right here, you can edit almost every piece of content on the olympiads page. Note that due to caching, your changes may only be reflected on the corresponding olympiad pages after a day or so. Performing a hard reload will update things on your end, but others will still see the outdated page. Contact an admin to manually purge the cache if it is an urgent fix."
 />
 
 <Tabs.Root class="mx-auto max-w-xl gap-5" bind:value={tab}>
