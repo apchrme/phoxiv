@@ -174,9 +174,9 @@
 		<h2
 			class="m-0 max-w-[16ch] text-3xl leading-[1.05] font-[1000] tracking-tight text-balance text-foreground sm:text-5xl"
 		>
-			Stop reading this >:(
+			Ready?
 		</h2>
-		<p class="m-0 max-w-[44ch] text-base text-foreground/75">Time to lock in.</p>
+		<p class="m-0 max-w-[44ch] text-base text-foreground/75">Let's explore.</p>
 		<Button href={resolve('/olympiads')} size="lg">Browse olympiads</Button>
 	</section>
 </div>

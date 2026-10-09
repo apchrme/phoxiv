@@ -137,10 +137,10 @@
 				     clear of it. From `lg` the column's own margin is wide enough. -->
 				<div class="flex flex-col items-baseline justify-between gap-2 lg:flex-row lg:items-center">
 					<!-- Placeholder until the quote is chosen. -->
-					<a class="m-0 text-sm text-muted-foreground italic" href="https://olimpicos.net/"
-						>"Imitation is the sincerest form of flattery that mediocrity can pay to greatness" -
-						Charles Colton
-					</a>
+					<p class="m-0 text-sm text-muted-foreground italic"
+						>"All of physics is either impossible or trivial. It is impossible until you understand it, and then it becomes trivial."
+						- Ernest Rutherford
+					</p>
 					<div class="flex shrink-0 flex-row gap-1">
 						<GitHubButton /><DiscordButton />
 					</div>
