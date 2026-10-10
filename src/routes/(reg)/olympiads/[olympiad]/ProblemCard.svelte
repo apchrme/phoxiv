@@ -27,7 +27,7 @@
 	} = $props();
 </script>
 
-<div class="flex flex-col gap-2 rounded-xl bg-muted/50 p-5">
+<div class="flex flex-col gap-2 rounded-xl bg-muted/50 p-4 sm:p-5">
 	<div class="flex items-start justify-between gap-2">
 		<div class="flex flex-col gap-0.5">
 			<span class="font-mono text-base font-semibold text-primary">{problem.number}</span>

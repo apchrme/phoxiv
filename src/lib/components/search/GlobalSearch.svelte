@@ -694,11 +694,6 @@
 										<p class="text-center text-sm text-muted-foreground">
 											Search the text inside every uploaded document.
 										</p>
-										<!-- Here, not in the hints bar, which phones don't show. -->
-										<p class="text-center text-sm text-muted-foreground">
-											Results are files, not problems — one year's PDF often holds every problem of
-											that year.
-										</p>
 										{#if deepTooShort}
 											<p class="text-center text-xs text-muted-foreground">
 												Type at least {MIN_DEEP_QUERY_LENGTH} characters.

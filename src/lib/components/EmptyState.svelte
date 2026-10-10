@@ -47,7 +47,7 @@
 			class={cn('size-8', variant === 'error' ? 'text-destructive' : 'text-muted-foreground')}
 		/>
 	{/if}
-	<p class="m-0 text-base font-medium text-foreground">{message}</p>
+	<p class="m-0 text-base font-medium text-muted-foreground">{message}</p>
 	{#if hint}
 		<p class="m-0 text-sm text-muted-foreground">{hint}</p>
 	{/if}

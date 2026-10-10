@@ -11,7 +11,7 @@
 		label,
 		external = false,
 		// Passing `class` replaces this default rather than merging with it.
-		class: className = 'px-2.5 py-2.5 text-sm hover:border-primary/40 dark:hover:border-primary/30',
+		class: className = 'px-3 py-3 text-sm hover:border-primary/40 dark:hover:border-primary/30',
 		onclick
 	}: {
 		href: string;

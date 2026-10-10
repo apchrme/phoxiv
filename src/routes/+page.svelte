@@ -144,28 +144,28 @@
 
 	<!-- Counts. Below the band so the hero stays to the brand, pitch and CTAs. -->
 	<section class="pb-20 sm:pb-28">
-			<h2
-				class="mb-2 text-center text-2xl leading-tight font-[1000] tracking-tight text-foreground sm:text-3xl"
-			>
-				Yes, I meant any problem.
-			</h2>
+		<h2
+			class="mb-2 text-center text-2xl leading-tight font-[1000] tracking-tight text-foreground sm:text-3xl"
+		>
+			Yes, I meant any problem.
+		</h2>
 
-			<p
-				class="mb-10 text-center text-md text-muted-foreground sm:text-lg"
-			>
-				There's so many, <a class="text-blue-800 dark:text-blue-200 underline" href="https://olimpicos.net">other archives</a> copy their files from us.
+		<p class="text-md mb-10 text-center text-muted-foreground sm:text-lg">
+			There's so many, <a
+				class="text-blue-800 underline dark:text-blue-200"
+				href="https://olimpicos.net">other archives</a
+			> copy their files from us.
 		</p>
 		<StatsBand />
 	</section>
 
 	<!-- Features -->
 	<section class="pb-20 sm:pb-28">
-
-			<h2
-				class="mb-15 text-center text-3xl leading-tight font-[1000] tracking-tight text-foreground sm:text-4xl"
-			>
-				So, what can you do here?
-			</h2>
+		<h2
+			class="mb-15 text-center text-3xl leading-tight font-[1000] tracking-tight text-foreground sm:text-4xl"
+		>
+			So, what can you do here?
+		</h2>
 		<FeatureBlocks signedIn={!!data.user} />
 	</section>
 

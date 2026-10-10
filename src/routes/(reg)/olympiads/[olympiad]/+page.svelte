@@ -168,7 +168,8 @@
 
 <BackLink href={resolve('/olympiads')}>Back to olympiads</BackLink>
 
-<PageHeader title={olympiad.name}>
+<!-- `md:py-2` too: tailwind-merge only overrides PageHeader's `md:py-8` with a matching modifier. -->
+<PageHeader title={olympiad.name} class="py-3 md:py-3">
 	{#if olympiad?.descriptionHtml}
 		<div class="prose max-w-none">
 			<!-- Sanitised server-side by $lib/server/markdown.ts before it is ever stored. -->

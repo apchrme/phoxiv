@@ -39,7 +39,7 @@
 		},
 		{
 			n: '03',
-			title: 'Track what you\'ve solved',
+			title: "Track what you've solved",
 			body: `Mark any problem you have done, optionally with a score, and see per-year totals. Filter by completion status to narrow down your search.`,
 			href: signedIn ? resolve('/profile') : resolve('/login'),
 			cta: signedIn ? 'See your progress' : 'Sign in to track'

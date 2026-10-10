@@ -39,7 +39,7 @@
 	const links = $derived(year.extraLinks.filter((link) => isHttpUrl(link.url)));
 </script>
 
-<Card.Root id={String(year.year)}>
+<Card.Root id={String(year.year)} class="pt-5 pb-3 sm:py-5">
 	<Card.Header class="border-b">
 		<Card.Title class="font-mono text-lg font-semibold text-foreground tabular-nums">
 			{year.year}
@@ -89,7 +89,7 @@
 		{/if}
 
 		{#if year.matchedProblems.length > 0}
-			<div class="grid grid-cols-1 gap-3 xs:grid-cols-2 lg:grid-cols-3">
+			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
 				{#each year.matchedProblems as problem (problem.number)}
 					<ProblemCard
 						{problem}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ChevronLeft } from '@lucide/svelte';
 	import { cn } from '$lib/utils.js';
+	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import type { Snippet } from 'svelte';
 
 	/**
@@ -15,14 +16,10 @@
 </script>
 
 <!-- eslint-disable svelte/no-navigation-without-resolve -- `href` is resolved by the caller -->
-<a
-	{href}
-	class={cn(
-		'mt-5 inline-flex items-center gap-1.5 text-sm text-muted-foreground no-underline transition-colors hover:text-primary',
-		className
-	)}
->
-	<ChevronLeft class="size-4" />
+<!-- A ghost pill like the app's other secondary actions. The negative margin
+     lines the chevron up with the page heading below instead of the pill's edge. -->
+<a {href} class={cn(buttonVariants({ size: 'sm' }), 'mt-5', className)}>
+	<ChevronLeft data-icon="inline-start" />
 	{@render children()}
 </a>
 <!-- eslint-enable svelte/no-navigation-without-resolve -->

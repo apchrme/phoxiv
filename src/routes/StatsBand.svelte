@@ -82,7 +82,7 @@
 </script>
 
 <section bind:this={bandEl} class="stats-band">
-	<dl class="m-0 grid gap-5 grid-cols-3 sm:gap-8">
+	<dl class="m-0 grid grid-cols-3 gap-5 sm:gap-8">
 		{#each items as { value, label } (label)}
 			<!-- Reversed so the dt can come first in the markup, as <dl> requires. -->
 			<div class="flex flex-col-reverse items-center gap-2 text-center">
