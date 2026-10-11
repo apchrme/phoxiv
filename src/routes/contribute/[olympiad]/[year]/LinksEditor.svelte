@@ -17,16 +17,24 @@
 		<Card.Description>External links not associated with uploaded files.</Card.Description>
 	</Card.Header>
 	<Card.Content class="flex flex-col gap-3">
+		<!-- Named by row: a placeholder is no label once the field is filled. -->
 		<Repeater bind:rows newRow={newLinkRow} itemLabel="link">
-			{#snippet row(link)}
+			{#snippet row(link, i)}
 				<Input
 					name="linkLabel"
 					type="text"
 					bind:value={link.label}
 					placeholder="Label"
 					class="w-20"
+					aria-label="Link {i + 1} label"
 				/>
-				<Input name="linkUrl" type="url" bind:value={link.url} placeholder="https://..." />
+				<Input
+					name="linkUrl"
+					type="url"
+					bind:value={link.url}
+					placeholder="https://..."
+					aria-label="Link {i + 1} URL"
+				/>
 			{/snippet}
 		</Repeater>
 	</Card.Content>

@@ -61,16 +61,18 @@ it. Never change it; see [data-model.md](./data-model.md#r2-key-layout).
 ## Deploying
 
 ```sh
-bun run format && bun run check && bun run lint   # the gates, less the build deploy runs
+bun run format && bun run check && bun run lint && bun run test:e2e   # the gates
 bun run preview                                   # build + wrangler dev, locally
 bun run deploy                                    # build + wrangler deploy
 ```
 
 `deploy` runs `bun run build && wrangler deploy`, so a failed build never ships.
-The per-commit gates in [contributing.md](./contributing.md#the-gates) include
-the build too, so a broken build is caught before it is committed.
-`preview` serves the same build through `wrangler dev`. It is the only local mode
-that runs the real Worker runtime.
+The e2e scripts in the per-commit gates
+([contributing.md](./contributing.md#the-gates)) build first too, so a broken
+build is caught before it is committed.
+`preview` serves the same build through `wrangler dev`. It and the e2e server
+([testing.md](./testing.md#the-e2e-server)) are the local modes that run the real
+Worker runtime.
 
 After deploying, check whether you also need to:
 
@@ -284,6 +286,9 @@ leave plenty of headroom.
 
 - **Reads** are not the concern. Normal traffic reads 180,000–330,000 rows a day,
   about 5 % of the limit.
+- **The e2e suite costs nothing.** It runs against local workerd state in
+  `.wrangler/e2e` and never uses the remote database or bucket
+  ([testing.md](./testing.md#the-safety-guards)).
 - **Writes** are the tighter limit. One full re-index sweep writes about 14,000
   rows (14 % of the limit), because each `file_text` write fans out through the
   FTS triggers. Spread sweeps, tokenizer changes and index rebuilds across days,

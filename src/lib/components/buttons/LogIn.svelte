@@ -25,9 +25,11 @@
 		<UserAvatar {user} class="size-full object-cover" />
 	</a>
 {:else}
+	<!-- Icon-only, so the label is its only name for a screen reader (and a test). -->
 	<a
 		href={resolve('/login')}
 		class={cn(buttonVariants({ variant: 'outline', size: 'icon' }), 'gap-1.5')}
+		aria-label="Sign in"
 	>
 		<LogIn />
 	</a>

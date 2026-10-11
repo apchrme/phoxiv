@@ -1,0 +1,5 @@
+# core.autocrlf is on in this checkout. Without these, git would rewrite line
+# endings inside the files the e2e specs upload: that corrupts a PDF's byte
+# offsets and changes a CSV's CRLF endings. See docs/testing.md.
+*.pdf binary
+tests/e2e/fixtures/files/** -text

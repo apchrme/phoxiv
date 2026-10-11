@@ -14,13 +14,15 @@
 		<Card.Description>Short notices shown above the file links for this year.</Card.Description>
 	</Card.Header>
 	<Card.Content class="flex flex-col gap-3">
+		<!-- Named by row: a placeholder is no label once the field is filled. -->
 		<Repeater bind:rows newRow={newNoteRow} itemLabel="note">
-			{#snippet row(note)}
+			{#snippet row(note, i)}
 				<Input
 					name="note"
 					type="text"
 					bind:value={note.value}
 					placeholder="e.g. Solutions are unofficial"
+					aria-label="Note {i + 1}"
 				/>
 			{/snippet}
 		</Repeater>

@@ -56,7 +56,9 @@ About the shared cache:
 - It is the Workers Cache API. `adapter-cloudflare`'s worker wraps the app in
   `caches.default`, so a hit returns before `hooks.server.ts` runs. Don't add a
   second Cache API layer. Under `bun run preview` it persists in
-  `.wrangler/state/v3/cache`; clear that if a preview serves a stale body.
+  `.wrangler/state/v3/cache`; clear that if a preview serves a stale body. The
+  e2e server keeps all its state, cache included, in `.wrangler/e2e/`, which
+  starts empty every run ([testing.md](./testing.md#the-e2e-server)).
 - The Cache API is **per data centre**. It is not tiered and does not collapse
   concurrent misses, and the zone's Tiered Cache setting does not apply to it.
   So D1 is hit up to once a day per key _per data centre that serves a

@@ -36,3 +36,12 @@ vite.config.ts.timestamp-*
 # name *anywhere*, which silently kept `src/routes/api/search/files/` — deep
 # search's entire endpoint — out of version control.
 /files
+
+# Playwright's output. Anchored to the repo root for the same reason as `/files`
+# above: an unanchored name would also ignore any directory of that name deeper in
+# the tree. Prettier and eslint both read this file, so these stay out of the
+# format and lint checks too. See docs/testing.md.
+/playwright-report/
+/test-results/
+/blob-report/
+/playwright/.cache/

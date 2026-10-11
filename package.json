@@ -22,7 +22,12 @@
 		"cf-typegen:check": "wrangler types ./src/worker-configuration.d.ts --check",
 		"db:generate-auth": "bun x auth@latest generate --config src/lib/server/auth-cli.ts",
 		"index:backfill": "bun run src/lib/server/reindex-cli.ts",
-		"thumbs:render": "bun run src/lib/server/thumbs-cli.ts"
+		"thumbs:render": "bun run src/lib/server/thumbs-cli.ts",
+		"test:e2e": "playwright test",
+		"test:e2e:smoke": "playwright test --grep @smoke",
+		"test:e2e:ui": "playwright test --ui",
+		"test:e2e:server": "bun tests/e2e/server.ts",
+		"test:e2e:report": "playwright show-report"
 	},
 	"dependencies": {
 		"@better-auth/drizzle-adapter": "^1.7.6",
@@ -53,15 +58,18 @@
 	"devDependencies": {
 		"@eslint/compat": "^2.1.1",
 		"@eslint/js": "^10.0.1",
+		"@playwright/test": "1.63.0",
 		"@sveltejs/adapter-cloudflare": "^7.2.9",
 		"@sveltejs/enhanced-img": "^0.11.0",
 		"@sveltejs/vite-plugin-svelte": "^7.3.1",
 		"@tailwindcss/vite": "^4.3.3",
 		"@types/node": "^26.6.3",
 		"@types/sanitize-html": "^2.16.1",
+		"devalue": "^5.9.4",
 		"drizzle-kit": "1.0.0-rc.4",
 		"eslint": "^10.11.0",
 		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-playwright": "^2.12.0",
 		"eslint-plugin-svelte": "^3.23.0",
 		"fflate": "^0.8.3",
 		"globals": "^17.12.0",

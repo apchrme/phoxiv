@@ -40,8 +40,10 @@
 		</Card.Description>
 	</Card.Header>
 	<Card.Content class="flex flex-col gap-3">
+		<!-- A placeholder is no label once the field is filled, so each input is named
+		     by its row, for screen readers and the e2e specs. -->
 		<Repeater bind:rows newRow={newProblemRow} itemLabel="problem">
-			{#snippet row(problem)}
+			{#snippet row(problem, i)}
 				{@const isDuplicate = problem.number.trim() !== '' && duplicates.has(problem.number.trim())}
 				{@const maxScoreError = maxScoreErrors.get(problem.number.trim())}
 				<Input
@@ -49,6 +51,7 @@
 					type="text"
 					bind:value={problem.number}
 					placeholder="T1"
+					aria-label="Problem {i + 1} number"
 					class="w-15"
 					aria-invalid={isDuplicate}
 				/>
@@ -57,6 +60,7 @@
 					type="text"
 					bind:value={problem.title}
 					placeholder="Problem title (optional)"
+					aria-label="Problem {i + 1} title"
 					class="min-w-40 flex-1"
 				/>
 				<TopicSelect
@@ -75,6 +79,7 @@
 					inputmode="decimal"
 					bind:value={problem.maxScore}
 					placeholder="Max"
+					aria-label="Problem {i + 1} maximum score"
 					class="w-20"
 					aria-invalid={maxScoreError !== undefined}
 				/>

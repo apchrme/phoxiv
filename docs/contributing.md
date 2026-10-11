@@ -4,7 +4,11 @@
 
 - [Bun](https://bun.sh/), the package manager and script runner. `bun.lock` is
   the committed lockfile.
-- A GitHub OAuth app, to sign in locally. It is the only way past the login page.
+- A GitHub OAuth app, to sign in locally. It is the only way past the login page
+  in a browser. The e2e suite signs in without it (see
+  [testing.md](./testing.md#signing-in-without-github)).
+- Playwright's Chromium, for the e2e suite: `bunx playwright install chromium`,
+  once per machine.
 - A Cloudflare account, only if you need the deployed database or bucket.
   Locally, wrangler simulates D1 and R2 on disk.
 - Ghostscript and ImageMagick 7, only to re-render the landing page thumbnails
@@ -28,7 +32,7 @@ per request inside the Worker.
 | `BETTER_AUTH_SECRET`           | `openssl rand -base64 32`                                                             |
 | `BETTER_AUTH_URL`              | `http://localhost:5173` locally                                                       |
 | `GITHUB_CLIENT_ID` / `_SECRET` | a GitHub OAuth app whose callback URL is `<BETTER_AUTH_URL>/api/auth/callback/github` |
-| `TRUSTED_ORIGINS`              | comma-separated; `http://localhost:5173` locally                                      |
+| `TRUSTED_ORIGINS`              | comma-separated; `http://localhost:5173` locally, plus `http://phoxiv.org` (below)    |
 | `SUPERADMIN_EMAIL`             | optional. The one admin who cannot be demoted or banned. Leave empty to disable       |
 
 Create the local database:
@@ -62,7 +66,20 @@ bunx wrangler d1 execute DB --local --file=path/to/seed.sql
 bun run db:studio
 ```
 
-Uploads go to the local simulated bucket, but `CDN_BASE_URL` still points at
+**Uploads fail under `bun run dev`.** There the R2 binding goes through
+wrangler's `getPlatformProxy`, which rejects a `put()` whose body is a stream
+([workers-sdk#4373](https://github.com/cloudflare/workers-sdk/issues/4373)), and
+every upload (an icon, a document) streams. Try uploads under `bun run preview`,
+which runs the real Worker runtime:
+
+- Sign in under `bun run dev` first. Both servers use `.wrangler/state`, and the
+  session cookie is per host, not per port, so the session carries over.
+- `TRUSTED_ORIGINS` must include `http://phoxiv.org`. `wrangler.jsonc` routes the
+  Worker to `phoxiv.org`, so `wrangler dev` rewrites every request's origin to
+  `http://phoxiv.org`, and BetterAuth refuses a cookie-bearing POST (such as
+  sign-out) from an origin it doesn't trust.
+
+Uploads land in the local simulated bucket, but `CDN_BASE_URL` still points at
 production, so an uploaded file's link 404s locally. This is expected.
 
 ## Scripts
@@ -77,6 +94,11 @@ production, so an uploaded file's link 404s locally. This is expected.
 | `bun run lint`              | `prettier --check` then `eslint`. Must report 0 errors                                                                        |
 | `bun run format`            | `prettier --write`. Run it before `lint`                                                                                      |
 | `bun run deploy`            | build and push to Cloudflare. See [deployment.md](./deployment.md)                                                            |
+| `bun run test:e2e`          | build, then run every e2e spec against a freshly seeded local server. See [testing.md](./testing.md)                          |
+| `bun run test:e2e:smoke`    | the same, for the specs tagged `@smoke` only. The pre-commit gate                                                             |
+| `bun run test:e2e:ui`       | Playwright's UI mode, for writing and debugging a spec                                                                        |
+| `bun run test:e2e:server`   | build and start the e2e server on its own, for `E2E_REUSE`                                                                    |
+| `bun run test:e2e:report`   | open the HTML report of the last e2e run                                                                                      |
 | `bun run db:generate`       | after editing `schema.ts`: writes a new migration                                                                             |
 | `bun run db:migrate`        | apply migrations to the local D1                                                                                              |
 | `bun run db:migrate-remote` | apply migrations to the production D1                                                                                         |
@@ -91,19 +113,46 @@ production, so an uploaded file's link 404s locally. This is expected.
 
 ## The gates
 
-There is no test suite. `svelte-check` and a manual click-through are the whole
-safety net. Before every commit:
+Before every commit:
 
 ```sh
-bun run format && bun run check && bun run lint && bun run build
+bun run format && bun run check && bun run lint && bun run test:e2e:smoke
 ```
+
+Before every push, the full suite:
+
+```sh
+bun run test:e2e
+```
+
+Both e2e scripts build first, so a broken build fails them.
+[testing.md](./testing.md) explains the suite and how to run one spec. A change
+to behaviour comes with a spec (see [Tests](#tests)).
 
 For any change near `$lib/pdf-text.ts` or `static/vendor/pdfjs/`, also run
 [the bundle check](./deployment.md#the-bundle-check). pdf.js leaking into the
 Worker breaks nothing visible.
 
-Then click through whatever you touched under `bun run dev`. What to check on
-each route, focusing on things that break silently:
+The suite already covers:
+
+- `tests/e2e/specs/http/`: every route's cache header, the legacy redirects, the
+  `/api/*` shapes, and deep search's input validation;
+- `tests/e2e/specs/auth/`: the role × route matrix, and bans set by hand in SQL.
+
+Then click through whatever you touched that the suite doesn't reach, under
+`bun run dev`, or `bun run preview` for anything that uploads (see
+[Local D1 and R2](#local-d1-and-r2)). What to check on each route, focusing on
+things that break silently:
+
+**Anywhere**
+
+- After any change near auth, or a better-auth upgrade: sign in through GitHub
+  and sign out again. The suite forges its sessions, so nothing else exercises
+  the real OAuth round trip.
+- On a real touch device, the pages you touched still work by tap.
+- Anything you restyled, in dark mode as well as light: Catppuccin Mocha maps
+  several tokens to the same colour (see
+  [shadcn-svelte components are vendored](#shadcn-svelte-components-are-vendored)).
 
 **`/admin`**
 
@@ -149,8 +198,6 @@ each route, focusing on things that break silently:
   is not clipped.
 - A problem titled `<img src=x onerror=alert(1)>` renders as literal text when
   searched, with `<mark>` still around the match.
-- `curl -i http://localhost:5173/progress` signed out → `401` with
-  `cache-control: private, no-store`.
 
 **⌘K search, files mode** (the Files tab, or ⌘⇧F). The reasoning behind these
 checks is in [search.md](./search.md).
@@ -164,15 +211,14 @@ checks is in [search.md](./search.md).
 - 4 characters: "type at least 5 characters", no request. 5 characters: searches.
 - A 300-character paste: the panel names the 200-character limit and the query's
   length, and sends no request.
-- None of `???`, `"black hole"`, `"black hol`, `foo OR bar`, `-NEAR(a b)`,
-  `e=mc^2` may 500.
 - A dozen-word sentence pasted from a PDF in the archive finds that PDF first.
   A sentence whose words are adjacent in one document returns that one file.
   Backspacing into the last word keeps results.
 - A multi-word query with the problem index loaded: the hidden problems panel has
   no `[data-result-index]` rows in DevTools.
-- A term in a year-level PDF and a problem PDF gives two rows, one badged "Whole
-  year". A PDF attached to several problems gives one row listing them.
+- A term in a year-level PDF and a problem PDF gives two rows; only the problem
+  PDF's row lists a problem number. A PDF attached to several problems gives one
+  row listing them.
 - Enter opens the file in a new tab and leaves the dialog open. Middle-click and
   ⌘-click work. Switching back to problem mode restores its filters.
 - A PDF containing `<script>alert(1)</script>` renders it as text.
@@ -187,9 +233,6 @@ checks is in [search.md](./search.md).
   results from the looser match.
 - Switch olympiad and back: each combination shows its own results, and the
   second visit sends no request.
-- `curl` the endpoint with `?olympiad=` empty (200, unfiltered); malformed, such
-  as a space, a `/` or over 32 characters (400, no `s-maxage`); unknown like
-  `iphoo` (200, empty); `rupho` (zero results, even though `rupho-w` exists).
 - Typing in the panel matches name and id (`ipho` and `international` both find
   IPhO). Reopening clears the box.
 - In the open panel, the arrows move the panel's highlight, Enter picks and
@@ -199,7 +242,7 @@ checks is in [search.md](./search.md).
 - With the filter set, switch to problem mode: the summary bar says the filter
   applies to file search only. Switch back: still set.
 
-**Text extraction** (runs under `bun run dev`)
+**Text extraction** (under `bun run preview`, since uploads fail under `bun run dev`)
 
 - Pick an ordinary text PDF in the year editor: before upload, the form reports
   the page and character counts and says "searchable". After upload the row is
@@ -283,6 +326,15 @@ Use them even for a single call site, because some encode rules:
   so `use:enhance` and `Pending` run as normal. Don't add a second way to
   confirm. (`TrackOptions.guard` is different: it blocks a submit and toasts
   why.)
+
+### Tests
+
+A change to behaviour comes with a spec in `tests/e2e/specs/`, and a bug fix with
+a regression spec that fails without the fix. Read
+[testing.md](./testing.md#writing-a-spec) first: specs import `test` from
+`tests/e2e/support/test.ts`, select by role and accessible name, and cite the
+comment they guard. When a spec takes over a check from [the gates](#the-gates),
+delete the check there.
 
 ### Comment the _why_
 

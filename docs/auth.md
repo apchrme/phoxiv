@@ -73,7 +73,10 @@ This is all of `authOptions`. Everything else is BetterAuth's default.
   valid only for the origin that issued it. The backfill script sends the token
   under both names and checks `/api/auth/get-session` before doing any work, so a
   wrong token is reported clearly — see
-  [deployment.md](./deployment.md#backfilling-the-text-index).
+  [deployment.md](./deployment.md#backfilling-the-text-index). The e2e suite
+  signs this cookie itself for its seeded sessions, and its canary fails first
+  if the name or signing ever drifts
+  ([testing.md](./testing.md#signing-in-without-github)).
 - `api/auth/[...all]` is the only `/api/` route that reads a cookie. It must
   never get cache headers.
 
@@ -100,6 +103,26 @@ with three rules:
   sessions, and the hook ignores any session whose user is banned, which covers
   bans set by hand in SQL.
 
+`/api/auth/*` skips the hook's lookup, so
+[`api/auth/[...all]/+server.ts`](../src/routes/api/auth/[...all]/+server.ts)
+applies two rules of its own before handing the request to BetterAuth:
+
+- **A banned user is signed out there too.** If the session's user is banned, the
+  session cookies are removed from the request, so `get-session` answers `null`
+  and `update-user` refuses. Only the session cookies go, so an OAuth `state`
+  cookie survives a sign-in attempt. The check reads the session with
+  `disableRefresh`, because a refresh there would extend the session in the
+  database while its new cookie was thrown away.
+- **`/api/auth/admin/*` is closed** with a 404. The admin plugin serves
+  `set-role`, `ban-user`, `impersonate-user` and more over HTTP, and an admin's
+  cookie reaches them, but they skip the admin panel's rules: the superadmin,
+  the self-protection and the accepted roles. Through `set-role` an admin could
+  demote the superadmin. The app never calls them; every admin action is a form
+  action. The match is on the path prefix, not BetterAuth's `disabledPaths`,
+  which takes exact paths only and would leave an endpoint a plugin upgrade
+  added open. The plugin itself stays: it provides `role`, `banned` and the
+  sign-in ban check.
+
 ## How an account is identified
 
 BetterAuth (1.7+) identifies an external account by `(issuer, account_id)`, with
@@ -125,7 +148,8 @@ first.
 
 - `contributor` exists only in our app. The plugin is pinned to
   `adminRoles: ['admin']`, so BetterAuth's privileged operations (ban,
-  impersonate, setRole) are admin-only. BetterAuth knows nothing about
+  impersonate, setRole) would be admin-only, and their HTTP endpoints are closed
+  anyway (see [Sessions](#sessions)). BetterAuth knows nothing about
   contributors; every contributor check is in `guard.ts`.
 - `user.assigned_olympiads` is a JSON array of olympiad ids. `input: false`
   blocks writes through BetterAuth's update-user endpoint; only the admin panel
@@ -200,6 +224,13 @@ plain DB row works too.
 | `(reg)/olympiads/[olympiad]` — `?/trackProblem`                        | plain `locals.user` check                             |
 | `(reg)/olympiads/[olympiad]/progress`, `progress/`                     | 401 when signed out                                   |
 | `/api/*` and everything else                                           | public                                                |
+
+[`tests/e2e/specs/auth/access-control.spec.ts`](../tests/e2e/specs/auth/access-control.spec.ts)
+mirrors this table row by row. Every refusal is checked for each role that must
+be refused, actions included: no layout load runs for a form action, so the
+action's own guard is the only check. Roles that may pass are checked with reads
+only; the editor specs cover their writes. Change the table and the spec
+together.
 
 Rules:
 

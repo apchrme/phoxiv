@@ -50,15 +50,19 @@ bunx wrangler d1 execute DB --local \
   --command "UPDATE user SET role = 'admin' WHERE email = 'you@example.com';"
 ```
 
-Before committing:
+Before committing, and before pushing:
 
 ```sh
-bun run format && bun run check && bun run lint
+bunx playwright install chromium   # once per machine
+bun run format && bun run check && bun run lint && bun run test:e2e:smoke
+bun run test:e2e                   # the full suite, before pushing
 ```
 
-There is **no test suite**. Type-checking plus a manual click-through is the
-whole safety net. [contributing.md](./docs/contributing.md#the-gates) has the
-checklist.
+The end-to-end suite is Playwright, run against the production build in local
+workerd on a database seeded from empty each run; it never touches Cloudflare.
+[testing.md](./docs/testing.md) explains it and what it covers, and
+[contributing.md](./docs/contributing.md#the-gates) lists the checks that are
+still done by hand.
 
 ## Documentation
 
@@ -73,6 +77,7 @@ one before changing that area.
 | [auth.md](./docs/auth.md)                 | BetterAuth on Workers, the three roles, the superadmin, the guards     |
 | [contributing.md](./docs/contributing.md) | Setup, scripts, local D1/R2, code conventions, the pre-commit checks   |
 | [deployment.md](./docs/deployment.md)     | Bindings and secrets, deploying, production migrations, cache purges   |
+| [testing.md](./docs/testing.md)           | The Playwright suite: running it, the e2e server, seed data, sign-in   |
 
 [CLAUDE.md](./CLAUDE.md) lists the repo-wide rules. Examples: never hand-edit
 migrations, never re-run the shadcn-svelte CLI, never change the R2 key layout.
@@ -85,6 +90,7 @@ migrations, never re-run the shadcn-svelte CLI, never change the R2 key layout.
 - Cloudflare R2 for the files
 - BetterAuth with GitHub sign-in
 - Bun
+- Playwright, for the end-to-end suite
 
 There is no separate backend. Every read is a Drizzle query made from inside the
 Worker.

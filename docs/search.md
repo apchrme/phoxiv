@@ -26,7 +26,7 @@ file: "this document contains your phrase", which is exactly what the index
 knows.
 
 - **A file attached to several problems is one row**, listing each problem.
-- **A year-level file is badged "Whole year".** An empty
+- **A year-level file lists no problem numbers.** An empty
   `FileSearchResult.problems` means year-level; there is no `level` field.
 - **Topic and progress filters can't apply; the olympiad filter can.** One PDF
   spans every topic and completion state in its year, but belongs to exactly one
@@ -739,5 +739,7 @@ Each of these is a decision, not an omission:
   olympiad picker has it via `Command`; the results list can't be a `Command`,
   since its rows are links and its input is the dialog's.
 
-There is no test suite; the manual checks are in
+The endpoint's validation, cache headers and response shape are checked by
+[`tests/e2e/specs/http/`](../tests/e2e/specs/http) (see
+[testing.md](./testing.md)). The checks still done by hand are in
 [contributing.md](./contributing.md#the-gates).

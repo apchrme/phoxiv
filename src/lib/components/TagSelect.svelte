@@ -18,7 +18,9 @@
 </script>
 
 <Select.Root name="tag" type="single" bind:value>
-	<Select.Trigger>
+	<!-- The trigger is a button, so the form's "Tag" label can't point at it with
+	     `for`; this names it instead. -->
+	<Select.Trigger aria-label="Tag">
 		{#if value}
 			{value}
 		{:else}

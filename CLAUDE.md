@@ -6,14 +6,15 @@ Cloudflare Worker, with metadata in D1 and files in R2.
 The docs in [`docs/`](./docs) record rules that aren't obvious from the code.
 Read the relevant one first:
 
-| Doc                                       | Read it before changing…                                 |
-| ----------------------------------------- | -------------------------------------------------------- |
-| [architecture.md](./docs/architecture.md) | routes, caching, `$lib/server/`, or form handling        |
-| [data-model.md](./docs/data-model.md)     | the schema, the R2 key layout, or `titles.csv`           |
-| [search.md](./docs/search.md)             | either search mode, PDF extraction, or the FTS5 index    |
-| [auth.md](./docs/auth.md)                 | auth, roles, or any permission check                     |
-| [contributing.md](./docs/contributing.md) | anything — it covers setup and code conventions          |
-| [deployment.md](./docs/deployment.md)     | deploys, production migrations, or an API response shape |
+| Doc                                       | Read it before changing…                                           |
+| ----------------------------------------- | ------------------------------------------------------------------ |
+| [architecture.md](./docs/architecture.md) | routes, caching, `$lib/server/`, or form handling                  |
+| [data-model.md](./docs/data-model.md)     | the schema, the R2 key layout, or `titles.csv`                     |
+| [search.md](./docs/search.md)             | either search mode, PDF extraction, or the FTS5 index              |
+| [auth.md](./docs/auth.md)                 | auth, roles, or any permission check                               |
+| [contributing.md](./docs/contributing.md) | anything — it covers setup and code conventions                    |
+| [deployment.md](./docs/deployment.md)     | deploys, production migrations, or an API response shape           |
+| [testing.md](./docs/testing.md)           | a spec, the seed data, the e2e server, or behaviour a spec asserts |
 
 ## Stack
 
@@ -23,6 +24,8 @@ Read the relevant one first:
 - **Drizzle** over Cloudflare **D1**. Files in **R2**, served from `cdn.phoxiv.org`.
 - **BetterAuth** with GitHub OAuth and the `admin` plugin
 - **Bun** as package manager and script runner
+- **Playwright** end-to-end specs in `tests/e2e/`, run against the production
+  build in local workerd
 
 ## Overview
 
@@ -89,15 +92,21 @@ olympiads in their `assignedOlympiads`. That check lives only in
    tracked by the same instance's `track()`.
 6. **Use `actionFail()`, not `error()`, inside an action.** `error()` replaces the
    page and throws away whatever the contributor had typed.
-7. **Run `bun run format && bun run check && bun run lint` before every commit,**
-   and click through the affected route under `bun run dev`. There is no test
-   suite.
+7. **Run `bun run format && bun run check && bun run lint && bun run test:e2e:smoke`
+   before every commit, and `bun run test:e2e` before every push.** Both e2e
+   scripts build first. A change to behaviour comes with a spec; click through
+   only what the suite can't reach (see
+   [contributing.md](./docs/contributing.md#the-gates)).
 8. **Comment the _why_.** Some comments record real incidents, such as an
    infinite submit loop in the admin panel and a data-loss bug in the olympiad
    editor. Don't delete one without understanding what it prevents.
 9. **Warn me before changing an `/api/*` response shape.** The old response stays
    in Cloudflare's shared cache for up to a day, so I need to purge it. See
    [deployment.md](./docs/deployment.md#purging-the-cache-after-an-api-change).
+10. **The e2e suite runs only on its own local state.** Never give it `--remote`,
+    a Cloudflare token, or a `baseURL` that isn't loopback, and never set
+    `NODE_ENV=test` or `TEST` for it. See
+    [testing.md](./docs/testing.md#the-safety-guards).
 
 # Svelte usage
 

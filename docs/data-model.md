@@ -412,6 +412,11 @@ bun run db:migrate-remote  # apply to the production D1
 
 If the change touches an auth table, run `bun run db:generate-auth` first.
 
+The e2e seed ([`tests/e2e/fixtures/seed-data.ts`](../tests/e2e/fixtures/seed-data.ts))
+is typed against `schema.ts`, so `bun run check` fails until it matches the new
+schema. `bun run test:e2e` applies every migration to an empty database on each
+run, so a migration that can't apply from scratch fails there first.
+
 Each migration is a folder holding `migration.sql` and the `snapshot.json` it was
 diffed against. Wrangler needs `migrations_pattern` to find them; see
 [deployment.md](./deployment.md#migrations-against-production).

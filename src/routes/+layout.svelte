@@ -22,10 +22,18 @@
 	import DiscordButton from '$lib/components/buttons/DiscordButton.svelte';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import { PRIMARY_NAV, secondaryNavFor } from '$lib/nav';
+	import { onMount } from 'svelte';
 
 	const secondaryNav = $derived(secondaryNavFor(data.user));
 
 	let searchOpen = $state(false);
+
+	// Marks the page interactive. The e2e specs wait for it (`gotoReady()` in
+	// tests/e2e/support/ui.ts): before hydration a click on an enhanced form
+	// submits it natively and a bits-ui trigger does nothing.
+	onMount(() => {
+		document.documentElement.dataset.hydrated = '';
+	});
 </script>
 
 <svelte:head>
