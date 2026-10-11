@@ -30,13 +30,25 @@ export function confirmDialog(page: Page): Locator {
 }
 
 /**
- * Opens an `OlympiadPicker` from its trigger and picks `name`. The panel is
- * portalled; its search box filters by name and id.
+ * Opens an `OlympiadPicker` from its trigger and picks each of `names`, then
+ * closes it. The panel is portalled; its search box filters by name and id.
+ * Names match exactly: "Delta Physics Olympiad" is a prefix of another seeded
+ * name. A single-mode picker closes itself on the first pick, so pass one name.
  */
-export async function pickOlympiad(page: Page, trigger: Locator, name: string): Promise<void> {
+export async function pickOlympiad(
+	page: Page,
+	trigger: Locator,
+	...names: string[]
+): Promise<void> {
 	await trigger.click();
-	await page.getByPlaceholder('Search olympiads…').fill(name);
-	await page.getByRole('option', { name }).click();
+	const search = page.getByPlaceholder('Search olympiads…');
+	for (const name of names) {
+		await search.fill(name);
+		await page.getByRole('option', { name, exact: true }).click();
+	}
+	// A multiple-mode panel stays open after a pick; a single-mode one has closed.
+	if (await search.isVisible()) await page.keyboard.press('Escape');
+	await expect(search).toBeHidden();
 }
 
 /**

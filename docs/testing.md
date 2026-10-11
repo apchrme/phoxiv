@@ -99,6 +99,15 @@ pkill workerd                 # macOS, Linux
 taskkill /IM workerd.exe /F   # Windows
 ```
 
+### A deep checkout path on Windows
+
+workerd keeps the e2e database about 125 characters below the repo root
+(`.wrangler/e2e/v3/d1/miniflare-D1DatabaseObject/<64-hex>.sqlite-wal`). Windows
+caps a path at 259 characters, so with a root path longer than about 130
+characters every migration fails with an unhelpful `internal error`, and git
+can't delete the directory either. Keep the checkout, and any worktree, at a
+short path.
+
 ## The e2e server
 
 [`tests/e2e/server.ts`](../tests/e2e/server.ts) is Playwright's `webServer`. In
