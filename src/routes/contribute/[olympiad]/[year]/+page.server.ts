@@ -377,7 +377,13 @@ export const actions: Actions = {
 		// ── Nothing below this line may fail the upload. ────────────────────────
 		// The file is already stored. Bad or missing `extractedText` (parsed in the
 		// browser) becomes a `pending` row for the backfill, never a failed upload.
-		await putFileText(db, url, ext, field(data, 'extractedText')).catch(() => {});
+		await putFileText(
+			db,
+			url,
+			ext,
+			field(data, 'extractedText'),
+			field(data, 'extractedEmpty') === '1'
+		).catch(() => {});
 
 		await logActivity(
 			db,

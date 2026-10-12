@@ -74,7 +74,13 @@
 		<input type="hidden" name="userId" value={user.id} />
 		<input type="hidden" name="role" value={role} />
 		<Select.Root type="single" value={role} onValueChange={(v) => (roleDraft = v)}>
-			<Select.Trigger class="h-8 w-32 text-xs" disabled={pending.has(key.role)}>
+			<!-- Without a label each row's trigger reads only "User, button". The name
+			     keeps the shown role, so speech input can still say what's visible. -->
+			<Select.Trigger
+				class="h-8 w-32 text-xs"
+				disabled={pending.has(key.role)}
+				aria-label="Role: {roleLabel(role)}"
+			>
 				{roleLabel(role)}
 			</Select.Trigger>
 			<Select.Content>

@@ -140,7 +140,9 @@
 			toFirstPage();
 		}}
 	>
-		<Select.Trigger class="w-36">{ROLE_FILTERS[roleFilter]}</Select.Trigger>
+		<Select.Trigger class="w-36" aria-label="Show: {ROLE_FILTERS[roleFilter]}">
+			{ROLE_FILTERS[roleFilter]}
+		</Select.Trigger>
 		<Select.Content>
 			<Select.Item value="all">All users</Select.Item>
 			<Select.Item value="admin">Admins only</Select.Item>

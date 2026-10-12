@@ -173,7 +173,11 @@ boundary, so no half-word reaches a prefix query, and sets `truncated`.
 ### The write path
 
 `FileSection.svelte` extracts on `change` and submits the text as a hidden
-`extractedText` field alongside the file. In `uploadFile`, `putFileText` runs
+`extractedText` field alongside the file. A scan has no text to send, so a second
+field, `extractedEmpty`, says the file was read and found empty. Without it a
+scan would wait as `pending` for a backfill that can only reach the same
+verdict. Trusting it grants nothing: a client could already get `empty` by
+submitting a short string. In `uploadFile`, `putFileText` runs
 below the "nothing below this line may fail the upload" line: the object is
 already in R2 and the row in D1, so failing here would misreport the upload. Bad
 text becomes a `pending` row instead. `putFileText` turns every input into
@@ -183,6 +187,7 @@ exactly one upsert, as below. That upsert can still reject on a D1 error, so
 | Case                                                           | Row                                            |
 | -------------------------------------------------------------- | ---------------------------------------------- |
 | extension not in `EXTRACTABLE_EXTS`                            | `skipped`                                      |
+| blank, with `extractedEmpty` set (the browser found no text)   | `empty` (a scan)                               |
 | field absent or blank (old browser, JS off, extraction failed) | `pending`                                      |
 | over `MAX_SUBMITTED_TEXT_CHARS` (1 000 000)                    | `pending`, with `error` recorded               |
 | under `MIN_EXTRACTED_CHARS` (32) after normalising             | `empty` (a scan)                               |
@@ -566,8 +571,9 @@ component, because the debounce depends on being an effect.
   missing key subscribes to the whole map, so any response landing would re-run
   the driving effect and abort the request the user is waiting for. The screen
   reads `#landed`, which is `$state`. Eviction is insertion-order at 30 entries.
-- **"None" is `null`, not `''`.** `''` is also the empty-input query, so it would
-  make the panel show "Couldn't search inside files." as soon as files mode opened.
+- **"None" is `null`, never a string.** Any string could equal a live key (the
+  empty input's is `"\n"`), and a marker equal to the live key shows its state:
+  "Couldn't search inside files." as soon as files mode opened.
 - **"Pending" covers the debounce as well as the fetch.** `schedule(key)` sets it
   before the `setTimeout` (and clears any old failure); `unschedule(key)` clears
   it in the teardown and in `run()`'s `finally`. Set inside `run()`, it would start
@@ -662,7 +668,10 @@ in the panel's branch order.
   other elements too.
 - **A file row is a plain link** (`target="_blank" rel="noopener noreferrer"`, no
   handler), so middle-click and "Save link as" work. Enter calls `window.open`,
-  falling back to the same tab, and the dialog stays open. Its olympiad and year
+  falling back to the same tab, and the dialog stays open. **Don't pass it the
+  `noopener` or `noreferrer` feature**: either makes `window.open` return `null`,
+  so the fallback ran on every Enter and took this tab to the file too. The
+  opener is cut by hand instead. Its olympiad and year
   aren't highlighted; the query matched the text, not the metadata.
 - **Everything resets when `open` changes**, because most of the seven ways to
   open or close the dialog bypass our code. The mode resets to problems: **⌘K must

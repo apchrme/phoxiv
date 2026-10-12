@@ -4,6 +4,7 @@
 	import PageHeader from '$lib/components/PageHeader.svelte';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { formToasts, Pending } from '$lib/forms.svelte';
+	import { plural } from '$lib/utils/plural';
 	import UsersTable from './UsersTable.svelte';
 	import ActivityLogTable from './ActivityLogTable.svelte';
 	import IndexPanel from './IndexPanel.svelte';
@@ -30,7 +31,12 @@
 		unbanUser: 'User unbanned',
 		ensureIndex: 'Search index rebuilt',
 		optimizeIndex: 'Index segments merged',
-		pruneIndex: 'Orphaned index rows removed'
+		// Names the count the action returns, so a prune that found nothing says so
+		// instead of claiming rows were removed (docs/search.md, "Prune orphans").
+		pruneIndex: ({ pruned }) =>
+			typeof pruned === 'number' && pruned > 0
+				? `Removed ${plural(pruned, 'orphaned index row')}`
+				: 'No orphaned index rows to remove'
 	});
 </script>
 

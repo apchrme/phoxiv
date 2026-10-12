@@ -393,7 +393,7 @@ export const OWNED = {
 	metaYears: { rowShift: 2001, topics: 2002, duplicates: 2003, links: 2004 },
 	/** contribute/year-files.spec.ts: one year per test. */
 	filesOlympiad: 'e2e-files',
-	filesYears: { upload: 2021, noParser: 2022, search: 2023 }
+	filesYears: { upload: 2021, noParser: 2022, search: 2023, retry: 2024 }
 } as const;
 
 const OWNED_OLYMPIADS: Olympiad[] = [
@@ -426,7 +426,7 @@ const OWNED_OLYMPIADS: Olympiad[] = [
 ];
 
 const { rowShift, topics, duplicates, links } = OWNED.metaYears;
-const { upload, noParser, search } = OWNED.filesYears;
+const { upload, noParser, search, retry } = OWNED.filesYears;
 
 const OWNED_YEARS: Year[] = [
 	{ id: 1101, olympiadId: OWNED.metaOlympiad, year: rowShift },
@@ -441,18 +441,21 @@ const OWNED_YEARS: Year[] = [
 	},
 	{ id: 1111, olympiadId: OWNED.filesOlympiad, year: upload },
 	{ id: 1112, olympiadId: OWNED.filesOlympiad, year: noParser },
-	{ id: 1113, olympiadId: OWNED.filesOlympiad, year: search }
+	{ id: 1113, olympiadId: OWNED.filesOlympiad, year: search },
+	{ id: 1114, olympiadId: OWNED.filesOlympiad, year: retry }
 ];
 
 const OWNED_PROBLEMS: Problem[] = [
-	// Row shift: three rows whose every field differs, so a shift shows up.
+	// Row shift: three rows whose every field differs, so a shift shows up. T1's
+	// maximum is blank, ahead of the filled T3, so an input rendered only while
+	// its field is set would shift T3's maximum into T1 (metadata.ts).
 	{
 		id: 2101,
 		yearId: 1101,
 		number: 'T1',
 		title: 'First Problem',
 		topics: JSON.stringify(['Mechanics']),
-		maxScore: 10
+		maxScore: null
 	},
 	{
 		id: 2102,

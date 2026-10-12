@@ -24,6 +24,24 @@ export function toast(page: Page, text: string | RegExp): Locator {
 	return page.locator('[data-sonner-toast]').filter({ hasText: text });
 }
 
+/**
+ * Holds the page's POSTs to the form action `?/name` on `path` until the
+ * returned function is called. A local action answers in milliseconds, too fast
+ * to see the busy state its button shows meanwhile; holding keeps it on screen.
+ */
+export async function holdAction(page: Page, path: string, name: string): Promise<() => void> {
+	let release!: () => void;
+	const released = new Promise<void>((resolve) => (release = resolve));
+	await page.route(
+		(url) => url.pathname === path && url.search === `?/${name}`,
+		async (route) => {
+			await released;
+			await route.continue();
+		}
+	);
+	return release;
+}
+
 /** The open `ConfirmSubmit` dialog (an `alertdialog`, portalled). */
 export function confirmDialog(page: Page): Locator {
 	return page.getByRole('alertdialog');

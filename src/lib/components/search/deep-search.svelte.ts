@@ -43,8 +43,9 @@ export class DeepSearch {
 	 * request is in flight, so the panel doesn't blank on every keystroke. The
 	 * predicates below compare against the live key, so stale markers never show.
 	 *
-	 * `null` means none. Don't use `''`: that is the empty input's key, and it
-	 * made the panel show loading and failure states before anything was typed.
+	 * `null` means none, never a string: any string could equal a live key (the
+	 * empty input's is `"\n"`), and a marker equal to the live key shows the panel
+	 * loading or failed before anything was typed.
 	 */
 	#landed: string | null = $state(null);
 	#inFlight: string | null = $state(null);

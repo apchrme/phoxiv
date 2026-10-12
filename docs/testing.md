@@ -264,20 +264,20 @@ better-auth.session_token = encodeURIComponent(token + "." + base64(HMAC-SHA256(
 On `https://phoxiv.org` the name gains a `__Secure-` prefix; the e2e origin is
 http, so it doesn't. Nothing in the app changes for tests.
 
-| Key           | Role                                            | Use                                            | Owner              |
-| ------------- | ----------------------------------------------- | ---------------------------------------------- | ------------------ |
-| `admin`       | admin                                           | the admin most specs act as; never a target    | frozen             |
-| `superadmin`  | admin, `SUPERADMIN_EMAIL`, no session           | a target the admin panel must refuse to modify | frozen             |
-| `contributor` | contributor, assigned `e2e-assigned`            | the contributor in the access-control matrix   | frozen             |
-| `user`        | none                                            | a plain signed-in visitor                      | frozen             |
-| `banned`      | contributor, `banned` set by hand, session kept | must be treated as signed out everywhere       | frozen             |
-| `stale`       | none; the session is due a refresh              | the refreshed cookie must reach the browser    | http/cache-headers |
-| `apiTarget`   | none, no session                                | the target of BetterAuth's closed admin calls  | auth/ban           |
-| `banTarget`   | contributor, assigned `e2e-assigned`            | banned through the admin panel                 | auth/ban           |
-| `unbanTarget` | none, `banned` set by hand, session kept        | unbanned through the admin panel               | auth/ban           |
-| `roleTarget`  | none                                            | promoted through the admin panel               | admin/users        |
-| `loopTarget`  | none, no session                                | the role change in the submit-loop regression  | admin/users        |
-| `tracker`     | none                                            | marks problems done                            | olympiads/progress |
+| Key           | Role                                            | Use                                                  | Owner              |
+| ------------- | ----------------------------------------------- | ---------------------------------------------------- | ------------------ |
+| `admin`       | admin                                           | the admin most specs act as; never a target          | frozen             |
+| `superadmin`  | admin, `SUPERADMIN_EMAIL`, no session           | a target the admin panel must refuse to modify       | frozen             |
+| `contributor` | contributor, assigned `e2e-assigned`            | the contributor in the access-control matrix         | frozen             |
+| `user`        | none                                            | a plain signed-in visitor                            | frozen             |
+| `banned`      | contributor, `banned` set by hand, session kept | must be treated as signed out everywhere             | frozen             |
+| `stale`       | none; the session is due a refresh              | the refreshed cookie must reach the browser          | http/cache-headers |
+| `apiTarget`   | none, no session                                | the target of closed admin calls and a cancelled ban | auth/ban           |
+| `banTarget`   | contributor, assigned `e2e-assigned`            | banned through the admin panel                       | auth/ban           |
+| `unbanTarget` | none, `banned` set by hand, session kept        | unbanned through the admin panel                     | auth/ban           |
+| `roleTarget`  | none                                            | promoted through the admin panel                     | admin/users        |
+| `loopTarget`  | none, no session                                | the role change in the submit-loop regression        | admin/users        |
+| `tracker`     | none                                            | marks problems done                                  | olympiads/progress |
 
 In a spec:
 
@@ -330,7 +330,7 @@ tests/e2e/
 │   ├── auth.ts             the signed session cookie
 │   ├── test.ts             `test` and `expect`: role, as(), apiAs(), the guards
 │   ├── actions.ts          postAction()
-│   ├── ui.ts               gotoReady(), toast(), confirmDialog(), pickOlympiad(), openSearch()
+│   ├── ui.ts               gotoReady(), toast(), holdAction(), confirmDialog(), pickOlympiad(), openSearch()
 │   └── config.ts           the Playwright config (re-exported by the root file)
 └── specs/<area>/*.spec.ts
 ```
@@ -388,6 +388,24 @@ do. Open a page with `gotoReady()` before clicking anything: it waits for the
 `data-hydrated` marker the root layout sets in `onMount`, because before
 hydration an enhanced form submits natively and a bits-ui trigger does nothing.
 
+Names that are easy to get wrong:
+
+- **A bits-ui select's trigger is a `button`**, not a `combobox`, named by its
+  `aria-label` or else by the value it shows. Its options are `option`s.
+- **A busy button is named "Loading &lt;label&gt;"**: `SubmitButton` and
+  `ConfirmSubmit` swap their icon for a spinner with `role="status"` and
+  `aria-label="Loading"`. A `SubmitButton` with a `busyLabel` swaps its label
+  too, so "Save metadata" is "Loading Saving…" while busy. An exact-name query
+  stops matching while it is busy.
+- **Seeded names overlap.** `admin@e2e.test` is the tail of
+  `superadmin@e2e.test`, and `ban-target@` of `unban-target@`. Pick a table row
+  by an exact cell (`has: getByRole('cell', { name, exact: true })`), never by
+  `hasText`.
+- **Anchor label regexes.** `getByLabel('ID')` also matches "Icon image (optional
+  — overrides emoji)".
+- **Cards have no role.** Scope to one with `[data-slot="card"]`, the vendored
+  Card's own attribute, filtered by its title.
+
 ### Other conventions
 
 - **Import constants rather than copying them**: the cache headers from
@@ -405,7 +423,13 @@ hydration an enhanced form submits natively and a bits-ui trigger does nothing.
 
 - **Only web-first assertions.** `await expect(locator).toBeVisible()` retries;
   `expect(await locator.isVisible()).toBe(true)` does not. Never wait a fixed
-  time.
+  time, with one exception: a loop regression shows only as requests that keep
+  coming after the answer, so its spec waits one bounded second and then counts.
+  That wait carries an `eslint-disable-next-line playwright/no-wait-for-timeout`
+  citing the incident (`admin/users`, `admin/index-panel`).
+- **A local action answers in milliseconds**, too fast to see the busy state in
+  between. To assert one, hold the request until the assertion has passed:
+  `holdAction()` in `support/ui.ts` does it with `page.route`.
 - **`/api/*` is shared-cached for the whole run.** A response is stored on first
   request and served from `caches.default` after, so a write doesn't show in an
   `/api/*` body the run has already fetched. Check a write through an editor page
@@ -420,16 +444,24 @@ hydration an enhanced form submits natively and a bits-ui trigger does nothing.
   that raises it resolves.
 - **Motion is reduced** (`reducedMotion: 'reduce'`), so the landing page's GSAP
   rows don't move and transitions don't delay clicks.
+- **A debounce runs on Playwright's fake clock.** Install it before the page
+  loads, and pause it only once the page is ready, so load and hydration run in
+  real time. Then "during the debounce" lasts as long as the assertions need, and
+  `page.clock.runFor()` ends it exactly (`search/files`).
 
 ## What the specs cover
 
 `bunx playwright test --list` prints every test. By directory:
 
-| Directory      | Covers                                                                   | Guards                                                                                                                                                                                        |
-| -------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `specs/smoke/` | the harness: the canary, the signed-out redirect, the sentinel, loopback | this file                                                                                                                                                                                     |
-| `specs/http/`  | every route's cache header, the legacy redirects, the `/api/*` shapes    | [architecture.md](./architecture.md#caching-and-the-route-tree), [deployment.md](./deployment.md#purging-the-cache-after-an-api-change), [search.md](./search.md#cost-controls-and-the-cache) |
-| `specs/auth/`  | the role × route matrix, bans, BetterAuth's closed admin endpoints       | [auth.md](./auth.md#which-guard-each-route-uses)                                                                                                                                              |
+| Directory           | Covers                                                                                                                  | Guards                                                                                                                                                                                        |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `specs/smoke/`      | the harness: the canary, the signed-out redirect, the sentinel, loopback                                                | this file                                                                                                                                                                                     |
+| `specs/http/`       | every route's cache header, the legacy redirects, the `/api/*` shapes                                                   | [architecture.md](./architecture.md#caching-and-the-route-tree), [deployment.md](./deployment.md#purging-the-cache-after-an-api-change), [search.md](./search.md#cost-controls-and-the-cache) |
+| `specs/auth/`       | the role × route matrix, bans, BetterAuth's closed admin endpoints                                                      | [auth.md](./auth.md#which-guard-each-route-uses)                                                                                                                                              |
+| `specs/admin/`      | changing a role; the Index tab's counts and maintenance actions                                                         | the submit loops in `UserRowActions.svelte` and `IndexPanel.svelte`; [auth.md](./auth.md#the-admin-panel), [search.md](./search.md#operating-the-index)                                       |
+| `specs/contribute/` | creating an olympiad, the icon, the year editor's rows, topics, duplicates and links, uploads and their text extraction | the icon data loss, the `{#if}` row shift, rule 6 (`actionFail`); [data-model.md](./data-model.md#r2-key-layout), [search.md](./search.md#the-write-path)                                     |
+| `specs/olympiads/`  | the olympiad page's 404 and what it must never render; tracking progress                                                | [data-model.md](./data-model.md#problem_progress)                                                                                                                                             |
+| `specs/search/`     | the ⌘K dialog: reset, highlight, Enter, escaping, the session caches; files mode's states, debounce and results         | [search.md](./search.md#the-client)                                                                                                                                                           |
 
 ## What stays manual
 

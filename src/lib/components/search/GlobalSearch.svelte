@@ -389,8 +389,12 @@
 		if (inFiles) {
 			const hit = visibleDeepResults[focused];
 			if (!hit) return;
-			const opened = window.open(hit.file.url, '_blank', 'noopener,noreferrer');
-			if (!opened) window.location.href = hit.file.url;
+			// No `noopener` or `noreferrer` feature: with either, `window.open` always
+			// returns null, so the fallback ran on every Enter and took this tab to the
+			// file too, closing the dialog. The opener is cut by hand instead.
+			const opened = window.open(hit.file.url, '_blank');
+			if (opened) opened.opener = null;
+			else window.location.href = hit.file.url;
 			return;
 		}
 		const item = results[focused];

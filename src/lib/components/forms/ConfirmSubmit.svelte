@@ -96,7 +96,8 @@
 				{description}
 			</AlertDialog.Description>
 			<div class="mt-2 flex justify-end gap-2">
-				<!-- Cancel first, so it gets initial focus and a stray Enter is safe. -->
+				<!-- Cancel first, so the first Tab reaches it rather than the action. bits-ui
+				     focuses the dialog itself on open, so a stray Enter does nothing. -->
 				<AlertDialog.Cancel class={buttonVariants({ variant: 'outline', size: 'sm' })}>
 					{cancelLabel}
 				</AlertDialog.Cancel>

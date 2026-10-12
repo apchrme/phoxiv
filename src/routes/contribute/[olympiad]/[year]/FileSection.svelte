@@ -93,6 +93,19 @@
 	/** Stops a slow parse from reporting over a newer pick. */
 	let pickToken = 0;
 
+	/**
+	 * Forgets the pick when the form resets, which `use:enhance` does only after a
+	 * successful upload. Not in `onDone`: that runs after a refusal too, and it
+	 * cleared the label and the extracted text while the file stayed picked, so a
+	 * retry uploaded the file with no text, to wait as `pending`.
+	 */
+	function clearPick() {
+		label = '';
+		extracted = null;
+		extracting = false;
+		pickToken++;
+	}
+
 	async function onFilePicked(e: Event & { currentTarget: HTMLInputElement }) {
 		const file = e.currentTarget.files?.[0];
 		const token = ++pickToken;
@@ -229,12 +242,9 @@
 		use:enhance={pending.track(() => key, {
 			reset: true,
 			// Props are lazy getters, so this sees the current `existingFiles`.
-			guard: () => submitError(),
-			onDone: () => {
-				label = '';
-				extracted = null;
-			}
+			guard: () => submitError()
 		})}
+		onreset={clearPick}
 		class="flex flex-col gap-2"
 	>
 		<div class="flex flex-col gap-2 sm:flex-row sm:items-end">
@@ -244,6 +254,9 @@
 			{/if}
 			<!-- Client-submitted, so `putFileText` re-normalises and size-gates it. -->
 			<input type="hidden" name="extractedText" value={extractedText} />
+			<!-- A scan sends no text. This says it was read and found empty, so the row
+			     lands `empty` rather than `pending` for a backfill that would agree. -->
+			<input type="hidden" name="extractedEmpty" value={extracted?.status === 'empty' ? '1' : ''} />
 			<Field label="Label" for="{uid}-label" class="flex-1">
 				<!-- No slashes: the label is an R2 key segment. -->
 				<input

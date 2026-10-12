@@ -519,6 +519,7 @@ export async function writeFileText(db: DB, w: FileTextWrite): Promise<void> {
  * | cause | row |
  * | --- | --- |
  * | ext not in `EXTRACTABLE_EXTS` | `skipped` |
+ * | blank, and the browser read the file and found no text | `empty` (a scan) |
  * | field absent or blank (old browser, JS off, extraction failed) | `pending` |
  * | over the size gate | `pending`, with `error` |
  * | under `MIN_EXTRACTED_CHARS` after normalising | `empty` (a scan) |
@@ -526,14 +527,23 @@ export async function writeFileText(db: DB, w: FileTextWrite): Promise<void> {
  *
  * Can throw on a D1 error; the upload action catches it so indexing never fails
  * an upload.
+ *
+ * @param foundNoText the browser's verdict that the file is a scan. A scan sends
+ *   no text, and without this it would wait as `pending` for a backfill that can
+ *   only reach the same verdict. Trusting it grants nothing new: a client could
+ *   already get `empty` by submitting a short string.
  */
 export async function putFileText(
 	db: DB,
 	url: string,
 	ext: string,
-	submitted: string
+	submitted: string,
+	foundNoText = false
 ): Promise<void> {
 	if (!isExtractable(ext)) return writeFileText(db, { url, ext, status: 'skipped' });
+	if (!submitted && foundNoText) {
+		return writeFileText(db, { url, ext, status: 'empty', engine: EXTRACTOR_ENGINE });
+	}
 	if (!submitted) return writeFileText(db, { url, ext, status: 'pending' });
 	if (submitted.length > MAX_SUBMITTED_TEXT_CHARS) {
 		return writeFileText(db, {

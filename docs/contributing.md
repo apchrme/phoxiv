@@ -137,7 +137,17 @@ The suite already covers:
 
 - `tests/e2e/specs/http/`: every route's cache header, the legacy redirects, the
   `/api/*` shapes, and deep search's input validation;
-- `tests/e2e/specs/auth/`: the role × route matrix, and bans set by hand in SQL.
+- `tests/e2e/specs/auth/`: the role × route matrix, bans set by hand in SQL, and
+  banning and unbanning from the admin panel;
+- `tests/e2e/specs/admin/`: changing a role (the submit loop), the Index tab and
+  its maintenance actions;
+- `tests/e2e/specs/contribute/`: creating an olympiad and the refused ids, the
+  icon, the year editor's rows, topics, duplicates and links, and uploads with
+  their text extraction;
+- `tests/e2e/specs/olympiads/`: the olympiad page's 404, what it must never
+  render, and tracking progress;
+- `tests/e2e/specs/search/`: the ⌘K dialog in both modes: reset, Enter, escaping,
+  the session caches, the debounce, and what a file result is.
 
 Then click through whatever you touched that the suite doesn't reach, under
 `bun run dev`, or `bun run preview` for anything that uploads (see
@@ -156,32 +166,18 @@ things that break silently:
 
 **`/admin`**
 
-- Change a role, assign olympiads to a contributor, ban and unban. Confirm the
-  busy state appears on each button, and that a banned user signed in elsewhere
-  is signed out on their next request.
+- Assign olympiads to a contributor: the busy state appears on the button, and
+  the contributor can then edit exactly those olympiads.
 - Page through the users table; changing a role must not send you back to page 1.
 - Log tab: press **Load more** and check the seam for duplicates.
-- Index tab: counts load on first open and not before (check the network tab),
-  and reload after each maintenance action and on **Refresh**.
 
 **`/contribute`** and its editors
 
-- `/contribute`: select an existing olympiad; create a new one, and check an id
-  with `/` or `.` is refused. As a contributor, the "New olympiad" tab is absent.
-- `/contribute/<olympiad>`: add a year, upload and remove an icon, save metadata
-  and confirm the icon survived, export and re-import the CSV.
-- `/contribute/<olympiad>/<year>`: a duplicate problem number must be blocked
-  client-side, and a `javascript:` link refused on save. Reorder and remove
-  rows, save, and confirm the right records changed. Upload a file, delete a
-  file, delete the year.
+- `/contribute/<olympiad>`: add a year; export and re-import the CSV.
+- `/contribute/<olympiad>/<year>`: delete a file, then delete the year.
 
 **⌘K search, problem mode**
 
-- Hover a result and press Enter: it opens the hovered row. Hover far down a long
-  list, narrow the query, press Enter: it opens a visible row, never nothing.
-- Close and reopen, including three times faster than the first response: only
-  one `/api/search` request and, signed in, one `/progress` request.
-- Press Escape, reopen from the desktop nav button: query empty, filters cleared.
 - ⌘K works with caps lock on. With a CJK IME, the Enter that commits a candidate
   must not open a result, and ⌘K still closes the dialog mid-composition.
 - Signed out: topic filter present, progress filter absent. Signed in:
@@ -189,26 +185,18 @@ things that break silently:
 - Filters apply before ranking, not to the top 50. With the query cleared and a
   filter set, the first 50 filtered problems list by olympiad, then year
   descending.
-- No topic label is ever rendered in a result row.
 - Arrowing through the topic dropdown must not move the result list. Escape
   closes the menu, then the dialog.
 - Arrow keys on the mode tabs switch mode and keep focus on the tabs; Enter or
   Space moves to the input.
 - At 375px, signed in, with a topic filter: everything fits and the close button
   is not clipped.
-- A problem titled `<img src=x onerror=alert(1)>` renders as literal text when
-  searched, with `<mark>` still around the match.
 
 **⌘K search, files mode** (the Files tab, or ⌘⇧F). The reasoning behind these
 checks is in [search.md](./search.md).
 
-- An empty box, and a box cleared after a search, both show the explainer, never
-  an error.
-- The first query of a session reads "Searching inside files…" during the
-  debounce, never "No files contain that phrase."
 - Retyping a query sends no second `/api/search/files` request, and the list does
   not blank between keystrokes.
-- 4 characters: "type at least 5 characters", no request. 5 characters: searches.
 - A 300-character paste: the panel names the 200-character limit and the query's
   length, and sends no request.
 - A dozen-word sentence pasted from a PDF in the archive finds that PDF first.
@@ -219,9 +207,8 @@ checks is in [search.md](./search.md).
 - A term in a year-level PDF and a problem PDF gives two rows; only the problem
   PDF's row lists a problem number. A PDF attached to several problems gives one
   row listing them.
-- Enter opens the file in a new tab and leaves the dialog open. Middle-click and
-  ⌘-click work. Switching back to problem mode restores its filters.
-- A PDF containing `<script>alert(1)</script>` renders it as text.
+- Middle-click and ⌘-click on a file row work. Switching back to problem mode
+  restores its filters.
 - At 390px: three controls plus the input fit, the close button is not clipped,
   and the olympiad panel stays on screen.
 
@@ -244,20 +231,17 @@ checks is in [search.md](./search.md).
 
 **Text extraction** (under `bun run preview`, since uploads fail under `bun run dev`)
 
-- Pick an ordinary text PDF in the year editor: before upload, the form reports
-  the page and character counts and says "searchable". After upload the row is
-  `ok`. The amber "Couldn't read the text" note is the only sign of a dead
-  parser; if you see it, check the console.
-- A scanned PDF: "no text found" before upload; row `empty` after.
+- After a pdf.js upgrade, pick a real archive PDF: the amber "Couldn't read the
+  text" note is the only sign of a dead parser; if you see it, check the console.
 - A `.zip`: "isn't searchable"; row `skipped`, no error.
-- With JavaScript disabled, or `static/vendor/pdfjs/` deleted: the upload still
-  succeeds and the row is `pending`, not `error`.
 - Forge an `extractedText` containing U+0002/U+0003 and
   `<script>alert(1)</script>`, then search a word in it: no spurious highlight,
   and the tag renders as text.
-- Delete a file: it stops appearing, and **Prune orphans** reports the row.
-  Delete and re-upload with the same label: one row, with the new text.
-- **Rebuild index**: results unchanged.
+- Delete a file: it stops appearing in deep search. Check with a query you
+  haven't run this session: the dialog caches each query's results, and
+  `caches.default` keeps every `/api/*` body. The delete drops the file's text
+  too, so **Prune orphans** afterwards finds nothing. Delete and re-upload with
+  the same label: one row, with the new text.
 
 ## The landing page's corpus band
 
