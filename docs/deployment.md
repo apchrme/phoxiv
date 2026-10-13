@@ -72,7 +72,9 @@ The e2e scripts in the per-commit gates
 build is caught before it is committed.
 `preview` serves the same build through `wrangler dev`. It and the e2e server
 ([testing.md](./testing.md#the-e2e-server)) are the local modes that run the real
-Worker runtime.
+Worker runtime. GitHub Actions runs the same lint, check and full suite on every
+pull request and every push to `master` ([testing.md](./testing.md#ci)); it never
+deploys.
 
 After deploying, check whether you also need to:
 
@@ -286,8 +288,8 @@ leave plenty of headroom.
 
 - **Reads** are not the concern. Normal traffic reads 180,000–330,000 rows a day,
   about 5 % of the limit.
-- **The e2e suite costs nothing.** It runs against local workerd state in
-  `.wrangler/e2e` and never uses the remote database or bucket
+- **The e2e suite costs nothing**, locally or in CI. It runs against local
+  workerd state in `.wrangler/e2e` and never uses the remote database or bucket
   ([testing.md](./testing.md#the-safety-guards)).
 - **Writes** are the tighter limit. One full re-index sweep writes about 14,000
   rows (14 % of the limit), because each `file_text` write fans out through the

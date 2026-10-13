@@ -1,0 +1,63 @@
+# The gates on every pull request and every push to master: lint, type-check,
+# and the full end-to-end suite. Everything runs against local workerd state, so
+# this needs no Cloudflare secrets and uses none of the free-tier quotas.
+# See docs/testing.md, "CI".
+name: e2e
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # wrangler's usage metrics; the harness also sets this for every child.
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+
+      # wrangler and Playwright run under Node, never Bun.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      # bun.lock already lists workerd's Linux binary, so the frozen install works.
+      - run: bun install --frozen-lockfile
+
+      - name: Cache Playwright's browsers
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+
+      # Run even on a cache hit: `--with-deps` installs the system libraries too.
+      - run: bunx playwright install --with-deps chromium
+
+      - run: bun run lint
+      - run: bun run check
+      - run: bun run test:e2e
+
+      - name: Upload the report and traces
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

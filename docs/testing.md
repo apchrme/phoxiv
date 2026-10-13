@@ -469,6 +469,27 @@ Some checks need a person: a real GitHub round trip, IME input, a touch device,
 contrast in dark mode, the bundle size. They are listed in
 [contributing.md](./contributing.md#the-gates).
 
+## CI
+
+[`.github/workflows/e2e.yml`](../.github/workflows/e2e.yml) runs on every pull
+request, every push to `master`, and on demand. It runs `bun run lint`,
+`bun run check` and `bun run test:e2e`, which builds first, on Ubuntu with Bun
+and Node 24 (wrangler and Playwright run under Node). It installs Chromium with
+its system libraries and caches the download under a key from `bun.lock`.
+
+- **It holds no secrets.** The suite runs on local workerd state and
+  `.env.test`'s dummy values, so the job needs no Cloudflare token and uses none
+  of the free-tier quotas. Keep it that way (CLAUDE.md rule 10).
+- **`CI` changes three settings** in `support/config.ts`: one worker instead of
+  two, `forbidOnly` (a committed `test.only` fails the run), and the `github`
+  reporter, which annotates failures on the pull request.
+- **A failure uploads the evidence.** The `playwright-report` artifact holds the
+  HTML report and `test-results/`, with a trace for every failed test, for 14
+  days. Open it with `bunx playwright show-report <folder>`, or one trace with
+  `bunx playwright show-trace <trace.zip>`.
+- A newer push to the same branch cancels a run still in progress, and a run
+  times out after 20 minutes.
+
 ## Keeping the suite current
 
 | When you change…                      | Also update…                                                                    |

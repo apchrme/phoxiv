@@ -60,7 +60,8 @@ bun run test:e2e                   # the full suite, before pushing
 
 The end-to-end suite is Playwright, run against the production build in local
 workerd on a database seeded from empty each run; it never touches Cloudflare.
-[testing.md](./docs/testing.md) explains it and what it covers, and
+GitHub Actions runs the lint, the type check and the full suite on every pull
+request. [testing.md](./docs/testing.md) explains it and what it covers, and
 [contributing.md](./docs/contributing.md#the-gates) lists the checks that are
 still done by hand.
 
