@@ -79,10 +79,13 @@
 			use:enhance={pending.track('importTitles')}
 			class="flex flex-col gap-3"
 		>
+			<!-- No visible label, so name it for screen readers. The e2e spec
+			     contribute/olympiad-years-csv finds the input by this name. -->
 			<Input
 				id="csvFile"
 				name="csvFile"
 				type="file"
+				aria-label="CSV file"
 				accept={CSV_UPLOAD.accept}
 				bind:ref={fileInput}
 				onchange={onFileChange}

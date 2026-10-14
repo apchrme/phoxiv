@@ -72,8 +72,8 @@ test.describe('⌘K problem search', () => {
 		const dialog = await openSearch(page);
 		const rows = resultRows(dialog);
 
-		// Every seeded olympiad with problems is a "Physics Olympiad", so this lists
-		// every problem: at least the nine frozen ones.
+		// Every frozen olympiad is a "Physics Olympiad", so this lists at least the
+		// nine frozen problems.
 		await searchBox(dialog).fill('physics');
 		await expect(rows.nth(8)).toBeVisible();
 		await rows.last().hover();

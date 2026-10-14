@@ -16,7 +16,8 @@ test.use({ role: 'admin' });
 /**
  * The users-table row for `user`, found by an exact match on its email cell.
  * A text filter won't do: `admin@e2e.test` is the tail of `superadmin@e2e.test`.
- * Every seeded user fits on the table's first page.
+ * Every `USERS` account is on the table's first page: the users-table fillers
+ * joined later, so the default oldest-first sort puts them after (docs/testing.md).
  */
 function userRow(page: Page, user: { email: string }): Locator {
 	return page

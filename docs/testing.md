@@ -75,7 +75,13 @@ to reset it. Before trusting a result, run once without either variable.
 - `--grep "<text>"` runs tests whose title or tag matches; `--grep-invert`
   excludes them.
 - `--project desktop` runs one project. The `setup` project (the harness) always
-  runs first, because every other project depends on it.
+  runs first, because every other project depends on it. `desktop` (Desktop
+  Chrome) runs every spec except these, which run only in their own project so
+  that each spec runs once: `specs/mobile/` in `mobile` (a Pixel 7, with touch,
+  412px wide unless a spec sets a viewport), `specs/motion/` in `motion`
+  (Desktop Chrome with animations on), and `admin/index-panel` in `index`, which
+  waits for `desktop` to finish (see [Seed data](#seed-data)). If a `desktop`
+  test fails, `index` is skipped.
 - A spec file or directory path runs just that: `bunx playwright test
 tests/e2e/specs/auth`.
 - A failed test keeps its trace. `bun run test:e2e:report` opens it, or run
@@ -218,19 +224,24 @@ the migrations apply to an empty database.
 
 Several workers share one database, so each row belongs to one class:
 
-| Class    | Who writes it                                        | Examples                               |
-| -------- | ---------------------------------------------------- | -------------------------------------- |
-| frozen   | nobody. Any spec may read it                         | `alpha`, `USERS.admin`, `USERS.banned` |
-| owned    | exactly one spec file, named in a comment on the row | `USERS.stale` (http/cache-headers)     |
-| per-test | the test that creates it, under an id unique to it   | an olympiad a contribute spec creates  |
-| global   | only the serial index spec                           | the FTS5 index                         |
+| Class    | Who writes it                                           | Examples                               |
+| -------- | ------------------------------------------------------- | -------------------------------------- |
+| frozen   | nobody. Any spec may read it                            | `alpha`, `USERS.admin`, `USERS.banned` |
+| owned    | exactly one spec file, named in a comment on the row    | `USERS.stale` (http/cache-headers)     |
+| per-test | the test that creates it, under an id unique to it      | an olympiad a contribute spec creates  |
+| global   | only the index spec, in its own project, after the rest | the FTS5 index                         |
 
 Rules that follow:
 
 - **No spec writes a frozen row.** If a test must change something, seed a row
   it owns.
-- **No spec asserts a global total**, such as the number of olympiads. Another
-  spec may have added rows, and `/api/stats` is shared-cached for the run anyway.
+- **The index spec counts globally.** Prune orphans removes every `file_text`
+  row with no file, and a file delete leaves its row orphaned between two D1
+  statements. So `admin/index-panel` runs in the `index` project, after every
+  `desktop` spec, and no other project may write `file_text`.
+- **No other spec asserts a global total**, such as the number of olympiads.
+  Another spec may have added rows, and `/api/stats` is shared-cached for the run
+  anyway.
 - **Some owned rows can be used only once**: a session due a refresh is
   refreshed by the first page request. That is why `retries` is 0; a retry would
   run against used-up state.
@@ -264,20 +275,30 @@ better-auth.session_token = encodeURIComponent(token + "." + base64(HMAC-SHA256(
 On `https://phoxiv.org` the name gains a `__Secure-` prefix; the e2e origin is
 http, so it doesn't. Nothing in the app changes for tests.
 
-| Key           | Role                                            | Use                                                  | Owner              |
-| ------------- | ----------------------------------------------- | ---------------------------------------------------- | ------------------ |
-| `admin`       | admin                                           | the admin most specs act as; never a target          | frozen             |
-| `superadmin`  | admin, `SUPERADMIN_EMAIL`, no session           | a target the admin panel must refuse to modify       | frozen             |
-| `contributor` | contributor, assigned `e2e-assigned`            | the contributor in the access-control matrix         | frozen             |
-| `user`        | none                                            | a plain signed-in visitor                            | frozen             |
-| `banned`      | contributor, `banned` set by hand, session kept | must be treated as signed out everywhere             | frozen             |
-| `stale`       | none; the session is due a refresh              | the refreshed cookie must reach the browser          | http/cache-headers |
-| `apiTarget`   | none, no session                                | the target of closed admin calls and a cancelled ban | auth/ban           |
-| `banTarget`   | contributor, assigned `e2e-assigned`            | banned through the admin panel                       | auth/ban           |
-| `unbanTarget` | none, `banned` set by hand, session kept        | unbanned through the admin panel                     | auth/ban           |
-| `roleTarget`  | none                                            | promoted through the admin panel                     | admin/users        |
-| `loopTarget`  | none, no session                                | the role change in the submit-loop regression        | admin/users        |
-| `tracker`     | none                                            | marks problems done                                  | olympiads/progress |
+| Key              | Role                                             | Use                                                  | Owner                      |
+| ---------------- | ------------------------------------------------ | ---------------------------------------------------- | -------------------------- |
+| `admin`          | admin                                            | the admin most specs act as; never a target          | frozen                     |
+| `superadmin`     | admin, `SUPERADMIN_EMAIL`, no session            | a target the admin panel must refuse to modify       | frozen                     |
+| `contributor`    | contributor, assigned `e2e-assigned`             | the contributor in the access-control matrix         | frozen                     |
+| `user`           | none                                             | a plain signed-in visitor                            | frozen                     |
+| `banned`         | contributor, `banned` set by hand, session kept  | must be treated as signed out everywhere             | frozen                     |
+| `stale`          | none; the session is due a refresh               | the refreshed cookie must reach the browser          | http/cache-headers         |
+| `apiTarget`      | none, no session                                 | the target of closed admin calls and a cancelled ban | auth/ban                   |
+| `banTarget`      | contributor, assigned `e2e-assigned`             | banned through the admin panel                       | auth/ban                   |
+| `unbanTarget`    | none, `banned` set by hand, session kept         | unbanned through the admin panel                     | auth/ban                   |
+| `roleTarget`     | none                                             | promoted through the admin panel                     | admin/users                |
+| `loopTarget`     | none, no session                                 | the role change in the submit-loop regression        | admin/users                |
+| `tracker`        | none                                             | marks problems done                                  | olympiads/progress         |
+| `assignTarget`   | contributor, assigned `alpha`                    | assigned other olympiads through the admin panel     | admin/users-table          |
+| `progressReader` | none, with seeded progress on `alpha`            | what the status filter and year totals are read from | olympiads/progress-filters |
+| `progressRacer`  | none                                             | tracks while its progress request is held            | olympiads/progress-filters |
+| `searcher`       | none, with seeded progress (`SEARCHER_PROGRESS`) | what ⌘K's progress filter is read from               | search/problem-filters     |
+
+`admin/users-table` also owns 30 filler accounts (`e2e-ut-filler-01` to `-30`),
+which have no session and are not in `USERS`. They give the users table a second
+page, and they joined after every `USERS` account, so the default sort keeps all
+of `USERS` on page 1. Specs that find a row by scrolling page 1 rely on that, so
+keep `USERS` under the page size of 25.
 
 In a spec:
 
@@ -443,7 +464,21 @@ Names that are easy to get wrong:
 - **Toasts disappear after four seconds.** Assert on one as soon as the action
   that raises it resolves.
 - **Motion is reduced** (`reducedMotion: 'reduce'`), so the landing page's GSAP
-  rows don't move and transitions don't delay clicks.
+  rows don't move and transitions don't delay clicks. The `motion` project is the
+  exception: its specs check the animated paths still work, so they wait for
+  what moves to stop (Playwright's click waits for a stable element) rather than
+  for a time.
+- **A request that must answer late** is held with `page.route` and released by
+  the test. To serve a response computed before the page changes something, call
+  `route.fetch()` at once and `route.fulfill()` on release
+  (`olympiads/progress-filters`); a plain hold-then-continue would compute it
+  after.
+- **Tap a button again only once its last press has settled.** The shared
+  button eases back from `active:translate-y-px`. While it moves, Playwright
+  finds it unstable and retries the tap, scrolling the page on each retry, and
+  bits-ui closes an open tooltip on scroll. Wait for `translate` to read `none`
+  first (`mobile/sign-in-to-track`). Under load this failed about one run in
+  three.
 - **A debounce runs on Playwright's fake clock.** Install it before the page
   loads, and pause it only once the page is ready, so load and hydration run in
   real time. Then "during the debounce" lasts as long as the assertions need, and
@@ -453,19 +488,22 @@ Names that are easy to get wrong:
 
 `bunx playwright test --list` prints every test. By directory:
 
-| Directory           | Covers                                                                                                                  | Guards                                                                                                                                                                                        |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `specs/smoke/`      | the harness: the canary, the signed-out redirect, the sentinel, loopback                                                | this file                                                                                                                                                                                     |
-| `specs/http/`       | every route's cache header, the legacy redirects, the `/api/*` shapes                                                   | [architecture.md](./architecture.md#caching-and-the-route-tree), [deployment.md](./deployment.md#purging-the-cache-after-an-api-change), [search.md](./search.md#cost-controls-and-the-cache) |
-| `specs/auth/`       | the role × route matrix, bans, BetterAuth's closed admin endpoints                                                      | [auth.md](./auth.md#which-guard-each-route-uses)                                                                                                                                              |
-| `specs/admin/`      | changing a role; the Index tab's counts and maintenance actions                                                         | the submit loops in `UserRowActions.svelte` and `IndexPanel.svelte`; [auth.md](./auth.md#the-admin-panel), [search.md](./search.md#operating-the-index)                                       |
-| `specs/contribute/` | creating an olympiad, the icon, the year editor's rows, topics, duplicates and links, uploads and their text extraction | the icon data loss, the `{#if}` row shift, rule 6 (`actionFail`); [data-model.md](./data-model.md#r2-key-layout), [search.md](./search.md#the-write-path)                                     |
-| `specs/olympiads/`  | the olympiad page's 404 and what it must never render; tracking progress                                                | [data-model.md](./data-model.md#problem_progress)                                                                                                                                             |
-| `specs/search/`     | the ⌘K dialog: reset, highlight, Enter, escaping, the session caches; files mode's states, debounce and results         | [search.md](./search.md#the-client)                                                                                                                                                           |
+| Directory           | Covers                                                                                                                                                                                                  | Guards                                                                                                                                                                                        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `specs/smoke/`      | the harness: the canary, the signed-out redirect, the sentinel, loopback                                                                                                                                | this file                                                                                                                                                                                     |
+| `specs/http/`       | every route's cache header, the legacy redirects, the `/api/*` shapes                                                                                                                                   | [architecture.md](./architecture.md#caching-and-the-route-tree), [deployment.md](./deployment.md#purging-the-cache-after-an-api-change), [search.md](./search.md#cost-controls-and-the-cache) |
+| `specs/auth/`       | the role × route matrix, bans, BetterAuth's closed admin endpoints                                                                                                                                      | [auth.md](./auth.md#which-guard-each-route-uses)                                                                                                                                              |
+| `specs/admin/`      | changing a role; the users table's paging and olympiad assignments; the Log tab's paging; the Index tab's counts and maintenance actions                                                                | the submit loops in `UserRowActions.svelte` and `IndexPanel.svelte`; the log's id cursor; [auth.md](./auth.md#the-admin-panel), [search.md](./search.md#operating-the-index)                  |
+| `specs/contribute/` | creating an olympiad, the icon, the year editor's rows, topics, duplicates and links, uploads and their text extraction, deleting files and years, `titles.csv` export and import                       | the icon data loss, the `{#if}` row shift, rule 6 (`actionFail`); [data-model.md](./data-model.md#r2-key-layout), [search.md](./search.md#the-write-path)                                     |
+| `specs/olympiads/`  | the index's order, search, tags and states; the olympiad page's 404 and what it must never render; tracking progress; the status filter, year totals and the stale-response guards                      | [data-model.md](./data-model.md#problem_progress)                                                                                                                                             |
+| `specs/search/`     | the ⌘K dialog: reset, highlight, Enter, escaping, the session caches, filters before ranking, the keyboard, failures; files mode's states, debounce, ranking, results, length limit and olympiad filter | [search.md](./search.md#the-client)                                                                                                                                                           |
+| `specs/pages/`      | the landing page's stats and corpus bands, the blog, the theme toggle; no request leaves the origin                                                                                                     | [architecture.md](./architecture.md)                                                                                                                                                          |
+| `specs/mobile/`     | ⌘K at 375 and 390px, the mobile nav, the sign-in hint by tap (the `mobile` project)                                                                                                                     | the ⌘K controls fitting the row, the olympiad panel's `align="end"`, `SignInToTrack.svelte`'s tap                                                                                             |
+| `specs/motion/`     | the landing page's reveals and the ⌘K dialog with animations on (the `motion` project)                                                                                                                  | `CorpusBand.svelte`'s hover pause                                                                                                                                                             |
 
 ## What stays manual
 
-Some checks need a person: a real GitHub round trip, IME input, a touch device,
+Some checks need a person: a real GitHub round trip, IME input, a real touch device,
 contrast in dark mode, the bundle size. They are listed in
 [contributing.md](./contributing.md#the-gates).
 

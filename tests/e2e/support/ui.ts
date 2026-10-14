@@ -48,24 +48,29 @@ export function confirmDialog(page: Page): Locator {
 }
 
 /**
- * Opens an `OlympiadPicker` from its trigger and picks each of `names`, then
- * closes it. The panel is portalled; its search box filters by name and id.
- * Names match exactly: "Delta Physics Olympiad" is a prefix of another seeded
- * name. A single-mode picker closes itself on the first pick, so pass one name.
+ * Opens an `OlympiadPicker` from its trigger and picks `names`, then waits for
+ * the panel to close. The panel is portalled; its search box filters by name
+ * and id. Names match exactly: "Delta Physics Olympiad" is a prefix of another
+ * seeded name.
+ *
+ * One name is a single-mode pick: the picker closes itself. An array is a
+ * multiple-mode pick: the panel stays open, so Escape closes it. Say which,
+ * rather than checking whether the panel is still open: a single-mode panel is
+ * still visible while it closes, and inside the ⌘K dialog that Escape reached
+ * the dialog and closed it.
  */
 export async function pickOlympiad(
 	page: Page,
 	trigger: Locator,
-	...names: string[]
+	names: string | string[]
 ): Promise<void> {
 	await trigger.click();
 	const search = page.getByPlaceholder('Search olympiads…');
-	for (const name of names) {
+	for (const name of typeof names === 'string' ? [names] : names) {
 		await search.fill(name);
 		await page.getByRole('option', { name, exact: true }).click();
 	}
-	// A multiple-mode panel stays open after a pick; a single-mode one has closed.
-	if (await search.isVisible()) await page.keyboard.press('Escape');
+	if (typeof names !== 'string') await page.keyboard.press('Escape');
 	await expect(search).toBeHidden();
 }
 

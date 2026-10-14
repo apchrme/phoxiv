@@ -139,95 +139,43 @@ The suite already covers:
   `/api/*` shapes, and deep search's input validation;
 - `tests/e2e/specs/auth/`: the role × route matrix, bans set by hand in SQL, and
   banning and unbanning from the admin panel;
-- `tests/e2e/specs/admin/`: changing a role (the submit loop), the Index tab and
+- `tests/e2e/specs/admin/`: changing a role (the submit loop), the users table's
+  paging, assigning olympiads, the Log tab's **Load more**, and the Index tab and
   its maintenance actions;
 - `tests/e2e/specs/contribute/`: creating an olympiad and the refused ids, the
-  icon, the year editor's rows, topics, duplicates and links, and uploads with
-  their text extraction;
-- `tests/e2e/specs/olympiads/`: the olympiad page's 404, what it must never
-  render, and tracking progress;
+  icon, adding years, the CSV export and import, the year editor's rows, topics,
+  duplicates and links, uploads with their text extraction, and deleting files
+  and years (their text leaves the index);
+- `tests/e2e/specs/olympiads/`: the index, the olympiad page's 404, what it must
+  never render, tracking progress, and the status filter;
 - `tests/e2e/specs/search/`: the ⌘K dialog in both modes: reset, Enter, escaping,
-  the session caches, the debounce, and what a file result is.
+  the session caches, filters before ranking, the keyboard (caps lock included),
+  failures, the debounce, the length limit, ranking, what a file result is, and
+  the olympiad filter and its panel;
+- `tests/e2e/specs/pages/`: the landing page, the blog and the theme toggle;
+- `tests/e2e/specs/mobile/` and `motion/`: ⌘K at 375 and 390px and the mobile
+  nav under emulated touch, and the animated paths with motion on.
 
 Then click through whatever you touched that the suite doesn't reach, under
 `bun run dev`, or `bun run preview` for anything that uploads (see
-[Local D1 and R2](#local-d1-and-r2)). What to check on each route, focusing on
-things that break silently:
+[Local D1 and R2](#local-d1-and-r2)). What only a person can check:
 
 **Anywhere**
 
 - After any change near auth, or a better-auth upgrade: sign in through GitHub
   and sign out again. The suite forges its sessions, so nothing else exercises
   the real OAuth round trip.
-- On a real touch device, the pages you touched still work by tap.
+- On a real phone, the pages you touched still work by tap. The suite emulates
+  touch in Chromium, which misses iOS Safari and the on-screen keyboard.
 - Anything you restyled, in dark mode as well as light: Catppuccin Mocha maps
   several tokens to the same colour (see
   [shadcn-svelte components are vendored](#shadcn-svelte-components-are-vendored)).
 
-**`/admin`**
+**⌘K search**
 
-- Assign olympiads to a contributor: the busy state appears on the button, and
-  the contributor can then edit exactly those olympiads.
-- Page through the users table; changing a role must not send you back to page 1.
-- Log tab: press **Load more** and check the seam for duplicates.
-
-**`/contribute`** and its editors
-
-- `/contribute/<olympiad>`: add a year; export and re-import the CSV.
-- `/contribute/<olympiad>/<year>`: delete a file, then delete the year.
-
-**⌘K search, problem mode**
-
-- ⌘K works with caps lock on. With a CJK IME, the Enter that commits a candidate
-  must not open a result, and ⌘K still closes the dialog mid-composition.
-- Signed out: topic filter present, progress filter absent. Signed in:
-  `done`/`todo` matches the olympiad page.
-- Filters apply before ranking, not to the top 50. With the query cleared and a
-  filter set, the first 50 filtered problems list by olympiad, then year
-  descending.
-- Arrowing through the topic dropdown must not move the result list. Escape
-  closes the menu, then the dialog.
-- Arrow keys on the mode tabs switch mode and keep focus on the tabs; Enter or
-  Space moves to the input.
-- At 375px, signed in, with a topic filter: everything fits and the close button
-  is not clipped.
-
-**⌘K search, files mode** (the Files tab, or ⌘⇧F). The reasoning behind these
-checks is in [search.md](./search.md).
-
-- Retyping a query sends no second `/api/search/files` request, and the list does
-  not blank between keystrokes.
-- A 300-character paste: the panel names the 200-character limit and the query's
-  length, and sends no request.
-- A dozen-word sentence pasted from a PDF in the archive finds that PDF first.
-  A sentence whose words are adjacent in one document returns that one file.
-  Backspacing into the last word keeps results.
-- A multi-word query with the problem index loaded: the hidden problems panel has
-  no `[data-result-index]` rows in DevTools.
-- A term in a year-level PDF and a problem PDF gives two rows; only the problem
-  PDF's row lists a problem number. A PDF attached to several problems gives one
-  row listing them.
-- Middle-click and ⌘-click on a file row work. Switching back to problem mode
-  restores its filters.
-- At 390px: three controls plus the input fit, the close button is not clipped,
-  and the olympiad panel stays on screen.
-
-**Files mode, olympiad filter**
-
-- Scope a query to a small olympiad whose files are not in the unfiltered top 20:
-  its files come back.
-- A query whose phrase match is only outside the scope still returns in-scope
-  results from the looser match.
-- Switch olympiad and back: each combination shows its own results, and the
-  second visit sends no request.
-- Typing in the panel matches name and id (`ipho` and `international` both find
-  IPhO). Reopening clears the box.
-- In the open panel, the arrows move the panel's highlight, Enter picks and
-  closes, and Escape closes only the panel. Recheck after any bits-ui upgrade.
-- Opened on an olympiad page, that olympiad is pinned first under "On this page",
-  appears once, and is not selected. Off an olympiad page there is no pinned row.
-- With the filter set, switch to problem mode: the summary bar says the filter
-  applies to file search only. Switch back: still set.
+- With a CJK IME, the Enter that commits a candidate must not open a result, and
+  ⌘K still closes the dialog mid-composition.
+- In files mode, middle-click and ⌘-click on a file row work.
 
 **Text extraction** (under `bun run preview`, since uploads fail under `bun run dev`)
 
@@ -237,11 +185,6 @@ checks is in [search.md](./search.md).
 - Forge an `extractedText` containing U+0002/U+0003 and
   `<script>alert(1)</script>`, then search a word in it: no spurious highlight,
   and the tag renders as text.
-- Delete a file: it stops appearing in deep search. Check with a query you
-  haven't run this session: the dialog caches each query's results, and
-  `caches.default` keeps every `/api/*` body. The delete drops the file's text
-  too, so **Prune orphans** afterwards finds nothing. Delete and re-upload with
-  the same label: one row, with the new text.
 
 ## The landing page's corpus band
 

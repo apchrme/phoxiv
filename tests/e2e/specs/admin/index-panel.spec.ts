@@ -13,8 +13,9 @@ import { confirmDialog, gotoReady, toast } from '../../support/ui';
  * The only spec that writes the global FTS index (docs/testing.md, "Seed data"),
  * so the file runs serially: Rebuild and Merge rewrite the index, and Prune
  * deletes the seeded orphan row (ORPHAN_URL in fixtures/seed-data.ts), which is
- * why the second prune must find nothing. No assertion reads a global count:
- * other specs add `file_text` rows while this one runs.
+ * why the second prune must find nothing. The prune counts are global, so the
+ * file runs in its own `index` project, after every desktop spec: a file delete
+ * leaves its text row orphaned for a moment, and a prune landing then counted it.
  */
 
 test.describe.configure({ mode: 'serial' });

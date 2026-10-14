@@ -87,9 +87,10 @@ In the dialog:
 - **In files mode both disappear, rather than grey out**, and the olympiad filter
   takes their place. A disabled `TopicSelect` keeps its filled look and would
   claim a filter is active. Switching modes discards nothing. Each mode says so:
-  files mode shows "topic and progress filters don't apply to files", and problem
-  mode's summary bar appears whenever the olympiad filter is set. A filter that is
-  set but invisible reads as "search is broken".
+  files mode shows "topic and progress filters don't apply to files", and in
+  problem mode, while the olympiad filter is set, the summary bar over the results
+  says it applies to file search only, and "No results found" still offers "Clear
+  filters". A filter that is set but invisible reads as "search is broken".
 - **The olympiad filter is files-mode only, single-select, and applied on the
   server** (see [below](#the-olympiad-filter-a-url-range-not-a-join)). It is
   `OlympiadPicker.svelte` with `trigger="icon"`: an icon-only square that fills
