@@ -128,7 +128,7 @@
 			>
 				<div class="flex items-center justify-between">
 					<p class="text-xs text-muted-foreground">
-						Remove the uploaded icon and fall back to the emoji/flag set in the metadata below.
+						Remove the uploaded icon, so that it can be replaced with an image or an emoji/flag.
 					</p>
 					<ConfirmSubmit
 						{pending}
