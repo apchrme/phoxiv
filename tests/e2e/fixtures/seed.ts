@@ -34,14 +34,15 @@ async function insertChunked<T extends SQLiteTable>(
 export async function seed(d1: D1Database, now = new Date()): Promise<void> {
 	const db = drizzle(d1);
 	const rows = seedRows(now);
+	// Users first: file rows name their uploader (`uploaded_by`).
+	await insertChunked(db, schema.user, rows.user);
+	await insertChunked(db, schema.session, rows.session);
 	await insertChunked(db, schema.olympiads, rows.olympiads);
 	await insertChunked(db, schema.years, rows.years);
 	await insertChunked(db, schema.problems, rows.problems);
 	await insertChunked(db, schema.yearFiles, rows.yearFiles);
 	await insertChunked(db, schema.problemFiles, rows.problemFiles);
 	await insertChunked(db, schema.fileText, rows.fileText);
-	await insertChunked(db, schema.user, rows.user);
-	await insertChunked(db, schema.session, rows.session);
 	await insertChunked(db, schema.problemProgress, rows.problemProgress);
 	await insertChunked(db, schema.activityLog, rows.activityLog);
 }

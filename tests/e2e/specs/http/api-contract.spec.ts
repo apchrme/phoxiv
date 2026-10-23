@@ -1,9 +1,11 @@
 import { SHARED_CACHE_CONTROL } from '../../../../src/lib/server/cache';
 import {
+	CREDITS,
 	DELTA_W_BULK,
 	FILE_URLS,
 	PHRASES,
 	SCRIPT_IN_TEXT,
+	USERS,
 	XSS_TITLE
 } from '../../fixtures/seed-data';
 import { expect, test } from '../../support/test';
@@ -14,7 +16,7 @@ import { expect, test } from '../../support/test';
  * either a bug or a shape change that needs that purge; see docs/deployment.md,
  * "Purging the cache after an API change".
  *
- * Reads frozen seed rows only.
+ * Reads frozen seed rows only (CREDITS for the contributor shapes).
  */
 
 /** `/api/search/files?q=…[&olympiad=…]`, with the query encoded. */
@@ -173,6 +175,37 @@ test.describe('the API contract', { tag: '@smoke' }, () => {
 		const body = await (await request.get('/api/search')).json();
 		const titles = body.map((i: { problem: { title?: string } }) => i.problem.title);
 		expect(titles).toContain(XSS_TITLE);
+	});
+
+	test('/api/olympiads/[olympiad]/contributors is Contributor[], most uploads first', async ({
+		request
+	}) => {
+		const body = await (
+			await request.get(`/api/olympiads/${CREDITS.olympiad}/contributors`)
+		).json();
+		// Exactly these keys: no email and no user id reach the shared cache. The
+		// banned uploader's file is credited but never listed.
+		expect(body).toEqual([
+			{ name: USERS.creditTop.name, image: null, uploads: 3 },
+			{ name: USERS.creditAdmin.name, image: null, uploads: 1 }
+		]);
+	});
+
+	test('/api/team is TeamMember[], admins and contributors only', async ({ request }) => {
+		const body: { name: string; role: string; uploads: number }[] = await (
+			await request.get('/api/team')
+		).json();
+		const top = body.find((m) => m.name === USERS.creditTop.name);
+		expect(top).toEqual({
+			name: USERS.creditTop.name,
+			image: null,
+			role: 'contributor',
+			uploads: 3
+		});
+		for (const member of body) {
+			expect(Object.keys(member).sort()).toEqual(['image', 'name', 'role', 'uploads']);
+			expect(['admin', 'contributor']).toContain(member.role);
+		}
 	});
 });
 

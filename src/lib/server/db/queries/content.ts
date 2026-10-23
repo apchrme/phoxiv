@@ -1,13 +1,14 @@
 import { asc, desc, eq } from 'drizzle-orm';
-import { olympiads, problemFiles, problems, yearFiles, years, type DB } from '../index';
+import { olympiads, problemFiles, problems, user, yearFiles, years, type DB } from '../index';
 import { parseTopics } from '#lib/utils/topics.js';
 import { parseLabelledUrls, parseStringArray } from '#lib/utils/json.js';
-import type { FileEntry, ProblemTopic, SearchItem, YearEntry } from '#lib/types.js';
+import type { EditorFile, FileEntry, ProblemTopic, SearchItem, YearEntry } from '#lib/types.js';
 
 /*
  * Reads that assemble years, problems and their files. Each uses a LEFT JOIN and
  * folds the flat rows into a tree with {@link groupJoined}, so the SQL ORDER BY
- * is what fixes the order of the nested arrays. Keep the orderings.
+ * is what fixes the order of the nested arrays. Keep the orderings. Files sort
+ * by `position`, then `id`: contributors set the order, and ties keep upload order.
  */
 
 /**
@@ -45,7 +46,7 @@ export type EditableProblem = {
 	topics: ProblemTopic[];
 	/** The denominator a tracked score is shown against; null when unset. */
 	maxScore: number | null;
-	files: FileEntry[];
+	files: EditorFile[];
 };
 
 /**
@@ -69,7 +70,7 @@ export async function getOlympiadYearEntries(db: DB, olympiadId: string): Promis
 			.leftJoin(yearFiles, eq(yearFiles.yearId, years.id))
 			.where(eq(years.olympiadId, olympiadId))
 			// Ordering by an unselected column is valid SQLite. Keep it (see top of file).
-			.orderBy(desc(years.year), asc(yearFiles.id))
+			.orderBy(desc(years.year), asc(yearFiles.position), asc(yearFiles.id))
 			.all(),
 		db
 			.select({
@@ -88,7 +89,7 @@ export async function getOlympiadYearEntries(db: DB, olympiadId: string): Promis
 			// Joined only for the `where`.
 			.innerJoin(years, eq(years.id, problems.yearId))
 			.where(eq(years.olympiadId, olympiadId))
-			.orderBy(asc(problems.id), asc(problemFiles.id))
+			.orderBy(asc(problems.id), asc(problemFiles.position), asc(problemFiles.id))
 			.all()
 	]);
 
@@ -144,40 +145,61 @@ export async function getOlympiadYearEntries(db: DB, olympiadId: string): Promis
 export async function getYearContent(
 	db: DB,
 	yearId: number
-): Promise<{ yearFiles: FileEntry[]; problems: EditableProblem[] }> {
+): Promise<{ yearFiles: EditorFile[]; problems: EditableProblem[] }> {
 	const [yearFileRows, problemRows] = await Promise.all([
 		db
-			.select()
+			// Nested, so a file with no uploader gives `uploader: null` (see
+			// getOlympiadYearEntries).
+			.select({
+				label: yearFiles.label,
+				url: yearFiles.url,
+				uploader: { name: user.name, image: user.image }
+			})
 			.from(yearFiles)
+			.leftJoin(user, eq(user.id, yearFiles.uploadedBy))
 			.where(eq(yearFiles.yearId, yearId))
-			.orderBy(asc(yearFiles.id))
+			.orderBy(asc(yearFiles.position), asc(yearFiles.id))
 			.all(),
 		db
-			.select()
+			.select({
+				problems: {
+					id: problems.id,
+					number: problems.number,
+					title: problems.title,
+					topics: problems.topics,
+					maxScore: problems.maxScore
+				},
+				problem_files: { label: problemFiles.label, url: problemFiles.url },
+				uploader: { name: user.name, image: user.image }
+			})
 			.from(problems)
 			.leftJoin(problemFiles, eq(problemFiles.problemId, problems.id))
+			.leftJoin(user, eq(user.id, problemFiles.uploadedBy))
 			.where(eq(problems.yearId, yearId))
-			.orderBy(asc(problems.id), asc(problemFiles.id))
+			.orderBy(asc(problems.id), asc(problemFiles.position), asc(problemFiles.id))
 			.all()
 	]);
 
 	return {
-		yearFiles: yearFileRows.map((f) => ({ label: f.label, url: f.url })),
+		yearFiles: yearFileRows,
 		problems: groupJoined(
 			problemRows,
 			(row) => row.problems.id,
-			// Fields listed explicitly so a new column isn't exposed by accident.
 			(row) => ({
 				id: row.problems.id,
 				number: row.problems.number,
 				title: row.problems.title,
 				topics: parseTopics(row.problems.topics),
 				maxScore: row.problems.maxScore,
-				files: [] as FileEntry[]
+				files: [] as EditorFile[]
 			}),
 			(entry, row) => {
 				if (row.problem_files) {
-					entry.files.push({ label: row.problem_files.label, url: row.problem_files.url });
+					entry.files.push({
+						label: row.problem_files.label,
+						url: row.problem_files.url,
+						uploader: row.uploader
+					});
 				}
 			}
 		)
@@ -220,6 +242,7 @@ export async function getSearchIndex(db: DB): Promise<SearchItem[]> {
 			asc(olympiads.id),
 			desc(years.year),
 			asc(problems.id),
+			asc(problemFiles.position),
 			asc(problemFiles.id)
 		)
 		.all();

@@ -36,13 +36,24 @@ export const yearFiles = sqliteTable(
 			.notNull()
 			.references(() => years.id, { onDelete: 'cascade' }),
 		label: text('label').notNull(),
-		url: text('url').notNull()
+		url: text('url').notNull(),
+		// Order among the year's files, ascending. Ties fall back to `id` (upload
+		// order), so rows from before this column, all 0, keep their old order.
+		// `moveFile` rewrites every sibling to 0..n-1, so a move never meets a tie.
+		position: integer('position').notNull().default(0),
+		// Who uploaded it, or NULL if unknown (older files the backfill couldn't
+		// match). `set null`, like `activity_log.user_id`: a file outlives its
+		// uploader's account.
+		uploadedBy: text('uploaded_by').references(() => user.id, { onDelete: 'set null' })
 	},
 	(t) => [
 		uniqueIndex('year_files_year_label_idx').on(t.yearId, t.label),
 		// Deep search and the backfill join on `url`. Not unique: two labels in one
 		// parent may name the same object (which `collidingLabel` catches).
-		index('year_files_url_idx').on(t.url)
+		index('year_files_url_idx').on(t.url),
+		// Serves the upload counts, and the `set null` when a user is deleted, which
+		// would otherwise scan the table.
+		index('year_files_uploaded_by_idx').on(t.uploadedBy)
 	]
 );
 
@@ -73,12 +84,18 @@ export const problemFiles = sqliteTable(
 			.notNull()
 			.references(() => problems.id, { onDelete: 'cascade' }),
 		label: text('label').notNull(),
-		url: text('url').notNull()
+		url: text('url').notNull(),
+		// Same as `year_files.position`, among the problem's files.
+		position: integer('position').notNull().default(0),
+		// Same as `year_files.uploaded_by`.
+		uploadedBy: text('uploaded_by').references(() => user.id, { onDelete: 'set null' })
 	},
 	(t) => [
 		uniqueIndex('problem_files_problem_label_idx').on(t.problemId, t.label),
 		// Same as `year_files_url_idx`.
-		index('problem_files_url_idx').on(t.url)
+		index('problem_files_url_idx').on(t.url),
+		// Same as `year_files_uploaded_by_idx`.
+		index('problem_files_uploaded_by_idx').on(t.uploadedBy)
 	]
 );
 
@@ -211,6 +228,7 @@ export const activityLog = sqliteTable(
 				'save_metadata',
 				'upload_file',
 				'delete_file',
+				'move_file',
 				'import_titles',
 				// One row per `index:backfill` batch, not per file, so the log isn't flooded.
 				'index_files'

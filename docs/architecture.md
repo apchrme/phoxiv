@@ -104,10 +104,11 @@ src/routes/
 │
 ├── (reg)/                      private browser cache
 │   ├── olympiads/              index, and [olympiad]/ with YearPanel, ProblemCard,
-│   │                           ProgressControl, SignInToTrack, filter.ts,
-│   │                           and progress/ (endpoint, private, no-store)
+│   │                           ProgressControl, SignInToTrack, ContributorsButton,
+│   │                           filter.ts, and progress/ (endpoint, private, no-store)
 │   ├── blog/                   index and [slug]/, from #lib/posts/*.svx
 │   ├── resources/, privacy/    .svx pages
+│   ├── team/                   admins and contributors; fetches /api/team
 │   ├── login/                  redirects to /profile if signed in
 │   └── profile/                redirects to /login if not
 │
@@ -126,9 +127,11 @@ src/routes/
 └── api/                        shared cache
     ├── olympiads/              OlympiadEntry[]
     ├── olympiads/[olympiad]/   YearEntry[]
+    ├── olympiads/[olympiad]/contributors/   Contributor[]: who uploaded its files
     ├── search/                 SearchItem[]: the whole corpus, matched in the browser
     ├── search/files/           FileSearchResponse: deep search, matched in D1 by FTS5
     ├── stats/                  landing-page counters
+    ├── team/                   TeamMember[]: every admin and contributor
     └── auth/[...all]/          the exception: no cache headers
 ```
 
@@ -154,8 +157,8 @@ key matching a folder in the file's path, else `_`.
 
 ## Why some pages fetch their own data
 
-The landing page, the olympiads index and the olympiad page `fetch()` their
-lists from `/api/*` in the browser instead of using a server `load`. A load costs
+The landing page, the olympiads index, the olympiad page and `/team` `fetch()`
+their lists from `/api/*` in the browser instead of using a server `load`. A load costs
 a D1 read per visit; the fetch is answered by the shared cache. The data can be
 up to a day old, which is fine for an archive that changes rarely. Changing an
 `/api/*` response shape needs a purge — see
@@ -163,7 +166,9 @@ up to a day old, which is fine for an archive that changes rarely. Changing an
 
 The olympiad page still has a small load: one read of the olympiad's own row, so
 an unknown id is a real 404 and the title and description are server-rendered.
-Its years, problems and files come from `/api/olympiads/[olympiad]`.
+Its years, problems and files come from `/api/olympiads/[olympiad]`. Its
+contributors list comes from `/api/olympiads/[olympiad]/contributors`, fetched
+only when the list is first opened, so a visit that never opens it costs nothing.
 
 ### Per-user progress
 
@@ -234,13 +239,14 @@ because its never-fail-a-write policy lives with it. The action enum itself is i
 Drizzle's relational queries (`db.query`) are not set up: `drizzle()` gets no
 `relations`, and every read uses the core query builder.
 
-| Query module   | Reads / writes                                                               |
-| -------------- | ---------------------------------------------------------------------------- |
-| `olympiads.ts` | the olympiad list and one olympiad's row; `toOlympiadEntry`, the public DTO  |
-| `years.ts`     | one year's row, an olympiad's year numbers, and creating a year              |
-| `content.ts`   | joined reads for the public API shapes and the year editor; `getSearchIndex` |
-| `progress.ts`  | a user's tracked problems, per olympiad and archive-wide                     |
-| `files.ts`     | the full-text index: query sanitising, reads, writes, upkeep                 |
+| Query module      | Reads / writes                                                               |
+| ----------------- | ---------------------------------------------------------------------------- |
+| `olympiads.ts`    | the olympiad list and one olympiad's row; `toOlympiadEntry`, the public DTO  |
+| `years.ts`        | one year's row, an olympiad's year numbers, and creating a year              |
+| `content.ts`      | joined reads for the public API shapes and the year editor; `getSearchIndex` |
+| `progress.ts`     | a user's tracked problems, per olympiad and archive-wide                     |
+| `files.ts`        | the full-text index: query sanitising, reads, writes, upkeep                 |
+| `contributors.ts` | upload counts per user, for an olympiad's contributors list and `/team`      |
 
 ### Client-safe `#lib/`
 

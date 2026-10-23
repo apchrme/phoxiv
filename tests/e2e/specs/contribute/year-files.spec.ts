@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import type { Locator, Page } from '@playwright/test';
 import { CDN_BASE_URL } from '../../../../src/lib/constants';
-import { OWNED, PHRASES } from '../../fixtures/seed-data';
+import { OWNED, PHRASES, USERS } from '../../fixtures/seed-data';
 import { expect, test } from '../../support/test';
 import { gotoReady, toast } from '../../support/ui';
 
@@ -99,6 +99,8 @@ test.describe('the year editor, Files tab', () => {
 
 		// No badge: the extracted text went up with the file and the row is `ok`.
 		await expect(fileLabel(year, 'Problems')).toHaveText('Problems');
+		// Credited to whoever uploaded it.
+		await expect(year.getByText(`Uploaded by ${USERS.admin.name}`)).toBeVisible();
 		await expect(year.getByRole('link', { name: 'View' })).toHaveAttribute(
 			'href',
 			yearFileUrl(YEARS.upload, 'problems')

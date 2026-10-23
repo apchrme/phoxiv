@@ -225,7 +225,13 @@ test.describe('access control', { tag: '@smoke' }, () => {
 						}
 					);
 				}
-				for (const action of ['saveMetadata', 'deleteYear', 'uploadFile', 'deleteFile']) {
+				for (const action of [
+					'saveMetadata',
+					'deleteYear',
+					'uploadFile',
+					'deleteFile',
+					'moveFile'
+				]) {
 					await postAction(
 						api,
 						`/contribute/e2e-unassigned/1999?/${action}`,
@@ -291,7 +297,14 @@ test.describe('access control', { tag: '@smoke' }, () => {
 
 	test('the public API needs no session', async ({ apiAs }) => {
 		const api = await apiAs(null);
-		for (const path of ['/api/olympiads', '/api/olympiads/alpha', '/api/search', '/api/stats']) {
+		for (const path of [
+			'/api/olympiads',
+			'/api/olympiads/alpha',
+			'/api/olympiads/alpha/contributors',
+			'/api/search',
+			'/api/stats',
+			'/api/team'
+		]) {
 			await expectStatus(api, path, 200);
 		}
 	});

@@ -72,12 +72,45 @@ clicks it), and the page skips any stored before that check existed.
 
 ### `year_files` and `problem_files`
 
-Both are `(id, <parent>_id, label, url)`. `label` is what the badge shows
-("Solutions") and is unique per parent, so `uploadFile` rejects a duplicate label
-rather than overwriting. (If the existing file had a different extension, an
-overwrite would orphan the old object in R2.) `url` is the full CDN URL, not a key (see
-[R2 key layout](#r2-key-layout)), with a non-unique index for deep search and the
-backfill.
+The two tables have the same shape; `<parent>_id` is `year_id` or `problem_id`.
+
+| Column        | Type       | Notes                                                       |
+| ------------- | ---------- | ----------------------------------------------------------- |
+| `id`          | INTEGER PK | autoincrement                                               |
+| `<parent>_id` | INTEGER    | → `years.id` / `problems.id`, cascade                       |
+| `label`       | TEXT       | not null; unique per parent                                 |
+| `url`         | TEXT       | not null; the full CDN URL, indexed (not unique)            |
+| `position`    | INTEGER    | not null, default 0; order among the parent's files         |
+| `uploaded_by` | TEXT       | → `user.id`, `ON DELETE SET NULL`; indexed. Null if unknown |
+
+`label` is what the badge shows ("Solutions") and is unique per parent, so
+`uploadFile` rejects a duplicate label rather than overwriting. (If the existing
+file had a different extension, an overwrite would orphan the old object in R2.)
+`url` is the full CDN URL, not a key (see [R2 key layout](#r2-key-layout)),
+indexed for deep search and the backfill.
+
+**Files are shown in `position` order, ties broken by `id`.** Every read that
+lists files sorts `position, id`, after the parent's own keys (`groupJoined`
+needs a parent's rows together). A new upload goes last, at `max(position) + 1`.
+Contributors reorder with `moveFile`, which swaps a file with its neighbour and
+then writes `0..n-1` to every sibling in one batch. Files that predate the
+column all hold 0, so they show in upload order until the first move renumbers
+them. A move names a label and a direction, not a whole order, so a stale page
+can't undo another contributor's move. Order is not part of the R2 key, so a
+move touches only D1.
+
+**`uploaded_by` credits the upload.** `uploadFile` sets it to the acting user.
+Files uploaded before the column existed were filled in, as far as possible, by
+a one-off script that matches the audit log (see
+[deployment.md](./deployment.md#backfilling-uploaders)); the rest stay null and
+count for nobody. `SET NULL`, like `activity_log.user_id`: a file outlives its
+uploader's account. The index serves the upload counts and keeps that `SET NULL`
+from scanning the table when a user is deleted.
+
+The counts are read by `#lib/server/db/queries/contributors.ts` for the public
+contributors list and `/team`. Those endpoints are shared-cached, so they return
+only a name, the avatar url and a count. Never the email or the user id. A
+banned account stays credited on its files but is never listed.
 
 ### `problems`
 
@@ -280,7 +313,7 @@ The admin panel's audit trail, written by `logActivity()`.
 | ------------- | ------------------------------------------------------------------- |
 | `user_id`     | → `user.id`, `ON DELETE SET NULL`. The log outlives the account     |
 | `user_name`   | not null. A snapshot of the name, so the log survives renames       |
-| `action`      | one of eleven enum values; `LogAction` is derived from this column  |
+| `action`      | one of twelve enum values; `LogAction` is derived from this column  |
 | `olympiad_id` | plain TEXT, not a foreign key, so an olympiad's history survives it |
 | `year`        | nullable                                                            |
 | `detail`      | not null, default `''`; a human-readable sentence                   |

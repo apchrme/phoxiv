@@ -16,6 +16,7 @@
 	import { formToasts, Pending } from '#lib/forms.svelte.js';
 	import type { ProgressMap } from '#lib/progress.js';
 	import YearPanel from './YearPanel.svelte';
+	import ContributorsButton from './ContributorsButton.svelte';
 	import StatusFilter from '#lib/components/StatusFilter.svelte';
 	import {
 		filterYears,
@@ -166,7 +167,11 @@
 	keywords="problems, solutions, olympiad, physics"
 />
 
-<BackLink href={resolve('olympiads')}>Back to olympiads</BackLink>
+<!-- `mt-0`: BackLink brings its own `mt-5`, which the row carries instead. -->
+<div class="mt-5 flex flex-wrap items-center justify-between gap-2">
+	<BackLink href={resolve('olympiads')} class="mt-0">Back to olympiads</BackLink>
+	<ContributorsButton olympiadId={olympiad.id} />
+</div>
 
 <!-- `md:py-2` too: tailwind-merge only overrides PageHeader's `md:py-8` with a matching modifier. -->
 <PageHeader title={olympiad.name} class="py-3 md:py-3">

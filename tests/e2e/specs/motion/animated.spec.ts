@@ -44,7 +44,7 @@ test.describe('with animations on', () => {
 		// The band is hidden until scrolled to ("Scroll reveals", +page.svelte). A
 		// hidden element can't be scrolled to by a click, so scroll as a reader would.
 		// The pointer stays at the top, over the sticky nav, clear of the band.
-		const lede = page.getByRole('heading', { name: 'Pick any problem. Really, any.' });
+		const lede = page.getByRole('heading', { name: 'Pick any problem.' });
 		await expect(lede).toBeHidden();
 		await page.mouse.move(640, 30);
 		await page.mouse.wheel(0, 600);

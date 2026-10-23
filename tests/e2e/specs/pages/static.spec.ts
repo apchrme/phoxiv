@@ -27,7 +27,7 @@ function landingSection(page: Page, heading: string): Locator {
 
 /** The `<dl>` of StatsBand.svelte. */
 function statsList(page: Page): Locator {
-	return landingSection(page, 'Yes, I meant any problem.').locator('dl');
+	return landingSection(page, "There's more.").locator('dl');
 }
 
 /**
@@ -244,7 +244,7 @@ test.describe('the landing page', () => {
 
 			// Motion is reduced, so the band shows one still set and no marquee clones;
 			// with motion, the clones are `aria-hidden` and out of the role query too.
-			const tiles = landingSection(page, 'Pick any problem. Really, any.').getByRole('link');
+			const tiles = landingSection(page, 'Pick any problem.').getByRole('link');
 			await expect(tiles).toHaveCount(CORPUS.length);
 			for (const [i, entry] of CORPUS.entries()) {
 				const tile = tiles.nth(i);
@@ -288,7 +288,7 @@ test.describe('the landing page', () => {
 			];
 			await page.route('**/api/olympiads', (route) => route.fulfill({ json: entries }));
 			await gotoReady(page, '/');
-			const band = landingSection(page, 'Pick any problem. Really, any.');
+			const band = landingSection(page, 'Pick any problem.');
 
 			// The override is a bundled file, named by the emoji it stands in for.
 			await expect(

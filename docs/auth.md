@@ -248,6 +248,11 @@ Rules:
   `max_score` in the database, never a value from the browser.
 - **The progress endpoints set `private, no-store` before the 401**, so a
   signed-out response isn't cached either.
+- **Credit is public; the account is not.** `/team` and each olympiad's
+  contributors list show admins' and contributors' display names, avatars and
+  upload counts, from shared-cached `/api/*` endpoints. Those return only those
+  three fields (and the role, on `/team`), never the email or the user id, and
+  leave banned accounts out. The privacy policy says so; change both together.
 
 ## The client side
 

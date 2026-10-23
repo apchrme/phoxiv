@@ -52,6 +52,14 @@ export type FileEntry = {
 	url: string;
 };
 
+/**
+ * A file as the contribute editor shows it, with who uploaded it, or `null` if
+ * that isn't known. Editor-only: the public {@link FileEntry} carries no uploader.
+ */
+export type EditorFile = FileEntry & {
+	uploader: { name: string; image: string | null } | null;
+};
+
 /** Problem topics, for filtering only. Kept coarse so they don't spoil problems. */
 export const PROBLEM_TOPICS = [
 	'Mechanics',
@@ -142,6 +150,26 @@ export type FileSearchResponse = {
 	truncated: boolean;
 	/** The index is empty, so the UI can say "still indexing". Implies no results. */
 	indexEmpty: boolean;
+};
+
+// ── People ──────────────────────────────────────────────────────────────────
+
+/**
+ * Someone who uploaded files, as `GET /api/olympiads/[olympiad]/contributors`
+ * serves them, most uploads first. Shared-cached and public: never add the
+ * email or the user id.
+ */
+export type Contributor = {
+	name: string;
+	/** GitHub avatar url, or null when the account has none. */
+	image: string | null;
+	/** Files this person uploaded that are still in the archive. */
+	uploads: number;
+};
+
+/** One admin or contributor on `/team`, from `GET /api/team`, most uploads first. */
+export type TeamMember = Contributor & {
+	role: 'admin' | 'contributor';
 };
 
 // ── Admin panel shapes ──────────────────────────────────────────────────────

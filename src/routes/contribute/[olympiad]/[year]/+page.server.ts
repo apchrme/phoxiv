@@ -1,6 +1,7 @@
 import { redirect, error } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { and, eq, notInArray } from 'drizzle-orm';
+import { and, asc, eq, notInArray, sql } from 'drizzle-orm';
+import type { BatchItem } from 'drizzle-orm/batch';
 import { problemFiles, problems, yearFiles, years } from '#lib/server/db/index.js';
 import { requireOlympiadEditor } from '#lib/server/guard.js';
 import { logActivity } from '#lib/server/activity-log.js';
@@ -360,17 +361,35 @@ export const actions: Actions = {
 		await bucket.put(key, file.stream(), { httpMetadata: { contentType } });
 		const url = cdnUrl(key);
 
+		// A new file goes last. The conflict branch (a race on the same label) keeps
+		// the existing row's place but credits whoever wrote the object last.
 		if (scope === 'year') {
+			const { next } = (await db
+				.select({ next: sql<number>`coalesce(max(${yearFiles.position}), -1) + 1` })
+				.from(yearFiles)
+				.where(eq(yearFiles.yearId, yearRow.id))
+				.get())!;
 			await db
 				.insert(yearFiles)
-				.values({ yearId: yearRow.id, label, url })
-				.onConflictDoUpdate({ target: [yearFiles.yearId, yearFiles.label], set: { url } })
+				.values({ yearId: yearRow.id, label, url, position: next, uploadedBy: user.id })
+				.onConflictDoUpdate({
+					target: [yearFiles.yearId, yearFiles.label],
+					set: { url, uploadedBy: user.id }
+				})
 				.run();
 		} else {
+			const { next } = (await db
+				.select({ next: sql<number>`coalesce(max(${problemFiles.position}), -1) + 1` })
+				.from(problemFiles)
+				.where(eq(problemFiles.problemId, problemRow!.id))
+				.get())!;
 			await db
 				.insert(problemFiles)
-				.values({ problemId: problemRow!.id, label, url })
-				.onConflictDoUpdate({ target: [problemFiles.problemId, problemFiles.label], set: { url } })
+				.values({ problemId: problemRow!.id, label, url, position: next, uploadedBy: user.id })
+				.onConflictDoUpdate({
+					target: [problemFiles.problemId, problemFiles.label],
+					set: { url, uploadedBy: user.id }
+				})
 				.run();
 		}
 
@@ -454,5 +473,90 @@ export const actions: Actions = {
 		);
 
 		return ok('deleteFile');
+	},
+
+	/**
+	 * Moves one file a place up or down among its siblings. Takes a label and a
+	 * direction, not a whole order, so a stale page can't undo someone else's move.
+	 */
+	moveFile: async ({ request, params, locals }) => {
+		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
+		const yearNum = parseYear(params.year)!;
+		const data = await request.formData();
+
+		const label = field(data, 'label');
+		const scope = field(data, 'scope') as Scope;
+		const problemNumber = field(data, 'problemNumber');
+		const direction = field(data, 'direction');
+
+		if (scope !== 'year' && scope !== 'problem') {
+			return actionFail(400, 'moveFile', 'Scope is required');
+		}
+		if (direction !== 'up' && direction !== 'down') {
+			return actionFail(400, 'moveFile', 'Direction must be up or down');
+		}
+
+		const yearRow = await getYear(db, params.olympiad, yearNum);
+		if (!yearRow) return actionFail(404, 'moveFile', YEAR_NOT_FOUND);
+
+		// Each branch yields the siblings in display order and a way to write one
+		// position, so the swap below is written once.
+		let siblings: { id: number; label: string }[];
+		let setPosition: (id: number, position: number) => BatchItem<'sqlite'>;
+		if (scope === 'year') {
+			siblings = await db
+				.select({ id: yearFiles.id, label: yearFiles.label })
+				.from(yearFiles)
+				.where(eq(yearFiles.yearId, yearRow.id))
+				.orderBy(asc(yearFiles.position), asc(yearFiles.id))
+				.all();
+			setPosition = (id, position) =>
+				db.update(yearFiles).set({ position }).where(eq(yearFiles.id, id));
+		} else {
+			const problem = await db
+				.select({ id: problems.id })
+				.from(problems)
+				.where(and(eq(problems.yearId, yearRow.id), eq(problems.number, problemNumber)))
+				.get();
+			if (!problem) return actionFail(404, 'moveFile', 'Problem not found');
+			siblings = await db
+				.select({ id: problemFiles.id, label: problemFiles.label })
+				.from(problemFiles)
+				.where(eq(problemFiles.problemId, problem.id))
+				.orderBy(asc(problemFiles.position), asc(problemFiles.id))
+				.all();
+			setPosition = (id, position) =>
+				db.update(problemFiles).set({ position }).where(eq(problemFiles.id, id));
+		}
+
+		const from = siblings.findIndex((f) => f.label === label);
+		if (from === -1) {
+			return actionFail(
+				404,
+				'moveFile',
+				'File not found. Reload the page to see the latest files.'
+			);
+		}
+		const to = direction === 'up' ? from - 1 : from + 1;
+		// Already at the end it's moving towards. The buttons are disabled there, so
+		// only a stale page gets here; there's nothing to do.
+		if (to < 0 || to >= siblings.length) return ok('moveFile');
+
+		[siblings[from], siblings[to]] = [siblings[to], siblings[from]];
+		// Every sibling, not just the two swapped: older rows all share position 0,
+		// and swapping two equal numbers would change nothing. One batch, so the
+		// order is never half-written.
+		const [first, ...rest] = siblings.map((f, i) => setPosition(f.id, i));
+		await db.batch([first, ...rest]);
+
+		await logActivity(
+			db,
+			user,
+			'move_file',
+			`Moved "${label}" ${direction} in ${scope === 'year' ? 'year' : `problem ${problemNumber}`}`,
+			{ olympiadId: params.olympiad, year: yearNum }
+		);
+
+		return ok('moveFile');
 	}
 };

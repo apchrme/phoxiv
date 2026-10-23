@@ -131,6 +131,31 @@ JSON strings (see [data-model.md](./data-model.md#json-encoded-text-columns)).
 Their parsers turn malformed values into empty ones, so a bad hand edit shows up
 as missing data, not as an error.
 
+### Backfilling uploaders
+
+`year_files.uploaded_by` and `problem_files.uploaded_by` credit each file to the
+account that uploaded it (see
+[data-model.md](./data-model.md#year_files-and-problem_files)). Files older than
+those columns are credited by a one-off script,
+[`backfill-uploaded-by.sql`](../src/lib/server/db/backfill-uploaded-by.sql),
+which matches each file to the newest `upload_file` row in the audit log. It
+sits outside `migrations/` on purpose: it is data, not schema, and it is
+best-effort.
+
+Run it after the migration that adds the columns is applied, locally first:
+
+```sh
+bunx wrangler d1 execute DB --local --json --file=src/lib/server/db/backfill-uploaded-by.sql
+bunx wrangler d1 execute DB --remote --json --file=src/lib/server/db/backfill-uploaded-by.sql
+```
+
+It only fills NULLs, so running it twice changes nothing. Check `rows_read` in
+the remote `--json` output against the quota (see
+[Staying inside D1's daily quotas](#staying-inside-d1s-daily-quotas)): it scans
+`activity_log` once per statement. Files it can't match stay null and count for
+nobody. Purge `/api/team` and the `contributors` URLs afterwards, or the
+credits appear only as the cache turns over.
+
 ## Bulk-loading R2
 
 For more than a handful of files, use [rclone](https://rclone.org/) with an R2
@@ -339,8 +364,10 @@ different values in the same shape):
 2. **Purge Everything**, or purge these URLs:
    - `https://phoxiv.org/api/olympiads`
    - `https://phoxiv.org/api/olympiads/<id>` (one per olympiad)
+   - `https://phoxiv.org/api/olympiads/<id>/contributors` (one per olympiad)
    - `https://phoxiv.org/api/search`
    - `https://phoxiv.org/api/stats`
+   - `https://phoxiv.org/api/team`
 3. Reload the site and check the new payload is served.
 
 **`/api/search/files` can only be cleared with Purge Everything.** Its responses
@@ -351,11 +378,14 @@ answer stale. Skip the purge and a fix that works locally looks like it never
 deployed.
 
 The public shapes are `OlympiadEntry[]`, `YearEntry[]`, `SearchItem[]`,
-`FileSearchResponse` and the stats triple. Before changing one, consider a newly
-deployed client reading a day-old cached body.
+`FileSearchResponse`, `Contributor[]`, `TeamMember[]` and the stats triple.
+Before changing one, consider a newly deployed client reading a day-old cached
+body.
 
-Purging also publishes content edits early. For example, a new `maxScore` shows
-in the year editor at once but on the olympiad page only after the cache turns
-over; purge `https://phoxiv.org/api/olympiads/<id>` to speed it up.
+Purging also publishes content edits early. For example, a new `maxScore` or a
+reordered file shows in the year editor at once but on the olympiad page only
+after the cache turns over; purge `https://phoxiv.org/api/olympiads/<id>` to
+speed it up. Likewise, a new upload or a role change reaches the contributors
+list and `/team` only when their entries turn over.
 
 `/api/auth/[...all]` sets no cache headers and must never be given any.

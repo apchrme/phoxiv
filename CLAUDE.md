@@ -42,7 +42,7 @@ Routes are grouped by how they are cached:
 ```
 src/routes/
 ├── +page         landing page; sets the private cache header itself
-├── (reg)/        private browser cache (4h): olympiads, blog, resources, privacy, login, profile
+├── (reg)/        private browser cache (4h): olympiads, blog, resources, privacy, team, login, profile
 │                 except olympiads/[olympiad]/progress/ — per-user, `private, no-store`
 ├── admin/        never cached
 ├── contribute/   never cached; the olympiad and year editors

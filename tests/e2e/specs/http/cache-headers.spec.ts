@@ -32,6 +32,7 @@ const ROWS: Row[] = [
 	{ path: '/blog/welcome', as: null, status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
 	{ path: '/resources', as: null, status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
 	{ path: '/privacy', as: null, status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
+	{ path: '/team', as: null, status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
 	{ path: '/login', as: null, status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
 	{ path: '/profile', as: 'user', status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
 	{ path: '/olympiads/alpha', as: 'user', status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
@@ -60,8 +61,15 @@ const ROWS: Row[] = [
 	// The public API: Cloudflare's shared cache for a day.
 	{ path: '/api/olympiads', as: null, status: 200, cacheControl: SHARED_CACHE_CONTROL },
 	{ path: '/api/olympiads/alpha', as: null, status: 200, cacheControl: SHARED_CACHE_CONTROL },
+	{
+		path: '/api/olympiads/alpha/contributors',
+		as: null,
+		status: 200,
+		cacheControl: SHARED_CACHE_CONTROL
+	},
 	{ path: '/api/search', as: null, status: 200, cacheControl: SHARED_CACHE_CONTROL },
 	{ path: '/api/stats', as: null, status: 200, cacheControl: SHARED_CACHE_CONTROL },
+	{ path: '/api/team', as: null, status: 200, cacheControl: SHARED_CACHE_CONTROL },
 	{
 		path: `/api/search/files?q=${encodeURIComponent(PHRASES.alphaPaper)}`,
 		as: null,
@@ -87,9 +95,11 @@ test.describe('cache headers', { tag: '@smoke' }, () => {
 	}) => {
 		// `requireOlympiad` runs before `setSharedCache`; otherwise a new olympiad
 		// would keep 404ing for a day (api/olympiads/[olympiad]/+server.ts).
-		const response = await request.get('/api/olympiads/nope');
-		expect(response.status()).toBe(404);
-		expect(response.headers()['cache-control'] ?? '').not.toContain('s-maxage');
+		for (const path of ['/api/olympiads/nope', '/api/olympiads/nope/contributors']) {
+			const response = await request.get(path);
+			expect(response.status(), path).toBe(404);
+			expect(response.headers()['cache-control'] ?? '', path).not.toContain('s-maxage');
+		}
 	});
 
 	test('/api/auth/* is never shared-cached', async ({ apiAs }) => {

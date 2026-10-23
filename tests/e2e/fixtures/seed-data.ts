@@ -209,6 +209,34 @@ export const USERS = {
 		name: 'Sid Searcher',
 		email: 'searcher@e2e.test',
 		role: null
+	},
+	// ── Credits: see CREDITS_ROWS ──
+	/**
+	 * frozen. Credited with three of CREDITS's files and nothing else, so it
+	 * outranks `creditAdmin` everywhere. Only ever listed, never signed in.
+	 */
+	creditTop: {
+		id: 'e2e-cr-top',
+		name: 'Cass Credited',
+		email: 'cr-top@e2e.test',
+		role: 'contributor',
+		session: 'none'
+	},
+	/** frozen. Credited with one of CREDITS's files. */
+	creditAdmin: {
+		id: 'e2e-cr-admin',
+		name: 'Abel Archivist',
+		email: 'cr-admin@e2e.test',
+		role: 'admin',
+		session: 'none'
+	},
+	/** frozen. A contributor with no uploads, who is still on `/team`. */
+	creditIdle: {
+		id: 'e2e-cr-idle',
+		name: 'Ivy Idle',
+		email: 'cr-idle@e2e.test',
+		role: 'contributor',
+		session: 'none'
 	}
 } as const satisfies Record<string, SeedUser>;
 
@@ -1035,6 +1063,169 @@ const FILES_PANEL_ROWS = {
 	] satisfies FileText[]
 };
 
+// ── Credits ─────────────────────────────────────────────────────────────────
+// frozen. Read by olympiads/contributors.spec.ts, pages/team.spec.ts and
+// http/api-contract.spec.ts; written by none. Two olympiads of their own, so no
+// other spec's upload changes who is credited here. Ids 5_500_000 to 5_500_999.
+
+export const CREDITS = {
+	/** Credited files: USERS.creditTop 3, USERS.creditAdmin 1, USERS.banned 1. */
+	olympiad: 'e2e-credits',
+	olympiadName: 'Credits Physics Olympiad',
+	/** Files, but none credited to anyone: the contributors list is empty. */
+	uncredited: 'e2e-credits-none',
+	uncreditedName: 'Uncredited Physics Olympiad'
+} as const;
+
+const CREDITS_ROWS = {
+	olympiads: [
+		{
+			id: CREDITS.olympiad,
+			name: CREDITS.olympiadName,
+			summary: 'Read by olympiads/contributors.spec.ts and pages/team.spec.ts.',
+			icon: '🏅',
+			tag: 'Open',
+			displayOrder: 9200
+		},
+		{
+			id: CREDITS.uncredited,
+			name: CREDITS.uncreditedName,
+			summary: 'Read by olympiads/contributors.spec.ts.',
+			icon: '❔',
+			tag: 'Open',
+			displayOrder: 9201
+		}
+	] satisfies Olympiad[],
+	years: [
+		{ id: 5_500_001, olympiadId: CREDITS.olympiad, year: 2010 },
+		{ id: 5_500_002, olympiadId: CREDITS.olympiad, year: 2011 },
+		{ id: 5_500_003, olympiadId: CREDITS.uncredited, year: 2010 }
+	] satisfies Year[],
+	problems: [{ id: 5_500_101, yearId: 5_500_001, number: 'P1' }] satisfies Problem[],
+	// creditTop's three span both years and both file tables, so the count is
+	// summed across them, not taken from one.
+	yearFiles: [
+		{
+			id: 5_500_201,
+			yearId: 5_500_001,
+			label: 'Problems',
+			url: cdn('olympiads/e2e-credits/2010/problems.pdf'),
+			uploadedBy: USERS.creditTop.id
+		},
+		{
+			id: 5_500_202,
+			yearId: 5_500_002,
+			label: 'Problems',
+			url: cdn('olympiads/e2e-credits/2011/problems.pdf'),
+			uploadedBy: USERS.creditTop.id
+		},
+		{
+			id: 5_500_203,
+			yearId: 5_500_002,
+			label: 'Solutions',
+			url: cdn('olympiads/e2e-credits/2011/solutions.pdf'),
+			uploadedBy: USERS.creditAdmin.id
+		},
+		// Banned: still credited in the database, never listed publicly.
+		{
+			id: 5_500_204,
+			yearId: 5_500_002,
+			label: 'Marking scheme',
+			url: cdn('olympiads/e2e-credits/2011/marking_scheme.pdf'),
+			uploadedBy: USERS.banned.id
+		},
+		// Unattributed, as a file older than `uploaded_by` is: counts for nobody.
+		{
+			id: 5_500_205,
+			yearId: 5_500_003,
+			label: 'Problems',
+			url: cdn('olympiads/e2e-credits-none/2010/problems.pdf')
+		}
+	] satisfies YearFile[],
+	problemFiles: [
+		{
+			id: 5_500_301,
+			problemId: 5_500_101,
+			label: 'Solution',
+			url: cdn('olympiads/e2e-credits/2010/P1/solution.pdf'),
+			uploadedBy: USERS.creditTop.id
+		}
+	] satisfies ProblemFile[]
+};
+
+// ── File order: contribute/file-order.spec.ts ───────────────────────────────
+// owned by contribute/file-order.spec.ts, one year per test. Ids 5_100_000 to
+// 5_100_999.
+
+export const FILE_ORDER = {
+	olympiad: 'e2e-order',
+	/** Year-level files A, B, C, all at the default position 0, as older rows are. */
+	yearsByTest: { yearLevel: 2001, problem: 2002, forged: 2003 },
+	labels: ['Alpha sheet', 'Beta sheet', 'Gamma sheet'],
+	/** The problem in `yearsByTest.problem` whose files are reordered. */
+	problem: 'P1'
+} as const;
+
+/** The CDN url of one of FILE_ORDER's files. */
+function orderFile(year: number, slug: string): string {
+	return cdn(`olympiads/${FILE_ORDER.olympiad}/${year}/${slug}.pdf`);
+}
+
+const FILE_ORDER_ROWS = (() => {
+	const { yearLevel, problem, forged } = FILE_ORDER.yearsByTest;
+	const yearIds: Record<number, number> = {
+		[yearLevel]: 5_100_001,
+		[problem]: 5_100_002,
+		[forged]: 5_100_003
+	};
+	// Ids rise with the label order, and every position is 0, so the starting order
+	// comes from the `id` tiebreak alone, as for rows from before `position`.
+	const sheets = (year: number, base: number): YearFile[] =>
+		FILE_ORDER.labels.map((label, i) => ({
+			id: base + i,
+			yearId: yearIds[year],
+			label,
+			url: orderFile(year, label.toLowerCase().replace(' ', '_')),
+			// One credited and the rest not, for the editor's uploader line.
+			...(i === 0 ? { uploadedBy: USERS.contributor.id } : {})
+		}));
+	return {
+		olympiads: [
+			{
+				id: FILE_ORDER.olympiad,
+				name: 'Ordering Physics Olympiad',
+				summary: 'Owned by contribute/file-order.spec.ts.',
+				icon: '🔀',
+				tag: 'Open',
+				displayOrder: 9300
+			}
+		] satisfies Olympiad[],
+		years: Object.entries(yearIds).map(([year, id]) => ({
+			id,
+			olympiadId: FILE_ORDER.olympiad,
+			year: Number(year)
+		})) satisfies Year[],
+		problems: [
+			{ id: 5_100_101, yearId: yearIds[problem], number: FILE_ORDER.problem }
+		] satisfies Problem[],
+		yearFiles: [...sheets(yearLevel, 5_100_201), ...sheets(forged, 5_100_211)],
+		problemFiles: [
+			{
+				id: 5_100_301,
+				problemId: 5_100_101,
+				label: 'Solution',
+				url: orderFile(problem, 'P1/solution')
+			},
+			{
+				id: 5_100_302,
+				problemId: 5_100_101,
+				label: 'Marking scheme',
+				url: orderFile(problem, 'P1/marking_scheme')
+			}
+		] satisfies ProblemFile[]
+	};
+})();
+
 // ── Assembly ────────────────────────────────────────────────────────────────
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -1094,11 +1285,41 @@ export function seedRows(now: Date) {
 	const log: ActivityLog[] = [...logPagingRows(now)];
 
 	return {
-		olympiads: [...OLYMPIADS, ...OWNED_OLYMPIADS, ...FILES_PANEL_ROWS.olympiads],
-		years: [...YEARS, ...OWNED_YEARS, ...FILES_PANEL_ROWS.years],
-		problems: [...PROBLEMS, ...OWNED_PROBLEMS, ...FILES_PANEL_ROWS.problems],
-		yearFiles: [...YEAR_FILES, ...OWNED_YEAR_FILES, ...FILES_PANEL_ROWS.yearFiles],
-		problemFiles: [...PROBLEM_FILES, ...OWNED_PROBLEM_FILES, ...FILES_PANEL_ROWS.problemFiles],
+		olympiads: [
+			...OLYMPIADS,
+			...OWNED_OLYMPIADS,
+			...FILES_PANEL_ROWS.olympiads,
+			...CREDITS_ROWS.olympiads,
+			...FILE_ORDER_ROWS.olympiads
+		],
+		years: [
+			...YEARS,
+			...OWNED_YEARS,
+			...FILES_PANEL_ROWS.years,
+			...CREDITS_ROWS.years,
+			...FILE_ORDER_ROWS.years
+		],
+		problems: [
+			...PROBLEMS,
+			...OWNED_PROBLEMS,
+			...FILES_PANEL_ROWS.problems,
+			...CREDITS_ROWS.problems,
+			...FILE_ORDER_ROWS.problems
+		],
+		yearFiles: [
+			...YEAR_FILES,
+			...OWNED_YEAR_FILES,
+			...FILES_PANEL_ROWS.yearFiles,
+			...CREDITS_ROWS.yearFiles,
+			...FILE_ORDER_ROWS.yearFiles
+		],
+		problemFiles: [
+			...PROBLEM_FILES,
+			...OWNED_PROBLEM_FILES,
+			...FILES_PANEL_ROWS.problemFiles,
+			...CREDITS_ROWS.problemFiles,
+			...FILE_ORDER_ROWS.problemFiles
+		],
 		fileText: [...FILE_TEXT, ...OWNED_FILE_TEXT, ...FILES_PANEL_ROWS.fileText],
 		user: users,
 		session: sessions,

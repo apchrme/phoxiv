@@ -5,15 +5,17 @@
 	import Field from '#lib/components/forms/Field.svelte';
 	import SubmitButton from '#lib/components/forms/SubmitButton.svelte';
 	import ConfirmSubmit from '#lib/components/forms/ConfirmSubmit.svelte';
-	import { ExternalLink, Trash2 } from '@lucide/svelte';
+	import UserAvatar from '#lib/components/UserAvatar.svelte';
+	import { ChevronDown, ChevronUp, ExternalLink, Trash2 } from '@lucide/svelte';
 	import { cn } from '#lib/utils.js';
 	import { collidingLabel, DOCUMENT_UPLOAD, slugifyLabel } from '#lib/uploads.js';
 	import { plural } from '#lib/utils/plural.js';
 	import type { Extraction } from '#lib/pdf-text.js';
+	import type { EditorFile } from '#lib/types.js';
 
 	/**
-	 * The files of one owner (the year, or one problem): delete buttons and an
-	 * upload form.
+	 * The files of one owner (the year, or one problem), in display order, each
+	 * with its uploader and move and delete buttons; then an upload form.
 	 *
 	 * Labels must be unique after slugging, since the slug is an R2 key segment.
 	 * The server rejects collisions; this warns first. Both use `collidingLabel`.
@@ -29,7 +31,8 @@
 		pending
 	}: {
 		scope: 'year' | 'problem';
-		existingFiles: { label: string; url: string }[];
+		/** In display order, which the move buttons change. */
+		existingFiles: EditorFile[];
 		/** Extraction status by file url. A url with no entry has not been seen. */
 		fileTextStatus: Record<string, string>;
 		/** Required when `scope` is `'problem'`; identifies which one. */
@@ -37,6 +40,12 @@
 		/** The page's single `Pending`, so the buttons can disable themselves. */
 		pending: Pending;
 	} = $props();
+
+	/** The move buttons, in the order they sit on a row. */
+	const MOVES = [
+		{ direction: 'up', icon: ChevronUp },
+		{ direction: 'down', icon: ChevronDown }
+	] as const;
 
 	let label = $state('');
 
@@ -184,18 +193,50 @@
 	<!-- Existing files -->
 	{#if existingFiles.length > 0}
 		<div class="flex flex-col gap-2">
-			{#each existingFiles as file (file.label)}
+			{#each existingFiles as file, i (file.label)}
 				{@const badge = statusBadge(file.url)}
 				<div
 					class="flex flex-col items-center gap-2 rounded-xl border border-border bg-muted/30 p-3 sm:flex-row"
 				>
-					<span class="flex-1 text-sm font-medium">
-						{file.label}
-						{#if badge}
-							<span class="ml-2 text-xs font-normal text-muted-foreground">({badge})</span>
-						{/if}
-					</span>
-					<div class="flex flex-row">
+					<div class="flex flex-1 flex-col items-center gap-1 sm:items-start">
+						<span class="text-sm font-medium">
+							{file.label}
+							{#if badge}
+								<span class="ml-2 text-xs font-normal text-muted-foreground">({badge})</span>
+							{/if}
+						</span>
+						<span class="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+							{#if file.uploader}
+								<UserAvatar user={file.uploader} class="size-4" iconClass="size-2.5" />
+								Uploaded by {file.uploader.name}
+							{:else}
+								Uploader unknown
+							{/if}
+						</span>
+					</div>
+					<div class="flex flex-row items-center gap-1">
+						<!-- One form per direction, so each button can name its own. -->
+						{#each MOVES as move (move.direction)}
+							{@const moveKey = `${key}/${file.label}/${move.direction}`}
+							<form method="POST" action="?/moveFile" use:enhance={pending.track(() => moveKey)}>
+								<input type="hidden" name="scope" value={scope} />
+								<input type="hidden" name="label" value={file.label} />
+								<input type="hidden" name="direction" value={move.direction} />
+								{#if problemNumber}
+									<input type="hidden" name="problemNumber" value={problemNumber} />
+								{/if}
+								<SubmitButton
+									{pending}
+									key={moveKey}
+									variant="ghost"
+									size="icon-sm"
+									icon={move.icon}
+									disabled={move.direction === 'up' ? i === 0 : i === existingFiles.length - 1}
+								>
+									<span class="sr-only">Move {file.label} {move.direction}</span>
+								</SubmitButton>
+							</form>
+						{/each}
 						<!-- eslint-disable svelte/no-navigation-without-resolve -- absolute CDN url -->
 						<a
 							href={file.url}

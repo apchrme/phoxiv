@@ -11,6 +11,7 @@ export const ACTION_LABELS: Record<string, string> = {
 	save_metadata: 'Saved year metadata',
 	upload_file: 'Uploaded file',
 	delete_file: 'Deleted file',
+	move_file: 'Moved file',
 	import_titles: 'Imported problem titles',
 	index_files: 'Indexed file text'
 };

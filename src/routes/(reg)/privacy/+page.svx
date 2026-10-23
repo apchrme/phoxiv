@@ -1,6 +1,6 @@
 ---
 title: Privacy Policy
-description: "Last updated: 26 May 2026"
+description: "Last updated: 23 October 2026"
 seoDescription: phoXiv's Privacy Policy
 ---
 
@@ -28,6 +28,7 @@ The information stored in our database when you create an account is:
 - Your profile picture URL (as provided by GitHub)
 - The date your phoXiv account is created
 - Your account role (default: user)
+- If you are a contributor or administrator, which files you uploaded
 
 ## How we use your information
 
@@ -36,6 +37,7 @@ We use your account information solely to:
 - Identify you when you sign in
 - Gate access to contributor features (adding or editing olympiad content)
 - Allow administrators to manage user accounts
+- Credit contributors and administrators for their work. Their display name, profile picture, role and number of uploaded files are shown publicly on the [team page](/team) and on each olympiad's list of contributors, and other contributors can see who uploaded each file. An account that has never uploaded a file and is not a contributor or administrator is never listed.
 
 We do not sell, share, or transfer your personal information to any third party for marketing or commercial purposes.
 
