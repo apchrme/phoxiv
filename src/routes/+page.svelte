@@ -137,7 +137,7 @@
 			<h2
 				class="m-0 text-center text-2xl leading-tight font-[1000] tracking-tight text-foreground sm:text-3xl"
 			>
-				Pick any problem. Really, any.
+				Pick any problem.
 			</h2>
 		</div>
 
@@ -149,11 +149,11 @@
 		<h2
 			class="mb-2 text-center text-2xl leading-tight font-[1000] tracking-tight text-foreground sm:text-3xl"
 		>
-			Yes, I meant any problem.
+			There's more.
 		</h2>
 
 		<p class="text-md mb-10 text-center text-muted-foreground sm:text-lg">
-			There's so many,
+			So comprehensive, even
 
 			<a class="text-blue-800 underline dark:text-blue-200" href="https://olimpicos.net"
 				>other archives</a

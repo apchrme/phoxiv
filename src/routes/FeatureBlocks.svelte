@@ -47,8 +47,7 @@
 		{
 			n: '04',
 			title: 'Contribute',
-			body: `Contributors edit the olympiads they are assigned: adding years, uploading and
-			       labelling files, and editing problem metadata. Don't see an olympiad you like here? Become a contributor and add it!`,
+			body: `Don't see an olympiad you like here? Become a contributor and add it!`,
 			href: signedIn ? resolve('contribute') : resolve('login'),
 			cta: signedIn ? 'Open the editor' : 'Sign in to contribute'
 		}
