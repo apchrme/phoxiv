@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { FileSearchResult } from '$lib/types.js';
-	import { splitMarks } from '$lib/utils/fuzzy';
+	import type { FileSearchResult } from '#lib/types.js';
+	import { splitMarks } from '#lib/utils/fuzzy.js';
 	import ResultMeta from './ResultMeta.svelte';
 	import { FileText } from '@lucide/svelte';
-	import { cn } from '$lib/utils.js';
+	import { cn } from '#lib/utils.js';
 
 	/**
 	 * One deep-search hit: a file, its olympiad and year, the problems it is

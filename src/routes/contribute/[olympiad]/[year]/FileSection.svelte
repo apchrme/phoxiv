@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import type { Pending } from '$lib/forms.svelte';
-	import { Separator } from '$lib/components/ui/separator/index.js';
-	import Field from '$lib/components/forms/Field.svelte';
-	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
-	import ConfirmSubmit from '$lib/components/forms/ConfirmSubmit.svelte';
+	import type { Pending } from '#lib/forms.svelte.js';
+	import { Separator } from '#lib/components/ui/separator/index.js';
+	import Field from '#lib/components/forms/Field.svelte';
+	import SubmitButton from '#lib/components/forms/SubmitButton.svelte';
+	import ConfirmSubmit from '#lib/components/forms/ConfirmSubmit.svelte';
 	import { ExternalLink, Trash2 } from '@lucide/svelte';
-	import { cn } from '$lib/utils.js';
-	import { collidingLabel, DOCUMENT_UPLOAD, slugifyLabel } from '$lib/uploads';
-	import { plural } from '$lib/utils/plural';
-	import type { Extraction } from '$lib/pdf-text';
+	import { cn } from '#lib/utils.js';
+	import { collidingLabel, DOCUMENT_UPLOAD, slugifyLabel } from '#lib/uploads.js';
+	import { plural } from '#lib/utils/plural.js';
+	import type { Extraction } from '#lib/pdf-text.js';
 
 	/**
 	 * The files of one owner (the year, or one problem): delete buttons and an
@@ -119,7 +119,7 @@
 		// still uploads, leaving a `pending` row for the backfill.
 		extracting = true;
 		try {
-			const { extractText } = await import('$lib/pdf-text');
+			const { extractText } = await import('#lib/pdf-text.js');
 			const result = await extractText(file);
 			if (token === pickToken) extracted = result;
 		} catch {

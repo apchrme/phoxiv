@@ -323,7 +323,7 @@ test.describe('the blog', () => {
 
 	/**
 	 * The posts in src/lib/posts/, read from their frontmatter the way
-	 * `loadPostList` ($lib/posts.ts) keeps them: drafts (no `date`) dropped, newest
+	 * `loadPostList` (#lib/posts.ts) keeps them: drafts (no `date`) dropped, newest
 	 * first.
 	 */
 	function readPosts(): Post[] {

@@ -1,13 +1,13 @@
 import { redirect, error } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { and, eq, notInArray } from 'drizzle-orm';
-import { problemFiles, problems, yearFiles, years } from '$lib/server/db';
-import { requireOlympiadEditor } from '$lib/server/guard';
-import { logActivity } from '$lib/server/activity-log';
-import { requireOlympiad } from '$lib/server/db/queries/olympiads';
-import { getYear, YEAR_NOT_FOUND } from '$lib/server/db/queries/years';
-import { getYearContent } from '$lib/server/db/queries/content';
-import { actionFail, field, fieldList, fileField, ok, parseYear } from '$lib/server/forms';
+import { problemFiles, problems, yearFiles, years } from '#lib/server/db/index.js';
+import { requireOlympiadEditor } from '#lib/server/guard.js';
+import { logActivity } from '#lib/server/activity-log.js';
+import { requireOlympiad } from '#lib/server/db/queries/olympiads.js';
+import { getYear, YEAR_NOT_FOUND } from '#lib/server/db/queries/years.js';
+import { getYearContent } from '#lib/server/db/queries/content.js';
+import { actionFail, field, fieldList, fileField, ok, parseYear } from '#lib/server/forms.js';
 import {
 	cdnUrl,
 	deleteByUrl,
@@ -16,18 +16,18 @@ import {
 	getBucket,
 	slugifyLabel,
 	STORAGE_UNAVAILABLE
-} from '$lib/server/storage';
-import { validateUpload } from '$lib/server/uploads';
-import { collidingLabel, DOCUMENT_UPLOAD, isHttpUrl } from '$lib/uploads';
-import { parseLabelledUrls, parseStringArray } from '$lib/utils/json';
-import { parseTopics, serializeTopics } from '$lib/utils/topics';
-import { parseMaxScore } from '$lib/progress';
+} from '#lib/server/storage.js';
+import { validateUpload } from '#lib/server/uploads.js';
+import { collidingLabel, DOCUMENT_UPLOAD, isHttpUrl } from '#lib/uploads.js';
+import { parseLabelledUrls, parseStringArray } from '#lib/utils/json.js';
+import { parseTopics, serializeTopics } from '#lib/utils/topics.js';
+import { parseMaxScore } from '#lib/progress.js';
 import {
 	deleteFileTextForUrl,
 	deleteFileTextForUrls,
 	getFileTextStatuses,
 	putFileText
-} from '$lib/server/db/queries/files';
+} from '#lib/server/db/queries/files.js';
 import { duplicateProblemNumbers, invalidMaxScores } from './metadata';
 
 /** Whether a file belongs to the year as a whole or to one problem. */
@@ -78,7 +78,7 @@ export const actions: Actions = {
 	 * Replaces the year's notes, extra links and problem list. The four problem
 	 * fields are aligned by position, one of each per editor row.
 	 */
-	saveMetadata: async ({ request, params, platform, locals }) => {
+	saveMetadata: async ({ request, params, locals }) => {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
 		const yearNum = parseYear(params.year)!;
 		const data = await request.formData();
@@ -166,7 +166,7 @@ export const actions: Actions = {
 		// block ordinary saves.
 		let bucket: R2Bucket | null = null;
 		if (orphaned.length > 0) {
-			bucket = getBucket(platform);
+			bucket = getBucket();
 			if (!bucket) return actionFail(500, 'saveMetadata', STORAGE_UNAVAILABLE);
 		}
 
@@ -225,9 +225,9 @@ export const actions: Actions = {
 	},
 
 	/** Deletes the year, its problems, and every R2 object either owns. */
-	deleteYear: async ({ params, platform, locals }) => {
+	deleteYear: async ({ params, locals }) => {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
-		const bucket = getBucket(platform);
+		const bucket = getBucket();
 		if (!bucket) return actionFail(500, 'deleteYear', STORAGE_UNAVAILABLE);
 		const yearNum = parseYear(params.year)!;
 
@@ -271,9 +271,9 @@ export const actions: Actions = {
 		redirect(303, `/contribute/${params.olympiad}`);
 	},
 
-	uploadFile: async ({ request, params, platform, locals }) => {
+	uploadFile: async ({ request, params, locals }) => {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
-		const bucket = getBucket(platform);
+		const bucket = getBucket();
 		if (!bucket) return actionFail(500, 'uploadFile', STORAGE_UNAVAILABLE);
 		const yearNum = parseYear(params.year)!;
 		const data = await request.formData();
@@ -396,9 +396,9 @@ export const actions: Actions = {
 		return ok('uploadFile');
 	},
 
-	deleteFile: async ({ request, params, platform, locals }) => {
+	deleteFile: async ({ request, params, locals }) => {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
-		const bucket = getBucket(platform);
+		const bucket = getBucket();
 		if (!bucket) return actionFail(500, 'deleteFile', STORAGE_UNAVAILABLE);
 		const yearNum = parseYear(params.year)!;
 		const data = await request.formData();

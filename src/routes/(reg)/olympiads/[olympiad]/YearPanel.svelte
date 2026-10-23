@@ -1,11 +1,11 @@
 <script lang="ts">
-	import * as Card from '$lib/components/ui/card';
-	import FileBadge from '$lib/components/FileBadge.svelte';
-	import type { Pending } from '$lib/forms.svelte';
-	import { formatScore, progressKey, yearTotals, type ProgressMap } from '$lib/progress';
+	import * as Card from '#lib/components/ui/card/index.js';
+	import FileBadge from '#lib/components/FileBadge.svelte';
+	import type { Pending } from '#lib/forms.svelte.js';
+	import { formatScore, progressKey, yearTotals, type ProgressMap } from '#lib/progress.js';
 	import ProblemCard from './ProblemCard.svelte';
 	import { hasYearLevelContent, type FilteredYear } from './filter';
-	import { isHttpUrl } from '$lib/uploads';
+	import { isHttpUrl } from '#lib/uploads.js';
 
 	/**
 	 * One year: its notes, links and files, then the matching problems. The card

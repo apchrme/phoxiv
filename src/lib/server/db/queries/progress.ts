@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 import { problemProgress, problems, years, type DB } from '../index';
-import { progressKey, type GlobalProgressMap, type ProgressMap } from '$lib/progress';
+import { progressKey, type GlobalProgressMap, type ProgressMap } from '#lib/progress.js';
 
 /*
  * Reads and writes for `problem_progress`, one user's completed problems.

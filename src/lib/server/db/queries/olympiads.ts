@@ -1,7 +1,7 @@
 import { asc, eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import { olympiads, type DB } from '../index';
-import type { OlympiadEntry, OlympiadOption, OlympiadTag } from '$lib/types';
+import type { OlympiadEntry, OlympiadOption, OlympiadTag } from '#lib/types.js';
 
 /** Reads and DTO shaping for the `olympiads` table. */
 

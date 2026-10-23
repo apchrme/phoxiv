@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { SearchItem } from '$lib/types.js';
-	import { highlight } from '$lib/utils/fuzzy';
-	import FileBadge from '$lib/components/FileBadge.svelte';
+	import type { SearchItem } from '#lib/types.js';
+	import { highlight } from '#lib/utils/fuzzy.js';
+	import FileBadge from '#lib/components/FileBadge.svelte';
 	import ResultMeta from './ResultMeta.svelte';
-	import { cn } from '$lib/utils.js';
+	import { cn } from '#lib/utils.js';
 	import { resolve } from '$app/paths';
 
 	/**
@@ -43,7 +43,7 @@
 
 <li data-result-index={index}>
 	<a
-		href={resolve(`/olympiads/${item.olympiadId}#${item.year}`)}
+		href={resolve(`olympiads/${item.olympiadId}#${item.year}`)}
 		onclick={(e) => {
 			e.preventDefault();
 			onactivate();

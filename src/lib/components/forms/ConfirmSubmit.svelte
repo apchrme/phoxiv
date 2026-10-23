@@ -2,11 +2,11 @@
 	import type { Snippet } from 'svelte';
 	import { AlertDialog } from 'bits-ui';
 	import type { LucideIcon } from '@lucide/svelte';
-	import type { Pending } from '$lib/forms.svelte';
-	import { buttonVariants } from '$lib/components/ui/button/index.js';
-	import type { ButtonSize, ButtonVariant } from '$lib/components/ui/button/index.js';
-	import { Spinner } from '$lib/components/ui/spinner/index.js';
-	import { cn } from '$lib/utils.js';
+	import type { Pending } from '#lib/forms.svelte.js';
+	import { buttonVariants } from '#lib/components/ui/button/index.js';
+	import type { ButtonSize, ButtonVariant } from '#lib/components/ui/button/index.js';
+	import { Spinner } from '#lib/components/ui/spinner/index.js';
+	import { cn } from '#lib/utils.js';
 
 	/**
 	 * A destructive submit that asks first, in an `AlertDialog`.

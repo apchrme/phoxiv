@@ -1,20 +1,19 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { requireAdmin } from '$lib/server/guard';
-import { logActivity } from '$lib/server/activity-log';
+import { requireAdmin } from '#lib/server/guard.js';
+import { logActivity } from '#lib/server/activity-log.js';
 import {
 	selectIndexCandidates,
 	writeFileText,
 	type FileTextWrite
-} from '$lib/server/db/queries/files';
+} from '#lib/server/db/queries/files.js';
 import {
 	capExtracted,
 	EXTRACTOR_VERSION,
 	MAX_SUBMITTED_TEXT_CHARS,
 	MIN_EXTRACTED_CHARS,
 	normalizeExtracted
-} from '$lib/search';
-import { extensionOf } from '$lib/uploads';
+} from '#lib/search.js';
+import { extensionOf } from '#lib/uploads.js';
 
 /**
  * The backfill endpoint for `bun run index:backfill` (`reindex-cli.ts`): GET
@@ -73,7 +72,7 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 
 	const withCount = url.searchParams.get('count') === '1';
 
-	return json({
+	return Response.json({
 		extractorVersion: EXTRACTOR_VERSION,
 		...(await selectIndexCandidates(db, { exts, limit, withCount }))
 	});
@@ -148,5 +147,5 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		await logActivity(db, user, 'index_files', `Indexed ${written} files (${summary})`);
 	}
 
-	return json({ written, counts, failed });
+	return Response.json({ written, counts, failed });
 };

@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { setPrivateCache } from '$lib/server/cache';
+import { setPrivateCache } from '#lib/server/cache.js';
 
 /**
  * The landing page is outside the `(reg)` group, so it does not inherit that

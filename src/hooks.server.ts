@@ -1,13 +1,16 @@
-import type { Handle } from '@sveltejs/kit';
+import type { Handle } from '@sveltejs/kit/hooks';
+import { env } from 'cloudflare:workers';
 import { drizzle } from 'drizzle-orm/d1';
-import { createAuth } from '$lib/server/auth';
+import { createAuth } from '#lib/server/auth.js';
 
 /**
  * Builds `locals.db`, `locals.auth` and `locals.user` / `locals.session`.
  *
- * db and auth are created per request because `platform.env` only exists inside
- * a Worker request; don't make them module-level singletons. The session is
- * looked up once here for every route. See docs/architecture.md.
+ * db and auth are created per request, from `env` read inside the hook; don't
+ * make them module-level singletons. Outside a running server (`vite build`
+ * imports this module) the adapter's `env` throws on access, so reading it at
+ * module scope breaks the build. The session is looked up once here for every
+ * route. See docs/architecture.md.
  *
  * Three rules about the session lookup (docs/auth.md):
  * - `/api/*` skips it. Those responses go in Cloudflare's shared cache, so none
@@ -20,12 +23,12 @@ import { createAuth } from '$lib/server/auth';
  *   BetterAuth only checks `banned` when a session is created.
  */
 export const handle: Handle = async ({ event, resolve }) => {
-	if (!event.platform?.env.DB) throw new Error('Database unavailable');
+	if (!env.DB) throw new Error('Database unavailable');
 
-	const db = drizzle(event.platform.env.DB);
+	const db = drizzle(env.DB);
 	event.locals.db = db;
 
-	const auth = createAuth(db, event.platform.env);
+	const auth = createAuth(db, env);
 	event.locals.auth = auth;
 	event.locals.user = null;
 	event.locals.session = null;

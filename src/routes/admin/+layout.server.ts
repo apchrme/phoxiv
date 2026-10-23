@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from './$types';
-import { requireAdmin } from '$lib/server/guard';
+import { requireAdmin } from '#lib/server/guard.js';
 
 /**
  * Gates the admin pages. Actions re-check, so a stale page can't act. Doesn't

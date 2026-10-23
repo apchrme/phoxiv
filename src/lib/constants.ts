@@ -1,4 +1,4 @@
-/* Constants needed by both browser and server. Server-only ones go in `$lib/server/`. */
+/* Constants needed by both browser and server. Server-only ones go in `#lib/server/`. */
 
 /**
  * Public origin of the R2 bucket. Never change it: the database stores full

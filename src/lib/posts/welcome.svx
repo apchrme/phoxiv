@@ -17,7 +17,7 @@ phoXiv intends to be the most comprehensive archive of the high school physics o
 
 This website was made out of pure frustration. When I was studying for IPhO, I was extremely annoyed by the fact that the documentation for physics olympiads were so terrible. It seemed impossible to find somewhere that contained all the problems I wanted. When I was doing APhO problems, I found that the commonly-used [olimpicos APhO archive](https://apho.olimpicos.net/) is both outdated and does not have experimental problems. Meanwhile, for IPhO problems, the official website has not been updated since 2019. In fact, the official website literally has Lorem ipsum on the front page.
 
-<enhanced:img alt="IPhO Lorem Ipsum" src="$lib/assets/images/ipho-clowning.png" class="w-full sm:w-3/4 mx-auto" />
+<enhanced:img alt="IPhO Lorem Ipsum" src="#lib/assets/images/ipho-clowning.png" class="w-full sm:w-3/4 mx-auto" />
 
 
 <p class="text-center -translate-y-4 text-muted-foreground">wow.</p>

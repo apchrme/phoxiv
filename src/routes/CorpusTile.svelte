@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import type { Picture } from '@sveltejs/enhanced-img';
-	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
+	import OlympiadIcon from '#lib/components/OlympiadIcon.svelte';
 	import type { CorpusEntry } from './corpus';
 
 	let {
@@ -23,7 +23,7 @@
 <!-- The olympiad page scrolls to `#<year>`. Keep `resolve()` inline: in a
      `$derived` the lint rule can't see it. -->
 <a
-	href={resolve(`/olympiads/${entry.olympiad}#${entry.year}`)}
+	href={resolve(`olympiads/${entry.olympiad}#${entry.year}`)}
 	aria-hidden={clone ? 'true' : undefined}
 	tabindex={clone ? -1 : undefined}
 	class="group block w-28 shrink-0 rounded-xl bg-card ring-1 ring-foreground/10 transition-all duration-250 hover:-translate-y-2 hover:ring-primary/50 sm:w-36 lg:w-44"

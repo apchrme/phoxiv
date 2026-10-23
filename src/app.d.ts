@@ -2,7 +2,7 @@
 // for information about these interfaces
 
 import type { DrizzleD1Database } from 'drizzle-orm/d1';
-import type { createAuth } from '$lib/server/auth';
+import type { createAuth } from '#lib/server/auth.js';
 
 type Auth = ReturnType<typeof createAuth>;
 
@@ -21,11 +21,6 @@ declare global {
 			auth: Auth;
 			user: AuthSession['user'] | null;
 			session: AuthSession['session'] | null;
-		}
-		interface Platform {
-			env: Env;
-			cf: CfProperties;
-			ctx: ExecutionContext;
 		}
 	}
 }

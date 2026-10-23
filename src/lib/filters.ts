@@ -1,5 +1,5 @@
-import type { ProblemTopic, SearchItem } from '$lib/types';
-import { progressKey, type GlobalProgressMap } from '$lib/progress';
+import type { ProblemTopic, SearchItem } from '#lib/types.js';
+import { progressKey, type GlobalProgressMap } from '#lib/progress.js';
 
 /*
  * Filter predicates shared by the olympiad page toolbar, the search dialog and

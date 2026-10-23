@@ -18,18 +18,18 @@ export type NavLink = {
 /** Links shown directly in the desktop nav bar. */
 export const PRIMARY_NAV: NavLink[] = [
 	{ href: resolve('/'), label: 'home', icon: HouseIcon },
-	{ href: resolve('/olympiads'), label: 'olympiads', icon: TrophyIcon },
-	{ href: resolve('/resources'), label: 'resources', icon: LibraryIcon }
+	{ href: resolve('olympiads'), label: 'olympiads', icon: TrophyIcon },
+	{ href: resolve('resources'), label: 'resources', icon: LibraryIcon }
 ];
 
 /** Links tucked behind the desktop nav's "more" dropdown. */
 export const SECONDARY_NAV: NavLink[] = [
-	{ href: resolve('/blog'), label: 'blog', icon: FileTextIcon },
-	{ href: resolve('/contribute'), label: 'contribute', icon: HandHelping },
-	{ href: resolve('/privacy'), label: 'privacy policy', icon: LockKeyhole }
+	{ href: resolve('blog'), label: 'blog', icon: FileTextIcon },
+	{ href: resolve('contribute'), label: 'contribute', icon: HandHelping },
+	{ href: resolve('privacy'), label: 'privacy policy', icon: LockKeyhole }
 ];
 
-const ADMIN_NAV: NavLink = { href: resolve('/admin'), label: 'admin', icon: Shield };
+const ADMIN_NAV: NavLink = { href: resolve('admin'), label: 'admin', icon: Shield };
 
 /**
  * Secondary links, plus the admin link for admins. Call it on each render so

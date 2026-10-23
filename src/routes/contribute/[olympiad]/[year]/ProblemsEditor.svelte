@@ -1,8 +1,8 @@
 <script lang="ts">
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import TopicSelect from '$lib/components/TopicSelect.svelte';
-	import Repeater from '$lib/components/forms/Repeater.svelte';
+	import * as Card from '#lib/components/ui/card/index.js';
+	import { Input } from '#lib/components/ui/input/index.js';
+	import TopicSelect from '#lib/components/TopicSelect.svelte';
+	import Repeater from '#lib/components/forms/Repeater.svelte';
 	import { newProblemRow, type ProblemRow } from './metadata';
 
 	/**

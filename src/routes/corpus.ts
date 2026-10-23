@@ -1,7 +1,7 @@
 /**
  * The hand-picked files shown in the landing page's corpus band.
  *
- * Read by both `CorpusBand.svelte` and `$lib/server/thumbs-cli.ts`. To add one:
+ * Read by both `CorpusBand.svelte` and `#lib/server/thumbs-cli.ts`. To add one:
  * add an entry, run `bun run thumbs:render`, commit the PNG. See
  * docs/contributing.md, "The landing page's corpus band".
  *

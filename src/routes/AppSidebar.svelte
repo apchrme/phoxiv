@@ -1,16 +1,19 @@
 <script lang="ts">
-	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import * as Sidebar from '#lib/components/ui/sidebar/index.js';
 	import { page } from '$app/state';
 	import { LogIn } from '@lucide/svelte';
-	import UserAvatar from '$lib/components/UserAvatar.svelte';
+	import UserAvatar from '#lib/components/UserAvatar.svelte';
 	import { resolve } from '$app/paths';
-	import DarkModeButton from '$lib/components/buttons/DarkModeButton.svelte';
-	import type { NavLink } from '$lib/nav';
+	import DarkModeButton from '#lib/components/buttons/DarkModeButton.svelte';
+	import type { NavLink } from '#lib/nav.js';
 
-	const { navLinks, user } = $props<{
+	const {
+		navLinks,
+		user
+	}: {
 		navLinks: NavLink[];
 		user: { name: string; email: string; image?: string | null; role?: string | null } | null;
-	}>();
+	} = $props();
 
 	const sidebar = Sidebar.useSidebar();
 
@@ -26,7 +29,7 @@
 		<Sidebar.Header>
 			{#if user}
 				<a
-					href={resolve('/profile')}
+					href={resolve('profile')}
 					class="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-sidebar-accent"
 					onclick={() => sidebar.setOpenMobile(false)}
 				>
@@ -41,7 +44,7 @@
 					<Sidebar.MenuItem>
 						<Sidebar.MenuButton>
 							{#snippet child({ props })}
-								<a href={resolve('/login')} {...props} onclick={() => sidebar.toggle()}>
+								<a href={resolve('login')} {...props} onclick={() => sidebar.toggle()}>
 									<LogIn />
 									<span>Log in</span>
 								</a>
@@ -63,7 +66,7 @@
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton isActive={isActive(navLink.href)} size="lg">
 									{#snippet child({ props })}
-										<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- already resolved in $lib/nav.ts -->
+										<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- already resolved in #lib/nav.ts -->
 										<a href={navLink.href} {...props} onclick={() => sidebar.toggle()}>
 											<Icon />
 											<span>{navLink.label}</span>

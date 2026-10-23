@@ -1,8 +1,8 @@
 <script lang="ts">
-	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { buttonVariants } from '$lib/components/ui/button/index.js';
+	import * as Tooltip from '#lib/components/ui/tooltip/index.js';
+	import { buttonVariants } from '#lib/components/ui/button/index.js';
 	import { Circle } from '@lucide/svelte';
-	import { cn } from '$lib/utils.js';
+	import { cn } from '#lib/utils.js';
 	import { resolve } from '$app/paths';
 
 	/**
@@ -64,7 +64,8 @@
 				The trigger is the link, because keyboard users can't reach a link inside
 				the tooltip. `type={undefined}` drops the primitive's `type="button"`.
 			-->
-			<a {...props} type={undefined} href={resolve('/login')}>
+
+			<a {...props} type={undefined} href={resolve('login')}>
 				<!-- `size-4`: the `xs` button size would shrink icons to `size-3`. -->
 				<Circle class="size-4" />
 			</a>
@@ -82,9 +83,10 @@
 	>
 		<span>
 			Only signed-in users can track completed problems.
-			<a href={resolve('/login')} class="font-medium text-primary underline underline-offset-2">
-				Sign in
-			</a>
+
+			<a href={resolve('login')} class="font-medium text-primary underline underline-offset-2"
+				>Sign in</a
+			>
 		</span>
 	</Tooltip.Content>
 </Tooltip.Root>

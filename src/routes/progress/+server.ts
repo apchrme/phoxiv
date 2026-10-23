@@ -1,6 +1,6 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getAllProgress } from '$lib/server/db/queries/progress';
+import { getAllProgress } from '#lib/server/db/queries/progress.js';
 
 /**
  * The signed-in user's progress across all olympiads, for the ⌘K dialog.
@@ -17,5 +17,5 @@ export const GET: RequestHandler = async ({ locals, setHeaders }) => {
 
 	if (!locals.user) error(401, 'Not signed in');
 
-	return json(await getAllProgress(locals.db, locals.user.id));
+	return Response.json(await getAllProgress(locals.db, locals.user.id));
 };

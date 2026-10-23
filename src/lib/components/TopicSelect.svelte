@@ -3,16 +3,16 @@
 	and to filter by them (olympiad page), so both offer the same options.
 -->
 <script lang="ts">
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import * as DropdownMenu from '#lib/components/ui/dropdown-menu/index.js';
 	import {
 		buttonVariants,
 		type ButtonSize,
 		type ButtonVariant
-	} from '$lib/components/ui/button/index.js';
+	} from '#lib/components/ui/button/index.js';
 	import { Tags, ChevronDown, Funnel } from '@lucide/svelte';
-	import { PROBLEM_TOPICS, type ProblemTopic } from '$lib/types.js';
-	import { cn } from '$lib/utils.js';
-	import { plural } from '$lib/utils/plural';
+	import { PROBLEM_TOPICS, type ProblemTopic } from '#lib/types.js';
+	import { cn } from '#lib/utils.js';
+	import { plural } from '#lib/utils/plural.js';
 
 	let {
 		value = $bindable([]),

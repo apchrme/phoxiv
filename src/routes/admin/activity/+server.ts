@@ -1,7 +1,7 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { requireAdmin } from '$lib/server/guard';
-import { listActivity } from '$lib/server/activity-log';
+import { requireAdmin } from '#lib/server/guard.js';
+import { listActivity } from '#lib/server/activity-log.js';
 
 /**
  * Activity-log pages after the first, for "Load more", keyed on `?before=<id>`.
@@ -33,5 +33,5 @@ export const GET: RequestHandler = async ({ url, locals }) => {
 		before = n;
 	}
 
-	return json(await listActivity(db, { before, limit }));
+	return Response.json(await listActivity(db, { before, limit }));
 };

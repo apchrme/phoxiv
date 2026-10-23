@@ -241,7 +241,7 @@ test.describe('deep search input validation', { tag: '@smoke' }, () => {
 			indexEmpty: false
 		});
 		const bulk = await (await request.get(filesUrl(PHRASES.deltaWBulk, 'delta-w'))).json();
-		// DEEP_SEARCH_LIMIT, which is DELTA_W_BULK - 1 ($lib/search can't be imported here).
+		// DEEP_SEARCH_LIMIT, which is DELTA_W_BULK - 1 (#lib/search can't be imported here).
 		expect(bulk.results).toHaveLength(DELTA_W_BULK - 1);
 		expect(bulk.truncated).toBe(true);
 

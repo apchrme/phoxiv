@@ -1,7 +1,8 @@
 import { error, redirect } from '@sveltejs/kit';
+import { env } from 'cloudflare:workers';
 import { eq } from 'drizzle-orm';
 import { user, type DB } from './db';
-import { parseStringArray } from '$lib/utils/json';
+import { parseStringArray } from '#lib/utils/json.js';
 
 /*
  * Authorisation for loads, actions and endpoints.
@@ -63,12 +64,8 @@ export function requireOlympiadEditor(locals: App.Locals, olympiadId: string): G
  * True if `userId` is the superadmin, who must not be modified. Matched by email
  * since the config predates the account. If `SUPERADMIN_EMAIL` is unset, nobody is.
  */
-export async function isProtectedSuperadmin(
-	db: DB,
-	platform: App.Platform | undefined,
-	userId: string
-): Promise<boolean> {
-	const superadminEmail = platform?.env.SUPERADMIN_EMAIL;
+export async function isProtectedSuperadmin(db: DB, userId: string): Promise<boolean> {
+	const superadminEmail = env.SUPERADMIN_EMAIL;
 	if (!superadminEmail) return false;
 	const target = await db.select({ email: user.email }).from(user).where(eq(user.id, userId)).get();
 	return target?.email === superadminEmail;

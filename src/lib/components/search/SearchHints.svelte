@@ -1,6 +1,6 @@
 <script lang="ts">
-	import * as Kbd from '$lib/components/ui/kbd/index.js';
-	import type { SearchMode } from '$lib/types.js';
+	import * as Kbd from '#lib/components/ui/kbd/index.js';
+	import type { SearchMode } from '#lib/types.js';
 
 	/**
 	 * The keyboard-shortcut bar along the bottom of the search dialog. Hidden

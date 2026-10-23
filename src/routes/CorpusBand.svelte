@@ -2,7 +2,7 @@
 	import { onMount, tick } from 'svelte';
 	import { gsap } from 'gsap';
 	import type { Picture } from '@sveltejs/enhanced-img';
-	import type { OlympiadEntry } from '$lib/types';
+	import type { OlympiadEntry } from '#lib/types.js';
 	import { CORPUS } from './corpus';
 	import CorpusTile from './CorpusTile.svelte';
 

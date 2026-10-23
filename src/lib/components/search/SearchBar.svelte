@@ -1,5 +1,5 @@
 <script lang="ts">
-	import * as InputGroup from '$lib/components/ui/input-group/index.js';
+	import * as InputGroup from '#lib/components/ui/input-group/index.js';
 	import { Search } from '@lucide/svelte';
 	import type { Snippet } from 'svelte';
 

@@ -2,11 +2,11 @@
 
 Authentication is [BetterAuth](https://better-auth.com/) with GitHub as the only
 provider, plus BetterAuth's `admin` plugin. Authorisation (who may edit what) is
-ours, in [`$lib/server/guard.ts`](../src/lib/server/guard.ts).
+ours, in [`#lib/server/guard.ts`](../src/lib/server/guard.ts).
 
 ## Why `createAuth` is a function
 
-[`$lib/server/auth.ts`](../src/lib/server/auth.ts) exports a function, not an
+[`#lib/server/auth.ts`](../src/lib/server/auth.ts) exports a function, not an
 instance:
 
 ```ts
@@ -15,12 +15,13 @@ export function createAuth(database, env) {
 }
 ```
 
-The D1 binding and the secrets come from `platform.env`, which exists only
-inside a Worker request. [`hooks.server.ts`](../src/hooks.server.ts) builds one
-instance per request and puts it on `locals.auth`.
-`api/auth/[...all]/+server.ts` forwards to `locals.auth.handler`. Don't use
-BetterAuth's `toSvelteKitHandler(auth)`: it needs a module-level instance, which
-a Worker cannot have.
+The D1 binding and the secrets come from `env` (`cloudflare:workers`), which
+must not be read at module scope (see
+[architecture.md](./architecture.md#request-lifecycle)).
+[`hooks.server.ts`](../src/hooks.server.ts) builds one instance per request and
+puts it on `locals.auth`. `api/auth/[...all]/+server.ts` forwards to
+`locals.auth.handler`. Don't use BetterAuth's `toSvelteKitHandler(auth)`: it
+needs a module-level instance.
 
 ### The CLI escape hatch
 
@@ -67,7 +68,7 @@ This is all of `authOptions`. Everything else is BetterAuth's default.
 
 - No session lifetime is configured; BetterAuth's defaults apply. See
   [Sessions](#sessions).
-- Sign-out is BetterAuth's own endpoint, called through `$lib/auth-client.ts`.
+- Sign-out is BetterAuth's own endpoint, called through `#lib/auth-client.ts`.
 - The session cookie is named `__Secure-better-auth.session_token` on
   `https://phoxiv.org` and `better-auth.session_token` on localhost. A token is
   valid only for the origin that issued it. The backfill script sends the token
@@ -250,7 +251,7 @@ Rules:
 
 ## The client side
 
-[`$lib/auth-client.ts`](../src/lib/auth-client.ts) is a plain `createAuthClient`,
+[`#lib/auth-client.ts`](../src/lib/auth-client.ts) is a plain `createAuthClient`,
 used only for sign-in and sign-out. It has no `adminClient` plugin: the admin
 panel acts through form actions, never `authClient.admin.*`. Components get the user
 as `data.user` from the root

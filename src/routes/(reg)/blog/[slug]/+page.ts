@@ -1,7 +1,7 @@
 import type { PageLoad } from './$types';
 import { error } from '@sveltejs/kit';
 import type { Component } from 'svelte';
-import { toPostMeta } from '$lib/posts';
+import { toPostMeta } from '#lib/posts.js';
 
 export const load: PageLoad = async ({ params }) => {
 	// Lazy glob (no `eager`) so only the requested post's chunk is fetched.

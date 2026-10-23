@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
-import { CDN_BASE_URL } from '$lib/constants';
-import { extensionOf } from '$lib/uploads';
+import { CDN_BASE_URL } from '#lib/constants.js';
+import { extensionOf } from '#lib/uploads.js';
 import type { LayoutLoad } from './$types';
 
 /** Olympiads once served at the site root (`/ipho/...`). Kept so old links still work. */
@@ -36,9 +36,10 @@ export const load: LayoutLoad = ({ url, data }) => {
 	}
 
 	// `extensionOf`, not a fixed-width suffix: comparing the last four characters
-	// silently skipped `.xlsx`, `.html` and `.docx`.
+	// silently skipped `.xlsx`, `.html` and `.docx`. SvelteKit refuses an external
+	// redirect unless its origin is allow-listed here.
 	if (fileExtensions.includes(extensionOf(url.pathname))) {
-		redirect(308, CDN_BASE_URL + url.pathname);
+		redirect(308, CDN_BASE_URL + url.pathname, { external: [CDN_BASE_URL] });
 	}
 
 	return data;

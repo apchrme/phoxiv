@@ -2,15 +2,15 @@
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
-	import type { Pending } from '$lib/forms.svelte';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import Field from '$lib/components/forms/Field.svelte';
-	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
-	import { Separator } from '$lib/components/ui/separator/index.js';
+	import type { Pending } from '#lib/forms.svelte.js';
+	import * as Card from '#lib/components/ui/card/index.js';
+	import { Button } from '#lib/components/ui/button/index.js';
+	import { Input } from '#lib/components/ui/input/index.js';
+	import Field from '#lib/components/forms/Field.svelte';
+	import SubmitButton from '#lib/components/forms/SubmitButton.svelte';
+	import { Separator } from '#lib/components/ui/separator/index.js';
 	import { Plus, Pencil } from '@lucide/svelte';
-	import { MAX_YEAR, MIN_YEAR } from '$lib/constants';
+	import { MAX_YEAR, MIN_YEAR } from '#lib/constants.js';
 
 	/**
 	 * The olympiad's years, plus a form that goes to a year, creating it if new.
@@ -39,7 +39,7 @@
 		{#if years.length > 0}
 			<div class="flex flex-wrap gap-2">
 				{#each years as year (year)}
-					<Button variant="outline" size="sm" href={resolve(`/contribute/${olympiadId}/${year}`)}>
+					<Button variant="outline" size="sm" href={resolve(`contribute/${olympiadId}/${year}`)}>
 						<Pencil class="size-3.5 text-muted-foreground" />
 						{year}
 					</Button>

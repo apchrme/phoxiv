@@ -1,14 +1,14 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { setSharedCache } from '$lib/server/cache';
-import { searchFiles } from '$lib/server/db/queries/files';
+import { setSharedCache } from '#lib/server/cache.js';
+import { searchFiles } from '#lib/server/db/queries/files.js';
 import {
 	isOlympiadFilter,
 	MAX_DEEP_QUERY_LENGTH,
 	MIN_DEEP_QUERY_LENGTH,
 	normalizeDeepQuery,
 	normalizeOlympiadFilter
-} from '$lib/search';
+} from '#lib/search.js';
 
 /**
  * Deep search: the files whose extracted text matches `q`, best first.
@@ -48,5 +48,5 @@ export const GET: RequestHandler = async ({ url, locals, setHeaders }) => {
 
 	// Set after the query, so a thrown FTS error (a 500) is never cached.
 	setSharedCache(setHeaders);
-	return json(body);
+	return Response.json(body);
 };

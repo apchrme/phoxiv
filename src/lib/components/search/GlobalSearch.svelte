@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { ProblemTopic, SearchItem, SearchMode } from '$lib/types.js';
-	import { rank, MAX_RESULTS } from '$lib/utils/fuzzy';
+	import type { ProblemTopic, SearchItem, SearchMode } from '#lib/types.js';
+	import { rank, MAX_RESULTS } from '#lib/utils/fuzzy.js';
 	import { Search, SearchX, TriangleAlert } from '@lucide/svelte';
-	import EmptyState from '$lib/components/EmptyState.svelte';
-	import { plural } from '$lib/utils/plural';
+	import EmptyState from '#lib/components/EmptyState.svelte';
+	import { plural } from '#lib/utils/plural.js';
 	import XIcon from '@lucide/svelte/icons/x';
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
-	import { Spinner } from '$lib/components/ui/spinner/index.js';
-	import { cn } from '$lib/utils.js';
+	import { Button, buttonVariants } from '#lib/components/ui/button/index.js';
+	import { Spinner } from '#lib/components/ui/spinner/index.js';
+	import { cn } from '#lib/utils.js';
 	import { goto } from '$app/navigation';
 	import { Dialog } from 'bits-ui';
 	import { resolve } from '$app/paths';
@@ -15,22 +15,22 @@
 	import FileResultItem from './FileResultItem.svelte';
 	import SearchHints from './SearchHints.svelte';
 	import SearchModeTabs from './SearchModeTabs.svelte';
-	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import * as Tabs from '#lib/components/ui/tabs/index.js';
 	import { DeepSearch, deepCacheKey } from './deep-search.svelte';
-	import TopicSelect from '$lib/components/TopicSelect.svelte';
-	import StatusFilter from '$lib/components/StatusFilter.svelte';
-	import OlympiadPicker from '$lib/components/OlympiadPicker.svelte';
-	import { filterSearchItems, isFiltering, type ProblemStatus } from '$lib/filters';
-	import { Resource } from '$lib/resource.svelte';
-	import type { GlobalProgressMap } from '$lib/progress';
-	import type { FileSearchResult, OlympiadEntry } from '$lib/types.js';
+	import TopicSelect from '#lib/components/TopicSelect.svelte';
+	import StatusFilter from '#lib/components/StatusFilter.svelte';
+	import OlympiadPicker from '#lib/components/OlympiadPicker.svelte';
+	import { filterSearchItems, isFiltering, type ProblemStatus } from '#lib/filters.js';
+	import { Resource } from '#lib/resource.svelte.js';
+	import type { GlobalProgressMap } from '#lib/progress.js';
+	import type { FileSearchResult, OlympiadEntry } from '#lib/types.js';
 	import {
 		DEEP_DEBOUNCE_MS,
 		DEEP_SEARCH_LIMIT,
 		MAX_DEEP_QUERY_LENGTH,
 		MIN_DEEP_QUERY_LENGTH,
 		normalizeDeepQuery
-	} from '$lib/search';
+	} from '#lib/search.js';
 
 	/**
 	 * The ⌘K search dialog, mounted once by the root layout.
@@ -57,7 +57,7 @@
 		open?: boolean;
 		/**
 		 * The signed-in user's id, or `undefined`. Passed in by `+layout.svelte`
-		 * rather than read from `page.data`, which would tie a `$lib` component to
+		 * rather than read from `page.data`, which would tie a `#lib` component to
 		 * the root layout's load shape.
 		 */
 		userId?: string;
@@ -375,7 +375,7 @@
 	}
 
 	function navigateTo(item: SearchItem) {
-		goto(resolve(`/olympiads/${item.olympiadId}#${item.year}`));
+		goto(resolve(`olympiads/${item.olympiadId}#${item.year}`));
 		open = false;
 	}
 

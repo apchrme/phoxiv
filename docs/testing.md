@@ -382,7 +382,8 @@ await postAction(
 
 **Every refusal names its message as well as its status.** A guard's `error()`
 arrives as `{ type: 'error' }` with that HTTP status; `actionFail()` arrives as
-`{ type: 'failure' }`, HTTP 200, with the status in the body. A CSRF refusal is
+`{ type: 'failure' }`, with its status both as the HTTP status and in the body,
+and `postAction` checks both. A CSRF refusal is
 not an action answer at all. Checking the message is what stops a 403 from the
 wrong place passing for the right one. The access-control spec opens with a
 positive control (an admin's forged self-`setRole` gets its 400), which proves
@@ -411,8 +412,9 @@ hydration an enhanced form submits natively and a bits-ui trigger does nothing.
 
 Names that are easy to get wrong:
 
-- **A bits-ui select's trigger is a `button`**, not a `combobox`, named by its
-  `aria-label` or else by the value it shows. Its options are `option`s.
+- **A bits-ui select's trigger is a `combobox`**, not a `button`, though the
+  element is a `<button>`. It is named by its `aria-label` or else by the value
+  it shows. Its options are `option`s.
 - **A busy button is named "Loading &lt;label&gt;"**: `SubmitButton` and
   `ConfirmSubmit` swap their icon for a spinner with `role="status"` and
   `aria-label="Loading"`. A `SubmitButton` with a `busyLabel` swaps its label
@@ -431,7 +433,7 @@ Names that are easy to get wrong:
 
 - **Import constants rather than copying them**: the cache headers from
   `src/lib/server/cache.ts`, `CDN_BASE_URL` from `src/lib/constants.ts`. Import
-  only modules that import nothing through `$lib`; that alias doesn't resolve
+  only modules that import nothing through `#lib`; that alias doesn't resolve
   outside the app.
 - **Numbers are printed raw**, with no thousands separators, so match `1234`,
   never `1,234`.

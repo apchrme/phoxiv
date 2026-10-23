@@ -13,7 +13,7 @@ the application and charge that to cold-start parse time on every route. See
 
 Keeping them here, under `static/`, is what makes that true in practice. They
 are served by the `ASSETS` binding, so they are static assets and not Worker
-script size, and `$lib/pdf-text.ts` reaches them through a **runtime string
+script size, and `#lib/pdf-text.ts` reaches them through a **runtime string
 URL** (`import(/* @vite-ignore */ '/vendor/pdfjs/pdf.min.mjs')`) — the one import
 form Vite cannot resolve at build time, and therefore the one form that cannot
 be emitted into the server build.
@@ -27,7 +27,7 @@ cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs static/vendor/pdfjs/
 ```
 
 Keep the `pdfjs-dist` devDependency on the **same version as these two files**.
-It ships no runtime code into either bundle — `$lib/pdf-text.ts` imports only its
+It ships no runtime code into either bundle — `#lib/pdf-text.ts` imports only its
 types, which are erased at compile time — but those types are the only thing
 standing between a removed pdf.js API and a silent failure, and they describe
 whatever version is in `node_modules`, not whatever is in this directory.

@@ -1,20 +1,20 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { OLYMPIAD_TAGS, type OlympiadTag, type OlympiadEntry } from '$lib/types.js';
-	import { matchesOlympiadText } from '$lib/filters.js';
-	import { Badge } from '$lib/components/ui/badge/index';
-	import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
-	import SearchBar from '$lib/components/search/SearchBar.svelte';
-	import EmptyState from '$lib/components/EmptyState.svelte';
-	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
+	import { OLYMPIAD_TAGS, type OlympiadTag, type OlympiadEntry } from '#lib/types.js';
+	import { matchesOlympiadText } from '#lib/filters.js';
+	import { Badge } from '#lib/components/ui/badge/index.js';
+	import * as ToggleGroup from '#lib/components/ui/toggle-group/index.js';
+	import SearchBar from '#lib/components/search/SearchBar.svelte';
+	import EmptyState from '#lib/components/EmptyState.svelte';
+	import OlympiadIcon from '#lib/components/OlympiadIcon.svelte';
 	import { ArrowRight, SearchX, TriangleAlert } from '@lucide/svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import * as Card from '$lib/components/ui/card';
-	import PageHeader from '$lib/components/PageHeader.svelte';
+	import { Button } from '#lib/components/ui/button/index.js';
+	import * as Card from '#lib/components/ui/card/index.js';
+	import PageHeader from '#lib/components/PageHeader.svelte';
 	import SvelteSeo from 'svelte-seo';
 	import { onMount } from 'svelte';
-	import { Resource } from '$lib/resource.svelte';
-	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
+	import { Resource } from '#lib/resource.svelte.js';
+	import Skeleton from '#lib/components/ui/skeleton/skeleton.svelte';
 
 	let query = $state('');
 	let activeTag = $state<OlympiadTag | null>(null);
@@ -88,7 +88,7 @@
 	{:else if filtered.length > 0}
 		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">
 			{#each filtered as olympiad (olympiad.id)}
-				<a href={resolve(`/olympiads/${olympiad.id}`)} class="group z-10 block">
+				<a href={resolve(`olympiads/${olympiad.id}`)} class="group z-10 block">
 					<Card.Root
 						class="h-full p-5 inset-ring shadow-primary inset-ring-accent transition-all duration-250 hover:-translate-y-2 hover:shadow-lg/15 hover:inset-ring-primary/50"
 					>

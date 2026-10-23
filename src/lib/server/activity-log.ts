@@ -5,9 +5,9 @@
 
 import { desc, lt } from 'drizzle-orm';
 import { activityLog, type DB } from './db';
-import type { ActivityEntry } from '$lib/types';
+import type { ActivityEntry } from '#lib/types.js';
 
-/** Loggable actions, from the `activityLog.action` enum. Labels are in `$lib/activity.ts`. */
+/** Loggable actions, from the `activityLog.action` enum. Labels are in `#lib/activity.ts`. */
 export type LogAction = NonNullable<(typeof activityLog.$inferInsert)['action']>;
 
 type ActingUser = { id: string; name: string } | null | undefined;

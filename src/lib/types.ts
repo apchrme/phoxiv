@@ -1,6 +1,6 @@
 /**
  * An olympiad's scope, used by the olympiads page filter. `schema.ts` repeats
- * these in the `tag` enum (it can't import `$lib`); keep them in sync.
+ * these in the `tag` enum (it can't import `#lib`); keep them in sync.
  */
 export const OLYMPIAD_TAGS = ['International', 'Regional', 'National', 'Open'] as const;
 

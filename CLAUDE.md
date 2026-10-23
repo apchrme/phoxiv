@@ -8,7 +8,7 @@ Read the relevant one first:
 
 | Doc                                       | Read it before changing…                                           |
 | ----------------------------------------- | ------------------------------------------------------------------ |
-| [architecture.md](./docs/architecture.md) | routes, caching, `$lib/server/`, or form handling                  |
+| [architecture.md](./docs/architecture.md) | routes, caching, `#lib/server/`, or form handling                  |
 | [data-model.md](./docs/data-model.md)     | the schema, the R2 key layout, or `titles.csv`                     |
 | [search.md](./docs/search.md)             | either search mode, PDF extraction, or the FTS5 index              |
 | [auth.md](./docs/auth.md)                 | auth, roles, or any permission check                               |
@@ -62,7 +62,7 @@ The full module inventory is in
 
 **Roles are `user`, `contributor` and `admin`.** Contributors can edit the
 olympiads in their `assignedOlympiads`. That check lives only in
-`$lib/server/guard.ts`. BetterAuth's admin plugin is pinned to
+`#lib/server/guard.ts`. BetterAuth's admin plugin is pinned to
 `adminRoles: ['admin']` and knows nothing about contributors. Within
 `/contribute`, only `createOlympiad` is admin-only.
 

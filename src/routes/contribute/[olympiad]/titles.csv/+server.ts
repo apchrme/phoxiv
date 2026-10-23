@@ -1,10 +1,10 @@
 ﻿import type { RequestHandler } from './$types';
 import { asc, eq } from 'drizzle-orm';
-import { problems, years } from '$lib/server/db';
-import { requireOlympiadEditor } from '$lib/server/guard';
-import { requireOlympiad } from '$lib/server/db/queries/olympiads';
-import { formatTopicsCsvCell, parseTopics } from '$lib/utils/topics';
-import { exactScore } from '$lib/progress';
+import { problems, years } from '#lib/server/db/index.js';
+import { requireOlympiadEditor } from '#lib/server/guard.js';
+import { requireOlympiad } from '#lib/server/db/queries/olympiads.js';
+import { formatTopicsCsvCell, parseTopics } from '#lib/utils/topics.js';
+import { exactScore } from '#lib/progress.js';
 
 /** UTF-8 byte-order mark, so Excel reads accented titles correctly. */
 const BOM = String.fromCharCode(0xfeff);

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ChevronLeft } from '@lucide/svelte';
-	import { cn } from '$lib/utils.js';
-	import { buttonVariants } from '$lib/components/ui/button/index.js';
+	import { cn } from '#lib/utils.js';
+	import { buttonVariants } from '#lib/components/ui/button/index.js';
 	import type { Snippet } from 'svelte';
 
 	/**

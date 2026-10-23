@@ -140,8 +140,9 @@ test.describe('tracking a problem', () => {
 			const answered = page.waitForResponse(isTrackPost);
 			await popoverButton(page, 'Save').click();
 
-			// `actionFail(400, …)` answers HTTP 200 with the status in the body.
+			// `actionFail(400, …)` answers HTTP 400, with the status in the body too.
 			const response = await answered;
+			expect(response.status(), score).toBe(400);
 			expect(await response.json(), score).toMatchObject({ type: 'failure', status: 400 });
 			await expect(toast(page, message)).toBeVisible();
 			await expect(scoreBox).toHaveValue(score);

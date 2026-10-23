@@ -1,8 +1,8 @@
-import { contentTypeFor, extensionOf, isAllowedExt, type UploadSpec } from '$lib/uploads';
+import { contentTypeFor, extensionOf, isAllowedExt, type UploadSpec } from '#lib/uploads.js';
 import type { Validated } from './forms';
 
 /*
- * Server-side enforcement of the rules in `$lib/uploads.ts`. The form's `accept`
+ * Server-side enforcement of the rules in `#lib/uploads.ts`. The form's `accept`
  * attribute is only a hint and is easily bypassed.
  */
 

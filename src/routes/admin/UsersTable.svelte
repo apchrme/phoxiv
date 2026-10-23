@@ -1,23 +1,23 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import type { Pending } from '$lib/forms.svelte';
-	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import * as Select from '$lib/components/ui/select/index.js';
-	import * as Table from '$lib/components/ui/table/index.js';
-	import { FlexRender, createSvelteTable } from '$lib/components/ui/data-table/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import type { Pending } from '#lib/forms.svelte.js';
+	import { Badge } from '#lib/components/ui/badge/index.js';
+	import { Input } from '#lib/components/ui/input/index.js';
+	import * as Select from '#lib/components/ui/select/index.js';
+	import * as Table from '#lib/components/ui/table/index.js';
+	import { FlexRender, createSvelteTable } from '#lib/components/ui/data-table/index.js';
+	import { Button } from '#lib/components/ui/button/index.js';
+	import * as Tooltip from '#lib/components/ui/tooltip/index.js';
 	import { ChevronUp, ChevronDown, ChevronsUpDown, UsersRound } from '@lucide/svelte';
-	import UserAvatar from '$lib/components/UserAvatar.svelte';
-	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
-	import EmptyState from '$lib/components/EmptyState.svelte';
-	import { plural } from '$lib/utils/plural';
+	import UserAvatar from '#lib/components/UserAvatar.svelte';
+	import OlympiadIcon from '#lib/components/OlympiadIcon.svelte';
+	import EmptyState from '#lib/components/EmptyState.svelte';
+	import { plural } from '#lib/utils/plural.js';
 	import UserRowActions from './UserRowActions.svelte';
 	import { globalFilterFn, userColumns } from './columns';
-	import { formatDate } from '$lib/utils/date';
-	import { parseStringArray } from '$lib/utils/json';
-	import { roleLabel, roleVariant } from '$lib/activity';
+	import { formatDate } from '#lib/utils/date.js';
+	import { parseStringArray } from '#lib/utils/json.js';
+	import { roleLabel, roleVariant } from '#lib/activity.js';
 	import {
 		getCoreRowModel,
 		getSortedRowModel,

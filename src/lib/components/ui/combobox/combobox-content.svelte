@@ -3,9 +3,9 @@
 	import ComboboxPortal from './combobox-portal.svelte';
 	import ComboboxScrollUpButton from './combobox-scroll-up-button.svelte';
 	import ComboboxScrollDownButton from './combobox-scroll-down-button.svelte';
-	import { cn, type WithoutChild } from '$lib/utils.js';
+	import { cn, type WithoutChild } from '#lib/utils.js';
 	import type { ComponentProps } from 'svelte';
-	import type { WithoutChildrenOrChild } from '$lib/utils.js';
+	import type { WithoutChildrenOrChild } from '#lib/utils.js';
 
 	let {
 		ref = $bindable(null),

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import FileBadge from '$lib/components/FileBadge.svelte';
-	import type { ProblemEntry } from '$lib/types';
-	import type { Pending } from '$lib/forms.svelte';
-	import type { ProblemProgress } from '$lib/progress';
+	import FileBadge from '#lib/components/FileBadge.svelte';
+	import type { ProblemEntry } from '#lib/types.js';
+	import type { Pending } from '#lib/forms.svelte.js';
+	import type { ProblemProgress } from '#lib/progress.js';
 	import ProgressControl from './ProgressControl.svelte';
 	import SignInToTrack from './SignInToTrack.svelte';
 

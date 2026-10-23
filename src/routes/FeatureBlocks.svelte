@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { ArrowRight } from '@lucide/svelte';
-	import * as Kbd from '$lib/components/ui/kbd/index.js';
+	import * as Kbd from '#lib/components/ui/kbd/index.js';
 
 	let {
 		signedIn = false
@@ -27,7 +27,7 @@
 			title: 'Browse the archive',
 			body: `Dozens of olympiads, each with problems, solutions, marking schemes and more.
 			Pages are cached, so they are lightning-fast.`,
-			href: resolve('/olympiads'),
+			href: resolve('olympiads'),
 			cta: 'Browse olympiads'
 		},
 		{
@@ -41,7 +41,7 @@
 			n: '03',
 			title: "Track what you've solved",
 			body: `Mark any problem you have done, optionally with a score, and see per-year totals. Filter by completion status to narrow down your search.`,
-			href: signedIn ? resolve('/profile') : resolve('/login'),
+			href: signedIn ? resolve('profile') : resolve('login'),
 			cta: signedIn ? 'See your progress' : 'Sign in to track'
 		},
 		{
@@ -49,7 +49,7 @@
 			title: 'Contribute',
 			body: `Contributors edit the olympiads they are assigned: adding years, uploading and
 			       labelling files, and editing problem metadata. Don't see an olympiad you like here? Become a contributor and add it!`,
-			href: signedIn ? resolve('/contribute') : resolve('/login'),
+			href: signedIn ? resolve('contribute') : resolve('login'),
 			cta: signedIn ? 'Open the editor' : 'Sign in to contribute'
 		}
 	]);

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
-	import { buttonVariants } from '$lib/components/ui/button/index.js';
+	import { buttonVariants } from '#lib/components/ui/button/index.js';
 	import { fade } from 'svelte/transition';
 
 	let visible = $state(false);

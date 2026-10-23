@@ -49,8 +49,8 @@ function newOlympiadForm(page: Page) {
 		icon: page.getByLabel(/^Emoji icon/),
 		name: page.getByLabel(/^Full name/),
 		summary: page.getByLabel(/^Summary/),
-		// A bits-ui select: its trigger is a button named by `aria-label` (TagSelect.svelte).
-		tag: page.getByRole('button', { name: 'Tag', exact: true }),
+		// A bits-ui select: its trigger is a combobox named by `aria-label` (TagSelect.svelte).
+		tag: page.getByRole('combobox', { name: 'Tag', exact: true }),
 		year: page.getByLabel(/^First year/),
 		description: page.getByLabel(/^Description/),
 		submit: page.getByRole('button', { name: 'Create olympiad' })
@@ -102,9 +102,9 @@ async function expectDraftKept(page: Page, values: Draft): Promise<void> {
  * Submits through `submit` and expects `createOlympiad` to refuse with
  * `actionFail(status, …, message)`, and the page to toast the message.
  *
- * `actionFail()` answers HTTP 200 with `type: 'failure'`; `error()` would answer
- * `type: 'error'` and replace the page, discarding what was typed
- * ($lib/server/forms.ts, `actionFail`: "`error()` replaces the page and discards
+ * `actionFail()` answers with its status and `type: 'failure'`; `error()` would
+ * answer `type: 'error'` and replace the page, discarding what was typed
+ * (#lib/server/forms.ts, `actionFail`: "`error()` replaces the page and discards
  * what the user typed"; CLAUDE.md rule 6).
  */
 async function expectCreateRefused(
@@ -121,7 +121,7 @@ async function expectCreateRefused(
 	await submit.click();
 	const response = await answer;
 	const body = (await response.json()) as { type: string; status: number; data: string };
-	expect(response.status()).toBe(200);
+	expect(response.status()).toBe(status);
 	expect(body.type).toBe('failure');
 	expect(body.status).toBe(status);
 	expect((parse(body.data) as { error: string }).error).toBe(message);
@@ -153,7 +153,7 @@ test.describe('an admin, on the "New olympiad" form', () => {
 		await expect(page.getByLabel(/^Full name/)).toHaveValue(values.name);
 		await expect(page.getByLabel(/^Summary/)).toHaveValue(values.summary);
 		await expect(page.getByLabel(/^Emoji icon/)).toHaveValue(values.icon);
-		await expect(page.getByRole('button', { name: 'Tag', exact: true })).toHaveText(values.tag);
+		await expect(page.getByRole('combobox', { name: 'Tag', exact: true })).toHaveText(values.tag);
 		await expect(page.getByPlaceholder('Write a longer description using Markdown…')).toHaveValue(
 			values.description
 		);

@@ -1,4 +1,4 @@
-/* Blog posts: mdsvex `.svx` files in `$lib/posts/`, found with `import.meta.glob`. */
+/* Blog posts: mdsvex `.svx` files in `#lib/posts/`, found with `import.meta.glob`. */
 
 export interface PostMeta {
 	slug: string;

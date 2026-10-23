@@ -1,5 +1,5 @@
 <!--
-	mdsvex layout for blog posts (`$lib/posts/*.svx`). Typography only: the blog
+	mdsvex layout for blog posts (`#lib/posts/*.svx`). Typography only: the blog
 	route renders the header and SEO. Don't add them here, or posts get a second
 	title and two <title> tags.
 -->

@@ -1,11 +1,11 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import SvelteSeo from 'svelte-seo';
-	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { Badge } from '#lib/components/ui/badge/index.js';
 	import { Calendar, Tag, User, ArrowRight } from '@lucide/svelte';
-	import PageHeader from '$lib/components/PageHeader.svelte';
+	import PageHeader from '#lib/components/PageHeader.svelte';
 	import { resolve } from '$app/paths';
-	import { formatDate } from '$lib/utils/date';
+	import { formatDate } from '#lib/utils/date.js';
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -26,7 +26,7 @@
 		{#each data.posts as post (post.slug)}
 			<li class="group relative">
 				<a
-					href={resolve(`/blog/${post.slug}`)}
+					href={resolve(`blog/${post.slug}`)}
 					class="flex flex-col items-start gap-3 rounded-2xl bg-muted/50 px-5 py-5 inset-ring shadow-primary inset-ring-accent transition-all duration-250 hover:-translate-y-1 hover:shadow-lg/10 hover:inset-ring-primary/50 sm:flex-row sm:gap-6"
 				>
 					<!-- Date column -->

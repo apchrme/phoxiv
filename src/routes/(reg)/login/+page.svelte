@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { authClient } from '$lib/auth-client';
+	import { authClient } from '#lib/auth-client.js';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import logo from '$lib/assets/branding/logo.svg';
-	import Github from '$lib/components/GithubMark.svelte';
+	import logo from '#lib/assets/branding/logo.svg';
+	import Github from '#lib/components/GithubMark.svelte';
 	import SvelteSeo from 'svelte-seo';
 
 	let loading = $state(false);

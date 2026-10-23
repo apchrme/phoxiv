@@ -1,6 +1,6 @@
 /*
  * What may be uploaded. Client-safe so the form's `accept` attribute and the
- * server check (`$lib/server/uploads.ts`) share one table. `slugifyLabel` and
+ * server check (`#lib/server/uploads.ts`) share one table. `slugifyLabel` and
  * `collidingLabel` are here so the editor's warning and the action agree.
  */
 
@@ -106,7 +106,7 @@ export function contentTypeFor(spec: UploadSpec, ext: string): string {
 
 /**
  * A file label reduced to a safe key segment. Never change this: existing R2
- * keys were built with it. See `$lib/server/storage.ts` and docs/data-model.md.
+ * keys were built with it. See `#lib/server/storage.ts` and docs/data-model.md.
  */
 export function slugifyLabel(label: string): string {
 	return label

@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { Popover } from 'bits-ui';
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Spinner } from '$lib/components/ui/spinner/index.js';
+	import { Button, buttonVariants } from '#lib/components/ui/button/index.js';
+	import { Input } from '#lib/components/ui/input/index.js';
+	import { Spinner } from '#lib/components/ui/spinner/index.js';
 	import { Circle, CircleCheck, Trash2 } from '@lucide/svelte';
-	import { cn } from '$lib/utils.js';
-	import type { Pending } from '$lib/forms.svelte';
-	import { exactScore, formatScore, progressKey, type ProblemProgress } from '$lib/progress';
+	import { cn } from '#lib/utils.js';
+	import type { Pending } from '#lib/forms.svelte.js';
+	import { exactScore, formatScore, progressKey, type ProblemProgress } from '#lib/progress.js';
 
 	/**
 	 * A problem card's tracking control: a state icon that opens a form to record,
@@ -104,7 +104,7 @@
 				use:enhance={pending.track(() => key, {
 					// The page merges the result itself. Revalidating would give it a new
 					// `data.olympiad`, which refetches every year and clears the filters.
-					invalidateAll: false
+					refreshAll: false
 				})}
 				class="flex flex-col gap-3"
 			>

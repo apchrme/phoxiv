@@ -20,7 +20,7 @@ export type ActionFields = Record<string, string | string[] | FilePayload>;
  *
  * - `success`: the action returned `ok()`.
  * - `failure`: it returned `actionFail(status, …, message)`. SvelteKit answers
- *   HTTP 200 with `type: 'failure'` and the status in the body.
+ *   with that HTTP status, `type: 'failure'`, and the status again in the body.
  * - `error`: it threw `error(status, message)`, as the guards do. SvelteKit
  *   answers with that HTTP status and `type: 'error'`.
  * - `redirect`: it called `redirect(…, location)`.
@@ -121,6 +121,7 @@ export async function postAction(
 		expect(result.data?.success, where).toBe(true);
 	} else if ('failure' in expected) {
 		expect(result.type, where).toBe('failure');
+		expect(result.httpStatus, where).toBe(expected.failure);
 		expect(result.status, where).toBe(expected.failure);
 		expect(result.data?.error, where).toBe(expected.message);
 	} else if ('error' in expected) {

@@ -1,6 +1,6 @@
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { getOlympiadProgress } from '$lib/server/db/queries/progress';
+import { getOlympiadProgress } from '#lib/server/db/queries/progress.js';
 
 /**
  * The signed-in user's progress in one olympiad, as a `ProgressMap`.
@@ -19,5 +19,5 @@ export const GET: RequestHandler = async ({ params, locals, setHeaders }) => {
 	if (!locals.user) error(401, 'Not signed in');
 
 	// No `requireOlympiad`: an unknown id just gives an empty map, saving a D1 read.
-	return json(await getOlympiadProgress(locals.db, params.olympiad, locals.user.id));
+	return Response.json(await getOlympiadProgress(locals.db, params.olympiad, locals.user.id));
 };

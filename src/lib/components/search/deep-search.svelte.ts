@@ -1,4 +1,4 @@
-import type { FileSearchResponse, FileSearchResult } from '$lib/types.js';
+import type { FileSearchResponse, FileSearchResult } from '#lib/types.js';
 
 /**
  * Deep search's network state: the per-session cache, what is on screen, and

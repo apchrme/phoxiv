@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Badge from '$lib/components/ui/badge/badge.svelte';
+	import Badge from '#lib/components/ui/badge/badge.svelte';
 	import { ExternalLink } from '@lucide/svelte';
 
 	/**

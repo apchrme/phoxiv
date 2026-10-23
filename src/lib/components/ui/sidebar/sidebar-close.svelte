@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { useSidebar } from './context.svelte.js';
-	import { buttonVariants } from '$lib/components/ui/button/index.js';
+	import { buttonVariants } from '#lib/components/ui/button/index.js';
 	import XIcon from '@lucide/svelte/icons/x';
-	import { cn } from '$lib/utils.js';
+	import { cn } from '#lib/utils.js';
 
 	let { class: className }: { class?: string } = $props();
 

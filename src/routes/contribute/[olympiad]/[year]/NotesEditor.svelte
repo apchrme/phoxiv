@@ -1,7 +1,7 @@
 <script lang="ts">
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import Repeater from '$lib/components/forms/Repeater.svelte';
+	import * as Card from '#lib/components/ui/card/index.js';
+	import { Input } from '#lib/components/ui/input/index.js';
+	import Repeater from '#lib/components/forms/Repeater.svelte';
 	import { newNoteRow, type NoteRow } from './metadata';
 
 	/** The notes repeater: fields only, no `<form>` (see `Repeater`). */

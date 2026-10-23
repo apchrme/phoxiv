@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
-	import type { Pending } from '$lib/forms.svelte';
+	import type { Pending } from '#lib/forms.svelte.js';
 	import { Save, Trash2 } from '@lucide/svelte';
-	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
-	import ConfirmSubmit from '$lib/components/forms/ConfirmSubmit.svelte';
+	import SubmitButton from '#lib/components/forms/SubmitButton.svelte';
+	import ConfirmSubmit from '#lib/components/forms/ConfirmSubmit.svelte';
 	import NotesEditor from './NotesEditor.svelte';
 	import LinksEditor from './LinksEditor.svelte';
 	import ProblemsEditor from './ProblemsEditor.svelte';

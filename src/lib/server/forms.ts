@@ -1,5 +1,5 @@
 import { fail, type ActionFailure } from '@sveltejs/kit';
-import { MAX_YEAR, MIN_YEAR } from '$lib/constants';
+import { MAX_YEAR, MIN_YEAR } from '#lib/constants.js';
 
 /*
  * Form-field parsing and the result shape every action returns:
@@ -8,7 +8,7 @@ import { MAX_YEAR, MIN_YEAR } from '$lib/constants';
  *   { action: 'uploadFile', success: false, error: '...' }
  *
  * The literal `success` makes `form` a discriminated union, narrowed further by
- * `action`. `$lib/forms.svelte.ts` relies on this shape; change both together.
+ * `action`. `#lib/forms.svelte.ts` relies on this shape; change both together.
  */
 
 /** Result of a validation step that either yields a value or a message. */
@@ -71,7 +71,7 @@ export function fileField(data: FormData, name: string): File | null {
 
 // ── Year parsing ────────────────────────────────────────────────────────────
 
-// Re-exported from `$lib/constants.ts` for server callers.
+// Re-exported from `#lib/constants.ts` for server callers.
 export { MIN_YEAR, MAX_YEAR };
 
 export const YEAR_RANGE_ERROR = `Please enter a valid year (${MIN_YEAR}-${MAX_YEAR})`;

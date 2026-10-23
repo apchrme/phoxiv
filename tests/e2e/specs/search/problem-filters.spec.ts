@@ -246,7 +246,7 @@ test.describe('⌘K problem filters', () => {
 			await expect(alphaRows).toHaveText(ALPHA_TODO.map(alphaRow));
 
 			// The olympiad page's status filter, for the same user. `isDone` and the
-			// page's own check both come down to "a key exists" ($lib/filters.ts:
+			// page's own check both come down to "a key exists" (#lib/filters.ts:
 			// "so they all agree on what matches and what counts as done").
 			await page.keyboard.press('Escape');
 			await expect(dialog).toBeHidden();

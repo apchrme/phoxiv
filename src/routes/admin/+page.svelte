@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import SvelteSeo from 'svelte-seo';
-	import PageHeader from '$lib/components/PageHeader.svelte';
-	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import { formToasts, Pending } from '$lib/forms.svelte';
-	import { plural } from '$lib/utils/plural';
+	import PageHeader from '#lib/components/PageHeader.svelte';
+	import * as Tabs from '#lib/components/ui/tabs/index.js';
+	import { formToasts, Pending } from '#lib/forms.svelte.js';
+	import { plural } from '#lib/utils/plural.js';
 	import UsersTable from './UsersTable.svelte';
 	import ActivityLogTable from './ActivityLogTable.svelte';
 	import IndexPanel from './IndexPanel.svelte';

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { Command, Popover } from 'bits-ui';
-	import { buttonVariants } from '$lib/components/ui/button/index.js';
+	import { buttonVariants } from '#lib/components/ui/button/index.js';
 	import { Check, ChevronDown, Search, Trophy } from '@lucide/svelte';
-	import { cn } from '$lib/utils.js';
-	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
-	import { matchesOlympiadText } from '$lib/filters.js';
-	import { plural } from '$lib/utils/plural';
-	import type { OlympiadOption } from '$lib/types.js';
+	import { cn } from '#lib/utils.js';
+	import OlympiadIcon from '#lib/components/OlympiadIcon.svelte';
+	import { matchesOlympiadText } from '#lib/filters.js';
+	import { plural } from '#lib/utils/plural.js';
+	import type { OlympiadOption } from '#lib/types.js';
 
 	/**
 	 * The one olympiad picker: searchable, keyboard-driven, single or multiple,

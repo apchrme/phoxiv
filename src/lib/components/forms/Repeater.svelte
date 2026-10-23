@@ -1,6 +1,6 @@
 <script lang="ts" generics="T extends { id: string }">
 	import type { Snippet } from 'svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { Button } from '#lib/components/ui/button/index.js';
 	import { Plus, Trash2 } from '@lucide/svelte';
 
 	/**

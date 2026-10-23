@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
-	import { Resource } from '$lib/resource.svelte';
+	import { Resource } from '#lib/resource.svelte.js';
 
 	/**
 	 * Null until the counts arrive, and on failure. Don't seed it with zeroes, or

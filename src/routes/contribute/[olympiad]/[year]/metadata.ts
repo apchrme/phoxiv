@@ -1,5 +1,5 @@
-import type { ProblemTopic } from '$lib/types';
-import { exactScore, parseMaxScore } from '$lib/progress';
+import type { ProblemTopic } from '#lib/types.js';
+import { exactScore, parseMaxScore } from '#lib/progress.js';
 
 /**
  * Row model for the year editor's metadata tab. Rows are seeded once from the

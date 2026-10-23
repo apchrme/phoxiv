@@ -1,16 +1,16 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import { authClient } from '$lib/auth-client';
+	import { authClient } from '#lib/auth-client.js';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Card from '#lib/components/ui/card/index.js';
 	import SvelteSeo from 'svelte-seo';
 	import { LogOut, Mail, Shield } from '@lucide/svelte';
-	import Github from '$lib/components/GithubMark.svelte';
-	import UserAvatar from '$lib/components/UserAvatar.svelte';
-	import PageHeader from '$lib/components/PageHeader.svelte';
+	import Github from '#lib/components/GithubMark.svelte';
+	import UserAvatar from '#lib/components/UserAvatar.svelte';
+	import PageHeader from '#lib/components/PageHeader.svelte';
 
-	import { formatDate } from '$lib/utils/date';
+	import { formatDate } from '#lib/utils/date.js';
 
 	let { data }: PageProps = $props();
 
@@ -22,7 +22,7 @@
 		signingOut = true;
 		try {
 			await authClient.signOut();
-			goto(resolve('/'), { invalidateAll: true });
+			goto(resolve('/'), { refreshAll: true });
 		} finally {
 			signingOut = false;
 		}

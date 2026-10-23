@@ -1,4 +1,4 @@
-import { PROBLEM_TOPICS, type ProblemTopic } from '$lib/types.js';
+import { PROBLEM_TOPICS, type ProblemTopic } from '#lib/types.js';
 
 /** Lookup of lowercased topic name -> canonical topic, for case-insensitive input. */
 const BY_LOWER_NAME = new Map<string, ProblemTopic>(

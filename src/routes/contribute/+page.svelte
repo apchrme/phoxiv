@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import { formToasts, Pending } from '$lib/forms.svelte';
-	import PageHeader from '$lib/components/PageHeader.svelte';
-	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import { formToasts, Pending } from '#lib/forms.svelte.js';
+	import PageHeader from '#lib/components/PageHeader.svelte';
+	import * as Tabs from '#lib/components/ui/tabs/index.js';
 	import SvelteSeo from 'svelte-seo';
 	import SelectYearForm from './SelectYearForm.svelte';
 	import NewOlympiadForm from './NewOlympiadForm.svelte';

@@ -4,8 +4,9 @@ import { admin } from 'better-auth/plugins';
 import * as schema from './db/schema';
 
 /*
- * BetterAuth configuration. A function, not a constant, because the D1 binding
- * only exists per request; `hooks.server.ts` builds one instance per request.
+ * BetterAuth configuration. A function, not a constant, because it needs the
+ * Worker's `env`, which can't be read at module scope (see `hooks.server.ts`);
+ * `hooks.server.ts` builds one instance per request.
  * `auth-cli.ts` reuses {@link authOptions} for the schema generator.
  * See docs/auth.md.
  */

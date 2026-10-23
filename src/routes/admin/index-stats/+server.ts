@@ -1,7 +1,6 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { requireAdmin } from '$lib/server/guard';
-import { getFileTextStats } from '$lib/server/db/queries/files';
+import { requireAdmin } from '#lib/server/guard.js';
+import { getFileTextStats } from '#lib/server/db/queries/files.js';
 
 /**
  * The Index tab's counts, fetched when the tab is opened rather than on page
@@ -15,5 +14,5 @@ import { getFileTextStats } from '$lib/server/db/queries/files';
  */
 export const GET: RequestHandler = async ({ locals }) => {
 	const { db } = requireAdmin(locals);
-	return json(await getFileTextStats(db));
+	return Response.json(await getFileTextStats(db));
 };

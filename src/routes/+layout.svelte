@@ -6,22 +6,22 @@
 	let { children, data }: LayoutProps = $props();
 
 	import { ModeWatcher } from 'mode-watcher';
-	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
-	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import * as NavigationMenu from '#lib/components/ui/navigation-menu/index.js';
+	import * as Sidebar from '#lib/components/ui/sidebar/index.js';
 	import AppSidebar from './AppSidebar.svelte';
-	import ScrollToTop from '$lib/components/ScrollToTop.svelte';
-	import GlobalSearch from '$lib/components/search/GlobalSearch.svelte';
-	import { Toaster } from '$lib/components/ui/sonner/index.js';
+	import ScrollToTop from '#lib/components/ScrollToTop.svelte';
+	import GlobalSearch from '#lib/components/search/GlobalSearch.svelte';
+	import { Toaster } from '#lib/components/ui/sonner/index.js';
 	import { Search } from '@lucide/svelte';
-	import LogIn from '$lib/components/buttons/LogIn.svelte';
-	import { buttonVariants } from '$lib/components/ui/button/index.js';
-	import brand from '$lib/assets/branding/brand.svg';
-	import * as Kbd from '$lib/components/ui/kbd/index.js';
-	import DarkModeButton from '$lib/components/buttons/DarkModeButton.svelte';
-	import GitHubButton from '$lib/components/buttons/GitHubButton.svelte';
-	import DiscordButton from '$lib/components/buttons/DiscordButton.svelte';
-	import { Separator } from '$lib/components/ui/separator/index.js';
-	import { PRIMARY_NAV, secondaryNavFor } from '$lib/nav';
+	import LogIn from '#lib/components/buttons/LogIn.svelte';
+	import { buttonVariants } from '#lib/components/ui/button/index.js';
+	import brand from '#lib/assets/branding/brand.svg';
+	import * as Kbd from '#lib/components/ui/kbd/index.js';
+	import DarkModeButton from '#lib/components/buttons/DarkModeButton.svelte';
+	import GitHubButton from '#lib/components/buttons/GitHubButton.svelte';
+	import DiscordButton from '#lib/components/buttons/DiscordButton.svelte';
+	import { Separator } from '#lib/components/ui/separator/index.js';
+	import { PRIMARY_NAV, secondaryNavFor } from '#lib/nav.js';
 	import { onMount } from 'svelte';
 
 	const secondaryNav = $derived(secondaryNavFor(data.user));
@@ -41,7 +41,7 @@
 </svelte:head>
 
 <ModeWatcher />
-<!-- Page context is passed in from the layout rather than read inside `$lib`.
+<!-- Page context is passed in from the layout rather than read inside `#lib`.
      `currentOlympiad` is `undefined` off an olympiad route. -->
 <GlobalSearch
 	bind:open={searchOpen}
@@ -81,7 +81,7 @@
 					<NavigationMenu.List class="gap-1 sm:gap-2">
 						{#each PRIMARY_NAV as navLink (navLink.href)}
 							<NavigationMenu.Item>
-								<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- already resolved in $lib/nav.ts -->
+								<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- already resolved in #lib/nav.ts -->
 								<NavigationMenu.Link
 									href={navLink.href}
 									aria-current={page.url.pathname == navLink.href}
@@ -99,7 +99,7 @@
 								<ul class="flex flex-col gap-1">
 									{#each secondaryNav as navLink (navLink.href)}
 										<li>
-											<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- already resolved in $lib/nav.ts -->
+											<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- already resolved in #lib/nav.ts -->
 											<NavigationMenu.Link
 												href={navLink.href}
 												aria-current={page.url.pathname == navLink.href}

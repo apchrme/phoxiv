@@ -24,7 +24,7 @@ test('an unknown olympiad is a 404 page', async ({ page }) => {
 	expect(response?.status()).toBe(404);
 	// `OLYMPIAD_NOT_FOUND`, from requireOlympiad in
 	// src/lib/server/db/queries/olympiads.ts. Copied: that module imports through
-	// `$lib`, which doesn't resolve here.
+	// `#lib`, which doesn't resolve here.
 	await expect(page.getByRole('heading', { name: 'Error 404: Olympiad not found' })).toBeVisible();
 });
 

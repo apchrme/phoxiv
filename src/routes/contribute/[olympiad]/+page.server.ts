@@ -1,13 +1,17 @@
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { eq, inArray } from 'drizzle-orm';
-import { olympiads, problems, years } from '$lib/server/db';
+import { olympiads, problems, years } from '#lib/server/db/index.js';
 import { parse } from 'csv-parse/sync';
-import { requireOlympiadEditor } from '$lib/server/guard';
-import { logActivity } from '$lib/server/activity-log';
-import { renderMarkdownOrNull } from '$lib/server/markdown';
-import { getOlympiad, OLYMPIAD_NOT_FOUND, requireOlympiad } from '$lib/server/db/queries/olympiads';
-import { ensureYear, insertYear, listYearNumbers } from '$lib/server/db/queries/years';
+import { requireOlympiadEditor } from '#lib/server/guard.js';
+import { logActivity } from '#lib/server/activity-log.js';
+import { renderMarkdownOrNull } from '#lib/server/markdown.js';
+import {
+	getOlympiad,
+	OLYMPIAD_NOT_FOUND,
+	requireOlympiad
+} from '#lib/server/db/queries/olympiads.js';
+import { ensureYear, insertYear, listYearNumbers } from '#lib/server/db/queries/years.js';
 import {
 	actionFail,
 	field,
@@ -17,20 +21,20 @@ import {
 	ok,
 	parseYear,
 	YEAR_RANGE_ERROR
-} from '$lib/server/forms';
+} from '#lib/server/forms.js';
 import {
 	cdnUrl,
 	deleteStaleIcons,
 	getBucket,
 	iconKey,
 	STORAGE_UNAVAILABLE
-} from '$lib/server/storage';
-import { validateUpload } from '$lib/server/uploads';
-import { CSV_UPLOAD, ICON_UPLOAD } from '$lib/uploads';
-import { isOlympiadTag } from '$lib/types';
-import type { ProblemTopic } from '$lib/types';
-import { parseTopics, parseTopicsCsvCell, serializeTopics } from '$lib/utils/topics';
-import { parseMaxScore } from '$lib/progress';
+} from '#lib/server/storage.js';
+import { validateUpload } from '#lib/server/uploads.js';
+import { CSV_UPLOAD, ICON_UPLOAD } from '#lib/uploads.js';
+import { isOlympiadTag } from '#lib/types.js';
+import type { ProblemTopic } from '#lib/types.js';
+import { parseTopics, parseTopicsCsvCell, serializeTopics } from '#lib/utils/topics.js';
+import { parseMaxScore } from '#lib/progress.js';
 
 /** Default `displayOrder` for an olympiad that hasn't been positioned yet. */
 const DEFAULT_DISPLAY_ORDER = 9999;
@@ -98,9 +102,9 @@ export const actions: Actions = {
 		return ok('updateOlympiad');
 	},
 
-	uploadIcon: async ({ request, params, platform, locals }) => {
+	uploadIcon: async ({ request, params, locals }) => {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
-		const bucket = getBucket(platform);
+		const bucket = getBucket();
 		if (!bucket) return actionFail(500, 'uploadIcon', STORAGE_UNAVAILABLE);
 
 		// Actions don't run the load, and admins pass the guard for any id, so check

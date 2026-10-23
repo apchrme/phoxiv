@@ -48,7 +48,7 @@ name, year, problem number and title. That string is the ranking contract.
 > are never shown in a result row. See [data-model.md](./data-model.md#problems).
 
 Matching uses one uFuzzy instance in
-[`$lib/utils/fuzzy.ts`](../src/lib/utils/fuzzy.ts) with `intraMode: 1,
+[`#lib/utils/fuzzy.ts`](../src/lib/utils/fuzzy.ts) with `intraMode: 1,
 intraIns: 1`: one inserted character per term, enough for a typo. `rank()`
 returns `[]` for an empty query by contract; the "empty query, filter set" case
 bypasses it.
@@ -74,7 +74,7 @@ show two "Done" results when forty exist further down.
 
 ### The filters, and why they vanish
 
-The topic and progress predicates live in [`$lib/filters.ts`](../src/lib/filters.ts),
+The topic and progress predicates live in [`#lib/filters.ts`](../src/lib/filters.ts),
 so the olympiad page and the dialog agree on what "Done" or "Relativity" selects.
 `isDone(progress, olympiadId, year, number)` keys on the olympiad first:
 `progressKey` is only `(year, number)`, so without it IPhO 2019 T1 and APhO 2019
@@ -119,7 +119,7 @@ bundle, paid as cold-start time on every route, for a path used a few times a
 month. New uploads are parsed in the contributor's browser on file-pick; existing
 files by a local `bun` script. The Worker only stores, indexes and searches.
 
-[`$lib/pdf-text.ts`](../src/lib/pdf-text.ts) loads a vendored pdf.js build from
+[`#lib/pdf-text.ts`](../src/lib/pdf-text.ts) loads a vendored pdf.js build from
 `static/vendor/pdfjs/` (a static asset served by `ASSETS`) through a **runtime
 string URL**, dynamic-imported with `@vite-ignore`.
 
@@ -151,7 +151,7 @@ muted and monospaced.
 
 ### Normalisation, and why the order of its steps is fixed
 
-`normalizeExtracted` in [`$lib/search.ts`](../src/lib/search.ts) runs in the
+`normalizeExtracted` in [`#lib/search.ts`](../src/lib/search.ts) runs in the
 browser, in `uploadFile`, and in the backfill. All three must agree, or the index
 and snippet offsets disagree.
 
@@ -240,7 +240,7 @@ search:
 ## The query layer
 
 All of this is in
-[`$lib/server/db/queries/files.ts`](../src/lib/server/db/queries/files.ts).
+[`#lib/server/db/queries/files.ts`](../src/lib/server/db/queries/files.ts).
 
 ### Sanitisation is a grammar problem, not an injection one
 
@@ -480,7 +480,7 @@ answer is the same for everyone.
 
 The 400 stops arbitrary strings minting cache keys, each costing a ladder walk.
 An unknown id needs no `SELECT` on `olympiads`. "Well-formed" is
-`isOlympiadId` in `$lib/types.ts`, the same rule `createOlympiad` enforces, so
+`isOlympiadId` in `#lib/types.ts`, the same rule `createOlympiad` enforces, so
 every olympiad that can exist can be filtered.
 
 It is `GET` because Cloudflare caches by URL including query string, and never
@@ -499,7 +499,7 @@ minimum length, the normalised key, the session cache and `s-maxage`.
 
 The dialog is [`GlobalSearch.svelte`](../src/lib/components/search/GlobalSearch.svelte),
 mounted from `+layout.svelte`, with its parts in
-[`$lib/components/search/`](../src/lib/components/search).
+[`#lib/components/search/`](../src/lib/components/search).
 
 ### The mode switch is tabs, not a filter
 
@@ -554,7 +554,7 @@ because it opens the dialog.
   knows olympiads with problems. It is fetched on entering files mode so ⌘K costs
   nothing extra for everyone else.
 - **`userId` is a prop from `+layout.svelte`**, not `page.data.user`, which would
-  tie a `$lib` component to the root layout's load shape.
+  tie a `#lib` component to the root layout's load shape.
 
 ### The `DeepSearch` class
 

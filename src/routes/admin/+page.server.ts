@@ -1,16 +1,16 @@
 import type { Actions, PageServerLoad } from './$types';
 import { eq } from 'drizzle-orm';
-import { session, user } from '$lib/server/db';
-import { isProtectedSuperadmin, requireAdmin } from '$lib/server/guard';
-import { listActivity } from '$lib/server/activity-log';
-import { listOlympiadOptions } from '$lib/server/db/queries/olympiads';
-import { actionFail, field, fieldList, fieldOrNull, ok } from '$lib/server/forms';
-import { ASSIGNABLE_ROLES } from '$lib/activity';
+import { session, user } from '#lib/server/db/index.js';
+import { isProtectedSuperadmin, requireAdmin } from '#lib/server/guard.js';
+import { listActivity } from '#lib/server/activity-log.js';
+import { listOlympiadOptions } from '#lib/server/db/queries/olympiads.js';
+import { actionFail, field, fieldList, fieldOrNull, ok } from '#lib/server/forms.js';
+import { ASSIGNABLE_ROLES } from '#lib/activity.js';
 import {
 	ensureFileTextIndex,
 	optimizeFileTextIndex,
 	pruneFileText
-} from '$lib/server/db/queries/files';
+} from '#lib/server/db/queries/files.js';
 
 /**
  * Activity-log entries per page. The load fetches page 1;
@@ -56,7 +56,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	setRole: async ({ request, locals, platform }) => {
+	setRole: async ({ request, locals }) => {
 		const { db, user: actor } = requireAdmin(locals);
 		const data = await request.formData();
 		const userId = field(data, 'userId');
@@ -65,7 +65,7 @@ export const actions: Actions = {
 		if (!userId) return actionFail(400, 'setRole', 'User ID required');
 		// Without this an admin could lock themselves out of the panel.
 		if (userId === actor.id) return actionFail(400, 'setRole', 'You cannot change your own role');
-		if (await isProtectedSuperadmin(db, platform, userId)) {
+		if (await isProtectedSuperadmin(db, userId)) {
 			return actionFail(403, 'setRole', 'This account cannot be modified');
 		}
 		if (!ACCEPTED_ROLES.includes(role)) return actionFail(400, 'setRole', 'Invalid role');
@@ -80,7 +80,7 @@ export const actions: Actions = {
 	},
 
 	/** Admins choose which olympiads a contributor may edit. */
-	setAssignedOlympiads: async ({ request, locals, platform }) => {
+	setAssignedOlympiads: async ({ request, locals }) => {
 		const { db, user: actor } = requireAdmin(locals);
 		const data = await request.formData();
 		const userId = field(data, 'userId');
@@ -90,7 +90,7 @@ export const actions: Actions = {
 		if (userId === actor.id) {
 			return actionFail(400, 'setAssignedOlympiads', 'You cannot change your own assignments');
 		}
-		if (await isProtectedSuperadmin(db, platform, userId)) {
+		if (await isProtectedSuperadmin(db, userId)) {
 			return actionFail(403, 'setAssignedOlympiads', 'This account cannot be modified');
 		}
 
@@ -103,7 +103,7 @@ export const actions: Actions = {
 		return ok('setAssignedOlympiads');
 	},
 
-	banUser: async ({ request, locals, platform }) => {
+	banUser: async ({ request, locals }) => {
 		const { db, user: actor } = requireAdmin(locals);
 		const data = await request.formData();
 		const userId = field(data, 'userId');
@@ -111,7 +111,7 @@ export const actions: Actions = {
 
 		if (!userId) return actionFail(400, 'banUser', 'User ID required');
 		if (userId === actor.id) return actionFail(400, 'banUser', 'You cannot ban yourself');
-		if (await isProtectedSuperadmin(db, platform, userId)) {
+		if (await isProtectedSuperadmin(db, userId)) {
 			return actionFail(403, 'banUser', 'This account cannot be modified');
 		}
 
@@ -124,14 +124,14 @@ export const actions: Actions = {
 		return ok('banUser');
 	},
 
-	unbanUser: async ({ request, locals, platform }) => {
+	unbanUser: async ({ request, locals }) => {
 		const { db } = requireAdmin(locals);
 		const data = await request.formData();
 		const userId = field(data, 'userId');
 
 		if (!userId) return actionFail(400, 'unbanUser', 'User ID required');
 		// Unbanning is a modification too, so the superadmin is protected here as well.
-		if (await isProtectedSuperadmin(db, platform, userId)) {
+		if (await isProtectedSuperadmin(db, userId)) {
 			return actionFail(403, 'unbanUser', 'This account cannot be modified');
 		}
 

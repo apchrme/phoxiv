@@ -1,8 +1,8 @@
 import { asc, desc, eq } from 'drizzle-orm';
 import { olympiads, problemFiles, problems, yearFiles, years, type DB } from '../index';
-import { parseTopics } from '$lib/utils/topics';
-import { parseLabelledUrls, parseStringArray } from '$lib/utils/json';
-import type { FileEntry, ProblemTopic, SearchItem, YearEntry } from '$lib/types';
+import { parseTopics } from '#lib/utils/topics.js';
+import { parseLabelledUrls, parseStringArray } from '#lib/utils/json.js';
+import type { FileEntry, ProblemTopic, SearchItem, YearEntry } from '#lib/types.js';
 
 /*
  * Reads that assemble years, problems and their files. Each uses a LEFT JOIN and

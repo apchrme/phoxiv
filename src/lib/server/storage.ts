@@ -1,4 +1,5 @@
-import { CDN_BASE_URL } from '$lib/constants';
+import { env } from 'cloudflare:workers';
+import { CDN_BASE_URL } from '#lib/constants.js';
 
 /*
  * R2 access and the object key layout.
@@ -15,8 +16,8 @@ export const STORAGE_UNAVAILABLE = 'Storage unavailable';
  * The R2 bucket, or `null` when the binding is absent. Doesn't throw, so actions
  * can `actionFail()` instead of losing the user's input to `error()`.
  */
-export function getBucket(platform: App.Platform | undefined): R2Bucket | null {
-	return platform?.env.FILES ?? null;
+export function getBucket(): R2Bucket | null {
+	return env.FILES ?? null;
 }
 
 /** The public URL an object with `key` is served from. */
@@ -103,6 +104,6 @@ export async function deleteStaleIcons(
 
 export { CDN_BASE_URL };
 
-// Defined in `$lib/uploads.ts` because the browser needs it too (collision
+// Defined in `#lib/uploads.ts` because the browser needs it too (collision
 // warnings); re-exported here next to the key layout it feeds.
-export { slugifyLabel } from '$lib/uploads';
+export { slugifyLabel } from '#lib/uploads.js';

@@ -4,8 +4,8 @@
 	The name is fixed to `tag` because both actions read that field.
 -->
 <script lang="ts">
-	import * as Select from '$lib/components/ui/select/index.js';
-	import { OLYMPIAD_TAGS, type OlympiadTag } from '$lib/types.js';
+	import * as Select from '#lib/components/ui/select/index.js';
+	import { OLYMPIAD_TAGS, type OlympiadTag } from '#lib/types.js';
 
 	let {
 		value = $bindable(),

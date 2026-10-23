@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import type { Pending } from '$lib/forms.svelte';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Separator } from '$lib/components/ui/separator/index.js';
-	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
+	import type { Pending } from '#lib/forms.svelte.js';
+	import * as Card from '#lib/components/ui/card/index.js';
+	import { Button } from '#lib/components/ui/button/index.js';
+	import { Input } from '#lib/components/ui/input/index.js';
+	import { Separator } from '#lib/components/ui/separator/index.js';
+	import SubmitButton from '#lib/components/forms/SubmitButton.svelte';
 	import { FileUp, Download, X } from '@lucide/svelte';
-	import { PROBLEM_TOPICS } from '$lib/types';
-	import { CSV_UPLOAD } from '$lib/uploads';
+	import { PROBLEM_TOPICS } from '#lib/types.js';
+	import { CSV_UPLOAD } from '#lib/uploads.js';
 
 	/**
 	 * CSV export and import of problem titles, topics and max scores. The export

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { getFlagCountryCode } from '$lib/utils/flag.js';
-	import { isIconUrl } from '$lib/uploads.js';
+	import { getFlagCountryCode } from '#lib/utils/flag.js';
+	import { isIconUrl } from '#lib/uploads.js';
 	import { CircleAlert } from '@lucide/svelte';
-	import { cn } from '$lib/utils.js';
+	import { cn } from '#lib/utils.js';
 
 	/**
 	 * Each size sets the image height and the emoji fallback's font size together.

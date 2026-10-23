@@ -6,8 +6,8 @@ export const olympiads = sqliteTable('olympiads', {
 	name: text('name').notNull(),
 	summary: text('summary').notNull(),
 	icon: text('icon').notNull().default(''),
-	// Keep in sync with OLYMPIAD_TAGS in $lib/types.ts. It can't be imported:
-	// drizzle-kit bundles this file and doesn't resolve $lib.
+	// Keep in sync with OLYMPIAD_TAGS in #lib/types.ts. It can't be imported:
+	// drizzle-kit bundles this file and doesn't resolve #lib.
 	tag: text('tag', { enum: ['International', 'Regional', 'National', 'Open'] }).notNull(),
 	displayOrder: integer('display_order').notNull().default(9999),
 	descriptionMd: text('description_md'),
@@ -55,7 +55,7 @@ export const problems = sqliteTable(
 			.references(() => years.id, { onDelete: 'cascade' }),
 		number: text('number').notNull(),
 		title: text('title'),
-		// JSON array of topic names (PROBLEM_TOPICS in $lib/types). Used only for
+		// JSON array of topic names (PROBLEM_TOPICS in #lib/types). Used only for
 		// filtering, never shown next to a problem.
 		topics: text('topics').notNull().default('[]'),
 		// Max score a tracked score is shown against, or NULL if unset. REAL because

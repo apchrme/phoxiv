@@ -36,9 +36,9 @@ import {
 	MAX_SUBMITTED_TEXT_CHARS,
 	MIN_EXTRACTED_CHARS,
 	normalizeExtracted
-} from '$lib/search';
-import { CDN_BASE_URL } from '$lib/constants';
-import { extensionOf } from '$lib/uploads';
+} from '#lib/search.js';
+import { CDN_BASE_URL } from '#lib/constants.js';
+import { extensionOf } from '#lib/uploads.js';
 
 /**
  * What this script can read, wider than the browser's `EXTRACTABLE_EXTS`. The

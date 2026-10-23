@@ -1,22 +1,22 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
-	import type { Pending } from '$lib/forms.svelte';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Textarea } from '$lib/components/ui/textarea/index.js';
-	import Field from '$lib/components/forms/Field.svelte';
-	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
-	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
-	import TagSelect from '$lib/components/TagSelect.svelte';
+	import type { Pending } from '#lib/forms.svelte.js';
+	import * as Card from '#lib/components/ui/card/index.js';
+	import { Input } from '#lib/components/ui/input/index.js';
+	import { Textarea } from '#lib/components/ui/textarea/index.js';
+	import Field from '#lib/components/forms/Field.svelte';
+	import SubmitButton from '#lib/components/forms/SubmitButton.svelte';
+	import OlympiadIcon from '#lib/components/OlympiadIcon.svelte';
+	import TagSelect from '#lib/components/TagSelect.svelte';
 	import { Save } from '@lucide/svelte';
-	import { type OlympiadTag } from '$lib/types';
-	import { isIconUrl } from '$lib/uploads';
+	import { type OlympiadTag } from '#lib/types.js';
+	import { isIconUrl } from '#lib/uploads.js';
 
 	/**
 	 * The `?/updateOlympiad` form. Each field is a writable `$derived` of the
 	 * loaded row, so any reload of the page data resets it to the saved values.
-	 * That's why the icon forms use `invalidateAll: false`.
+	 * That's why the icon forms use `refreshAll: false`.
 	 *
 	 * `icon` is owned by the page, which updates it after icon uploads. Don't
 	 * derive it here, or that update is lost.

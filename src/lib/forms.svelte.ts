@@ -1,9 +1,9 @@
+import type { SubmitFunction } from '$app/forms';
 import { toast } from 'svelte-sonner';
-import type { SubmitFunction } from '@sveltejs/kit';
 
 /*
  * Client side of enhanced forms. Assumes the `{ action, success, error }` result
- * shape from `$lib/server/forms.ts`; change both together.
+ * shape from `#lib/server/forms.ts`; change both together.
  */
 
 /** The loosely-typed view of an action result these helpers work against. */
@@ -17,7 +17,7 @@ export type TrackOptions = {
 	/** Clear inputs on success. Defaults to `false` so editor values survive a save. */
 	reset?: boolean;
 	/** Re-run load functions afterwards. Defaults to SvelteKit's behaviour. */
-	invalidateAll?: boolean;
+	refreshAll?: boolean;
 	/**
 	 * Return a message to block the submission and toast it; `null` to allow.
 	 * Not for confirmations: use `ConfirmSubmit`, which asks before submitting.
@@ -67,7 +67,7 @@ export class Pending {
 			return async ({ update }) => {
 				this.#busy[resolved] = false;
 				options.onDone?.();
-				await update({ reset: options.reset ?? false, invalidateAll: options.invalidateAll });
+				await update({ reset: options.reset ?? false, refreshAll: options.refreshAll });
 			};
 		};
 	}

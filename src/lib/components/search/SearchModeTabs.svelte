@@ -1,6 +1,6 @@
 <script lang="ts">
-	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import type { SearchMode } from '$lib/types.js';
+	import * as Tabs from '#lib/components/ui/tabs/index.js';
+	import type { SearchMode } from '#lib/types.js';
 
 	/**
 	 * Switches the ⌘K dialog between problem search and deep (in-file) search.

@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from './$types';
-import { requireContributor } from '$lib/server/guard';
+import { requireContributor } from '#lib/server/guard.js';
 
 /**
  * Gates the contribute area by role only. Each load and action must still call

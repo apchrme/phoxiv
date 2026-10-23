@@ -46,11 +46,11 @@ starting with a hyphen. The id is a URL segment and an R2 key prefix, so `/`,
 filter accepts.
 
 `description_html` is the only HTML the app renders with `{@html}`, and only
-[`$lib/server/markdown.ts`](../src/lib/server/markdown.ts) produces it. Don't add
+[`#lib/server/markdown.ts`](../src/lib/server/markdown.ts) produces it. Don't add
 a second renderer: two sanitiser allow-lists drift apart, and the gap is an XSS
 hole.
 
-`isIconUrl()` in [`$lib/uploads.ts`](../src/lib/uploads.ts) tells the two kinds
+`isIconUrl()` in [`#lib/uploads.ts`](../src/lib/uploads.ts) tells the two kinds
 of `icon` apart by its `http://` or `https://` prefix.
 
 ### `years`
@@ -140,7 +140,7 @@ cascade from `problems` does not scan.
 - Both foreign keys cascade: progress is the user's own data and dies with the
   account. (`activity_log` outlives it.)
 - **Scores are stored exactly as entered**, validated finite and non-negative,
-  never rounded. `formatScore` in [`$lib/progress.ts`](../src/lib/progress.ts)
+  never rounded. `formatScore` in [`#lib/progress.ts`](../src/lib/progress.ts)
   rounds to two decimals for display only. Anything read back (a form input, a
   `titles.csv` cell) must use `exactScore`, or the next save rounds the stored
   value.
@@ -300,23 +300,23 @@ SQLite has no array type, so four columns hold JSON strings:
 | ------------------------- | ---------------- | -------------------------------------- |
 | `years.notes`             | `string[]`       | `parseStringArray`                     |
 | `years.extra_links`       | `{label,url}[]`  | `parseLabelledUrls`                    |
-| `problems.topics`         | `ProblemTopic[]` | `parseTopics` (`$lib/utils/topics.ts`) |
+| `problems.topics`         | `ProblemTopic[]` | `parseTopics` (`#lib/utils/topics.ts`) |
 | `user.assigned_olympiads` | `string[]`       | `parseStringArray`                     |
 
-The parsers in [`$lib/utils/json.ts`](../src/lib/utils/json.ts) drop values of
+The parsers in [`#lib/utils/json.ts`](../src/lib/utils/json.ts) drop values of
 the wrong type and return an empty result instead of throwing, so one malformed
 row (old data, a hand edit) cannot 500 a page. `parseTopics` also drops unknown
 topic names, so renaming a topic degrades gracefully.
 
 ### `OLYMPIAD_TAGS` is intentionally duplicated
 
-The four tags appear in `$lib/types.ts` and again in `schema.ts`'s `enum:`.
-drizzle-kit bundles the schema with a resolver that does not understand `$lib`,
+The four tags appear in `#lib/types.ts` and again in `schema.ts`'s `enum:`.
+drizzle-kit bundles the schema with a resolver that does not understand `#lib`,
 so `schema.ts` cannot import them. Keep the two copies in sync.
 
 ## R2 key layout
 
-Defined in one file, [`$lib/server/storage.ts`](../src/lib/server/storage.ts):
+Defined in one file, [`#lib/server/storage.ts`](../src/lib/server/storage.ts):
 
 ```
 icons/olympiads/<olympiadId>.<ext>                            ← olympiad icons
@@ -325,7 +325,7 @@ olympiads/<olympiadId>/<year>/<problemNumber>/<slug>.<ext>    ← problem files
 ```
 
 `<slug>` is `slugifyLabel(label)`: lowercase, whitespace to `_`, everything
-outside `[a-z0-9_]` dropped. It lives in [`$lib/uploads.ts`](../src/lib/uploads.ts)
+outside `[a-z0-9_]` dropped. It lives in [`#lib/uploads.ts`](../src/lib/uploads.ts)
 so the browser can use it, and `storage.ts` re-exports it.
 
 **The database stores whole URLs, not keys.** Each `url` column holds
@@ -338,7 +338,7 @@ url column  ──keyFromCdnUrl()──→  key  ──bucket.delete()──→ 
 
 So these fail silently:
 
-1. **Never change `CDN_BASE_URL`** ([`$lib/constants.ts`](../src/lib/constants.ts)).
+1. **Never change `CDN_BASE_URL`** ([`#lib/constants.ts`](../src/lib/constants.ts)).
    Every object is orphaned, and deletion breaks for every row: `keyFromCdnUrl`
    returns `null` and `deleteByUrl` does nothing.
 2. **Never change the key layout or `slugifyLabel`.** Same effect for later
@@ -353,7 +353,7 @@ Also:
 
 - **Two labels can share a slug.** `Solutions (official)` and `Solutions official`
   are distinct labels but one key, and `bucket.put` overwrites silently.
-  `collidingLabel` in `$lib/uploads.ts` catches this: `uploadFile` refuses the
+  `collidingLabel` in `#lib/uploads.ts` catches this: `uploadFile` refuses the
   upload and the editor warns first. A label that slugs to nothing is refused.
 - **`<problemNumber>` is not slugified**, because existing keys use the raw
   number. `saveMetadata` refuses a number containing `/`, and `importTitles`
@@ -363,7 +363,7 @@ Also:
 
 ### What may be uploaded
 
-Declared once in [`$lib/uploads.ts`](../src/lib/uploads.ts), which is
+Declared once in [`#lib/uploads.ts`](../src/lib/uploads.ts), which is
 client-safe, so the form's `accept` and the server's check cannot drift:
 
 | Spec              | Extensions                           | Max   |
@@ -372,7 +372,7 @@ client-safe, so the form's `accept` and the server's check cannot drift:
 | `DOCUMENT_UPLOAD` | pdf, xlsx, zip, doc, docx, htm, html | 50 MB |
 | `CSV_UPLOAD`      | csv                                  | 1 MB  |
 
-`accept` is only a hint. [`$lib/server/uploads.ts`](../src/lib/server/uploads.ts)
+`accept` is only a hint. [`#lib/server/uploads.ts`](../src/lib/server/uploads.ts)
 enforces the rules. **The extension decides the stored `Content-Type`, never
 `file.type`**: the uploader controls the MIME type, and R2 would serve an HTML
 payload from our own CDN origin.

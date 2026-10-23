@@ -7,7 +7,7 @@ import { expect, test } from '../../support/test';
 /*
  * Every route's cache policy, as docs/architecture.md ("Caching and the route
  * tree") and the route-group comments in CLAUDE.md describe it. Driven from the
- * constants in `$lib/server/cache.ts`, so a deliberate change to a policy needs
+ * constants in `#lib/server/cache.ts`, so a deliberate change to a policy needs
  * no edit here; a route moving to the wrong policy fails.
  *
  * Owns USERS.stale: its first page request uses up the session refresh.

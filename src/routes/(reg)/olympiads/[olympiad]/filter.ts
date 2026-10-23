@@ -1,17 +1,17 @@
-import type { ProblemEntry, YearEntry } from '$lib/types';
-import { progressKey, type ProgressMap } from '$lib/progress';
+import type { ProblemEntry, YearEntry } from '#lib/types.js';
+import { progressKey, type ProgressMap } from '#lib/progress.js';
 import {
 	isFiltering,
 	matchesStatus,
 	matchesTopics,
 	type ProblemFilter,
 	type ProblemStatus
-} from '$lib/filters';
+} from '#lib/filters.js';
 
 /**
  * Search, topic and progress filtering for the olympiad page, as pure functions.
  *
- * The topic and progress predicates live in `$lib/filters.ts`, shared with the
+ * The topic and progress predicates live in `#lib/filters.ts`, shared with the
  * ⌘K dialog so both agree. This file adds the page-only parts: the text query,
  * year-versus-problem matches, and "show full year".
  *

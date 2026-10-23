@@ -6,7 +6,7 @@ import type {
 	FileSearchResult,
 	FileTextStat,
 	FileTextStats
-} from '$lib/types';
+} from '#lib/types.js';
 import {
 	capExtracted,
 	DEEP_SEARCH_LIMIT,
@@ -17,9 +17,9 @@ import {
 	MAX_SUBMITTED_TEXT_CHARS,
 	MIN_EXTRACTED_CHARS,
 	normalizeExtracted
-} from '$lib/search';
-import { extensionOf, isExtractable } from '$lib/uploads';
-import { olympiadUrlRange } from '$lib/server/storage';
+} from '#lib/search.js';
+import { extensionOf, isExtractable } from '#lib/uploads.js';
+import { olympiadUrlRange } from '#lib/server/storage.js';
 
 /**
  * The full-text index over extracted file text: writing, querying, cleanup.
@@ -617,7 +617,7 @@ export async function pruneFileText(db: DB): Promise<number> {
 // ── Backfill and reporting ──────────────────────────────────────────────────
 
 /**
- * Counts by status, plus recent failures. The type lives in `$lib/types.ts`
+ * Counts by status, plus recent failures. The type lives in `#lib/types.ts`
  * because the admin panel fetches it client-side.
  *
  * Expensive (thousands of D1 rows), so `/admin` fetches it on demand via

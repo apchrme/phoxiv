@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import brand from '$lib/assets/branding/brand.svg';
-	import logo from '$lib/assets/branding/logo.svg';
+	import { Button } from '#lib/components/ui/button/index.js';
+	import brand from '#lib/assets/branding/brand.svg';
+	import logo from '#lib/assets/branding/logo.svg';
 	import { onMount } from 'svelte';
 	import { gsap } from 'gsap';
 	import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -22,6 +22,7 @@
 
 		// Respect prefers-reduced-motion: keep the reveals, just make them instant.
 		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 		const dur = (d: number) => (reduceMotion ? 0 : d);
 
 		const ctx = gsap.context(() => {
@@ -116,11 +117,12 @@
 		</p>
 
 		<!-- CTAs -->
+
 		<div class="hero-cta relative z-10 flex flex-row justify-center gap-2">
-			<Button href={resolve('/olympiads')}>Browse olympiads</Button>
+			<Button href={resolve('olympiads')}>Browse olympiads</Button>
 
 			<Button
-				href={data.user ? resolve('/contribute') : resolve('/login')}
+				href={data.user ? resolve('contribute') : resolve('login')}
 				variant="outline"
 				class="border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10"
 			>
@@ -151,9 +153,10 @@
 		</h2>
 
 		<p class="text-md mb-10 text-center text-muted-foreground sm:text-lg">
-			There's so many, <a
-				class="text-blue-800 underline dark:text-blue-200"
-				href="https://olimpicos.net">other archives</a
+			There's so many,
+
+			<a class="text-blue-800 underline dark:text-blue-200" href="https://olimpicos.net"
+				>other archives</a
 			> copy their files from us.
 		</p>
 		<StatsBand />
@@ -177,6 +180,6 @@
 			Ready?
 		</h2>
 		<p class="m-0 max-w-[44ch] text-base text-foreground/75">Let's explore.</p>
-		<Button href={resolve('/olympiads')} size="lg">Browse olympiads</Button>
+		<Button href={resolve('olympiads')} size="lg">Browse olympiads</Button>
 	</section>
 </div>

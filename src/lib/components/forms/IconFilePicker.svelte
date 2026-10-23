@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { ICON_UPLOAD } from '$lib/uploads';
-	import { cn } from '$lib/utils.js';
+	import { ICON_UPLOAD } from '#lib/uploads.js';
+	import { cn } from '#lib/utils.js';
 
 	/**
 	 * A file input for olympiad icons with a preview. Owns the preview's object

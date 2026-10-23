@@ -822,7 +822,7 @@ export const DEL_FILE_URLS = {
 
 /**
  * How many files contribute/delete.spec.ts's witness year holds:
- * DEEP_SEARCH_LIMIT, copied, since `$lib/search` imports through `$lib`. A scoped
+ * DEEP_SEARCH_LIMIT, copied, since `#lib/search.js` imports through `#lib`. A scoped
  * search for a count phrase then fills the page exactly once the deleted files'
  * rows are gone, and is `truncated` while any is left.
  */

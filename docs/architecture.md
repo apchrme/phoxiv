@@ -12,16 +12,20 @@ typed in [`src/app.d.ts`](../src/app.d.ts):
 ```
 request
   → hooks.server.ts
-      platform.env.DB   ──drizzle()──────────→ locals.db
-      platform.env      ──createAuth(db, env)→ locals.auth
+      env.DB            ──drizzle()──────────→ locals.db
+      env               ──createAuth(db, env)→ locals.auth
       /api/*:  locals.user, locals.session = null  (no lookup)
       else:    locals.auth.api.getSession(headers) → locals.user, locals.session  (or null)
   → +layout.server.ts / +page.server.ts / +server.ts
   → hooks.server.ts appends any Set-Cookie the session lookup produced
 ```
 
-- `db` and `auth` cannot be module-level singletons. Both need `platform.env`,
-  which exists only inside a request. See [auth.md](./auth.md#why-createauth-is-a-function).
+- `env` is the Worker's bindings and secrets, imported from
+  `cloudflare:workers`. Read it inside a function, never at module scope:
+  outside a running server, such as when `vite build` imports the server
+  modules, the adapter's stand-in throws on access.
+- So `db` and `auth` cannot be module-level singletons; the hook builds both per
+  request. See [auth.md](./auth.md#why-createauth-is-a-function).
 - The session is resolved once, in the hook. Routes read `locals.user`; don't
   call `getSession` again.
 - `/api/*` never gets a user. Its responses are shared-cached, so none may
@@ -34,7 +38,7 @@ request
 ## Caching and the route tree
 
 The route tree is shaped by two cache policies, in
-[`$lib/server/cache.ts`](../src/lib/server/cache.ts):
+[`#lib/server/cache.ts`](../src/lib/server/cache.ts):
 
 | Policy              | Header                                       | Used by             |
 | ------------------- | -------------------------------------------- | ------------------- |
@@ -102,7 +106,7 @@ src/routes/
 │   ├── olympiads/              index, and [olympiad]/ with YearPanel, ProblemCard,
 │   │                           ProgressControl, SignInToTrack, filter.ts,
 │   │                           and progress/ (endpoint, private, no-store)
-│   ├── blog/                   index and [slug]/, from $lib/posts/*.svx
+│   ├── blog/                   index and [slug]/, from #lib/posts/*.svx
 │   ├── resources/, privacy/    .svx pages
 │   ├── login/                  redirects to /profile if signed in
 │   └── profile/                redirects to /login if not
@@ -135,9 +139,10 @@ server layout's `data`: SvelteKit derives `LayoutData` from a universal
 
 ### The two mdsvex layouts
 
-`resources/+page.svx`, `privacy/+page.svx` and the posts in `$lib/posts/` are
+`resources/+page.svx`, `privacy/+page.svx` and the posts in `#lib/posts/` are
 markdown. mdsvex wraps each in a layout and passes front matter as props.
-[`svelte.config.js`](../svelte.config.js) maps layouts by name: mdsvex picks the
+The `sveltekit()` options in [`vite.config.ts`](../vite.config.ts) map layouts
+by name: mdsvex picks the
 key matching a folder in the file's path, else `_`.
 
 - [`prose.svelte`](../src/lib/prose.svelte) (`_`) is the whole page: a
@@ -187,7 +192,7 @@ olympiad as a `ProgressMap`: one key per tracked problem, nothing else.
 
 `StatusFilter.svelte` (All / Done / To do) filters these maps in the browser and
 shows only when signed in. The olympiad page and the ⌘K dialog share it and
-`$lib/filters.ts`, so they agree on what "Done" means — see
+`#lib/filters.ts`, so they agree on what "Done" means — see
 [search.md](./search.md#the-filters-and-why-they-vanish). Signed-out visitors see
 `SignInToTrack.svelte`, a dimmed circle with a hint; it is not a guard.
 
@@ -195,7 +200,7 @@ shows only when signed in. The olympiad page and the ⌘K dialog share it and
 
 Everything in `src/lib/` outside `components/`.
 
-### `$lib/server/`
+### `#lib/server/`
 
 Server-only; SvelteKit refuses to bundle it into the client.
 
@@ -206,7 +211,7 @@ Server-only; SvelteKit refuses to bundle it into the client.
 | `guard.ts`        | `requireAdmin`, `requireContributor`, `requireOlympiadEditor`, permission predicates |
 | `cache.ts`        | the two cache policies                                                               |
 | `forms.ts`        | form-field parsing and the action-result envelope                                    |
-| `uploads.ts`      | server-side enforcement of `$lib/uploads.ts`                                         |
+| `uploads.ts`      | server-side enforcement of `#lib/uploads.ts`                                         |
 | `storage.ts`      | every R2 read and write, and the object-key layout                                   |
 | `markdown.ts`     | the only place Markdown is rendered and sanitised                                    |
 | `activity-log.ts` | the audit trail: `logActivity` writes, `listActivity` reads by keyset                |
@@ -237,7 +242,7 @@ Drizzle's relational queries (`db.query`) are not set up: `drizzle()` gets no
 | `progress.ts`  | a user's tracked problems, per olympiad and archive-wide                     |
 | `files.ts`     | the full-text index: query sanitising, reads, writes, upkeep                 |
 
-### Client-safe `$lib/`
+### Client-safe `#lib/`
 
 | Module                        | Responsibility                                                             |
 | ----------------------------- | -------------------------------------------------------------------------- |
@@ -245,7 +250,7 @@ Drizzle's relational queries (`db.query`) are not set up: `drizzle()` gets no
 | `uploads.ts`                  | the upload allow-list, `slugifyLabel`, `collidingLabel`, `isHttpUrl`       |
 | `constants.ts`                | constants both sides need, including `CDN_BASE_URL`                        |
 | `nav.ts`                      | navigation links and `secondaryNavFor(user)`                               |
-| `posts.ts`                    | loads blog posts from `$lib/posts/*.svx`                                   |
+| `posts.ts`                    | loads blog posts from `#lib/posts/*.svx`                                   |
 | `activity.ts`                 | activity-log labels, and the assignable roles with their labels            |
 | `progress.ts`                 | score rules for the editor, CSV import, `trackProblem` and problem cards   |
 | `filters.ts`                  | topic and progress predicates for the olympiad page and ⌘K dialog          |
@@ -265,7 +270,7 @@ browser and the server apply the same rule.
 ## The colocation convention
 
 A component used by one route lives next to it: flat, no `+` prefix, no
-subfolder. Only route-agnostic pieces go in `$lib/components/`.
+subfolder. Only route-agnostic pieces go in `#lib/components/`.
 
 Non-`+` files are inert to the router. The component must live beside the route
 because it imports `PageData` / `ActionData` from `./$types`, which resolves only
@@ -281,7 +286,7 @@ primitives before writing a new component — see
 ## The action-result envelope
 
 Every form action returns one of two shapes, built by `ok()` and `actionFail()`
-in [`$lib/server/forms.ts`](../src/lib/server/forms.ts):
+in [`#lib/server/forms.ts`](../src/lib/server/forms.ts):
 
 ```ts
 { action: 'uploadFile', success: true }                   // plus any payload
@@ -292,7 +297,7 @@ in [`$lib/server/forms.ts`](../src/lib/server/forms.ts):
 `action`. Write `if (!form.success)` and narrow by `form.action`. Actions that end
 in `redirect()` are not in the union.
 
-[`$lib/forms.svelte.ts`](../src/lib/forms.svelte.ts) is the client half; change
+[`#lib/forms.svelte.ts`](../src/lib/forms.svelte.ts) is the client half; change
 both files together.
 
 - `formToasts(() => form, { … })`: call once, on the component that owns `form`.

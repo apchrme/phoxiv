@@ -1,11 +1,11 @@
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { olympiads } from '$lib/server/db';
-import { canEditOlympiad, requireAdmin } from '$lib/server/guard';
-import { logActivity } from '$lib/server/activity-log';
-import { renderMarkdownOrNull } from '$lib/server/markdown';
-import { getOlympiad, listOlympiadOptions } from '$lib/server/db/queries/olympiads';
-import { ensureYear, insertYear } from '$lib/server/db/queries/years';
+import { olympiads } from '#lib/server/db/index.js';
+import { canEditOlympiad, requireAdmin } from '#lib/server/guard.js';
+import { logActivity } from '#lib/server/activity-log.js';
+import { renderMarkdownOrNull } from '#lib/server/markdown.js';
+import { getOlympiad, listOlympiadOptions } from '#lib/server/db/queries/olympiads.js';
+import { ensureYear, insertYear } from '#lib/server/db/queries/years.js';
 import {
 	actionFail,
 	field,
@@ -13,11 +13,11 @@ import {
 	fileField,
 	parseYear,
 	YEAR_RANGE_ERROR
-} from '$lib/server/forms';
-import { cdnUrl, getBucket, iconKey, STORAGE_UNAVAILABLE } from '$lib/server/storage';
-import { validateUpload } from '$lib/server/uploads';
-import { ICON_UPLOAD } from '$lib/uploads';
-import { isOlympiadId, isOlympiadTag } from '$lib/types';
+} from '#lib/server/forms.js';
+import { cdnUrl, getBucket, iconKey, STORAGE_UNAVAILABLE } from '#lib/server/storage.js';
+import { validateUpload } from '#lib/server/uploads.js';
+import { ICON_UPLOAD } from '#lib/uploads.js';
+import { isOlympiadId, isOlympiadTag } from '#lib/types.js';
 
 /** The olympiads this user may pick from — all of them for admins. */
 export const load: PageServerLoad = async ({ locals }) => {
@@ -55,7 +55,7 @@ export const actions: Actions = {
 	},
 
 	/** Admin-only: contributors edit assigned olympiads but can't create them. */
-	createOlympiad: async ({ request, locals, platform }) => {
+	createOlympiad: async ({ request, locals }) => {
 		const { db, user } = requireAdmin(locals);
 
 		const data = await request.formData();
@@ -93,7 +93,7 @@ export const actions: Actions = {
 
 		let iconValue = emojiIcon;
 		if (iconFile) {
-			const bucket = getBucket(platform);
+			const bucket = getBucket();
 			if (!bucket)
 				return actionFail(500, 'createOlympiad', `${STORAGE_UNAVAILABLE} for icon upload`);
 

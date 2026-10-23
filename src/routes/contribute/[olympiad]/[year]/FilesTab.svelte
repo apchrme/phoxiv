@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import type { Pending } from '$lib/forms.svelte';
-	import * as Card from '$lib/components/ui/card/index.js';
+	import type { Pending } from '#lib/forms.svelte.js';
+	import * as Card from '#lib/components/ui/card/index.js';
 	import FileSection from './FileSection.svelte';
 
 	/**

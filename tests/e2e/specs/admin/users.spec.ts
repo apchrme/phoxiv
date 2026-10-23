@@ -30,7 +30,7 @@ function userRow(page: Page, user: { email: string }): Locator {
  * role>" by UserRowActions.svelte. Its text is the role alone.
  */
 function roleSelect(row: Locator): Locator {
-	return row.getByRole('button', { name: /^Role: / });
+	return row.getByRole('combobox', { name: /^Role: / });
 }
 
 /**

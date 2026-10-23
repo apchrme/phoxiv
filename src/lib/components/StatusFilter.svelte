@@ -1,9 +1,9 @@
 <script lang="ts">
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import { buttonVariants, type ButtonSize } from '$lib/components/ui/button/index.js';
+	import * as DropdownMenu from '#lib/components/ui/dropdown-menu/index.js';
+	import { buttonVariants, type ButtonSize } from '#lib/components/ui/button/index.js';
 	import { Circle, CircleCheck, CircleDashed } from '@lucide/svelte';
-	import { cn } from '$lib/utils.js';
-	import type { ProblemStatus } from '$lib/filters';
+	import { cn } from '#lib/utils.js';
+	import type { ProblemStatus } from '#lib/filters.js';
 
 	/**
 	 * The progress filter: All problems, Done or To do. An icon-only dropdown

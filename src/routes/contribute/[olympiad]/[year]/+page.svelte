@@ -2,10 +2,10 @@
 	import type { PageProps } from './$types';
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
-	import BackLink from '$lib/components/BackLink.svelte';
-	import PageHeader from '$lib/components/PageHeader.svelte';
-	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import { formToasts, Pending } from '$lib/forms.svelte';
+	import BackLink from '#lib/components/BackLink.svelte';
+	import PageHeader from '#lib/components/PageHeader.svelte';
+	import * as Tabs from '#lib/components/ui/tabs/index.js';
+	import { formToasts, Pending } from '#lib/forms.svelte.js';
 	import MetadataTab from './MetadataTab.svelte';
 	import FilesTab from './FilesTab.svelte';
 
@@ -33,7 +33,7 @@
 	description="Modify {params.olympiad} {params.year}"
 />
 
-<BackLink href={resolve(`/contribute/${params.olympiad}`)}>Back to {data.olympiad.name}</BackLink>
+<BackLink href={resolve(`contribute/${params.olympiad}`)}>Back to {data.olympiad.name}</BackLink>
 
 <PageHeader title={data.olympiad.name} size="sm">
 	{#snippet titleSuffix()}

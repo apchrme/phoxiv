@@ -1,7 +1,7 @@
 <script lang="ts">
-	import ThemedImage from '$lib/components/ThemedImage.svelte';
-	import GithubBlack from '$lib/assets/icons/GitHub_Invertocat_Black.svg';
-	import GithubWhite from '$lib/assets/icons/GitHub_Invertocat_White.svg';
+	import ThemedImage from '#lib/components/ThemedImage.svelte';
+	import GithubBlack from '#lib/assets/icons/GitHub_Invertocat_Black.svg';
+	import GithubWhite from '#lib/assets/icons/GitHub_Invertocat_White.svg';
 
 	/**
 	 * The GitHub logomark, inline in text.

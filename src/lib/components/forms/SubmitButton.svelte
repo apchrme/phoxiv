@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { LucideIcon } from '@lucide/svelte';
-	import type { Pending } from '$lib/forms.svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Spinner } from '$lib/components/ui/spinner/index.js';
-	import type { ButtonSize, ButtonVariant } from '$lib/components/ui/button/index.js';
+	import type { Pending } from '#lib/forms.svelte.js';
+	import { Button } from '#lib/components/ui/button/index.js';
+	import { Spinner } from '#lib/components/ui/spinner/index.js';
+	import type { ButtonSize, ButtonVariant } from '#lib/components/ui/button/index.js';
 
 	/**
 	 * A form's submit button, disabled with a spinner while its submission runs.

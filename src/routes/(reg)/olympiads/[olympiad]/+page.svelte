@@ -1,22 +1,22 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import type { ProblemTopic, YearEntry } from '$lib/types.js';
-	import SearchBar from '$lib/components/search/SearchBar.svelte';
-	import TopicSelect from '$lib/components/TopicSelect.svelte';
-	import EmptyState from '$lib/components/EmptyState.svelte';
-	import PageHeader from '$lib/components/PageHeader.svelte';
-	import { Switch } from '$lib/components/ui/switch/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import type { ProblemTopic, YearEntry } from '#lib/types.js';
+	import SearchBar from '#lib/components/search/SearchBar.svelte';
+	import TopicSelect from '#lib/components/TopicSelect.svelte';
+	import EmptyState from '#lib/components/EmptyState.svelte';
+	import PageHeader from '#lib/components/PageHeader.svelte';
+	import { Switch } from '#lib/components/ui/switch/index.js';
+	import { Button } from '#lib/components/ui/button/index.js';
 	import { SearchX, TriangleAlert } from '@lucide/svelte';
-	import BackLink from '$lib/components/BackLink.svelte';
+	import BackLink from '#lib/components/BackLink.svelte';
 	import SvelteSeo from 'svelte-seo';
 	import { tick } from 'svelte';
 	import { resolve } from '$app/paths';
-	import Skeleton from '$lib/components/ui/skeleton/skeleton.svelte';
-	import { formToasts, Pending } from '$lib/forms.svelte';
-	import type { ProgressMap } from '$lib/progress';
+	import Skeleton from '#lib/components/ui/skeleton/skeleton.svelte';
+	import { formToasts, Pending } from '#lib/forms.svelte.js';
+	import type { ProgressMap } from '#lib/progress.js';
 	import YearPanel from './YearPanel.svelte';
-	import StatusFilter from '$lib/components/StatusFilter.svelte';
+	import StatusFilter from '#lib/components/StatusFilter.svelte';
 	import {
 		filterYears,
 		hasProblemMatches,
@@ -166,13 +166,13 @@
 	keywords="problems, solutions, olympiad, physics"
 />
 
-<BackLink href={resolve('/olympiads')}>Back to olympiads</BackLink>
+<BackLink href={resolve('olympiads')}>Back to olympiads</BackLink>
 
 <!-- `md:py-2` too: tailwind-merge only overrides PageHeader's `md:py-8` with a matching modifier. -->
 <PageHeader title={olympiad.name} class="py-3 md:py-3">
 	{#if olympiad?.descriptionHtml}
 		<div class="prose max-w-none">
-			<!-- Sanitised server-side by $lib/server/markdown.ts before it is ever stored. -->
+			<!-- Sanitised server-side by #lib/server/markdown.ts before it is ever stored. -->
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			{@html olympiad.descriptionHtml}
 		</div>

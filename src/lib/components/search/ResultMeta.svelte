@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
-	import { highlight } from '$lib/utils/fuzzy';
+	import OlympiadIcon from '#lib/components/OlympiadIcon.svelte';
+	import { highlight } from '#lib/utils/fuzzy.js';
 
 	/**
 	 * The identity line of every ⌘K result row: olympiad icon, name and year.

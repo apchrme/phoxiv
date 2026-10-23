@@ -1,12 +1,17 @@
-import { capExtracted, MIN_EXTRACTED_CHARS, normalizeExtracted, TEXT_CHAR_CAP } from '$lib/search';
-import { extensionOf, isExtractable } from '$lib/uploads';
+import {
+	capExtracted,
+	MIN_EXTRACTED_CHARS,
+	normalizeExtracted,
+	TEXT_CHAR_CAP
+} from '#lib/search.js';
+import { extensionOf, isExtractable } from '#lib/uploads.js';
 // Type-only, so pdf.js stays out of both bundles. It lets `bun run check` see
 // the real API; hand-written types once hid a call to a method pdf.js 6 removed.
 import type { PDFDocumentLoadingTask, PDFDocumentProxy, PDFPageProxy, PDFWorker } from 'pdfjs-dist';
 
 /**
  * Text extraction in the contributor's browser. Browser-only: nothing under
- * `$lib/server/` may import it.
+ * `#lib/server/` may import it.
  *
  * Not in the Worker because pdf.js is about as large as the whole server bundle,
  * and every route would pay its cold-start cost for a path that runs a few times

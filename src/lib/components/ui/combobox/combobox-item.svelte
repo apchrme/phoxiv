@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Combobox as ComboboxPrimitive } from 'bits-ui';
-	import { cn, type WithoutChild } from '$lib/utils.js';
+	import { cn, type WithoutChild } from '#lib/utils.js';
 	import CheckIcon from '@lucide/svelte/icons/check';
 
 	let {

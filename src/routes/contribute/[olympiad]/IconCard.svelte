@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import type { Pending } from '$lib/forms.svelte';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Separator } from '$lib/components/ui/separator/index.js';
-	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
-	import IconFilePicker from '$lib/components/forms/IconFilePicker.svelte';
-	import Field from '$lib/components/forms/Field.svelte';
-	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
-	import ConfirmSubmit from '$lib/components/forms/ConfirmSubmit.svelte';
+	import type { Pending } from '#lib/forms.svelte.js';
+	import * as Card from '#lib/components/ui/card/index.js';
+	import { Button } from '#lib/components/ui/button/index.js';
+	import { Separator } from '#lib/components/ui/separator/index.js';
+	import OlympiadIcon from '#lib/components/OlympiadIcon.svelte';
+	import IconFilePicker from '#lib/components/forms/IconFilePicker.svelte';
+	import Field from '#lib/components/forms/Field.svelte';
+	import SubmitButton from '#lib/components/forms/SubmitButton.svelte';
+	import ConfirmSubmit from '#lib/components/forms/ConfirmSubmit.svelte';
 	import { Upload, X } from '@lucide/svelte';
-	import { isIconUrl } from '$lib/uploads';
+	import { isIconUrl } from '#lib/uploads.js';
 
 	/**
 	 * Uploads and removes the olympiad's image icon. `icon` is read-only here:
@@ -79,14 +79,14 @@
 		<Separator />
 
 		<!--
-			`invalidateAll: false`: reloading would reset `OlympiadMetadataForm` and
+			`refreshAll: false`: reloading would reset `OlympiadMetadataForm` and
 			discard its unsaved edits. The page updates `icon` from the result instead.
 		-->
 		<form
 			method="POST"
 			action="?/uploadIcon"
 			enctype="multipart/form-data"
-			use:enhance={pending.track('uploadIcon', { invalidateAll: false })}
+			use:enhance={pending.track('uploadIcon', { refreshAll: false })}
 			class="flex flex-col gap-3"
 		>
 			<Field label="Image file" for="iconFile">
@@ -120,11 +120,11 @@
 		<!-- Remove uploaded icon -->
 		{#if hasUploadedIcon}
 			<Separator />
-			<!-- `invalidateAll: false`, as above. -->
+			<!-- `refreshAll: false`, as above. -->
 			<form
 				method="POST"
 				action="?/removeIcon"
-				use:enhance={pending.track('removeIcon', { invalidateAll: false })}
+				use:enhance={pending.track('removeIcon', { refreshAll: false })}
 			>
 				<div class="flex items-center justify-between">
 					<p class="text-xs text-muted-foreground">

@@ -1,7 +1,6 @@
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { setSharedCache } from '$lib/server/cache';
-import { getSearchIndex } from '$lib/server/db/queries/content';
+import { setSharedCache } from '#lib/server/cache.js';
+import { getSearchIndex } from '#lib/server/db/queries/content.js';
 
 /**
  * The whole problem corpus as `SearchItem[]`, for the ⌘K fuzzy search. Fetched
@@ -9,5 +8,5 @@ import { getSearchIndex } from '$lib/server/db/queries/content';
  */
 export const GET: RequestHandler = async ({ locals, setHeaders }) => {
 	setSharedCache(setHeaders);
-	return json(await getSearchIndex(locals.db));
+	return Response.json(await getSearchIndex(locals.db));
 };

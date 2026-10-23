@@ -29,7 +29,7 @@ function userRow(page: Page, user: { email: string }): Locator {
 
 /** The row's role select: a bits-ui trigger, so a button, named "Role: <shown role>". */
 function roleSelect(row: Locator): Locator {
-	return row.getByRole('button', { name: /^Role: / });
+	return row.getByRole('combobox', { name: /^Role: / });
 }
 
 /** The pager's "Page N of M", rendered only while there is more than one page. */
@@ -96,8 +96,8 @@ test.describe('paging the users table', () => {
 		await gotoReady(page, '/admin');
 		await toPageTwo(page);
 
-		// A bits-ui select, so a button, named "Show: <filter>" by UsersTable.svelte.
-		const filter = page.getByRole('button', { name: /^Show: / });
+		// A bits-ui select, so a combobox, named "Show: <filter>" by UsersTable.svelte.
+		const filter = page.getByRole('combobox', { name: /^Show: / });
 		await expect(filter).toHaveAccessibleName('Show: All users');
 		await filter.click();
 		await page.getByRole('option', { name: 'Contributors only', exact: true }).click();

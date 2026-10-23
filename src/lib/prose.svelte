@@ -8,7 +8,7 @@
 		seoTitle = title + ' — phoXiv',
 		seoDescription = description
 	} = $props();
-	import PageHeader from '$lib/components/PageHeader.svelte';
+	import PageHeader from '#lib/components/PageHeader.svelte';
 	import SvelteSeo from 'svelte-seo';
 </script>
 

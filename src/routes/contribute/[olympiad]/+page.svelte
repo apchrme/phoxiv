@@ -2,10 +2,10 @@
 	import type { PageProps } from './$types';
 	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
-	import BackLink from '$lib/components/BackLink.svelte';
-	import PageHeader from '$lib/components/PageHeader.svelte';
-	import OlympiadIcon from '$lib/components/OlympiadIcon.svelte';
-	import { formToasts, Pending } from '$lib/forms.svelte';
+	import BackLink from '#lib/components/BackLink.svelte';
+	import PageHeader from '#lib/components/PageHeader.svelte';
+	import OlympiadIcon from '#lib/components/OlympiadIcon.svelte';
+	import { formToasts, Pending } from '#lib/forms.svelte.js';
 	import YearsCard from './YearsCard.svelte';
 	import IconCard from './IconCard.svelte';
 	import OlympiadMetadataForm from './OlympiadMetadataForm.svelte';
@@ -75,7 +75,7 @@
 	description="Edit olympiad metadata for {data.olympiad.name}"
 />
 
-<BackLink href={resolve('/contribute')}>Back to contribute</BackLink>
+<BackLink href={resolve('contribute')}>Back to contribute</BackLink>
 
 <PageHeader title={data.olympiad.name} size="sm">
 	{#snippet leading()}
@@ -89,7 +89,10 @@
 
 <div class="mx-auto flex max-w-xl flex-col gap-5">
 	<YearsCard olympiadId={data.olympiad.id} years={data.years} {pending} />
+
 	<IconCard bind:this={iconCard} olympiadId={data.olympiad.id} {icon} {pending} />
+
 	<OlympiadMetadataForm olympiad={data.olympiad} bind:icon {pending} />
+
 	<ImportTitlesCard bind:this={importCard} olympiadId={data.olympiad.id} {pending} />
 </div>

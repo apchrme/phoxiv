@@ -2,15 +2,15 @@
 	import type { PageData } from './$types';
 	import { resolve } from '$app/paths';
 	import { enhance } from '$app/forms';
-	import type { Pending } from '$lib/forms.svelte';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import OlympiadPicker from '$lib/components/OlympiadPicker.svelte';
-	import Field from '$lib/components/forms/Field.svelte';
-	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
+	import type { Pending } from '#lib/forms.svelte.js';
+	import * as Card from '#lib/components/ui/card/index.js';
+	import OlympiadPicker from '#lib/components/OlympiadPicker.svelte';
+	import Field from '#lib/components/forms/Field.svelte';
+	import SubmitButton from '#lib/components/forms/SubmitButton.svelte';
+	import { Button } from '#lib/components/ui/button/index.js';
+	import { Input } from '#lib/components/ui/input/index.js';
 	import { ArrowRight, Pencil } from '@lucide/svelte';
-	import { MAX_YEAR, MIN_YEAR } from '$lib/constants';
+	import { MAX_YEAR, MIN_YEAR } from '#lib/constants.js';
 
 	/**
 	 * Picks an olympiad and goes to one of its years, creating the year if needed.
@@ -70,7 +70,7 @@
 					Go
 				</SubmitButton>
 				{#if olympiadId}
-					<Button variant="outline" href={resolve(`/contribute/${olympiadId}`)}>
+					<Button variant="outline" href={resolve(`contribute/${olympiadId}`)}>
 						<Pencil class="size-3.5" />
 						Edit olympiad metadata
 					</Button>

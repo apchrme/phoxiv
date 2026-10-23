@@ -2,11 +2,11 @@
 	import type { PageProps } from './$types';
 	import SvelteSeo from 'svelte-seo';
 	import { Calendar, User, Tag } from '@lucide/svelte';
-	import BackLink from '$lib/components/BackLink.svelte';
-	import { Badge } from '$lib/components/ui/badge/index.js';
-	import Separator from '$lib/components/ui/separator/separator.svelte';
+	import BackLink from '#lib/components/BackLink.svelte';
+	import { Badge } from '#lib/components/ui/badge/index.js';
+	import Separator from '#lib/components/ui/separator/separator.svelte';
 	import { resolve } from '$app/paths';
-	import { formatDate } from '$lib/utils/date';
+	import { formatDate } from '#lib/utils/date.js';
 
 	let { data }: PageProps = $props();
 
@@ -17,7 +17,7 @@
 
 <article class="pb-10">
 	<!-- Back link -->
-	<BackLink href={resolve('/blog')}>Back to blog</BackLink>
+	<BackLink href={resolve('blog')}>Back to blog</BackLink>
 
 	<!-- Post header -->
 	<header class="flex flex-col gap-3 py-3 md:py-5">
@@ -61,6 +61,6 @@
 	<Separator class="mb-8" />
 
 	<!-- Post content. The prose wrapper comes from its mdsvex layout,
-	     `$lib/post.svelte` — see there for why posts skip `prose.svelte`. -->
+	     `#lib/post.svelte` — see there for why posts skip `prose.svelte`. -->
 	<PostContent />
 </article>

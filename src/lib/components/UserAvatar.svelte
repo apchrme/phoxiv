@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { User } from '@lucide/svelte';
-	import { cn } from '$lib/utils.js';
+	import { cn } from '#lib/utils.js';
 
 	/** A user's profile picture, or a glyph if none. `class` sets size and ring. */
 	let {

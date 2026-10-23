@@ -2,15 +2,15 @@
 	import type { PageData } from './$types';
 	import type { UserRow } from './columns';
 	import { enhance } from '$app/forms';
-	import type { Pending } from '$lib/forms.svelte';
-	import { Separator } from '$lib/components/ui/separator/index.js';
-	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
-	import ConfirmSubmit from '$lib/components/forms/ConfirmSubmit.svelte';
-	import * as Select from '$lib/components/ui/select/index.js';
-	import OlympiadPicker from '$lib/components/OlympiadPicker.svelte';
+	import type { Pending } from '#lib/forms.svelte.js';
+	import { Separator } from '#lib/components/ui/separator/index.js';
+	import SubmitButton from '#lib/components/forms/SubmitButton.svelte';
+	import ConfirmSubmit from '#lib/components/forms/ConfirmSubmit.svelte';
+	import * as Select from '#lib/components/ui/select/index.js';
+	import OlympiadPicker from '#lib/components/OlympiadPicker.svelte';
 	import { Ban, CircleCheck } from '@lucide/svelte';
-	import { parseStringArray } from '$lib/utils/json';
-	import { ASSIGNABLE_ROLES, roleLabel } from '$lib/activity';
+	import { parseStringArray } from '#lib/utils/json.js';
+	import { ASSIGNABLE_ROLES, roleLabel } from '#lib/activity.js';
 
 	/**
 	 * An admin's actions on one user: role, assigned olympiads, ban/unban.

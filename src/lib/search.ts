@@ -6,11 +6,11 @@
  *   one Cloudflare cache key;
  * - `GET /api/search/files` applies the same rules again, so correctness never
  *   depends on the client;
- * - `$lib/pdf-text.ts`, `uploadFile` and `reindex-cli.ts` must normalise
+ * - `#lib/pdf-text.ts`, `uploadFile` and `reindex-cli.ts` must normalise
  *   extracted text identically, or the index and snippet offsets disagree.
  */
 
-import { isOlympiadId } from '$lib/types';
+import { isOlympiadId } from '#lib/types.js';
 
 // ── Query bounds ────────────────────────────────────────────────────────────
 

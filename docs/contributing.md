@@ -23,9 +23,9 @@ cp .env.example .env      # then fill it in, see below
 bun run dev               # http://localhost:5173
 ```
 
-wrangler exposes `.env` to the app through `platform.env`, which is where every
-variable is read. Nothing uses `$env/*`, because the values must be available
-per request inside the Worker.
+wrangler exposes `.env` to the app as the Worker's `env`, imported from
+`cloudflare:workers`, which is where every variable is read. Nothing uses
+SvelteKit's `$app/env/*` modules, so bindings and secrets come from one place.
 
 | Variable                       | Where to get it                                                                       |
 | ------------------------------ | ------------------------------------------------------------------------------------- |
@@ -129,7 +129,7 @@ Both e2e scripts build first, so a broken build fails them.
 [testing.md](./testing.md) explains the suite and how to run one spec. A change
 to behaviour comes with a spec (see [Tests](#tests)).
 
-For any change near `$lib/pdf-text.ts` or `static/vendor/pdfjs/`, also run
+For any change near `#lib/pdf-text.ts` or `static/vendor/pdfjs/`, also run
 [the bundle check](./deployment.md#the-bundle-check). pdf.js leaking into the
 Worker breaks nothing visible.
 
@@ -192,7 +192,7 @@ The landing page shows a band of eighteen real first pages. They are rendered
 offline and committed. Nothing in the Worker or browser rasterises a PDF.
 
 The list is [`src/routes/corpus.ts`](../src/routes/corpus.ts). Both
-[`$lib/server/thumbs-cli.ts`](../src/lib/server/thumbs-cli.ts) (which PDFs to
+[`#lib/server/thumbs-cli.ts`](../src/lib/server/thumbs-cli.ts) (which PDFs to
 fetch, what to name each PNG) and `CorpusBand.svelte` (the layout) read it. To
 change the band, edit the list, then:
 
@@ -219,7 +219,7 @@ on mount, so they stay current without a D1 read.
 ### Colocate page-only components
 
 A component used by one route lives next to that route: flat, no `+` prefix, no
-subfolder. Only route-agnostic pieces go in `$lib/components/`.
+subfolder. Only route-agnostic pieces go in `#lib/components/`.
 
 This is required, not just tidy. Colocated components import `PageData` /
 `ActionData` from `./$types`, which only resolves inside route directories. Child
@@ -241,8 +241,8 @@ Use these instead of writing the markup again:
 | `PageHeader.svelte`          | the block at the top of a page                                                            |
 | `OlympiadPicker.svelte`      | picking one or several olympiads                                                          |
 | `OlympiadIcon.svelte`        | an olympiad's icon, at one of four named sizes                                            |
-| `$lib/resource.svelte.ts`    | a JSON body the browser fetches, with its loading and failed flags                        |
-| `$lib/utils/plural.ts`       | `plural(n, noun)`. Numbers are printed raw, with no thousands separators, everywhere      |
+| `#lib/resource.svelte.ts`    | a JSON body the browser fetches, with its loading and failed flags                        |
+| `#lib/utils/plural.ts`       | `plural(n, noun)`. Numbers are printed raw, with no thousands separators, everywhere      |
 
 Use them even for a single call site, because some encode rules:
 
@@ -271,9 +271,9 @@ non-obvious invariant: why `authOptions` uses `satisfies`, why a prop is
 function name. Several comments record real incidents; understand what one
 protects before deleting it.
 
-### Server code goes under `$lib/server/`
+### Server code goes under `#lib/server/`
 
-SvelteKit refuses to bundle `$lib/server/` into the client, so the build enforces
+SvelteKit refuses to bundle `#lib/server/` into the client, so the build enforces
 the boundary. Code both sides need, such as the upload allow-list, the topic list
 and the tag list, goes in a client-safe module so it is written once. See
 [architecture.md](./architecture.md).
@@ -281,8 +281,8 @@ and the tag list, goes in a client-safe module so it is written once. See
 ### Forms
 
 Every action returns the `{ action, success, error }` envelope through `ok()` /
-`actionFail()` from `$lib/server/forms.ts`. The client side is `formToasts` and
-`Pending` from `$lib/forms.svelte.ts`.
+`actionFail()` from `#lib/server/forms.ts`. The client side is `formToasts` and
+`Pending` from `#lib/forms.svelte.ts`.
 
 - Call `formToasts` once, on the component that owns `form`.
 - Pass a single `Pending` instance down to every child that submits.

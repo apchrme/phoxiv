@@ -114,13 +114,14 @@ async function importCsv(page: Page, file: FilePayload): Promise<Response> {
  * Expects `importTitles` to have refused with `actionFail(400, …, message)`, and
  * the page to toast it.
  *
- * `actionFail()` answers HTTP 200 with `type: 'failure'`; `error()` would answer
- * `type: 'error'` and replace the page ($lib/server/forms.ts: "`error()`
+ * `actionFail()` answers with its status and `type: 'failure'`; `error()` would
+ * answer `type: 'error'` and replace the page (#lib/server/forms.ts: "`error()`
  * replaces the page and discards what the user typed"; CLAUDE.md rule 6).
  */
 async function expectImportRefused(page: Page, answer: Response, message: string): Promise<void> {
 	const body = (await answer.json()) as { type: string; status: number; data: string };
-	expect(answer.status()).toBe(200);
+	// SvelteKit answers with the status passed to `fail()`.
+	expect(answer.status()).toBe(400);
 	expect(body.type).toBe('failure');
 	expect(body.status).toBe(400);
 	expect((parse(body.data) as { error: string }).error).toBe(message);
@@ -162,7 +163,7 @@ test.describe('the olympiad editor, Years card', () => {
 
 	test('a year out of range is refused by the server', { tag: '@smoke' }, async ({ request }) => {
 		// The input's `min` and `max` stop the browser sending it; `parseYear` is
-		// the check for everything else. YEAR_RANGE_ERROR in $lib/server/forms.ts.
+		// the check for everything else. YEAR_RANGE_ERROR in #lib/server/forms.ts.
 		for (const year of ['1899', '2101', 'next']) {
 			await postAction(
 				request,

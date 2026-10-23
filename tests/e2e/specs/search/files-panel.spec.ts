@@ -24,7 +24,7 @@ const SEARCHING = 'Searching inside files…';
 const NO_MATCHES = 'No files contain that phrase';
 const FAILED = "Couldn't search inside files";
 const TOO_LONG = "That's too long to search inside files.";
-/** MAX_DEEP_QUERY_LENGTH (`$lib/search` imports through `$lib`, so it can't be imported here). */
+/** MAX_DEEP_QUERY_LENGTH (`#lib/search.js` imports through `#lib`, so it can't be imported here). */
 const MAX_LENGTH = 200;
 
 /** Opens the dialog in problem mode and returns it and its search box. */

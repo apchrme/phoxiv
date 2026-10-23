@@ -1,8 +1,7 @@
 import { count } from 'drizzle-orm';
-import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { olympiads, years, problemFiles, yearFiles } from '$lib/server/db';
-import { setSharedCache } from '$lib/server/cache';
+import { olympiads, years, problemFiles, yearFiles } from '#lib/server/db/index.js';
+import { setSharedCache } from '#lib/server/cache.js';
 
 /** The three counters on the landing page. */
 export const GET: RequestHandler = async ({ locals, setHeaders }) => {
@@ -15,7 +14,7 @@ export const GET: RequestHandler = async ({ locals, setHeaders }) => {
 		locals.db.select({ value: count() }).from(problemFiles)
 	]);
 
-	return json({
+	return Response.json({
 		olympiads: olympiadCount.value,
 		years: yearCount.value,
 		// One user-facing "files" number; the two tables are an internal split.

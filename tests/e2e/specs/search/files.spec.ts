@@ -59,7 +59,7 @@ function isDeepSearch(url: string): boolean {
  */
 const CLOCK_START = new Date('2026-01-01T00:00:00Z');
 const CLOCK_PAUSE = new Date('2026-01-01T01:00:00Z');
-/** Well past DEEP_DEBOUNCE_MS (250; `$lib/search` can't be imported here). */
+/** Well past DEEP_DEBOUNCE_MS (250; `#lib/search.js` can't be imported here). */
 const PAST_THE_DEBOUNCE = 1000;
 
 test.describe('⌘K files mode', () => {
@@ -113,7 +113,7 @@ test.describe('⌘K files mode', () => {
 		const { dialog, box } = await openFilesMode(page);
 		await page.clock.pauseAt(CLOCK_PAUSE);
 
-		// "Below this, no D1 read happens at all" (MIN_DEEP_QUERY_LENGTH, $lib/search.ts).
+		// "Below this, no D1 read happens at all" (MIN_DEEP_QUERY_LENGTH, #lib/search.ts).
 		await box.fill('quok');
 		await expect(dialog.getByText(EXPLAINER)).toBeVisible();
 		await expect(dialog.getByText(TOO_SHORT)).toBeVisible();

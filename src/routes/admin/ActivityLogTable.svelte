@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { ActivityEntry } from '$lib/types';
-	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import * as Table from '$lib/components/ui/table/index.js';
-	import { Spinner } from '$lib/components/ui/spinner/index.js';
-	import EmptyState from '$lib/components/EmptyState.svelte';
+	import type { ActivityEntry } from '#lib/types.js';
+	import { Badge } from '#lib/components/ui/badge/index.js';
+	import { Button } from '#lib/components/ui/button/index.js';
+	import * as Table from '#lib/components/ui/table/index.js';
+	import { Spinner } from '#lib/components/ui/spinner/index.js';
+	import EmptyState from '#lib/components/EmptyState.svelte';
 	import { ScrollText } from '@lucide/svelte';
-	import { formatDateTime } from '$lib/utils/date';
-	import { actionLabel, actionVariant } from '$lib/activity';
+	import { formatDateTime } from '#lib/utils/date.js';
+	import { actionLabel, actionVariant } from '#lib/activity.js';
 
 	/**
 	 * Contributor actions, newest first. The load supplies page 1; "Load more"

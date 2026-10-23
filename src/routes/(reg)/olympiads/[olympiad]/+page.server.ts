@@ -1,12 +1,12 @@
 import type { Actions, PageServerLoad } from './$types';
-import { requireOlympiad, toOlympiadEntry } from '$lib/server/db/queries/olympiads';
+import { requireOlympiad, toOlympiadEntry } from '#lib/server/db/queries/olympiads.js';
 import {
 	clearProblemProgress,
 	findTrackableProblem,
 	setProblemProgress
-} from '$lib/server/db/queries/progress';
-import { actionFail, field, ok, parseYear } from '$lib/server/forms';
-import { parseScore, progressKey, type ProblemProgress } from '$lib/progress';
+} from '#lib/server/db/queries/progress.js';
+import { actionFail, field, ok, parseYear } from '#lib/server/forms.js';
+import { parseScore, progressKey, type ProblemProgress } from '#lib/progress.js';
 
 /**
  * Only the olympiad's metadata. Years, problems and files come from the cached

@@ -26,8 +26,10 @@ Keep it to three. Before adding a fourth binding, try a plain library, a step in
 the browser, or a local script. Full-text search needed no new binding: the PDF
 parser runs in the browser and the backfill runs on a maintainer's machine.
 
-The app reads bindings from `platform.env`. `DB` is reached through `locals.db`.
-`FILES` is reached through `getBucket()` in `$lib/server/storage.ts`, which
+The app reads bindings from `env` in `cloudflare:workers`, always inside a
+function (see [architecture.md](./architecture.md#request-lifecycle)). `DB` is
+reached through `locals.db`.
+`FILES` is reached through `getBucket()` in `#lib/server/storage.ts`, which
 returns `null` when the binding is missing so a form action can `fail()` with a
 toast instead of showing an error page.
 
@@ -55,7 +57,7 @@ bunx wrangler secret put SUPERADMIN_EMAIL     # optional
 [contributing.md](./contributing.md#first-run).
 
 The CDN origin is not an environment variable. `CDN_BASE_URL` is a constant in
-[`$lib/constants.ts`](../src/lib/constants.ts) because every `url` in D1 contains
+[`#lib/constants.ts`](../src/lib/constants.ts) because every `url` in D1 contains
 it. Never change it; see [data-model.md](./data-model.md#r2-key-layout).
 
 ## Deploying
@@ -157,7 +159,7 @@ in cold-start time, to serve a path that runs a few times a month.
 
 ### The bundle check
 
-Run this for any change near `$lib/pdf-text.ts` or the vendored build:
+Run this for any change near `#lib/pdf-text.ts` or the vendored build:
 
 ```sh
 bun run build && find .svelte-kit/output/server -name '*.js' -print0 \
@@ -180,7 +182,7 @@ ls .svelte-kit/cloudflare/vendor/pdfjs/                   # must list the build
 If the second fails, the parser 404s in production. Uploads keep working, but
 every row lands `pending`.
 
-`$lib/pdf-text.ts` imports pdf.js's types from the `pdfjs-dist` devDependency
+`#lib/pdf-text.ts` imports pdf.js's types from the `pdfjs-dist` devDependency
 with `import type`, which TypeScript erases. Don't drop the `type` keyword or
 import a runtime value from that module: that puts the parser in the Worker.
 Don't swap in hand-written types either; they let a call to a removed pdf.js
@@ -194,7 +196,7 @@ steps. Both files must come from the same version, because pdf.js refuses a
 worker whose version differs. They are static assets served by `ASSETS`, so they
 add nothing to the Worker's size.
 
-`$lib/pdf-text.ts` loads them through a runtime string URL:
+`#lib/pdf-text.ts` loads them through a runtime string URL:
 
 ```ts
 const PDFJS_URL = '/vendor/pdfjs/pdf.min.mjs';

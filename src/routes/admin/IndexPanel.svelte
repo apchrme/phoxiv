@@ -1,17 +1,17 @@
 <script lang="ts">
-	import type { FileTextStats } from '$lib/types';
-	import type { Pending } from '$lib/forms.svelte';
+	import type { FileTextStats } from '#lib/types.js';
+	import type { Pending } from '#lib/forms.svelte.js';
 	import { onMount } from 'svelte';
-	import { Resource } from '$lib/resource.svelte';
-	import { plural } from '$lib/utils/plural';
+	import { Resource } from '#lib/resource.svelte.js';
+	import { plural } from '#lib/utils/plural.js';
 	import { enhance } from '$app/forms';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
-	import ConfirmSubmit from '$lib/components/forms/ConfirmSubmit.svelte';
-	import { Badge } from '$lib/components/ui/badge/index.js';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
-	import { Spinner } from '$lib/components/ui/spinner/index.js';
+	import { Button } from '#lib/components/ui/button/index.js';
+	import SubmitButton from '#lib/components/forms/SubmitButton.svelte';
+	import ConfirmSubmit from '#lib/components/forms/ConfirmSubmit.svelte';
+	import { Badge } from '#lib/components/ui/badge/index.js';
+	import * as Card from '#lib/components/ui/card/index.js';
+	import { Skeleton } from '#lib/components/ui/skeleton/index.js';
+	import { Spinner } from '#lib/components/ui/spinner/index.js';
 	import { RefreshCw } from '@lucide/svelte';
 
 	/**
@@ -152,7 +152,7 @@
 			</Card.Description>
 		</Card.Header>
 		<!--
-			`invalidateAll: false`: these actions change nothing the page load
+			`refreshAll: false`: these actions change nothing the page load
 			reads, and invalidating would reset the activity log's "Load more"
 			pages. `onDone` runs after the write commits, so the refetch sees it.
 		-->
@@ -171,7 +171,7 @@
 					action="?/ensureIndex"
 					class="shrink-0"
 					use:enhance={pending.track(() => 'ensureIndex', {
-						invalidateAll: false,
+						refreshAll: false,
 						onDone: refresh
 					})}
 				>
@@ -193,7 +193,7 @@
 					action="?/optimizeIndex"
 					class="shrink-0"
 					use:enhance={pending.track(() => 'optimizeIndex', {
-						invalidateAll: false,
+						refreshAll: false,
 						onDone: refresh
 					})}
 				>
@@ -216,7 +216,7 @@
 					action="?/pruneIndex"
 					class="shrink-0"
 					use:enhance={pending.track(() => 'pruneIndex', {
-						invalidateAll: false,
+						refreshAll: false,
 						onDone: refresh
 					})}
 				>

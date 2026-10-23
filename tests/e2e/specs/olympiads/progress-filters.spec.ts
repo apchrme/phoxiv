@@ -8,7 +8,7 @@ import { gotoReady, openSearch } from '../../support/ui';
  * src/routes/(reg)/olympiads/[olympiad]/+page.svelte that keep a late response
  * from overwriting newer state: the progress race guard and the stale-olympiad
  * guard. The status filter is StatusFilter.svelte (All problems / Done / To do,
- * an icon-only trigger); the predicates are in filter.ts and $lib/filters.ts.
+ * an icon-only trigger); the predicates are in filter.ts and #lib/filters.ts.
  *
  * Owns USERS.progressReader, whose seeded progress on the frozen alpha is only
  * ever read, so every list below is known in advance:
@@ -194,7 +194,7 @@ test.describe('the status filter', () => {
 			const y2019 = yearPanel(page, 2019);
 			await expect(y2019.getByText('2/3 done', { exact: true })).toBeVisible();
 			// Only T1 counts toward the ratio: T3 is done with no score, and untracked
-			// T2 is left out rather than counted as 0 (`yearTotals` in $lib/progress.ts).
+			// T2 is left out rather than counted as 0 (`yearTotals` in #lib/progress.ts).
 			await expect(y2019.getByText('8.5 / 10', { exact: true })).toBeVisible();
 
 			const y2020 = yearPanel(page, 2020);

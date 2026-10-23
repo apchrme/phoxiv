@@ -1,33 +1,25 @@
 {
-	"extends": "./.svelte-kit/tsconfig.json",
+	"extends": "$app/tsconfig",
 	"compilerOptions": {
 		"rewriteRelativeImportExtensions": true,
-		"allowJs": true,
-		"checkJs": true,
-		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true,
-		"resolveJsonModule": true,
-		"skipLibCheck": true,
 		"sourceMap": true,
 		"strict": true,
-		"moduleResolution": "bundler",
-		// Worker binding types (Env, R2Bucket, ...). Run `bun run cf-typegen` after
-		// editing wrangler.jsonc.
-		"types": ["./src/worker-configuration.d.ts"]
+		// Worker binding types (Env, R2Bucket, `cloudflare:workers`, ...). Run
+		// `bun run cf-typegen` after editing wrangler.jsonc.
+		"types": ["$app/types", "./src/worker-configuration.d.ts"],
+		// Off: the generated types import the built `_worker.js` (`mainModule`), and
+		// with `checkJs` every chunk of the build output gets type-checked. The
+		// project has no JavaScript source of its own to check.
+		"checkJs": false
 	},
-	// Keeps `bun run check` off build output. This replaces the generated
-	// `exclude`, so its service-worker entries are copied here.
+	// `$app/tsconfig` sets neither `include` nor `exclude`. The excludes keep
+	// `bun run check` off build output.
+	"include": ["src", "tests", "vite.config.ts", "drizzle.config.ts"],
 	"exclude": [
 		"./node_modules/**",
 		"./.svelte-kit/output/**",
 		"./.svelte-kit/cloudflare/**",
-		"./.svelte-kit/cloudflare-tmp/**",
-		"./src/service-worker.js",
-		"./src/service-worker/**/*.js",
-		"./src/service-worker.ts",
-		"./src/service-worker/**/*.ts",
-		"./src/service-worker.d.ts",
-		"./src/service-worker/**/*.d.ts"
+		"./.svelte-kit/cloudflare-tmp/**"
 	]
-	// Path aliases go in svelte.config.js: https://svelte.dev/docs/kit/configuration#alias
+	// `#lib` is a subpath import, declared in package.json's `imports`.
 }

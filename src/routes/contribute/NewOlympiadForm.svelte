@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import type { Pending } from '$lib/forms.svelte';
-	import IconFilePicker from '$lib/components/forms/IconFilePicker.svelte';
-	import Field from '$lib/components/forms/Field.svelte';
-	import SubmitButton from '$lib/components/forms/SubmitButton.svelte';
-	import TagSelect from '$lib/components/TagSelect.svelte';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import type { Pending } from '#lib/forms.svelte.js';
+	import IconFilePicker from '#lib/components/forms/IconFilePicker.svelte';
+	import Field from '#lib/components/forms/Field.svelte';
+	import SubmitButton from '#lib/components/forms/SubmitButton.svelte';
+	import TagSelect from '#lib/components/TagSelect.svelte';
+	import * as Card from '#lib/components/ui/card/index.js';
+	import { Input } from '#lib/components/ui/input/index.js';
+	import { Textarea } from '#lib/components/ui/textarea/index.js';
 	import { ArrowRight } from '@lucide/svelte';
-	import { MAX_YEAR, MIN_YEAR } from '$lib/constants';
-	import { type OlympiadTag } from '$lib/types';
-	import { ICON_UPLOAD } from '$lib/uploads';
+	import { MAX_YEAR, MIN_YEAR } from '#lib/constants.js';
+	import { type OlympiadTag } from '#lib/types.js';
+	import { ICON_UPLOAD } from '#lib/uploads.js';
 
 	/**
 	 * Creates an olympiad and its first year, then opens the year editor.
