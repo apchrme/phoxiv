@@ -1,7 +1,48 @@
 import type { Handle } from '@sveltejs/kit/hooks';
-import { env } from 'cloudflare:workers';
+import { sequence } from '@sveltejs/kit/hooks';
+import { env, waitUntil } from 'cloudflare:workers';
 import { drizzle } from 'drizzle-orm/d1';
 import { createAuth } from '#lib/server/auth.js';
+import { SHARED_CACHE_CONTROL } from '#lib/server/cache.js';
+
+/**
+ * Serves `/api/*` from `caches.default`, the shared cache in docs/architecture.md.
+ *
+ * adapter-cloudflare up to v7 did this in its worker; v8 does not, and after
+ * the upgrade every `/api/*` request went to D1 until this hook replaced it. It
+ * runs first, so a hit returns before `app` touches D1 or auth.
+ *
+ * - Only a 200 carrying {@link SHARED_CACHE_CONTROL} is stored, so an endpoint
+ *   opts in by calling `setSharedCache()` and a 404 or a thrown 500 never is.
+ * - `/api/auth/*` is skipped: it carries `Set-Cookie` and session state.
+ * - A request with `Cache-Control: no-cache` skips the lookup but still stores
+ *   the fresh response, as the adapter's worker did. The e2e specs rely on it
+ *   to read past entries cached earlier in the run (docs/testing.md).
+ */
+const sharedCache: Handle = async ({ event, resolve }) => {
+	const { request, url } = event;
+	if (
+		request.method !== 'GET' ||
+		!url.pathname.startsWith('/api/') ||
+		url.pathname.startsWith('/api/auth/')
+	) {
+		return resolve(event);
+	}
+
+	// The DOM lib's `CacheStorage` shadows the Workers one, which adds `default`.
+	// Keep `default` rather than a named cache: it's what a dashboard purge clears.
+	const cache = (caches as unknown as { default: Cache }).default;
+	if (!request.headers.get('cache-control')?.includes('no-cache')) {
+		const hit = await cache.match(request);
+		if (hit) return hit;
+	}
+
+	const response = await resolve(event);
+	if (response.status === 200 && response.headers.get('cache-control') === SHARED_CACHE_CONTROL) {
+		waitUntil(cache.put(request, response.clone()));
+	}
+	return response;
+};
 
 /**
  * Builds `locals.db`, `locals.auth` and `locals.user` / `locals.session`.
@@ -22,7 +63,7 @@ import { createAuth } from '#lib/server/auth.js';
  * - A banned user is treated as signed out, whatever sessions they still hold.
  *   BetterAuth only checks `banned` when a session is created.
  */
-export const handle: Handle = async ({ event, resolve }) => {
+const app: Handle = async ({ event, resolve }) => {
 	if (!env.DB) throw new Error('Database unavailable');
 
 	const db = drizzle(env.DB);
@@ -48,3 +89,5 @@ export const handle: Handle = async ({ event, resolve }) => {
 	for (const cookie of authHeaders.getSetCookie()) response.headers.append('set-cookie', cookie);
 	return response;
 };
+
+export const handle = sequence(sharedCache, app);

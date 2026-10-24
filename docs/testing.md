@@ -131,8 +131,8 @@ server's process tree at the end.
 is deployed:
 
 - the adapter's bundle, in real workerd;
-- `caches.default`, which serves `/api/*` before the app runs (`vite dev` has no
-  shared cache);
+- `caches.default`, which the `sharedCache` hook serves `/api/*` from (`vite dev`
+  has no shared cache);
 - SvelteKit's CSRF check, which `vite dev` skips;
 - R2 uploads. Under `vite dev` a streamed `put()` fails
   ([workers-sdk#4373](https://github.com/cloudflare/workers-sdk/issues/4373)), so
@@ -466,8 +466,8 @@ Names that are easy to get wrong:
   request and served from `caches.default` after, so a write doesn't show in an
   `/api/*` body the run has already fetched. Check a write through an editor page
   (never cached), a URL the run hasn't fetched yet (a new olympiad id, a new
-  query), or a request with `Cache-Control: no-cache`, which the adapter's worker
-  treats as a cache bypass.
+  query), or a request with `Cache-Control: no-cache`, which the `sharedCache`
+  hook treats as a cache bypass.
 - **`(reg)` pages are browser-cached for four hours.** After a sign-in, sign-out,
   ban or role change, use a fresh context (`as()`). The `test` fixture's request
   interception happens to disable Chromium's HTTP cache, but don't rely on that.

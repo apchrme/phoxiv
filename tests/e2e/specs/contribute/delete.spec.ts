@@ -87,8 +87,8 @@ async function deleteFile(page: Page, section: Locator, label: string): Promise<
 }
 
 /**
- * Deep search scoped to this spec's olympiad. `no-cache` makes the adapter's
- * worker skip the shared cache, which would otherwise answer with the body from
+ * Deep search scoped to this spec's olympiad. `no-cache` makes the `sharedCache`
+ * hook skip the shared cache, which would otherwise answer with the body from
  * before a delete.
  */
 async function deepSearch(request: APIRequestContext, q: string): Promise<FileSearchResponse> {

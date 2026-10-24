@@ -57,9 +57,18 @@ The route tree is shaped by two cache policies, in
 
 About the shared cache:
 
-- It is the Workers Cache API. `adapter-cloudflare`'s worker wraps the app in
-  `caches.default`, so a hit returns before `hooks.server.ts` runs. Don't add a
-  second Cache API layer. Under `bun run preview` it persists in
+- It is the Workers Cache API, `caches.default`, kept by the `sharedCache`
+  handle that runs first in [`hooks.server.ts`](../src/hooks.server.ts). A hit
+  returns before the `app` handle touches D1 or auth. Only a 200 whose
+  `cache-control` is exactly `SHARED_CACHE_CONTROL` is stored, so calling
+  `setSharedCache()` is what opts an endpoint in; `/api/auth/*` is never
+  touched. A request with `Cache-Control: no-cache` skips the lookup and stores
+  the fresh body.
+- adapter-cloudflare v7 did this inside its worker; v8 does not. Don't remove
+  the handle on the assumption the adapter covers it, and don't add a second
+  Cache API layer. The `cf-cache-status: HIT` check in
+  `specs/http/cache-headers.spec.ts` catches either mistake.
+- Under `bun run preview` it persists in
   `.wrangler/state/v3/cache`; clear that if a preview serves a stale body. The
   e2e server keeps all its state, cache included, in `.wrangler/e2e/`, which
   starts empty every run ([testing.md](./testing.md#the-e2e-server)).

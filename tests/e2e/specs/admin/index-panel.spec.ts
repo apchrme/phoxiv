@@ -92,8 +92,9 @@ async function runMaintenance(
 }
 
 /**
- * Deep search's results for `q`. `no-cache` makes the adapter's worker skip the
- * shared cache, which would otherwise answer with the body from before a write.
+ * Deep search's results for `q`. `no-cache` makes the `sharedCache` hook skip
+ * the shared cache, which would otherwise answer with the body from before a
+ * write.
  */
 async function searchFiles(request: APIRequestContext, q: string): Promise<unknown[]> {
 	const response = await request.get(`/api/search/files?${new URLSearchParams({ q })}`, {

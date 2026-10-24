@@ -102,6 +102,27 @@ test.describe('cache headers', { tag: '@smoke' }, () => {
 		}
 	});
 
+	test('a repeated shared-cached /api/* request is a cache hit', async ({ request }) => {
+		// The header rows above kept passing while nothing was cached:
+		// adapter-cloudflare v8 dropped the `caches.default` wrapper, and the
+		// `sharedCache` hook in hooks.server.ts replaces it. A miss on the second
+		// request means every `/api/*` visit reads D1 again.
+		const shared = ROWS.filter((row) => row.cacheControl === SHARED_CACHE_CONTROL);
+		for (const { path } of shared) {
+			await request.get(path);
+			const response = await request.get(path);
+			expect(response.status(), path).toBe(200);
+			expect(response.headers()['cf-cache-status'], path).toBe('HIT');
+		}
+
+		// The two that must never be stored: a 404 (no `setSharedCache`) and auth.
+		for (const path of ['/api/olympiads/nope', '/api/auth/get-session']) {
+			await request.get(path);
+			const response = await request.get(path);
+			expect(response.headers()['cf-cache-status'], path).toBeUndefined();
+		}
+	});
+
 	test('/api/auth/* is never shared-cached', async ({ apiAs }) => {
 		// It carries Set-Cookie and session state (docs/auth.md).
 		const api = await apiAs('user');
@@ -116,8 +137,9 @@ test.describe('cache headers', { tag: '@smoke' }, () => {
 		// lookup here would show up as a cookie. `/api/auth/*` is the documented
 		// exception and is left out.
 		//
-		// `no-cache` makes the adapter's worker skip `caches.default`: these URLs
-		// were cached by earlier tests, and a cache hit never reaches the hook.
+		// `no-cache` makes the `sharedCache` hook skip `caches.default`: these URLs
+		// were cached by earlier tests, and a cache hit never reaches the session
+		// lookup.
 		const api = await apiAs('stale');
 		for (const path of ['/api/olympiads', '/api/olympiads/alpha', '/api/search', '/api/stats']) {
 			const response = await api.get(path, { headers: { 'cache-control': 'no-cache' } });
