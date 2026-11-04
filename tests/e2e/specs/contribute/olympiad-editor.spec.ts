@@ -5,7 +5,8 @@ import { expect, test } from '../../support/test';
 import { confirmDialog, gotoReady, toast } from '../../support/ui';
 
 /*
- * The olympiad editor's icon: upload, save metadata alongside it, remove.
+ * The olympiad editor's icon: upload, save metadata alongside it, remove. And
+ * the warning before leaving the metadata form with unsaved edits.
  *
  * Owns OWNED.iconOlympiad. Every test starts by uploading an icon, so none
  * depends on what an earlier test left behind; they only need to run one at a
@@ -117,5 +118,91 @@ test.describe('the olympiad editor icon', () => {
 		await expect(page.getByRole('button', { name: 'Remove icon' })).toBeHidden();
 		await expect(emojiField(page)).toBeEnabled();
 		await expect(emojiField(page)).toHaveValue('');
+	});
+});
+
+/** Every dialog the page opens (`confirm()`, `beforeunload`), answered with `accept`. */
+function answerDialogs(page: Page, accept: boolean): string[] {
+	const seen: string[] = [];
+	page.on('dialog', async (dialog) => {
+		seen.push(dialog.type());
+		await (accept ? dialog.accept() : dialog.dismiss());
+	});
+	return seen;
+}
+
+test.describe('the olympiad editor warns about unsaved changes', () => {
+	test('leaving with an edit asks first, and dismissing stays', async ({ page }) => {
+		await gotoReady(page, EDITOR);
+		const dialogs = answerDialogs(page, false);
+
+		const description = 'An unsaved description.';
+		await page.getByLabel('Description').fill(description);
+		await expect(page.getByText('Unsaved changes')).toBeVisible();
+
+		await page.getByRole('link', { name: 'Back to contribute' }).click();
+		await expect.poll(() => dialogs).toEqual(['confirm']);
+		await expect(page).toHaveURL(EDITOR);
+		await expect(page.getByLabel('Description')).toHaveValue(description);
+	});
+
+	test('accepting the warning leaves', async ({ page }) => {
+		await gotoReady(page, EDITOR);
+		const dialogs = answerDialogs(page, true);
+
+		await page.getByLabel('Full name').fill('An unsaved name');
+		await page.getByRole('link', { name: 'Back to contribute' }).click();
+		await expect(page).toHaveURL('/contribute');
+		expect(dialogs).toEqual(['confirm']);
+	});
+
+	test('reloading with an edit gets the browser prompt', async ({ page }) => {
+		await gotoReady(page, EDITOR);
+		// Accepted: Playwright's dismissal of a `beforeunload` prompt doesn't
+		// reliably cancel a `reload()`, so only the prompt itself is asserted.
+		const dialogs = answerDialogs(page, true);
+
+		// A click, not just `fill`: Chromium shows `beforeunload` prompts only to a
+		// page the user has interacted with.
+		const summary = page.getByLabel('Summary', { exact: true });
+		const saved = await summary.inputValue();
+		await summary.click();
+		await summary.fill('An unsaved summary.');
+		await page.reload();
+		expect(dialogs).toEqual(['beforeunload']);
+		await expect(summary).toHaveValue(saved);
+	});
+
+	test('saving clears the warning', async ({ page }) => {
+		await gotoReady(page, EDITOR);
+		const dialogs = answerDialogs(page, false);
+
+		await page.getByLabel('Summary', { exact: true }).fill('Saved before leaving.');
+		await page.getByRole('button', { name: 'Save changes' }).click();
+		await expect(toast(page, 'Olympiad updated')).toBeVisible();
+		await expect(page.getByText('Unsaved changes')).toBeHidden();
+
+		await page.getByRole('link', { name: 'Back to contribute' }).click();
+		await expect(page).toHaveURL('/contribute');
+		expect(dialogs).toEqual([]);
+	});
+
+	test('uploading or removing an icon is not an unsaved change', async ({ page }) => {
+		// Both replace the emoji field's value without a reload, so the check must
+		// compare against the icon the page last stored, not the loaded row.
+		await gotoReady(page, EDITOR);
+		const dialogs = answerDialogs(page, false);
+
+		await uploadIcon(page);
+		await expect(page.getByText('Unsaved changes')).toBeHidden();
+
+		await page.getByRole('button', { name: 'Remove icon' }).click();
+		await confirmDialog(page).getByRole('button', { name: 'Remove icon' }).click();
+		await expect(toast(page, 'Icon removed')).toBeVisible();
+		await expect(page.getByText('Unsaved changes')).toBeHidden();
+
+		await page.getByRole('link', { name: 'Back to contribute' }).click();
+		await expect(page).toHaveURL('/contribute');
+		expect(dialogs).toEqual([]);
 	});
 });

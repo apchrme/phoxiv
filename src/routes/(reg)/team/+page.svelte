@@ -12,6 +12,7 @@
 	import { plural } from '#lib/utils/plural.js';
 	import { Resource } from '#lib/resource.svelte.js';
 	import type { TeamMember } from '#lib/types.js';
+	import ContributeCTA from '#lib/components/ContributeCTA.svelte';
 
 	/**
 	 * Every admin and contributor, most uploads first. Fetched from the
@@ -24,13 +25,15 @@
 
 <SvelteSeo
 	title="Team — phoXiv"
-	description="The people who build and maintain the phoXiv archive."
+	description="The people who build and maintain phoXiv."
 />
 
 <PageHeader
 	title="Team"
 	description="The admins and contributors who build the archive, by number of files uploaded."
 />
+
+<ContributeCTA />
 
 <section class="mb-6">
 	{#if source.loading}

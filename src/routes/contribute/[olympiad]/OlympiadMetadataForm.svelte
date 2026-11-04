@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
+	import { beforeNavigate } from '$app/navigation';
 	import type { Pending } from '#lib/forms.svelte.js';
 	import * as Card from '#lib/components/ui/card/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
@@ -24,11 +25,14 @@
 	let {
 		olympiad,
 		icon = $bindable(),
+		savedIcon,
 		pending
 	}: {
 		olympiad: PageData['olympiad'];
 		/** Owned by the page. */
 		icon: string;
+		/** The icon as stored, which `olympiad.icon` isn't after an icon upload or removal. */
+		savedIcon: string;
 		/** The page's single `Pending`, so the submit button can disable itself. */
 		pending: Pending;
 	} = $props();
@@ -37,7 +41,8 @@
 	let summary = $derived(olympiad.summary);
 	let tag = $derived<OlympiadTag>(olympiad.tag as OlympiadTag);
 	let description = $derived(olympiad.descriptionMd);
-	let displayOrder = $derived(String(olympiad.displayOrder ?? 9999));
+	const savedDisplayOrder = $derived(String(olympiad.displayOrder ?? 9999));
+	let displayOrder = $derived(savedDisplayOrder);
 
 	/**
 	 * With an uploaded icon the emoji field is disabled, so it isn't submitted and
@@ -45,18 +50,42 @@
 	 * wiped uploaded icons.
 	 */
 	const hasUploadedIcon = $derived(isIconUrl(icon));
+
+	/**
+	 * Whether any field differs from what's stored. A save reloads the page data,
+	 * which resets every field and so clears this. `String()` because a number
+	 * input's binding writes a number back.
+	 */
+	const dirty = $derived(
+		name !== olympiad.name ||
+			summary !== olympiad.summary ||
+			tag !== olympiad.tag ||
+			description !== olympiad.descriptionMd ||
+			String(displayOrder) !== savedDisplayOrder ||
+			(!hasUploadedIcon && icon !== savedIcon)
+	);
+
+	// Nothing here is saved until "Save changes", so warn before leaving with edits.
+	// A `'leave'` (reload, closing the tab, typing a url) can only get the browser's
+	// own prompt, which `cancel()` triggers; anything else gets `confirm()`.
+	beforeNavigate((navigation) => {
+		if (!dirty) return;
+		if (navigation.type === 'leave') {
+			navigation.cancel();
+		} else if (!confirm('You have unsaved changes to this olympiad. Leave without saving?')) {
+			navigation.cancel();
+		}
+	});
 </script>
 
-<form
-	method="POST"
-	action="?/updateOlympiad"
-	use:enhance={pending.track('updateOlympiad')}
-	class="flex flex-col gap-5"
->
+<form method="POST" action="?/updateOlympiad" use:enhance={pending.track('updateOlympiad')}>
 	<Card.Root>
 		<Card.Header class="border-b">
 			<Card.Title>Basic information</Card.Title>
-			<Card.Description>Core details shown on the olympiad listing and page.</Card.Description>
+			<Card.Description>
+				Shown on the olympiad listing and the olympiad's page. Edits here apply only once you save
+				them.
+			</Card.Description>
 		</Card.Header>
 		<Card.Content class="flex flex-col gap-4">
 			<Field label="Full name" for="name">
@@ -126,28 +155,23 @@
 					class="w-32"
 				/>
 			</Field>
+
+			<Field label="Description" for="description" hint="(optional, Markdown)">
+				<Textarea
+					id="description"
+					name="description"
+					rows={6}
+					bind:value={description}
+					placeholder="Write a longer description using Markdown…"
+				/>
+			</Field>
+
+			<SubmitButton {pending} key="updateOlympiad" icon={Save} busyLabel="Saving…">
+				Save changes
+			</SubmitButton>
+			{#if dirty}
+				<span class="text-xs text-muted-foreground">Unsaved changes</span>
+			{/if}
 		</Card.Content>
 	</Card.Root>
-
-	<Card.Root>
-		<Card.Header class="border-b">
-			<Card.Title>Description</Card.Title>
-			<Card.Description>
-				Optional extended description shown on the olympiad's page. Supports Markdown.
-			</Card.Description>
-		</Card.Header>
-		<Card.Content>
-			<Textarea
-				id="description"
-				name="description"
-				rows={6}
-				bind:value={description}
-				placeholder="Write a longer description using Markdown…"
-			/>
-		</Card.Content>
-	</Card.Root>
-
-	<SubmitButton {pending} key="updateOlympiad" icon={Save} busyLabel="Saving…" class="self-start">
-		Save changes
-	</SubmitButton>
 </form>

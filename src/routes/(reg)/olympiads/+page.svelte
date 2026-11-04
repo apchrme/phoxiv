@@ -7,7 +7,8 @@
 	import SearchBar from '#lib/components/search/SearchBar.svelte';
 	import EmptyState from '#lib/components/EmptyState.svelte';
 	import OlympiadIcon from '#lib/components/OlympiadIcon.svelte';
-	import { ArrowRight, SearchX, TriangleAlert } from '@lucide/svelte';
+	import { SearchX, TriangleAlert } from '@lucide/svelte';
+	import ContributeCTA from '#lib/components/ContributeCTA.svelte';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import * as Card from '#lib/components/ui/card/index.js';
 	import PageHeader from '#lib/components/PageHeader.svelte';
@@ -86,11 +87,11 @@
 			{/snippet}
 		</EmptyState>
 	{:else if filtered.length > 0}
-		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4">
+		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
 			{#each filtered as olympiad (olympiad.id)}
 				<a href={resolve(`olympiads/${olympiad.id}`)} class="group z-10 block">
 					<Card.Root
-						class="h-full p-5 inset-ring shadow-primary inset-ring-accent transition-all duration-250 hover:-translate-y-2 hover:shadow-lg/15 hover:inset-ring-primary/50"
+						class="h-full gap-3 p-5 inset-ring shadow-primary inset-ring-accent transition-all duration-250 hover:-translate-y-2 hover:shadow-lg/15 hover:inset-ring-primary/50"
 					>
 						<!-- Top row: icon + badge -->
 						<div class="flex items-start justify-between">
@@ -111,14 +112,6 @@
 							<span class="text-sm leading-relaxed text-muted-foreground">
 								{olympiad.summary}
 							</span>
-						</div>
-
-						<!-- Footer arrow -->
-						<div
-							class="flex items-center gap-1 text-xs font-medium text-muted-foreground transition-all duration-150 group-hover:gap-2 group-hover:text-primary"
-						>
-							View archive
-							<ArrowRight class="size-4" />
 						</div>
 					</Card.Root>
 				</a>
@@ -146,26 +139,4 @@
 	{/if}
 </section>
 
-<!-- Contribute CTA — glass tinted banner -->
-<section class="mt-2 mb-6">
-	<div
-		class="flex flex-col items-start justify-between gap-4 rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/70
-		       to-primary/90 px-6 py-5
-		       shadow-lg shadow-primary/20
-		       sm:flex-row
-		       sm:items-center"
-	>
-		<p class="mb-0 text-sm font-medium text-primary-foreground/90">
-			Want to add problems or new olympiads? Drop me an email!
-		</p>
-		<a
-			href="mailto:apochrome@proton.me"
-			class="flex shrink-0 flex-row items-center gap-1.5 rounded-xl
-			       border border-white/30 bg-white/20 px-4
-			       py-2 text-sm font-semibold text-primary-foreground transition-all
-			       hover:gap-2.5 hover:bg-white/30"
-		>
-			Get in touch <ArrowRight class="size-4" />
-		</a>
-	</div>
-</section>
+<ContributeCTA />

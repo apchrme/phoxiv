@@ -143,7 +143,7 @@ The suite already covers:
   paging, assigning olympiads, the Log tab's **Load more**, and the Index tab and
   its maintenance actions;
 - `tests/e2e/specs/contribute/`: creating an olympiad and the refused ids, the
-  icon, adding years, the CSV export and import, the year editor's rows, topics,
+  icon, the unsaved-changes warning, adding years, the CSV export and import, the year editor's rows, topics,
   duplicates and links, uploads with their text extraction, and deleting files
   and years (their text leaves the index);
 - `tests/e2e/specs/olympiads/`: the index, the olympiad page's 404, what it must

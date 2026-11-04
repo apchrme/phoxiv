@@ -14,11 +14,18 @@
 	let { data, form }: PageProps = $props();
 
 	/**
-	 * The current icon. Overwritten by the toast handlers below, since the icon
-	 * forms don't reload the page. Lives here because the header, icon card and
+	 * The icon as stored. Overwritten by the toast handlers below, since the icon
+	 * forms don't reload the page, which leaves `data.olympiad.icon` stale. The
+	 * metadata form's unsaved-changes check compares the emoji field against this.
+	 */
+	let savedIcon = $derived(data.olympiad.icon);
+
+	/**
+	 * The icon as shown: `savedIcon` plus any unsaved emoji edit, and reset
+	 * whenever `savedIcon` changes. Lives here because the header, icon card and
 	 * emoji field all read it; don't re-derive it in any of them.
 	 */
-	let icon = $derived(data.olympiad.icon);
+	let icon = $derived(savedIcon);
 
 	/** The single `Pending` for the page, passed down to every card. */
 	const pending = new Pending();
@@ -54,12 +61,12 @@
 	formToasts(() => form, {
 		updateOlympiad: 'Olympiad updated',
 		uploadIcon: (result) => {
-			if (typeof result.iconUrl === 'string') icon = result.iconUrl;
+			if (typeof result.iconUrl === 'string') savedIcon = result.iconUrl;
 			iconCard?.clear();
 			return 'Icon uploaded';
 		},
 		removeIcon: () => {
-			icon = '';
+			savedIcon = '';
 			iconCard?.clear();
 			return 'Icon removed';
 		},
@@ -92,7 +99,7 @@
 
 	<IconCard bind:this={iconCard} olympiadId={data.olympiad.id} {icon} {pending} />
 
-	<OlympiadMetadataForm olympiad={data.olympiad} bind:icon {pending} />
+	<OlympiadMetadataForm olympiad={data.olympiad} bind:icon {savedIcon} {pending} />
 
 	<ImportTitlesCard bind:this={importCard} olympiadId={data.olympiad.id} {pending} />
 </div>
