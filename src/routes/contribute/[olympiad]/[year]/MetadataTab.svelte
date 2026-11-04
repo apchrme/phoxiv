@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
 	import type { Pending } from '#lib/forms.svelte.js';
-	import { Save, Trash2 } from '@lucide/svelte';
+	import { Save, Trash } from '@lucide/svelte';
 	import SubmitButton from '#lib/components/forms/SubmitButton.svelte';
 	import ConfirmSubmit from '#lib/components/forms/ConfirmSubmit.svelte';
 	import NotesEditor from './NotesEditor.svelte';
@@ -92,7 +92,7 @@
 	<ConfirmSubmit
 		{pending}
 		key="deleteYear"
-		icon={Trash2}
+		icon={Trash}
 		title="Delete {olympiadName} {year.year}?"
 		description="The year, its problems, and all of its uploaded files are permanently removed — along with every user's tracked progress on those problems. This cannot be undone."
 		confirmLabel="Delete year"

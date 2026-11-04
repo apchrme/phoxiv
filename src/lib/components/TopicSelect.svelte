@@ -22,6 +22,7 @@
 		variant = 'outline',
 		size = undefined,
 		iconOnly = false,
+		caption = undefined,
 		class: className
 	}: {
 		/** Currently selected topics, always in `PROBLEM_TOPICS` order. */
@@ -35,6 +36,11 @@
 		size?: ButtonSize;
 		/** Collapse the trigger to a funnel icon, filled while any topic is selected. */
 		iconOnly?: boolean;
+		/**
+		 * A fixed word beside the `iconOnly` funnel, so the control isn't mistaken
+		 * for decoration. It never changes with the selection; the fill does that.
+		 */
+		caption?: string;
 		class?: string;
 	} = $props();
 
@@ -49,7 +55,7 @@
 		value.length === 0 ? label : value.length === 1 ? value[0] : plural(value.length, 'topic')
 	);
 
-	const triggerSize = $derived(size ?? (iconOnly ? 'icon' : 'default'));
+	const triggerSize = $derived(size ?? (iconOnly && !caption ? 'icon' : 'default'));
 
 	// Only the icon-only trigger fills. A labelled one already shows the selection,
 	// and in a form a filled button would look like the submit button.
@@ -64,6 +70,9 @@
 		{#if iconOnly}
 			<!-- Uncoloured so it inherits the foreground when filled. -->
 			<Funnel />
+			<!-- Hidden from assistive tech: the sr-only heading already names the
+			     button, and contains the caption's word. -->
+			{#if caption}<span aria-hidden="true">{caption}</span>{/if}
 			<span class="sr-only">{heading}</span>
 		{:else}
 			<Tags class="text-muted-foreground" />

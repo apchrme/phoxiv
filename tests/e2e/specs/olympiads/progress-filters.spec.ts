@@ -112,6 +112,8 @@ test.describe('the status filter', () => {
 		await expect(statusTrigger(page, 'All problems')).toBeVisible();
 
 		await filterByStatus(page, 'All problems', 'Done');
+		// The caption is fixed: the icon and fill show the choice, not the word.
+		await expect(statusTrigger(page, 'Done').getByText('Progress', { exact: true })).toBeVisible();
 		await expectListed(page, 2019, [READER.t1, READER.t3]);
 		await expectListed(page, 2020, [READER.p1]);
 
@@ -231,6 +233,12 @@ test.describe('signed out', () => {
 			page.getByRole('link', { name: 'Sign in to track problem T1', exact: true })
 		).toBeVisible();
 		await expect(page.getByRole('button', { name: 'Filter by topic', exact: true })).toBeVisible();
+		// A visible word so the filter isn't mistaken for decoration.
+		await expect(
+			page
+				.getByRole('button', { name: 'Filter by topic', exact: true })
+				.getByText('Topics', { exact: true })
+		).toBeVisible();
 		// "Signed-in only; anonymous visitors have no progress to filter" (+page.svelte).
 		await expect(page.getByRole('button', { name: /^Filter by progress/ })).toHaveCount(0);
 	});

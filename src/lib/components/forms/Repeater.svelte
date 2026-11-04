@@ -1,7 +1,7 @@
 <script lang="ts" generics="T extends { id: string }">
 	import type { Snippet } from 'svelte';
 	import { Button } from '#lib/components/ui/button/index.js';
-	import { Plus, Trash2 } from '@lucide/svelte';
+	import { Plus, Trash } from '@lucide/svelte';
 
 	/**
 	 * A list of rows the contributor can add to and delete from.
@@ -42,7 +42,7 @@
 			aria-label="Remove {itemLabel}"
 			onclick={() => rows.splice(i, 1)}
 		>
-			<Trash2 />
+			<Trash />
 		</Button>
 	</div>
 {/each}

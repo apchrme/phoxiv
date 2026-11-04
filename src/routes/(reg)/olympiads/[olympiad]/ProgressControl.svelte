@@ -4,7 +4,7 @@
 	import { Button, buttonVariants } from '#lib/components/ui/button/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
 	import { Spinner } from '#lib/components/ui/spinner/index.js';
-	import { Circle, CircleCheck, Trash2 } from '@lucide/svelte';
+	import { Circle, CircleCheck, Trash } from '@lucide/svelte';
 	import { cn } from '#lib/utils.js';
 	import type { Pending } from '#lib/forms.svelte.js';
 	import { exactScore, formatScore, progressKey, type ProblemProgress } from '#lib/progress.js';
@@ -149,7 +149,7 @@
 							size="sm"
 							disabled={busy}
 						>
-							<Trash2 class="size-3.5" />
+							<Trash class="size-3.5" />
 							Remove
 						</Button>
 					{:else}

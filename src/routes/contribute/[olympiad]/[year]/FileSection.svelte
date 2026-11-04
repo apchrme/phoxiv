@@ -6,7 +6,7 @@
 	import SubmitButton from '#lib/components/forms/SubmitButton.svelte';
 	import ConfirmSubmit from '#lib/components/forms/ConfirmSubmit.svelte';
 	import UserAvatar from '#lib/components/UserAvatar.svelte';
-	import { ChevronDown, ChevronUp, ExternalLink, Trash2 } from '@lucide/svelte';
+	import { ChevronDown, ChevronUp, ExternalLink, Trash } from '@lucide/svelte';
 	import { cn } from '#lib/utils.js';
 	import { collidingLabel, DOCUMENT_UPLOAD, slugifyLabel } from '#lib/uploads.js';
 	import { plural } from '#lib/utils/plural.js';
@@ -214,7 +214,7 @@
 							{/if}
 						</span>
 					</div>
-					<div class="flex flex-row items-center gap-1">
+					<div class="flex flex-row items-center gap-3">
 						<!-- One form per direction, so each button can name its own. -->
 						{#each MOVES as move (move.direction)}
 							{@const moveKey = `${key}/${file.label}/${move.direction}`}
@@ -241,7 +241,7 @@
 						<a
 							href={file.url}
 							target="_blank"
-							class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+							class="inline-flex items-center gap-1 rounded-2xl bg-muted px-3 py-1.5 text-sm text-muted-foreground hover:text-primary"
 						>
 							<ExternalLink class="size-3" /> View
 						</a>
@@ -260,7 +260,7 @@
 								{pending}
 								key={`${key}/${file.label}`}
 								size="icon-sm"
-								icon={Trash2}
+								icon={Trash}
 								title={`Delete "${file.label}"?`}
 								description="The file is permanently removed from storage and from the archive. This cannot be undone."
 								confirmLabel="Delete file"

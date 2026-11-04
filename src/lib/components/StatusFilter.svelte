@@ -12,11 +12,19 @@
 	 */
 	let {
 		value = $bindable('all'),
-		size = 'icon'
+		caption = undefined,
+		size = caption ? 'default' : 'icon',
+		class: className
 	}: {
 		value?: ProblemStatus;
+		/**
+		 * A fixed word beside the icon, so the control isn't mistaken for
+		 * decoration. It never changes with the selection; the icon and fill do.
+		 */
+		caption?: string;
 		/** Trigger size. The ⌘K dialog uses `'icon-sm'` to fit its row on a phone. */
 		size?: ButtonSize;
+		class?: string;
 	} = $props();
 
 	/** Same icons as `ProgressControl`, so "not done" looks the same everywhere. */
@@ -35,11 +43,13 @@
 
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger
-		class={cn(buttonVariants({ variant: triggerVariant, size }), 'shrink-0')}
+		class={cn(buttonVariants({ variant: triggerVariant, size }), 'shrink-0', className)}
 		title="Filter by progress: {current.label}"
 	>
 		<!-- Uncoloured so it inherits the foreground when the trigger fills. -->
 		<CurrentIcon />
+		<!-- Hidden from assistive tech: the sr-only name below already contains it. -->
+		{#if caption}<span aria-hidden="true">{caption}</span>{/if}
 		<!-- The button's accessible name. Keep it even though `title` repeats it. -->
 		<span class="sr-only">Filter by progress: {current.label}</span>
 	</DropdownMenu.Trigger>

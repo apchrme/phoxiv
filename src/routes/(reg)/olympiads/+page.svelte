@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { OLYMPIAD_TAGS, type OlympiadTag, type OlympiadEntry } from '#lib/types.js';
+	import type { OlympiadTag, OlympiadEntry } from '#lib/types.js';
 	import { matchesOlympiadText } from '#lib/filters.js';
 	import { Badge } from '#lib/components/ui/badge/index.js';
-	import * as ToggleGroup from '#lib/components/ui/toggle-group/index.js';
+	import TagFilter from './TagFilter.svelte';
 	import SearchBar from '#lib/components/search/SearchBar.svelte';
 	import EmptyState from '#lib/components/EmptyState.svelte';
 	import OlympiadIcon from '#lib/components/OlympiadIcon.svelte';
@@ -49,20 +49,8 @@
 	<!-- Search + filter toolbar -->
 	<div class="mb-6">
 		<SearchBar placeholder="Search olympiads…" bind:value={query}>
-			{#snippet filters()}
-				<ToggleGroup.Root
-					type="single"
-					variant="outline"
-					spacing={2}
-					value={activeTag ?? ''}
-					onValueChange={(v) => (activeTag = (v as OlympiadTag) || null)}
-					class="flex-wrap justify-center sm:flex-nowrap"
-				>
-					<ToggleGroup.Item value="">All</ToggleGroup.Item>
-					{#each OLYMPIAD_TAGS as tag (tag)}
-						<ToggleGroup.Item value={tag}>{tag}</ToggleGroup.Item>
-					{/each}
-				</ToggleGroup.Root>
+			{#snippet trailing()}
+				<TagFilter bind:value={activeTag} />
 			{/snippet}
 		</SearchBar>
 	</div>

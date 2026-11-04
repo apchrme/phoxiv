@@ -93,6 +93,8 @@ test.describe('⌘K at 375px, signed in, with a topic filter', () => {
 		await page.keyboard.press('Escape');
 		await expect(menu).toBeHidden();
 		await expect(topic).toHaveAttribute('title', 'Mechanics');
+		// Uncaptioned here, unlike on the olympiad page: a word would squeeze the input.
+		await expect(topic.getByText('Topics', { exact: true })).toHaveCount(0);
 
 		// The filter lists the matching pool with an empty query, under a summary
 		// bar whose "Clear filters" is one more control on the row.

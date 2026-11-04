@@ -7,7 +7,7 @@ import { gotoReady } from '../../support/ui';
 /*
  * The olympiads index, src/routes/(reg)/olympiads/+page.svelte: one card per
  * olympiad from `/api/olympiads`, in display order, narrowed by a search box and
- * a tag toggle, with its own loading, failed and empty states.
+ * an icon-only tag filter, with its own loading, failed and empty states.
  *
  * Reads frozen olympiads, and two this spec owns (`e2e-idx-tie-*`, which tie on
  * display order). Writes nothing. Other specs create olympiads, so no test here
@@ -71,9 +71,21 @@ function searchBox(page: Page): Locator {
 	return main(page).getByRole('searchbox');
 }
 
-/** A tag toggle. bits-ui renders a single-choice toggle group's items as `radio`s. */
-function tagToggle(page: Page, label: 'All' | OlympiadTag): Locator {
-	return main(page).getByRole('radio', { name: label, exact: true });
+type TagChoice = 'All' | OlympiadTag;
+
+/** The icon-only tag filter's trigger, named by the choice it shows. */
+function tagTrigger(page: Page, choice: TagChoice): Locator {
+	return main(page).getByRole('button', { name: `Filter by tag: ${choice}`, exact: true });
+}
+
+/** Opens the tag filter and picks `choice`; the menu closes on its own. */
+async function pickTag(page: Page, choice: TagChoice): Promise<void> {
+	await main(page)
+		.getByRole('button', { name: /^Filter by tag: / })
+		.click();
+	// The menu is portalled out of `main`, so it is found from `page`.
+	await page.getByRole('menuitemradio', { name: choice, exact: true }).click();
+	await expect(page.getByRole('menu')).toBeHidden();
 }
 
 /** Opens the index and waits for the first card, so the fetch has landed. */
@@ -105,7 +117,6 @@ test.describe('the olympiads index', () => {
 		await expect(alpha).toHaveAttribute('href', '/olympiads/alpha');
 		await expect(alpha.locator('[data-slot="badge"]')).toHaveText('International');
 		await expect(alpha.getByText('The main frozen olympiad.', { exact: true })).toBeVisible();
-		await expect(alpha.getByText('View archive')).toBeVisible();
 		// A plain emoji renders as text, hidden from assistive tech: the name says it all.
 		await expect(alpha.getByText('🅰️', { exact: true })).toBeVisible();
 		await expect(alpha.getByText('🅰️', { exact: true })).toHaveAttribute('aria-hidden', 'true');
@@ -166,12 +177,23 @@ test.describe('the olympiads index', () => {
 		});
 	});
 
-	test.describe('the tag toggle', () => {
-		test('starts on All', async ({ page }) => {
+	test.describe('the tag filter', () => {
+		test('starts on All, with only the trigger showing', async ({ page }) => {
 			await openIndex(page);
-			await expect(tagToggle(page, 'All')).toBeChecked();
-			for (const tag of OLYMPIAD_TAGS) await expect(tagToggle(page, tag)).not.toBeChecked();
+			await expect(tagTrigger(page, 'All')).toBeVisible();
+			// A visible word so the filter isn't mistaken for decoration.
+			await expect(tagTrigger(page, 'All').getByText('Filter', { exact: true })).toBeVisible();
+			// Collapsed until clicked: no tag option is on the page.
+			for (const tag of OLYMPIAD_TAGS) {
+				await expect(page.getByRole('menuitemradio', { name: tag })).toHaveCount(0);
+			}
 			for (const { name } of FROZEN) await expect(card(page, name)).toBeVisible();
+
+			await tagTrigger(page, 'All').click();
+			await expect(page.getByRole('menuitemradio', { name: 'All', exact: true })).toBeChecked();
+			for (const tag of OLYMPIAD_TAGS) {
+				await expect(page.getByRole('menuitemradio', { name: tag, exact: true })).not.toBeChecked();
+			}
 		});
 
 		for (const tag of OLYMPIAD_TAGS) {
@@ -181,9 +203,8 @@ test.describe('the olympiads index', () => {
 
 			test(`${tag} shows only ${tag} olympiads`, async ({ page }) => {
 				await openIndex(page);
-				await tagToggle(page, tag).click();
-				await expect(tagToggle(page, tag)).toBeChecked();
-				await expect(tagToggle(page, 'All')).not.toBeChecked();
+				await pickTag(page, tag);
+				await expect(tagTrigger(page, tag)).toBeVisible();
 
 				for (const name of shown) await expect(card(page, name)).toBeVisible();
 				for (const name of hidden) await expect(card(page, name)).toHaveCount(0);
@@ -196,35 +217,27 @@ test.describe('the olympiads index', () => {
 			});
 		}
 
-		test('clicking the selected tag again, or All, shows every tag', async ({ page }) => {
+		test('All shows every tag again', async ({ page }) => {
 			await openIndex(page);
 			const alpha = card(page, 'Alpha Physics Olympiad');
 
-			await tagToggle(page, 'Regional').click();
+			await pickTag(page, 'National');
 			await expect(alpha).toHaveCount(0);
-			// A single toggle group deselects on a second click, and the page reads
-			// the empty value as "no tag".
-			await tagToggle(page, 'Regional').click();
-			await expect(tagToggle(page, 'All')).toBeChecked();
-			await expect(alpha).toBeVisible();
-
-			await tagToggle(page, 'National').click();
-			await expect(alpha).toHaveCount(0);
-			await tagToggle(page, 'All').click();
-			await expect(tagToggle(page, 'All')).toBeChecked();
-			await expect(tagToggle(page, 'National')).not.toBeChecked();
+			// The page reads the "All" item's empty value as "no tag".
+			await pickTag(page, 'All');
+			await expect(tagTrigger(page, 'All')).toBeVisible();
 			await expect(alpha).toBeVisible();
 		});
 
 		test('combines with the search box: both must match', async ({ page }) => {
 			await openIndex(page);
 			await searchBox(page).fill('delta');
-			await tagToggle(page, 'National').click();
+			await pickTag(page, 'National');
 			await expect(card(page, 'Delta Physics Olympiad')).toBeVisible();
 			await expect(card(page, 'Delta Physics Olympiad (Women)')).toBeVisible();
 
 			// The query alone would still match both; the tag rules them out.
-			await tagToggle(page, 'International').click();
+			await pickTag(page, 'International');
 			await expect(card(page, 'Delta Physics Olympiad')).toHaveCount(0);
 			await expect(card(page, 'Delta Physics Olympiad (Women)')).toHaveCount(0);
 			// And the tag alone would still match alpha; the query rules it out.
@@ -236,7 +249,7 @@ test.describe('the olympiads index', () => {
 		page
 	}) => {
 		await openIndex(page);
-		await tagToggle(page, 'National').click();
+		await pickTag(page, 'National');
 		await searchBox(page).fill('no olympiad is called this');
 
 		await expect(main(page).getByText(EMPTY, { exact: true })).toBeVisible();
@@ -245,8 +258,7 @@ test.describe('the olympiads index', () => {
 
 		await main(page).getByRole('button', { name: 'Clear filters' }).click();
 		await expect(searchBox(page)).toHaveValue('');
-		await expect(tagToggle(page, 'All')).toBeChecked();
-		await expect(tagToggle(page, 'National')).not.toBeChecked();
+		await expect(tagTrigger(page, 'All')).toBeVisible();
 		// Alpha is International, so the tag was cleared as well as the query.
 		await expect(card(page, 'Alpha Physics Olympiad')).toBeVisible();
 		await expect(main(page).getByText(EMPTY, { exact: true })).toBeHidden();

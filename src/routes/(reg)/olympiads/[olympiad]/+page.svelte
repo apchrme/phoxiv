@@ -187,21 +187,25 @@
 <section class="py-4">
 	<div class="mb-5">
 		<SearchBar placeholder="Search by year or problem…" bind:value={query}>
-			{#snippet trailing()}
-				<!-- Topics are never shown on a problem (spoilers), only used to filter. -->
-				<TopicSelect
-					bind:value={activeTopics}
-					label="All topics"
-					heading="Filter by topic"
-					align="end"
-					iconOnly
-					class="shrink-0"
-				/>
-				{#if signedIn}
-					<StatusFilter bind:value={status} />
-				{/if}
-			{/snippet}
 			{#snippet filters()}
+				<!-- In `filters`, not `trailing`: two captioned triggers beside the input
+				     squeeze its placeholder to a few letters on a phone. Below `md` they
+				     get their own row and split it evenly. -->
+				<div class="flex w-full gap-2 md:w-auto">
+					<!-- Topics are never shown on a problem (spoilers), only used to filter. -->
+					<TopicSelect
+						bind:value={activeTopics}
+						label="All topics"
+						heading="Filter by topic"
+						align="end"
+						iconOnly
+						caption="Topics"
+						class="flex-1 md:flex-none"
+					/>
+					{#if signedIn}
+						<StatusFilter bind:value={status} caption="Progress" class="flex-1 md:flex-none" />
+					{/if}
+				</div>
 				<!-- Keep the `{#if}` outside the element: an empty element here would
 				     still take up a flex gap. -->
 				{#if canShowFullYear}

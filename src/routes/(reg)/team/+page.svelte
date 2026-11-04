@@ -23,10 +23,7 @@
 	onMount(() => void source.loadOnce());
 </script>
 
-<SvelteSeo
-	title="Team — phoXiv"
-	description="The people who build and maintain phoXiv."
-/>
+<SvelteSeo title="Team — phoXiv" description="The people who build and maintain phoXiv." />
 
 <PageHeader
 	title="Team"
