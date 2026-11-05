@@ -274,6 +274,7 @@ Drizzle's relational queries (`db.query`) are not set up: `drizzle()` gets no
 | `forms.svelte.ts`             | `formToasts` and `Pending`                                                 |
 | `resource.svelte.ts`          | `Resource`: fetches a JSON endpoint, tracking value, loading and failure   |
 | `auth-client.ts`              | the BetterAuth browser client, for sign-in and sign-out                    |
+| `auth-providers.ts`           | the sign-in providers, their labels and order, and sign-in error messages  |
 | `utils.ts`                    | `cn`, and the prop-type helpers the vendored `ui/` components import       |
 | `utils/`                      | `date`, `flag`, `fuzzy`, `json`, `plural`, `topics`                        |
 | `hooks/is-mobile.svelte.ts`   | `IsMobile`, a viewport media query                                         |

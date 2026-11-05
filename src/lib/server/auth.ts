@@ -15,6 +15,8 @@ import * as schema from './db/schema';
 export type AuthEnv = {
 	GITHUB_CLIENT_ID?: string;
 	GITHUB_CLIENT_SECRET?: string;
+	GOOGLE_CLIENT_ID?: string;
+	GOOGLE_CLIENT_SECRET?: string;
 	BETTER_AUTH_SECRET?: string;
 	TRUSTED_ORIGINS?: string;
 };
@@ -44,6 +46,29 @@ export function authOptions(database: Parameters<typeof drizzleAdapter>[0], env:
 			github: {
 				clientId: env.GITHUB_CLIENT_ID as string,
 				clientSecret: env.GITHUB_CLIENT_SECRET as string
+			},
+			google: {
+				clientId: env.GOOGLE_CLIENT_ID as string,
+				clientSecret: env.GOOGLE_CLIENT_SECRET as string,
+				// Without it Google silently reuses the browser's current Google
+				// account, so someone signed into the wrong one has no way to switch.
+				prompt: 'select_account'
+			}
+		},
+		account: {
+			accountLinking: {
+				// Implicit linking: signing in with a second provider under the same
+				// email joins the existing user instead of creating a second one, so
+				// role, assignments, uploads and progress follow the person. These are
+				// BetterAuth's defaults, spelled out because the rules matter. It links
+				// only when the new provider says the email is verified AND the
+				// existing user's email is verified (`requireLocalEmailVerified`).
+				// Never add `trustedProviders` or `requireLocalEmailVerified: false`:
+				// either lets someone who registers an unverified copy of a victim's
+				// email at one provider take over the victim's user through the other.
+				// See docs/auth.md, "Account linking".
+				enabled: true,
+				disableImplicitLinking: false
 			}
 		},
 		user: {

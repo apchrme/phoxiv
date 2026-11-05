@@ -6,7 +6,7 @@
 	import * as Card from '#lib/components/ui/card/index.js';
 	import SvelteSeo from 'svelte-seo';
 	import { LogOut, Mail, Shield } from '@lucide/svelte';
-	import Github from '#lib/components/GithubMark.svelte';
+	import ProviderMark from '#lib/components/ProviderMark.svelte';
 	import UserAvatar from '#lib/components/UserAvatar.svelte';
 	import PageHeader from '#lib/components/PageHeader.svelte';
 
@@ -48,10 +48,17 @@
 
 			<div class="flex flex-col items-center gap-1 text-center">
 				<h2 class="text-xl font-semibold text-foreground">{user?.name}</h2>
-				<span class="flex items-center gap-1.5 text-sm text-muted-foreground">
-					<Github class="size-3.5" />
-					GitHub account
-				</span>
+				<ul
+					aria-label="Sign-in methods"
+					class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-muted-foreground"
+				>
+					{#each data.providers as provider (provider.id)}
+						<li class="flex items-center gap-1.5">
+							<ProviderMark provider={provider.id} class="size-3.5" />
+							{provider.label}
+						</li>
+					{/each}
+				</ul>
 			</div>
 		</Card.Content>
 	</Card.Root>

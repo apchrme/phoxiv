@@ -1,4 +1,5 @@
 import type {
+	account,
 	activityLog,
 	fileText,
 	olympiads,
@@ -10,6 +11,7 @@ import type {
 	yearFiles,
 	years
 } from '../../../src/lib/server/db/schema';
+import type { AuthProviderId } from '../../../src/lib/auth-providers';
 import { CDN_BASE_URL } from '../../../src/lib/constants';
 import { SUPERADMIN_EMAIL } from '../support/env';
 
@@ -40,6 +42,7 @@ type ProblemFile = typeof problemFiles.$inferInsert;
 type FileText = typeof fileText.$inferInsert;
 type User = typeof user.$inferInsert;
 type Session = typeof session.$inferInsert;
+type Account = typeof account.$inferInsert;
 type Progress = typeof problemProgress.$inferInsert;
 type ActivityLog = typeof activityLog.$inferInsert;
 
@@ -61,6 +64,11 @@ export type SeedUser = {
 	 * `none`: no session, for accounts that are only ever a target.
 	 */
 	session?: 'fresh' | 'stale' | 'none';
+	/**
+	 * The sign-in methods linked to the user, one `account` row each. Defaults to
+	 * GitHub alone; more than one is what implicit linking leaves behind.
+	 */
+	providers?: readonly AuthProviderId[];
 };
 
 /**
@@ -86,8 +94,17 @@ export const USERS = {
 		role: 'contributor',
 		assignedOlympiads: ['e2e-assigned']
 	},
-	/** frozen. A plain signed-in visitor. */
-	user: { id: 'e2e-user', name: 'Uma User', email: 'user@e2e.test', role: null },
+	/**
+	 * frozen. A plain signed-in visitor, with GitHub and Google linked, as
+	 * implicit linking leaves a user who signed in both ways (auth/sign-in.spec.ts).
+	 */
+	user: {
+		id: 'e2e-user',
+		name: 'Uma User',
+		email: 'user@e2e.test',
+		role: null,
+		providers: ['github', 'google']
+	},
 	/**
 	 * frozen. A contributor banned by hand in SQL: `banned` set, sessions kept.
 	 * The hook and `/api/auth/*` must both treat this session as signed out.
@@ -1260,6 +1277,18 @@ function sessionRow(key: UserKey, u: SeedUser, now: Date): Session | null {
 	};
 }
 
+/** The user's `account` rows: no tokens, since no test calls a provider. */
+function accountRows(u: SeedUser, now: Date): Account[] {
+	return (u.providers ?? ['github']).map((providerId) => ({
+		id: `e2e-account-${u.id}-${providerId}`,
+		providerId,
+		accountId: `${u.id}-${providerId}`,
+		userId: u.id,
+		createdAt: now,
+		updatedAt: now
+	}));
+}
+
 /** Every table's rows, in foreign-key order. */
 export function seedRows(now: Date) {
 	const users = [
@@ -1270,6 +1299,9 @@ export function seedRows(now: Date) {
 	const sessions = (Object.entries(USERS) as [UserKey, SeedUser][])
 		.map(([key, u]) => sessionRow(key, u, now))
 		.filter((s): s is Session => s !== null);
+	const accounts = Object.values(USERS as Record<string, SeedUser>).flatMap((u) =>
+		accountRows(u, now)
+	);
 	const progress: Progress[] = [
 		// olympiads/progress-filters.spec.ts: USERS.progressReader's progress on the
 		// frozen alpha, never written. 2019: T1 scored, T3 done with no score, T2
@@ -1323,6 +1355,7 @@ export function seedRows(now: Date) {
 		fileText: [...FILE_TEXT, ...OWNED_FILE_TEXT, ...FILES_PANEL_ROWS.fileText],
 		user: users,
 		session: sessions,
+		account: accounts,
 		problemProgress: progress,
 		activityLog: log
 	};

@@ -161,7 +161,7 @@ export type FileSearchResponse = {
  */
 export type Contributor = {
 	name: string;
-	/** GitHub avatar url, or null when the account has none. */
+	/** Avatar url from the sign-in provider (GitHub or Google), or null when there is none. */
 	image: string | null;
 	/** Files this person uploaded that are still in the archive. */
 	uploads: number;

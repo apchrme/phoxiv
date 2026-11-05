@@ -49,6 +49,8 @@ The rest are Worker secrets:
 bunx wrangler secret put BETTER_AUTH_SECRET
 bunx wrangler secret put GITHUB_CLIENT_ID
 bunx wrangler secret put GITHUB_CLIENT_SECRET
+bunx wrangler secret put GOOGLE_CLIENT_ID
+bunx wrangler secret put GOOGLE_CLIENT_SECRET
 bunx wrangler secret put TRUSTED_ORIGINS
 bunx wrangler secret put SUPERADMIN_EMAIL     # optional
 ```

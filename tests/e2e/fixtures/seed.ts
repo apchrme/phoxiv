@@ -37,6 +37,7 @@ export async function seed(d1: D1Database, now = new Date()): Promise<void> {
 	// Users first: file rows name their uploader (`uploaded_by`).
 	await insertChunked(db, schema.user, rows.user);
 	await insertChunked(db, schema.session, rows.session);
+	await insertChunked(db, schema.account, rows.account);
 	await insertChunked(db, schema.olympiads, rows.olympiads);
 	await insertChunked(db, schema.years, rows.years);
 	await insertChunked(db, schema.problems, rows.problems);

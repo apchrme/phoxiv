@@ -1,7 +1,9 @@
 # Authentication and authorisation
 
-Authentication is [BetterAuth](https://better-auth.com/) with GitHub as the only
-provider, plus BetterAuth's `admin` plugin. Authorisation (who may edit what) is
+Authentication is [BetterAuth](https://better-auth.com/) with two OAuth
+providers, GitHub and Google, plus BetterAuth's `admin` plugin. Signing in with
+either under the same verified email leads to the same user (see
+[Account linking](#account-linking)). Authorisation (who may edit what) is
 ours, in [`#lib/server/guard.ts`](../src/lib/server/guard.ts).
 
 ## Why `createAuth` is a function
@@ -57,15 +59,20 @@ Drizzle model does not match.
 
 This is all of `authOptions`. Everything else is BetterAuth's default.
 
-| Option                  | Value                                                            |
-| ----------------------- | ---------------------------------------------------------------- |
-| `secret`                | `BETTER_AUTH_SECRET`                                             |
-| `trustedOrigins`        | `TRUSTED_ORIGINS`, comma-split; `[]` if unset                    |
-| `database`              | `drizzleAdapter` over the four auth tables, `provider: 'sqlite'` |
-| `socialProviders`       | `github` only; there is no email/password sign-in                |
-| `user.additionalFields` | `assignedOlympiads`, with `input: false`                         |
-| `plugins`               | `admin({ adminRoles: ['admin'] })`                               |
+| Option                   | Value                                                            |
+| ------------------------ | ---------------------------------------------------------------- |
+| `secret`                 | `BETTER_AUTH_SECRET`                                             |
+| `trustedOrigins`         | `TRUSTED_ORIGINS`, comma-split; `[]` if unset                    |
+| `database`               | `drizzleAdapter` over the four auth tables, `provider: 'sqlite'` |
+| `socialProviders`        | `github`, and `google` with `prompt: 'select_account'`           |
+| `account.accountLinking` | `enabled: true`, `disableImplicitLinking: false` (the defaults)  |
+| `user.additionalFields`  | `assignedOlympiads`, with `input: false`                         |
+| `plugins`                | `admin({ adminRoles: ['admin'] })`                               |
 
+- There is no email/password sign-in.
+- Google asks which Google account to use every time (`select_account`).
+  Otherwise it reuses the browser's current one silently, and someone signed
+  into the wrong account has no way to switch.
 - No session lifetime is configured; BetterAuth's defaults apply. See
   [Sessions](#sessions).
 - Sign-out is BetterAuth's own endpoint, called through `#lib/auth-client.ts`.
@@ -77,7 +84,7 @@ This is all of `authOptions`. Everything else is BetterAuth's default.
   [deployment.md](./deployment.md#backfilling-the-text-index). The e2e suite
   signs this cookie itself for its seeded sessions, and its canary fails first
   if the name or signing ever drifts
-  ([testing.md](./testing.md#signing-in-without-github)).
+  ([testing.md](./testing.md#signing-in-without-a-provider)).
 - `api/auth/[...all]` is the only `/api/` route that reads a cookie. It must
   never get cache headers.
 
@@ -126,18 +133,60 @@ applies two rules of its own before handing the request to BetterAuth:
 
 ## How an account is identified
 
-BetterAuth (1.7+) identifies an external account by `(issuer, account_id)`, with
-a unique index. `account.issuer` is therefore required. Without it, the GitHub
-round trip succeeds but no session is created:
+A **user** is a person: one `user` row, which holds the role, the assignments,
+the uploads and the progress. An **account** is one way of signing in as them:
+one `account` row per provider, keyed by `(provider_id, account_id)` with a
+unique index, where `account_id` is the provider's own id for the person.
+BetterAuth refuses a sign-in when two rows match one key, and the index stops a
+duplicate being written in the first place.
 
-```
-The field "issuer" does not exist in the schema for the model "account".
-```
-
-GitHub has no issuer, so BetterAuth writes `local:oauth:github`. See
+BetterAuth 1.7.0–1.7.2 keyed accounts on an `issuer` column instead, and 1.7.3
+went back to `(provider_id, account_id)` and stopped writing `issuer`. The
+column is gone: left in place, its `'local:oauth:github'` default would have
+labelled every Google account as GitHub. See
 [data-model.md](./data-model.md#auth-tables). If a BetterAuth upgrade breaks
 login, compare `@better-auth/core/dist/db/get-tables.mjs` with `schema.ts`
 first.
+
+## Account linking
+
+When someone signs in with a provider that has no `account` row for them yet,
+BetterAuth looks for a user with the same email. If one exists, it **links**:
+it adds an `account` row to that user and signs them in as them. Otherwise it
+creates a new user. This is _implicit_ linking, on by default and spelled out
+in `authOptions` so the rule is visible. Nobody has to link accounts by hand,
+and a contributor who signs in with Google keeps their role, assignments and
+upload credit from GitHub.
+
+It links only when **both** sides vouch for the email:
+
+- **The new provider says it is verified.** Google sends `email_verified` in its
+  id token. GitHub reports the `verified` flag of the email it returns.
+- **The existing user's email is verified** (`user.email_verified`), which
+  BetterAuth's `requireLocalEmailVerified` (default `true`) enforces. The flag
+  comes from whichever provider created the user. If that provider reported it
+  unverified, it turns true the next time the user signs in there with the
+  email verified; until then, a second provider can't link.
+
+Never add `trustedProviders` or set `requireLocalEmailVerified: false`. Either
+one drops a check, so whoever registers an unverified copy of someone's email
+at one provider could have that person's account at the other linked into
+their user.
+
+When a check fails, BetterAuth refuses the sign-in with `account_not_linked`
+rather than creating a second user under the same email. `user.email` is
+unique, so a second user could not exist anyway. The login page passes
+itself as `errorCallbackURL`, so the visitor lands back there, `?redirect=`
+kept, with a message from `signInErrorMessage()` in
+[`#lib/auth-providers.ts`](../src/lib/auth-providers.ts), not on BetterAuth's
+bare error page.
+
+- Linking keeps the user's name and avatar. BetterAuth copies the new
+  provider's profile only with `updateUserInfoOnLink`, which is off.
+- Linking matches on email only. An account at a provider under a different
+  email is a different user.
+- There is no unlink UI. `/profile` lists the linked providers, read from
+  `account`.
 
 ## The three roles
 
@@ -258,7 +307,14 @@ Rules:
 
 [`#lib/auth-client.ts`](../src/lib/auth-client.ts) is a plain `createAuthClient`,
 used only for sign-in and sign-out. It has no `adminClient` plugin: the admin
-panel acts through form actions, never `authClient.admin.*`. Components get the user
+panel acts through form actions, never `authClient.admin.*`.
+
+The login page offers one button per entry in
+[`#lib/auth-providers.ts`](../src/lib/auth-providers.ts). Adding a provider
+takes a `socialProviders` entry in `auth.ts`, an entry in `auth-providers.ts`, a
+mark in `ProviderMark.svelte`, and its two secrets.
+
+Components get the user
 as `data.user` from the root
 [`+layout.server.ts`](../src/routes/+layout.server.ts). It drives the avatar, the
 sign-in button, and whether `secondaryNavFor()` adds the admin link.

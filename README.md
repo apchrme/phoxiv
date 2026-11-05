@@ -42,7 +42,7 @@ bun run db:migrate        # create the local D1 database
 bun run dev               # http://localhost:5173
 ```
 
-You start with an empty database and no admin. Sign in once with GitHub, then
+You start with an empty database and no admin. Sign in once with GitHub or Google, then
 promote yourself:
 
 ```sh
@@ -89,7 +89,7 @@ migrations, never re-run the shadcn-svelte CLI, never change the R2 key layout.
 - shadcn-svelte over bits-ui, vendored and customised
 - Drizzle over Cloudflare D1, with an SQLite FTS5 index for deep search
 - Cloudflare R2 for the files
-- BetterAuth with GitHub sign-in
+- BetterAuth with GitHub and Google sign-in
 - Bun
 - Playwright, for the end-to-end suite
 

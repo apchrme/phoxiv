@@ -15,7 +15,14 @@
 </script>
 
 {#if user?.image}
-	<img src={user.image} alt={user.name} class={cn('shrink-0 rounded-full', className)} />
+	<!-- no-referrer: Google's avatar host (lh3.googleusercontent.com) intermittently
+	     answers a hotlinked request that carries a Referer with 403. -->
+	<img
+		src={user.image}
+		alt={user.name}
+		referrerpolicy="no-referrer"
+		class={cn('shrink-0 rounded-full', className)}
+	/>
 {:else}
 	<div
 		class={cn('flex shrink-0 items-center justify-center rounded-full bg-primary/10', className)}

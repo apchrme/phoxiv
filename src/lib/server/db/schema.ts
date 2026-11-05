@@ -157,11 +157,10 @@ export const account = sqliteTable(
 	'account',
 	{
 		id: text('id').primaryKey(),
-		// Required by better-auth 1.7+, which keys accounts on (issuer, accountId);
-		// without it the OAuth callback fails. GitHub has no issuer, so better-auth
-		// writes `local:oauth:github`. The default lets SQLite add the NOT NULL
-		// column and backfills older rows (all GitHub); better-auth always sets it.
-		issuer: text('issuer').notNull().default('local:oauth:github'),
+		// No `issuer` column. better-auth 1.7.0–1.7.2 required one; 1.7.3 dropped
+		// it and went back to keying accounts on (providerId, accountId). Left in
+		// place, its 'local:oauth:github' default would stamp every Google row as
+		// GitHub. See docs/auth.md, "How an account is identified".
 		accountId: text('account_id').notNull(),
 		providerId: text('provider_id').notNull(),
 		userId: text('user_id')
@@ -187,7 +186,10 @@ export const account = sqliteTable(
 	},
 	(table) => [
 		index('account_userId_idx').on(table.userId),
-		uniqueIndex('account_issuer_accountId_idx').on(table.issuer, table.accountId)
+		// One row per external identity. better-auth refuses a sign-in when two rows
+		// match, so the index turns a racing double callback into a failed insert
+		// instead of an account that can never sign in again.
+		uniqueIndex('account_providerId_accountId_idx').on(table.providerId, table.accountId)
 	]
 );
 

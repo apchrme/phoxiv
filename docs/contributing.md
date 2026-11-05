@@ -4,9 +4,10 @@
 
 - [Bun](https://bun.sh/), the package manager and script runner. `bun.lock` is
   the committed lockfile.
-- A GitHub OAuth app, to sign in locally. It is the only way past the login page
-  in a browser. The e2e suite signs in without it (see
-  [testing.md](./testing.md#signing-in-without-github)).
+- A GitHub OAuth app or a Google OAuth client (ideally both), to sign in
+  locally. They are the only way past the login page in a browser. The e2e
+  suite signs in without them (see
+  [testing.md](./testing.md#signing-in-without-a-provider)).
 - Playwright's Chromium, for the e2e suite: `bunx playwright install chromium`,
   once per machine.
 - A Cloudflare account, only if you need the deployed database or bucket.
@@ -27,13 +28,14 @@ wrangler exposes `.env` to the app as the Worker's `env`, imported from
 `cloudflare:workers`, which is where every variable is read. Nothing uses
 SvelteKit's `$app/env/*` modules, so bindings and secrets come from one place.
 
-| Variable                       | Where to get it                                                                       |
-| ------------------------------ | ------------------------------------------------------------------------------------- |
-| `BETTER_AUTH_SECRET`           | `openssl rand -base64 32`                                                             |
-| `BETTER_AUTH_URL`              | `http://localhost:5173` locally                                                       |
-| `GITHUB_CLIENT_ID` / `_SECRET` | a GitHub OAuth app whose callback URL is `<BETTER_AUTH_URL>/api/auth/callback/github` |
-| `TRUSTED_ORIGINS`              | comma-separated; `http://localhost:5173` locally, plus `http://phoxiv.org` (below)    |
-| `SUPERADMIN_EMAIL`             | optional. The one admin who cannot be demoted or banned. Leave empty to disable       |
+| Variable                       | Where to get it                                                                                                             |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `BETTER_AUTH_SECRET`           | `openssl rand -base64 32`                                                                                                   |
+| `BETTER_AUTH_URL`              | `http://localhost:5173` locally                                                                                             |
+| `GITHUB_CLIENT_ID` / `_SECRET` | a GitHub OAuth app whose callback URL is `<BETTER_AUTH_URL>/api/auth/callback/github`                                       |
+| `GOOGLE_CLIENT_ID` / `_SECRET` | a Google Cloud "Web application" OAuth client whose authorised redirect URI is `<BETTER_AUTH_URL>/api/auth/callback/google` |
+| `TRUSTED_ORIGINS`              | comma-separated; `http://localhost:5173` locally, plus `http://phoxiv.org` (below)                                          |
+| `SUPERADMIN_EMAIL`             | optional. The one admin who cannot be demoted or banned. Leave empty to disable                                             |
 
 Create the local database:
 
@@ -42,7 +44,7 @@ bun run db:migrate        # applies every migration to the local D1
 ```
 
 The database starts empty and there is no bootstrap admin. Sign in once through
-GitHub to create your user row, then promote yourself:
+GitHub or Google to create your user row, then promote yourself:
 
 ```sh
 bunx wrangler d1 execute DB --local \
@@ -163,8 +165,10 @@ Then click through whatever you touched that the suite doesn't reach, under
 **Anywhere**
 
 - After any change near auth, or a better-auth upgrade: sign in through GitHub
-  and sign out again. The suite forges its sessions, so nothing else exercises
-  the real OAuth round trip.
+  and through Google, and sign out again. The suite forges its sessions, so
+  nothing else exercises the real OAuth round trip. With one email verified on
+  both, the second sign-in must land on the same user, and `/profile` must list
+  both providers (see [auth.md](./auth.md#account-linking)).
 - On a real phone, the pages you touched still work by tap. The suite emulates
   touch in Chromium, which misses iOS Safari and the on-screen keyboard.
 - Anything you restyled, in dark mode as well as light: Catppuccin Mocha maps

@@ -1,6 +1,6 @@
 ---
 title: Privacy Policy
-description: "Last updated: 23 October 2026"
+description: "Last updated: 5 November 2026"
 seoDescription: phoXiv's Privacy Policy
 ---
 
@@ -15,17 +15,24 @@ We use [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/) to 
 
 ### Account information
 
-Creating an account is entirely optional. Browsing olympiad problems requires no sign-in. If you choose to sign in with GitHub, we receive
+Creating an account is entirely optional. Browsing olympiad problems requires no sign-in. You can sign in with GitHub or with Google.
+
+If you sign in with GitHub, we receive
 
 1. The information GitHub makes available by default (your GitHub username, display name and profile picture)
 2. Your email address
 
 We request **read-only access to your email address** and nothing else. We do not receive access to your repositories, followers/following, or any other GitHub data.
 
+If you sign in with Google, we receive your name, email address and profile picture (Google's basic `openid`, `email` and `profile` scopes), and whether Google has verified your email address. We do not receive access to your Gmail, Drive, contacts, calendar or any other Google data.
+
+If you sign in with both under the same verified email address, they lead to the same phoXiv account.
+
 The information stored in our database when you create an account is:
 
-- Your name and email address (as provided by GitHub)
-- Your profile picture URL (as provided by GitHub)
+- Your name and email address (as provided by the sign-in method you first used)
+- Your profile picture URL (as provided by that sign-in method)
+- Which sign-in methods you have used
 - The date your phoXiv account is created
 - Your account role (default: user)
 - If you are a contributor or administrator, which files you uploaded
@@ -47,7 +54,7 @@ Your account data is retained for as long as your account exists. You may reques
 
 ## Third-party services
 
-The Site is hosted on [Cloudflare](https://www.cloudflare.com), whose infrastructure processes all traffic to the Site. Authentication is handled via [GitHub OAuth](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-with-a-github-app-on-behalf-of-a-user); you will be redirected to GitHub's own sign-in page and are subject to [GitHub's privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement) during that process.
+The Site is hosted on [Cloudflare](https://www.cloudflare.com), whose infrastructure processes all traffic to the Site. Authentication is handled via [GitHub OAuth](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-with-a-github-app-on-behalf-of-a-user); you will be redirected to GitHub's own sign-in page and are subject to [GitHub's privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement) during that process. Signing in with Google is handled via [Google OAuth](https://developers.google.com/identity/protocols/oauth2); you will be redirected to Google's own sign-in page and are subject to [Google's privacy policy](https://policies.google.com/privacy) during that process.
 
 ## Cookies
 

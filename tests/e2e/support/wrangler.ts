@@ -21,13 +21,13 @@ const REMOTE_FLAGS = ['--remote', '-r', '--experimental-remote', '--x-remote-bin
  * - `CLOUDFLARE_*` / `CF_*`: an API token would let a slip reach the real account.
  *   `CLOUDFLARE_INCLUDE_PROCESS_ENV` would also leak this process's env into the
  *   Worker, and `CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV=false` would drop `.env.test`.
- * - `BETTER_AUTH_*`, `GITHUB_*`: the developer's real secrets, which Bun autoloads
- *   from `.env`. The Worker must see only `.env.test`.
+ * - `BETTER_AUTH_*`, `GITHUB_*`, `GOOGLE_*`: the developer's real secrets, which Bun
+ *   autoloads from `.env`. The Worker must see only `.env.test`.
  * - `NODE_ENV`, `TEST`: either one set to `test` makes BetterAuth skip its origin
  *   check (`isTest()` in better-auth's create-context), so the suite would pass
  *   against a server that is laxer than production.
  */
-const STRIPPED_PREFIXES = ['CLOUDFLARE_', 'CF_', 'BETTER_AUTH_', 'GITHUB_'];
+const STRIPPED_PREFIXES = ['CLOUDFLARE_', 'CF_', 'BETTER_AUTH_', 'GITHUB_', 'GOOGLE_'];
 const STRIPPED_NAMES = ['NODE_ENV', 'TEST'];
 
 /** Keys of the developer's `.env`, which Bun autoloads into `process.env`. */

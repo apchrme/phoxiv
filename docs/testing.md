@@ -172,7 +172,7 @@ login` token lives in your user profile, beyond any environment variable.
   production with your credentials.
 - **The environment is scrubbed**, in the server process itself and in every
   child. `CLOUDFLARE_*` and `CF_*` are removed, so a token in your shell can't
-  reach the account. `BETTER_AUTH_*`, `GITHUB_*` and every key in your `.env`
+  reach the account. `BETTER_AUTH_*`, `GITHUB_*`, `GOOGLE_*` and every key in your `.env`
   are removed, because Bun autoloads `.env` and the Worker must see only
   `.env.test`. `CLOUDFLARE_CF_FETCH_ENABLED=false` stops Miniflare downloading
   `request.cf` data from Cloudflare.
@@ -185,7 +185,7 @@ login` token lives in your user profile, beyond any environment variable.
   exact match, so no edit can point it at `.wrangler/state`, which holds your
   own local database.
 - **Every external request is aborted** by the `test` fixture, so no page in a
-  spec loads anything from the CDN or GitHub. The harness checks that this works.
+  spec loads anything from the CDN, GitHub or Google. The harness checks that this works.
 
 ## The test environment
 
@@ -194,13 +194,14 @@ reads it through `--env-file`, which replaces `.env` and `.dev.vars` entirely, a
 its values override `vars` in `wrangler.jsonc`. `support/env.ts` reads the same
 file for the tests.
 
-| Variable                       | Value and why                                                                        |
-| ------------------------------ | ------------------------------------------------------------------------------------ |
-| `BETTER_AUTH_SECRET`           | a dummy. The tests sign session cookies with it                                      |
-| `BETTER_AUTH_URL`              | `http://127.0.0.1:8799`. The only place the e2e port is written; everything reads it |
-| `GITHUB_CLIENT_ID` / `_SECRET` | dummies. Nothing in the suite signs in through GitHub                                |
-| `TRUSTED_ORIGINS`              | the same origin. Redundant: BetterAuth always trusts `BETTER_AUTH_URL`'s origin      |
-| `SUPERADMIN_EMAIL`             | `USERS.superadmin`'s email, so the superadmin refusals can be tested                 |
+| Variable                       | Value and why                                                                            |
+| ------------------------------ | ---------------------------------------------------------------------------------------- |
+| `BETTER_AUTH_SECRET`           | a dummy. The tests sign session cookies with it                                          |
+| `BETTER_AUTH_URL`              | `http://127.0.0.1:8799`. The only place the e2e port is written; everything reads it     |
+| `GITHUB_CLIENT_ID` / `_SECRET` | dummies. No spec completes a GitHub sign-in; `auth/sign-in` checks the id reaches GitHub |
+| `GOOGLE_CLIENT_ID` / `_SECRET` | dummies, the same way for Google                                                         |
+| `TRUSTED_ORIGINS`              | the same origin. Redundant: BetterAuth always trusts `BETTER_AUTH_URL`'s origin          |
+| `SUPERADMIN_EMAIL`             | `USERS.superadmin`'s email, so the superadmin refusals can be tested                     |
 
 It is committed on purpose: every value is a dummy that works only against the
 local e2e server. Keep comments on their own lines. wrangler's
@@ -262,7 +263,7 @@ The documents a spec uploads are in `fixtures/files/`: `text.pdf` (two pages,
 holding `PHRASES.textPdf`) and `scanned.pdf` (one page that is only an image).
 `.gitattributes` marks them so git never rewrites their line endings.
 
-## Signing in without GitHub
+## Signing in without a provider
 
 Each seeded user has a session row. A test presents its token in the cookie
 BetterAuth expects, signed the way BetterAuth signs it
@@ -275,12 +276,16 @@ better-auth.session_token = encodeURIComponent(token + "." + base64(HMAC-SHA256(
 On `https://phoxiv.org` the name gains a `__Secure-` prefix; the e2e origin is
 http, so it doesn't. Nothing in the app changes for tests.
 
+Each seeded user also has one `account` row per provider in its `providers`
+(GitHub alone by default), with no tokens, since nothing calls a provider. The
+profile reads them to list the sign-in methods.
+
 | Key              | Role                                             | Use                                                  | Owner                      |
 | ---------------- | ------------------------------------------------ | ---------------------------------------------------- | -------------------------- |
 | `admin`          | admin                                            | the admin most specs act as; never a target          | frozen                     |
 | `superadmin`     | admin, `SUPERADMIN_EMAIL`, no session            | a target the admin panel must refuse to modify       | frozen                     |
 | `contributor`    | contributor, assigned `e2e-assigned`             | the contributor in the access-control matrix         | frozen                     |
-| `user`           | none                                             | a plain signed-in visitor                            | frozen                     |
+| `user`           | none; GitHub and Google linked                   | a plain signed-in visitor                            | frozen                     |
 | `banned`         | contributor, `banned` set by hand, session kept  | must be treated as signed out everywhere             | frozen                     |
 | `stale`          | none; the session is due a refresh               | the refreshed cookie must reach the browser          | http/cache-headers         |
 | `apiTarget`      | none, no session                                 | the target of closed admin calls and a cancelled ban | auth/ban                   |
@@ -503,7 +508,7 @@ Names that are easy to get wrong:
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `specs/smoke/`      | the harness: the canary, the signed-out redirect, the sentinel, loopback                                                                                                                                      | this file                                                                                                                                                                                     |
 | `specs/http/`       | every route's cache header, the legacy redirects, the `/api/*` shapes                                                                                                                                         | [architecture.md](./architecture.md#caching-and-the-route-tree), [deployment.md](./deployment.md#purging-the-cache-after-an-api-change), [search.md](./search.md#cost-controls-and-the-cache) |
-| `specs/auth/`       | the role × route matrix, bans, BetterAuth's closed admin endpoints                                                                                                                                            | [auth.md](./auth.md#which-guard-each-route-uses)                                                                                                                                              |
+| `specs/auth/`       | the role × route matrix, bans, BetterAuth's closed admin endpoints, the sign-in providers                                                                                                                     | [auth.md](./auth.md#which-guard-each-route-uses)                                                                                                                                              |
 | `specs/admin/`      | changing a role; the users table's paging and olympiad assignments; the Log tab's paging; the Index tab's counts and maintenance actions                                                                      | the submit loops in `UserRowActions.svelte` and `IndexPanel.svelte`; the log's id cursor; [auth.md](./auth.md#the-admin-panel), [search.md](./search.md#operating-the-index)                  |
 | `specs/contribute/` | creating an olympiad, the icon, the year editor's rows, topics, duplicates and links, uploads, their uploader and text extraction, reordering files, deleting files and years, `titles.csv` export and import | the icon data loss, the `{#if}` row shift, rule 6 (`actionFail`); [data-model.md](./data-model.md#r2-key-layout), [search.md](./search.md#the-write-path)                                     |
 | `specs/olympiads/`  | the index's order, search, tags and states; the olympiad page's 404 and what it must never render; its contributors list; tracking progress; the status filter, year totals and the stale-response guards     | [data-model.md](./data-model.md#problem_progress)                                                                                                                                             |
@@ -514,7 +519,7 @@ Names that are easy to get wrong:
 
 ## What stays manual
 
-Some checks need a person: a real GitHub round trip, IME input, a real touch device,
+Some checks need a person: a real GitHub or Google round trip, account linking, IME input, a real touch device,
 contrast in dark mode, the bundle size. They are listed in
 [contributing.md](./contributing.md#the-gates).
 
