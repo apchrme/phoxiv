@@ -3,14 +3,11 @@
 	import { ArrowRight } from '@lucide/svelte';
 	import * as Kbd from '#lib/components/ui/kbd/index.js';
 
-	let {
-		signedIn = false
-	}: {
-		/** Points blocks 03 and 04 past `/login` for signed-in visitors. */
-		signedIn?: boolean;
-	} = $props();
-
-	/** What the site does. Admin features are left out; almost no visitor can use them. */
+	/**
+	 * What the site does. Admin features are left out; almost no visitor can use
+	 * them. Only signed-out visitors see the landing page (signed-in ones get the
+	 * dashboard), so blocks 03 and 04 always lead to `/login`.
+	 */
 	type Block = {
 		n: string;
 		title: string;
@@ -21,7 +18,7 @@
 		shortcut?: boolean;
 	};
 
-	const blocks: Block[] = $derived([
+	const blocks: Block[] = [
 		{
 			n: '01',
 			title: 'Browse the archive',
@@ -39,18 +36,18 @@
 		{
 			n: '03',
 			title: "Track what you've solved",
-			body: `Mark any problem you have done, and include your score if you want.`,
-			href: signedIn ? resolve('profile') : resolve('login'),
-			cta: signedIn ? 'See your progress' : 'Sign in to track'
+			body: `Mark any problem you have done, and include your score if you want. Earn badges along the way.`,
+			href: resolve('login'),
+			cta: 'Sign in to track'
 		},
 		{
 			n: '04',
 			title: 'Contribute',
 			body: `Don't see an olympiad you like here? Become a contributor and add it!`,
-			href: signedIn ? resolve('contribute') : resolve('login'),
-			cta: signedIn ? 'Open the editor' : 'Sign in to contribute'
+			href: resolve('login'),
+			cta: 'Sign in to contribute'
 		}
-	]);
+	];
 </script>
 
 <div class="flex flex-col gap-16 sm:gap-24">

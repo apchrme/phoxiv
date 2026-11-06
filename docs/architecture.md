@@ -37,13 +37,14 @@ request
 
 ## Caching and the route tree
 
-The route tree is shaped by two cache policies, in
+The route tree is shaped by three cache policies, in
 [`#lib/server/cache.ts`](../src/lib/server/cache.ts):
 
-| Policy              | Header                                       | Used by             |
-| ------------------- | -------------------------------------------- | ------------------- |
-| `setPrivateCache()` | `max-age=14400, must-revalidate, private`    | pages under `(reg)` |
-| `setSharedCache()`  | `max-age=0, s-maxage=86400, must-revalidate` | `/api/*` endpoints  |
+| Policy              | Header                                       | Used by                         |
+| ------------------- | -------------------------------------------- | ------------------------------- |
+| `setPrivateCache()` | `max-age=14400, must-revalidate, private`    | pages under `(reg)`             |
+| `setSharedCache()`  | `max-age=0, s-maxage=86400, must-revalidate` | `/api/*` endpoints              |
+| `setNoStore()`      | `private, no-store`                          | `/`, and the per-user endpoints |
 
 - **Private.** `(reg)` is a route group that exists only so
   [`(reg)/+layout.server.ts`](<../src/routes/(reg)/+layout.server.ts>) can call
@@ -87,14 +88,20 @@ About the shared cache:
 
 ### Routes outside `(reg)`
 
-- `/` sets the private header itself in [`+page.server.ts`](../src/routes/+page.server.ts).
+- `/` is the landing page when signed out and the dashboard when signed in,
+  and sends `no-store` either way from
+  [`+page.server.ts`](../src/routes/+page.server.ts). A cached dashboard would
+  lag every tracked problem. A landing page cached for four hours would still
+  be served right after signing in, because the browser cache doesn't key on
+  the cookie. The landing page reads nothing from D1, so not caching it costs
+  only a render.
 - `/admin` and `/contribute` must never be cached, so they set no header.
   SvelteKit sends no `cache-control` for a server-rendered page and Cloudflare
   does not cache HTML by default.
 - The admin endpoints `reindex/`, `index-stats/` and `activity/` also set no
   headers. They are not under `/api/` because every handler there is shared-cached.
-- `/progress` is per-user and sets `private, no-store` itself. See
-  [per-user progress](#per-user-progress).
+- `/progress` and `/progress/badges` are per-user and call `setNoStore()`
+  themselves. See [per-user progress](#per-user-progress).
 
 `/olympiads/[olympiad]/progress` is inside `(reg)` but is a `+server.ts`, so it
 gets no layout header and sets `private, no-store` itself. `/api/auth/[...all]`
@@ -108,8 +115,9 @@ src/routes/
 ├── +layout.server.ts           exposes locals.user to every page
 ├── +layout.ts                  legacy 308 redirects; passes data through
 ├── +error.svelte, AppSidebar.svelte
-├── +page.svelte / .server.ts   landing page; fetches /api/stats and /api/olympiads
-├── CorpusBand, CorpusTile, StatsBand, FeatureBlocks (.svelte), corpus.ts   landing-page parts
+├── +page.svelte / .server.ts   no-store; Landing.svelte signed out, Dashboard.svelte signed in
+├── Landing, CorpusBand, CorpusTile, StatsBand, FeatureBlocks (.svelte), corpus.ts   landing page
+├── Dashboard.svelte            the user's progress and badges; totals from /api/stats/problems
 │
 ├── (reg)/                      private browser cache
 │   ├── olympiads/              index, and [olympiad]/ with YearPanel, ProblemCard,
@@ -118,14 +126,17 @@ src/routes/
 │   ├── blog/                   index and [slug]/, from #lib/posts/*.svx
 │   ├── resources/, privacy/    .svx pages
 │   ├── team/                   admins and contributors; fetches /api/team
-│   ├── login/                  redirects to /profile if signed in
+│   ├── badges/                 every badge; fetches /api/badges and /progress/badges
+│   ├── login/                  redirects to / if signed in
 │   └── profile/                redirects to /login if not
 │
 ├── admin/                      requireAdmin in +layout.server.ts; never cached
 │   ├── reindex/, index-stats/, activity/   endpoints; each calls requireAdmin itself
-│   └── columns.ts, UsersTable, UserRowActions, ActivityLogTable, IndexPanel
+│   ├── badges/[id]/            badge editor ("new" creates); BadgeForm, ProblemPicker
+│   └── columns.ts, UsersTable, UserRowActions, ActivityLogTable, IndexPanel, BadgesTable
 │
 ├── progress/                   GlobalProgressMap for the ⌘K dialog; private, no-store
+│   └── badges/                 BadgeProgressMap for /badges; private, no-store
 │
 ├── contribute/                 requireContributor in +layout.server.ts; never cached
 │   ├── SelectYearForm.svelte, NewOlympiadForm.svelte
@@ -140,6 +151,8 @@ src/routes/
     ├── search/                 SearchItem[]: the whole corpus, matched in the browser
     ├── search/files/           FileSearchResponse: deep search, matched in D1 by FTS5
     ├── stats/                  landing-page counters
+    ├── stats/problems/         ProblemTotals: the dashboard's denominators
+    ├── badges/                 PublicBadge[]: every badge with its holder count, most held first
     ├── team/                   TeamMember[]: every admin and contributor
     └── auth/[...all]/          the exception: no cache headers
 ```
@@ -166,8 +179,9 @@ key matching a folder in the file's path, else `_`.
 
 ## Why some pages fetch their own data
 
-The landing page, the olympiads index, the olympiad page and `/team` `fetch()`
-their lists from `/api/*` in the browser instead of using a server `load`. A load costs
+The landing page, the olympiads index, the olympiad page, `/team` and
+`/badges` `fetch()` their lists from `/api/*` in the browser instead of using
+a server `load`. So does the dashboard, for its archive-wide totals. A load costs
 a D1 read per visit; the fetch is answered by the shared cache. The data can be
 up to a day old, which is fine for an archive that changes rarely. Changing an
 `/api/*` response shape needs a purge — see
@@ -204,6 +218,19 @@ olympiad as a `ProgressMap`: one key per tracked problem, nothing else.
 - It lives at the root because `/olympiads/progress` would shadow an olympiad
   whose id is `progress`.
 
+`/progress/badges` returns the user's standing on every badge as a
+`BadgeProgressMap`: qualifying completions, when it was earned, and, for a
+hidden badge the user holds, the requirement that `/api/badges` leaves out, by
+badge id. Its count is `null` while the requirement is hidden from the user.
+Evaluating also syncs the user's awards, so it can write, but it reads only the
+user's own rows (see [data-model.md](./data-model.md#badges-badges-badge_problems-user_badges)).
+`/badges` itself stays in `(reg)` and shows no per-user data from its load.
+
+The dashboard is the exception to "fetch, don't load": `/` is outside `(reg)`
+and sends `no-store`, so its load can return the user's rows and badges
+directly. The archive-wide totals it divides by are the same for everyone, so
+they come from the shared-cached `/api/stats/problems` instead.
+
 `StatusFilter.svelte` (All / Done / To do) filters these maps in the browser and
 shows only when signed in. The olympiad page and the ⌘K dialog share it and
 `#lib/filters.ts`, so they agree on what "Done" means — see
@@ -223,7 +250,7 @@ Server-only; SvelteKit refuses to bundle it into the client.
 | `auth.ts`         | BetterAuth configuration, as a function of `(database, env)`                         |
 | `auth-cli.ts`     | static auth instance for the schema generator                                        |
 | `guard.ts`        | `requireAdmin`, `requireContributor`, `requireOlympiadEditor`, permission predicates |
-| `cache.ts`        | the two cache policies                                                               |
+| `cache.ts`        | the three cache policies                                                             |
 | `forms.ts`        | form-field parsing and the action-result envelope                                    |
 | `uploads.ts`      | server-side enforcement of `#lib/uploads.ts`                                         |
 | `storage.ts`      | every R2 read and write, and the object-key layout                                   |
@@ -254,34 +281,37 @@ Drizzle's relational queries (`db.query`) are not set up: `drizzle()` gets no
 | `years.ts`        | one year's row, an olympiad's year numbers, and creating a year              |
 | `content.ts`      | joined reads for the public API shapes and the year editor; `getSearchIndex` |
 | `progress.ts`     | a user's tracked problems, per olympiad and archive-wide                     |
+| `badges.ts`       | badges, evaluating and syncing one user's awards, `recomputeBadge`, editing  |
 | `files.ts`        | the full-text index: query sanitising, reads, writes, upkeep                 |
 | `contributors.ts` | upload counts per user, for an olympiad's contributors list and `/team`      |
 
 ### Client-safe `#lib/`
 
-| Module                        | Responsibility                                                             |
-| ----------------------------- | -------------------------------------------------------------------------- |
-| `types.ts`                    | shared types and enums, the public API shapes, `isOlympiadId`              |
-| `uploads.ts`                  | the upload allow-list, `slugifyLabel`, `collidingLabel`, `isHttpUrl`       |
-| `constants.ts`                | constants both sides need, including `CDN_BASE_URL`                        |
-| `nav.ts`                      | navigation links and `secondaryNavFor(user)`                               |
-| `posts.ts`                    | loads blog posts from `#lib/posts/*.svx`                                   |
-| `activity.ts`                 | activity-log labels, and the assignable roles with their labels            |
-| `progress.ts`                 | score rules for the editor, CSV import, `trackProblem` and problem cards   |
-| `filters.ts`                  | topic and progress predicates for the olympiad page and ⌘K dialog          |
-| `search.ts`                   | deep-search normalisation for the dialog, the endpoint and text extraction |
-| `pdf-text.ts`                 | browser-side PDF text extraction                                           |
-| `forms.svelte.ts`             | `formToasts` and `Pending`                                                 |
-| `resource.svelte.ts`          | `Resource`: fetches a JSON endpoint, tracking value, loading and failure   |
-| `auth-client.ts`              | the BetterAuth browser client, for sign-in and sign-out                    |
-| `auth-providers.ts`           | the sign-in providers, their labels and order, and sign-in error messages  |
-| `utils.ts`                    | `cn`, and the prop-type helpers the vendored `ui/` components import       |
-| `utils/`                      | `date`, `flag`, `fuzzy`, `json`, `plural`, `topics`                        |
-| `hooks/is-mobile.svelte.ts`   | `IsMobile`, a viewport media query                                         |
-| `prose.svelte`, `post.svelte` | the two mdsvex layouts                                                     |
+| Module                        | Responsibility                                                                                                  |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `types.ts`                    | shared types and enums, the public API shapes, `isOlympiadId`                                                   |
+| `uploads.ts`                  | the upload allow-list, `slugifyLabel`, `collidingLabel`, `isHttpUrl`                                            |
+| `constants.ts`                | constants both sides need, including `CDN_BASE_URL`                                                             |
+| `nav.ts`                      | navigation links and `secondaryNavFor(user)`                                                                    |
+| `posts.ts`                    | loads blog posts from `#lib/posts/*.svx`                                                                        |
+| `activity.ts`                 | activity-log labels, and the assignable roles with their labels                                                 |
+| `progress.ts`                 | score rules for the editor, CSV import, `trackProblem` and problem cards                                        |
+| `filters.ts`                  | topic and progress predicates for the olympiad page and ⌘K dialog                                               |
+| `badges.ts`                   | what qualifies for a badge (`qualifies`), its order, colours and summary sentence, and what users may see of it |
+| `badge-icons.ts`              | the badge icon keys' Lucide components                                                                          |
+| `search.ts`                   | deep-search normalisation for the dialog, the endpoint and text extraction                                      |
+| `pdf-text.ts`                 | browser-side PDF text extraction                                                                                |
+| `forms.svelte.ts`             | `formToasts` and `Pending`                                                                                      |
+| `resource.svelte.ts`          | `Resource`: fetches a JSON endpoint, tracking value, loading and failure                                        |
+| `auth-client.ts`              | the BetterAuth browser client, for sign-in and sign-out                                                         |
+| `auth-providers.ts`           | the sign-in providers, their labels and order, and sign-in error messages                                       |
+| `utils.ts`                    | `cn`, and the prop-type helpers the vendored `ui/` components import                                            |
+| `utils/`                      | `date`, `flag`, `fuzzy`, `json`, `plural`, `topics`                                                             |
+| `hooks/is-mobile.svelte.ts`   | `IsMobile`, a viewport media query                                                                              |
+| `prose.svelte`, `post.svelte` | the two mdsvex layouts                                                                                          |
 
-`uploads.ts`, `progress.ts`, `filters.ts` and `search.ts` are client-safe so the
-browser and the server apply the same rule.
+`uploads.ts`, `progress.ts`, `filters.ts`, `badges.ts` and `search.ts` are
+client-safe so the browser and the server apply the same rule.
 
 ## The colocation convention
 

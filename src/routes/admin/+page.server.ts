@@ -4,6 +4,7 @@ import { session, user } from '#lib/server/db/index.js';
 import { isProtectedSuperadmin, requireAdmin } from '#lib/server/guard.js';
 import { listActivity } from '#lib/server/activity-log.js';
 import { listOlympiadOptions } from '#lib/server/db/queries/olympiads.js';
+import { listBadges } from '#lib/server/db/queries/badges.js';
 import { actionFail, field, fieldList, fieldOrNull, ok } from '#lib/server/forms.js';
 import { ASSIGNABLE_ROLES } from '#lib/activity.js';
 import {
@@ -30,7 +31,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// Index stats are expensive, so `admin/index-stats/+server.ts` serves them
 	// when the Index tab opens. Don't stream them from here as an unawaited
 	// promise: that still runs the query on every page open.
-	const [users, olympiads, log] = await Promise.all([
+	const [users, olympiads, log, badges] = await Promise.all([
 		db
 			.select({
 				id: user.id,
@@ -49,10 +50,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.all(),
 		listOlympiadOptions(db),
 		// Same function as the endpoint, so page 1 also knows `hasMore`.
-		listActivity(db, { limit: LOG_PAGE_SIZE })
+		listActivity(db, { limit: LOG_PAGE_SIZE }),
+		// Cheap: one row per badge, and one aggregate over `user_badges`.
+		listBadges(db)
 	]);
 
-	return { users, olympiads, log: log.entries, hasMore: log.hasMore };
+	return { users, olympiads, log: log.entries, hasMore: log.hasMore, badges };
 };
 
 export const actions: Actions = {

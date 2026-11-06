@@ -45,5 +45,8 @@ export async function seed(d1: D1Database, now = new Date()): Promise<void> {
 	await insertChunked(db, schema.problemFiles, rows.problemFiles);
 	await insertChunked(db, schema.fileText, rows.fileText);
 	await insertChunked(db, schema.problemProgress, rows.problemProgress);
+	await insertChunked(db, schema.badges, rows.badges);
+	await insertChunked(db, schema.badgeProblems, rows.badgeProblems);
+	await insertChunked(db, schema.userBadges, rows.userBadges);
 	await insertChunked(db, schema.activityLog, rows.activityLog);
 }

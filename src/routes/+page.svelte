@@ -1,75 +1,10 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
-	import { Button } from '#lib/components/ui/button/index.js';
-	import brand from '#lib/assets/branding/brand.svg';
-	import logo from '#lib/assets/branding/logo.svg';
-	import { onMount } from 'svelte';
-	import { gsap } from 'gsap';
-	import { ScrollTrigger } from 'gsap/ScrollTrigger';
-	import CorpusBand from './CorpusBand.svelte';
-	import FeatureBlocks from './FeatureBlocks.svelte';
-	import StatsBand from './StatsBand.svelte';
+	import Dashboard from './Dashboard.svelte';
+	import Landing from './Landing.svelte';
 	import type { PageProps } from './$types';
 
 	const { data }: PageProps = $props();
-
-	let pageRoot: HTMLElement | undefined = $state();
-	onMount(() => {
-		if (!pageRoot) return;
-
-		gsap.registerPlugin(ScrollTrigger);
-
-		// Respect prefers-reduced-motion: keep the reveals, just make them instant.
-		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-		const dur = (d: number) => (reduceMotion ? 0 : d);
-
-		const ctx = gsap.context(() => {
-			// Hide synchronously so nothing flashes before the reveal.
-			gsap.set(['.hero-brand', '.hero-phonetic', '.hero-headline', '.hero-desc', '.hero-cta'], {
-				autoAlpha: 0,
-				y: 20
-			});
-
-			gsap
-				.timeline({ defaults: { ease: 'power3.out' } })
-				.to('.hero-brand', { autoAlpha: 1, y: 0, duration: dur(0.6) })
-				.to('.hero-phonetic', { autoAlpha: 1, y: 0, duration: dur(0.6) }, '-=0.5')
-				.to('.hero-headline', { autoAlpha: 1, y: 0, duration: dur(0.6) }, '-=0.5')
-				.to('.hero-desc', { autoAlpha: 1, y: 0, duration: dur(0.6) }, '-=0.5')
-				.to(
-					'.hero-cta',
-					{ autoAlpha: 1, y: 0, duration: dur(0.5), stagger: dur(0.1), ease: 'power3.out' },
-					'-=0.5'
-				);
-
-			// Scroll reveals. The context is rooted at `pageRoot`, so these selectors
-			// reach into CorpusBand, StatsBand and FeatureBlocks. Keep using `dur()`, not
-			// skipping the tweens: under reduced motion the sections would stay hidden.
-			const revealed = [
-				'.corpus-lede',
-				'.corpus-band',
-				'.stats-band',
-				'.feature-block',
-				'.closing'
-			];
-			gsap.set(revealed, { autoAlpha: 0, y: 30 });
-
-			for (const el of gsap.utils.toArray<HTMLElement>(revealed)) {
-				gsap.to(el, {
-					autoAlpha: 1,
-					y: 0,
-					duration: dur(0.7),
-					ease: 'power3.out',
-					// `once`, so nothing re-hides when scrolling back up.
-					scrollTrigger: { trigger: el, start: 'top 88%', once: true }
-				});
-			}
-		}, pageRoot);
-
-		return () => ctx.revert();
-	});
 </script>
 
 <SvelteSeo
@@ -78,108 +13,9 @@
 	keywords="problems, solutions, olympiad, physics, ipho, apho, eupho, singapore, eotvos"
 />
 
-<div bind:this={pageRoot} class="flex flex-col">
-	<!-- Hero. Shorter than the viewport so the corpus band shows above the fold. -->
-	<section
-		class="relative flex min-h-160 flex-col items-center justify-center gap-5 py-6 text-center"
-	>
-		<!-- Blurred logo watermark -->
-		<div
-			class="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
-			aria-hidden="true"
-		>
-			<img
-				src={logo}
-				alt=""
-				class="h-120 w-md opacity-40 select-none dark:opacity-10"
-				style="filter: blur(2px);"
-			/>
-		</div>
-
-		<div class="hero-brand relative z-10 flex flex-col items-center gap-2">
-			<img src={brand} alt="phoXiv" class="w-[50vw] max-w-md" />
-			<span class="hero-phonetic font-mono text-sm tracking-[0.02em] text-muted-foreground">
-				/ foʊkaɪv /
-			</span>
-		</div>
-
-		<!-- Weight 1000 is the display weight; the rest of the app stops at 700. -->
-		<h1
-			class="hero-headline relative z-10 m-0 max-w-[30ch] text-3xl leading-[1.05] font-[1000] tracking-tight text-balance text-foreground sm:text-5xl"
-		>
-			Every olympiad, one place.
-		</h1>
-
-		<p class="hero-desc relative z-10 m-0 prose max-w-[46ch] text-foreground/75">
-			A comprehensive archive of physics olympiads, from the well-known IPhO and EuPhO to hidden
-			gems like the Eötvös competition. Includes marking schemes and answer sheets you rarely find
-			elsewhere, all in a mobile-friendly interface.
-		</p>
-
-		<!-- CTAs -->
-
-		<div class="hero-cta relative z-10 flex flex-row justify-center gap-2">
-			<Button href={resolve('olympiads')}>Browse olympiads</Button>
-
-			<Button
-				href={data.user ? resolve('contribute') : resolve('login')}
-				variant="outline"
-				class="border-white/60 bg-white/40 backdrop-blur-sm hover:bg-white/60 dark:border-white/15 dark:bg-white/5 dark:hover:bg-white/10"
-			>
-				{data.user ? 'Contribute' : 'Login'}
-			</Button>
-		</div>
-	</section>
-
-	<!-- Corpus band -->
-	<section class="flex flex-col gap-5 pb-12 sm:pb-16">
-		<div class="corpus-lede flex flex-col gap-1.5">
-			<h2
-				class="m-0 text-center text-2xl leading-tight font-[1000] tracking-tight text-foreground sm:text-3xl"
-			>
-				Pick any problem.
-			</h2>
-		</div>
-
-		<CorpusBand />
-	</section>
-
-	<!-- Counts. Below the band so the hero stays to the brand, pitch and CTAs. -->
-	<section class="pb-20 sm:pb-28">
-		<h2
-			class="mb-2 text-center text-2xl leading-tight font-[1000] tracking-tight text-foreground sm:text-3xl"
-		>
-			There's more.
-		</h2>
-
-		<p class="text-md mb-10 text-center text-muted-foreground sm:text-lg">
-			So comprehensive, even
-
-			<a class="text-blue-800 underline dark:text-blue-200" href="https://olimpicos.net"
-				>other archives</a
-			> copy their files from us.
-		</p>
-		<StatsBand />
-	</section>
-
-	<!-- Features -->
-	<section class="pb-20 sm:pb-28">
-		<h2
-			class="mb-15 text-center text-3xl leading-tight font-[1000] tracking-tight text-foreground sm:text-4xl"
-		>
-			Features
-		</h2>
-		<FeatureBlocks signedIn={!!data.user} />
-	</section>
-
-	<!-- Closing CTA -->
-	<section class="closing flex flex-col items-center gap-5 py-16 text-center sm:py-24">
-		<h2
-			class="m-0 max-w-[16ch] text-3xl leading-[1.05] font-[1000] tracking-tight text-balance text-foreground sm:text-5xl"
-		>
-			Ready?
-		</h2>
-		<p class="m-0 max-w-[44ch] text-base text-foreground/75">Let's explore.</p>
-		<Button href={resolve('olympiads')} size="lg">Browse olympiads</Button>
-	</section>
-</div>
+<!-- One URL, two pages: the load returns `dashboard` only when signed in. -->
+{#if data.dashboard && data.user}
+	<Dashboard dashboard={data.dashboard} userName={data.user.name} />
+{:else}
+	<Landing />
+{/if}

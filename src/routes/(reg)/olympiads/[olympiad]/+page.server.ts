@@ -7,6 +7,22 @@ import {
 } from '#lib/server/db/queries/progress.js';
 import { actionFail, field, ok, parseYear } from '#lib/server/forms.js';
 import { parseScore, progressKey, type ProblemProgress } from '#lib/progress.js';
+import { evaluateUserBadges } from '#lib/server/db/queries/badges.js';
+
+/**
+ * Names of the badges a tracking change just awarded, for the page's toast.
+ * Never throws: the progress write has already happened and must not be
+ * reported as failed. A missed sync corrects itself on the next evaluation.
+ */
+async function syncBadges(db: App.Locals['db'], userId: string): Promise<string[]> {
+	try {
+		const { newlyEarned } = await evaluateUserBadges(db, userId);
+		return newlyEarned.map((b) => b.name);
+	} catch (err) {
+		console.error('evaluateUserBadges after trackProblem failed:', err);
+		return [];
+	}
+}
 
 /**
  * Only the olympiad's metadata. Years, problems and files come from the cached
@@ -24,6 +40,9 @@ export const actions: Actions = {
 	 * `requireOlympiadEditor`. The max score used for validation comes from the
 	 * database, never the browser. The result omits `maxScore`; the page already
 	 * has it from the API. Not logged to `activity_log`, which is for content edits.
+	 *
+	 * Every change re-evaluates the user's badges, including a removal or a new
+	 * score, since awards are revocable. `badgesEarned` names any just awarded.
 	 */
 	trackProblem: async ({ request, params, locals }) => {
 		if (!locals.user) return actionFail(401, 'trackProblem', 'Sign in to track problems');
@@ -41,8 +60,9 @@ export const actions: Actions = {
 
 		if (intent === 'remove') {
 			await clearProblemProgress(locals.db, locals.user.id, problem.id);
+			const badgesEarned = await syncBadges(locals.db, locals.user.id);
 			// `null` tells the page to delete the key; an absent key means untracked.
-			return ok('trackProblem', { key, entry: null });
+			return ok('trackProblem', { key, entry: null, badgesEarned });
 		}
 
 		if (intent !== 'save' && intent !== 'complete') {
@@ -56,7 +76,8 @@ export const actions: Actions = {
 
 		await setProblemProgress(locals.db, locals.user.id, problem.id, parsed.value);
 		const entry: ProblemProgress = { score: parsed.value };
+		const badgesEarned = await syncBadges(locals.db, locals.user.id);
 		// Returned so the page merges it without refetching.
-		return ok('trackProblem', { key, entry });
+		return ok('trackProblem', { key, entry, badgesEarned });
 	}
 };

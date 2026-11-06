@@ -41,12 +41,12 @@ Routes are grouped by how they are cached:
 
 ```
 src/routes/
-├── +page         landing page; sets the private cache header itself
-├── (reg)/        private browser cache (4h): olympiads, blog, resources, privacy, team, login, profile
+├── +page         landing page signed out, dashboard signed in; `private, no-store`
+├── (reg)/        private browser cache (4h): olympiads, blog, resources, privacy, team, badges, login, profile
 │                 except olympiads/[olympiad]/progress/ — per-user, `private, no-store`
-├── admin/        never cached
+├── admin/        never cached; includes the badge editor, badges/[id]/
 ├── contribute/   never cached; the olympiad and year editors
-├── progress/     per-user progress for the ⌘K dialog, `private, no-store`
+├── progress/     per-user progress for the ⌘K dialog, and badges/ for /badges; `private, no-store`
 └── api/          Cloudflare's shared cache (s-maxage=86400)
                   except auth/[...all]/, which sets no cache headers
 ```
@@ -78,7 +78,8 @@ olympiads in their `assignedOlympiads`. That check lives only in
    points at the live registry, so re-adding a component overwrites those changes
    with today's upstream. Edit the file directly and explain why in the commit
    message. The folder is excluded from eslint and prettier, so mistakes there
-   won't be caught for you.
+   won't be caught for you. You can and should run the CLI to add new components
+   when necessary, but keep the existing ones unchanged.
 3. **Never change `CDN_BASE_URL`, the R2 key layout, or `slugifyLabel`.** The
    database stores full CDN URLs and gets R2 keys back by stripping the prefix.
    Changing any of these orphans every stored object and breaks deletion.

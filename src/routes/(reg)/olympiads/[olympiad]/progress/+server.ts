@@ -1,5 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { setNoStore } from '#lib/server/cache.js';
 import { getOlympiadProgress } from '#lib/server/db/queries/progress.js';
 
 /**
@@ -14,7 +15,7 @@ import { getOlympiadProgress } from '#lib/server/db/queries/progress.js';
  */
 export const GET: RequestHandler = async ({ params, locals, setHeaders }) => {
 	// Before the guard, so a 401 is uncached too.
-	setHeaders({ 'cache-control': 'private, no-store' });
+	setNoStore(setHeaders);
 
 	if (!locals.user) error(401, 'Not signed in');
 

@@ -13,7 +13,10 @@ export const ACTION_LABELS: Record<string, string> = {
 	delete_file: 'Deleted file',
 	move_file: 'Moved file',
 	import_titles: 'Imported problem titles',
-	index_files: 'Indexed file text'
+	index_files: 'Indexed file text',
+	create_badge: 'Created badge',
+	update_badge: 'Updated badge',
+	delete_badge: 'Deleted badge'
 };
 
 /** `ACTION_LABELS[action]`, falling back to the raw name for unknown actions. */

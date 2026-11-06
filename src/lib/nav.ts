@@ -2,6 +2,7 @@ import { resolve } from '$app/paths';
 import HouseIcon from '@lucide/svelte/icons/house';
 import TrophyIcon from '@lucide/svelte/icons/trophy';
 import LibraryIcon from '@lucide/svelte/icons/library';
+import AwardIcon from '@lucide/svelte/icons/award';
 import FileTextIcon from '@lucide/svelte/icons/file-text';
 import { HandHelping, Shield, LockKeyhole, Users } from '@lucide/svelte';
 import type { Component } from 'svelte';
@@ -19,7 +20,8 @@ export type NavLink = {
 export const PRIMARY_NAV: NavLink[] = [
 	{ href: resolve('/'), label: 'home', icon: HouseIcon },
 	{ href: resolve('olympiads'), label: 'olympiads', icon: TrophyIcon },
-	{ href: resolve('resources'), label: 'resources', icon: LibraryIcon }
+	{ href: resolve('resources'), label: 'resources', icon: LibraryIcon },
+	{ href: resolve('badges'), label: 'badges', icon: AwardIcon }
 ];
 
 /** Links tucked behind the desktop nav's "more" dropdown. */

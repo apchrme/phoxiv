@@ -1,5 +1,7 @@
 import { SHARED_CACHE_CONTROL } from '../../../../src/lib/server/cache';
 import {
+	BADGE_OLYMPIAD,
+	BADGES,
 	CREDITS,
 	DELTA_W_BULK,
 	FILE_URLS,
@@ -120,6 +122,56 @@ test.describe('the API contract', { tag: '@smoke' }, () => {
 		// Values are not asserted: other specs add rows, and the body is cached.
 		expect(Object.keys(body).sort()).toEqual(['files', 'olympiads', 'years']);
 		for (const value of Object.values(body)) expect(Number.isInteger(value)).toBe(true);
+	});
+
+	test('/api/stats/problems is ProblemTotals, by topic and by olympiad', async ({ request }) => {
+		const body = await (await request.get('/api/stats/problems')).json();
+		expect(Object.keys(body).sort()).toEqual(['byOlympiad', 'byTopic', 'total']);
+		expect(Number.isInteger(body.total)).toBe(true);
+		// The badge olympiad's eight problems are frozen; totals elsewhere are not.
+		expect(body.byOlympiad[BADGE_OLYMPIAD.id]).toBe(8);
+		// A topic is counted once per problem that has it, never more than the total.
+		for (const n of Object.values(body.byTopic)) expect(n).toBeLessThanOrEqual(body.total);
+	});
+
+	test('/api/badges is PublicBadge[], counts only, most held first', async ({ request }) => {
+		// `no-cache` skips the shared cache: other specs award and create badges.
+		const response = await request.get('/api/badges', { headers: { 'cache-control': 'no-cache' } });
+		expect(response.headers()['cache-control']).toBe(SHARED_CACHE_CONTROL);
+		const body: { id: number; name: string; holders: number }[] = await response.json();
+		const thermo = body.find((b) => b.id === BADGES.thermo.id);
+		expect(thermo).toEqual({
+			id: BADGES.thermo.id,
+			name: BADGES.thermo.name,
+			description: 'Feel the heat.',
+			icon: 'flame',
+			color: 'peach',
+			summary: 'Complete 2 Badge Physics Olympiad Thermodynamics problems',
+			requiredCount: BADGES.thermo.required,
+			holders: BADGES.thermo.holders
+		});
+		// Never who holds it: no user ids, names or emails anywhere in the body.
+		const text = JSON.stringify(body);
+		expect(text).not.toContain(USERS.badgeReader.id);
+		expect(text).not.toContain(USERS.badgeReader.email);
+		// A hidden requirement: the badge is listed, its rule is not.
+		expect(body.find((b) => b.id === BADGES.secret.id)).toEqual({
+			id: BADGES.secret.id,
+			name: BADGES.secret.name,
+			description: 'Not telling.',
+			icon: 'sparkles',
+			color: 'lavender',
+			summary: null,
+			requiredCount: null,
+			holders: BADGES.secret.holders
+		});
+		expect(text).not.toContain('at least 100%');
+		// Most holders first, then oldest first. Checked pairwise over the whole
+		// list, since other specs' badges come and go with their own counts.
+		for (let i = 1; i < body.length; i++) {
+			const [a, b] = [body[i - 1], body[i]];
+			expect(a.holders > b.holders || (a.holders === b.holders && a.id < b.id), b.name).toBe(true);
+		}
 	});
 
 	test('/api/search/files is a FileSearchResponse, files not problems', async ({ request }) => {

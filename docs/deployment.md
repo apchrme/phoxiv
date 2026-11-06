@@ -316,7 +316,11 @@ hit, every query fails until midnight UTC. A quota overrun is a full outage, so
 leave plenty of headroom.
 
 - **Reads** are not the concern. Normal traffic reads 180,000–330,000 rows a day,
-  about 5 % of the limit.
+  about 5 % of the limit. Badges are designed to keep it that way: a dashboard
+  view or a tracked problem reads only that user's progress, holder counts come
+  from `user_badges`, and only an admin saving a badge scans all progress
+  ([data-model.md](./data-model.md#badges-badges-badge_problems-user_badges)).
+  Don't add a page that re-evaluates badges for every user.
 - **The e2e suite costs nothing**, locally or in CI. It runs against local
   workerd state in `.wrangler/e2e` and never uses the remote database or bucket
   ([testing.md](./testing.md#the-safety-guards)).
@@ -369,6 +373,8 @@ different values in the same shape):
    - `https://phoxiv.org/api/olympiads/<id>/contributors` (one per olympiad)
    - `https://phoxiv.org/api/search`
    - `https://phoxiv.org/api/stats`
+   - `https://phoxiv.org/api/stats/problems`
+   - `https://phoxiv.org/api/badges`
    - `https://phoxiv.org/api/team`
 3. Reload the site and check the new payload is served.
 

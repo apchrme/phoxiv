@@ -8,17 +8,25 @@
 	import UsersTable from './UsersTable.svelte';
 	import ActivityLogTable from './ActivityLogTable.svelte';
 	import IndexPanel from './IndexPanel.svelte';
+	import BadgesTable from './BadgesTable.svelte';
+	import { page } from '$app/state';
 
 	let { data, form }: PageProps = $props();
 
-	let tab = $state('users');
+	/** Tabs a link can open with `?tab=`, e.g. the badge editor's "Back to badges". */
+	const LINKABLE_TABS = ['users', 'log', 'index', 'badges'];
+	const requested = page.url.searchParams.get('tab') ?? '';
+
+	const initialTab = LINKABLE_TABS.includes(requested) ? requested : 'users';
+
+	let tab = $state(initialTab);
 
 	/**
 	 * Whether the Index tab has been opened. bits-ui mounts every tab's content
 	 * at once, so without this gate `IndexPanel` would run its expensive stats
 	 * fetch on every page load. Stays true, so re-entering doesn't refetch.
 	 */
-	let indexSeen = $state(false);
+	let indexSeen = $state(initialTab === 'index');
 
 	/** The single `Pending` for the page, passed down to every row and panel. */
 	const pending = new Pending();
@@ -44,7 +52,7 @@
 
 <PageHeader
 	title="Admin"
-	description="Manage user roles and access, and review the activity log."
+	description="Manage user roles and access, badges, and review the activity log."
 />
 
 <Tabs.Root
@@ -58,6 +66,7 @@
 	<Tabs.List>
 		<Tabs.Trigger value="users">Users</Tabs.Trigger>
 		<Tabs.Trigger value="log">Log</Tabs.Trigger>
+		<Tabs.Trigger value="badges">Badges</Tabs.Trigger>
 		<Tabs.Trigger value="index">Index</Tabs.Trigger>
 	</Tabs.List>
 
@@ -72,6 +81,10 @@
 
 	<Tabs.Content value="log">
 		<ActivityLogTable log={data.log} hasMore={data.hasMore} />
+	</Tabs.Content>
+
+	<Tabs.Content value="badges">
+		<BadgesTable badges={data.badges} olympiads={data.olympiads} />
 	</Tabs.Content>
 
 	<Tabs.Content value="index">

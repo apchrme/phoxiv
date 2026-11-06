@@ -190,11 +190,11 @@ bare error page.
 
 ## The three roles
 
-| Role          | Stored `role`      | May do                                              |
-| ------------- | ------------------ | --------------------------------------------------- |
-| `user`        | `null` or `'user'` | read everything public                              |
-| `contributor` | `'contributor'`    | edit only the olympiads in `assignedOlympiads`      |
-| `admin`       | `'admin'`          | edit every olympiad, create olympiads, manage users |
+| Role          | Stored `role`      | May do                                                         |
+| ------------- | ------------------ | -------------------------------------------------------------- |
+| `user`        | `null` or `'user'` | read everything public                                         |
+| `contributor` | `'contributor'`    | edit only the olympiads in `assignedOlympiads`                 |
+| `admin`       | `'admin'`          | edit every olympiad, create olympiads, manage users and badges |
 
 - `contributor` exists only in our app. The plugin is pinned to
   `adminRoles: ['admin']`, so BetterAuth's privileged operations (ban,
@@ -233,6 +233,11 @@ Drizzle updates directly.
 - The index actions target no account. See
   [search.md](./search.md#operating-the-index).
 
+Badges are edited on their own page, `/admin/badges/[id]` (`new` creates one),
+under the same layout guard. Its two actions, `save` and `delete`, each call
+`requireAdmin` themselves and log to `activity_log`. Saving re-evaluates the
+badge for every user ([data-model.md](./data-model.md#badges-badges-badge_problems-user_badges)).
+
 ## The superadmin
 
 A superadmin is an admin the panel cannot demote, reassign, ban or unban.
@@ -261,19 +266,21 @@ plain DB row works too.
 
 ### Which guard each route uses
 
-| Route                                                                  | Guard                                                 |
-| ---------------------------------------------------------------------- | ----------------------------------------------------- |
-| `admin/+layout.server.ts`, the page load, all seven actions            | `requireAdmin`                                        |
-| `admin/reindex` (`GET`, `POST`), `admin/index-stats`, `admin/activity` | `requireAdmin`, called by the endpoint itself         |
-| `contribute/+layout.server.ts`                                         | `requireContributor`                                  |
-| `contribute` — `selectYear`                                            | `canEditOlympiad` on the submitted olympiad id        |
-| `contribute` — `createOlympiad`                                        | `requireAdmin`                                        |
-| `contribute/[olympiad]` and `[year]` — loads and actions               | `requireOlympiadEditor`                               |
-| `contribute/[olympiad]/titles.csv`                                     | `requireOlympiadEditor`                               |
-| `(reg)/login`, `(reg)/profile`                                         | redirect to `/profile` if signed in / `/login` if not |
-| `(reg)/olympiads/[olympiad]` — `?/trackProblem`                        | plain `locals.user` check                             |
-| `(reg)/olympiads/[olympiad]/progress`, `progress/`                     | 401 when signed out                                   |
-| `/api/*` and everything else                                           | public                                                |
+| Route                                                                  | Guard                                                   |
+| ---------------------------------------------------------------------- | ------------------------------------------------------- |
+| `admin/+layout.server.ts`, the page load, all seven actions            | `requireAdmin`                                          |
+| `admin/reindex` (`GET`, `POST`), `admin/index-stats`, `admin/activity` | `requireAdmin`, called by the endpoint itself           |
+| `admin/badges/[id]` — the load, `save` and `delete`                    | `requireAdmin` (the layout's, and each action's own)    |
+| `contribute/+layout.server.ts`                                         | `requireContributor`                                    |
+| `contribute` — `selectYear`                                            | `canEditOlympiad` on the submitted olympiad id          |
+| `contribute` — `createOlympiad`                                        | `requireAdmin`                                          |
+| `contribute/[olympiad]` and `[year]` — loads and actions               | `requireOlympiadEditor`                                 |
+| `contribute/[olympiad]/titles.csv`                                     | `requireOlympiadEditor`                                 |
+| `(reg)/login`, `(reg)/profile`                                         | redirect to `/` if signed in / `/login` if not          |
+| `/`                                                                    | none: the dashboard if signed in, else the landing page |
+| `(reg)/olympiads/[olympiad]` — `?/trackProblem`                        | plain `locals.user` check                               |
+| `(reg)/olympiads/[olympiad]/progress`, `progress/`, `progress/badges`  | 401 when signed out                                     |
+| `/api/*` and everything else                                           | public                                                  |
 
 [`tests/e2e/specs/auth/access-control.spec.ts`](../tests/e2e/specs/auth/access-control.spec.ts)
 mirrors this table row by row. Every refusal is checked for each role that must
@@ -293,7 +300,8 @@ Rules:
   `requireOlympiadEditor`, so a contributor can't edit another olympiad by URL.
   `selectYear` takes the id from the form, so it checks `canEditOlympiad` itself.
 - **Tracking is not editing.** Any signed-in user may track any problem, so
-  `?/trackProblem` checks only `locals.user`. It validates a score against the
+  `?/trackProblem` checks only `locals.user`. It also re-evaluates that user's
+  badges, and only theirs. It validates a score against the
   `max_score` in the database, never a value from the browser.
 - **The progress endpoints set `private, no-store` before the 401**, so a
   signed-out response isn't cached either.
@@ -302,6 +310,14 @@ Rules:
   upload counts, from shared-cached `/api/*` endpoints. Those return only those
   three fields (and the role, on `/team`), never the email or the user id, and
   leave banned accounts out. The privacy policy says so; change both together.
+  Badges follow the same rule: `/api/badges` gives each badge's holder count,
+  never who holds it.
+- **A hidden badge requirement is for admins and holders only.** The admin
+  panel and the badge editor always show it. A user sees it only for a badge
+  they hold, through the per-user `/progress/badges` and the dashboard, never
+  through the shared-cached `/api/badges`. Everywhere else the criteria and the
+  progress count are nulled on the server
+  ([data-model.md](./data-model.md#badges-badges-badge_problems-user_badges)).
 
 ## The client side
 

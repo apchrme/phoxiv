@@ -152,6 +152,20 @@ export type FileSearchResponse = {
 	indexEmpty: boolean;
 };
 
+/**
+ * How many problems the archive holds, from `GET /api/stats/problems`: the
+ * denominators of the dashboard's breakdowns. Shared-cached; a shape change
+ * needs a purge (docs/deployment.md). Topics and olympiads with no problems are
+ * absent rather than 0.
+ */
+export type ProblemTotals = {
+	total: number;
+	/** By topic name. A problem with two topics counts under both. */
+	byTopic: Record<string, number>;
+	/** By olympiad id. */
+	byOlympiad: Record<string, number>;
+};
+
 // ── People ──────────────────────────────────────────────────────────────────
 
 /**

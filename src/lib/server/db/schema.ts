@@ -1,4 +1,12 @@
-import { sqliteTable, text, integer, real, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import {
+	sqliteTable,
+	text,
+	integer,
+	real,
+	index,
+	uniqueIndex,
+	primaryKey
+} from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 
 export const olympiads = sqliteTable('olympiads', {
@@ -233,7 +241,10 @@ export const activityLog = sqliteTable(
 				'move_file',
 				'import_titles',
 				// One row per `index:backfill` batch, not per file, so the log isn't flooded.
-				'index_files'
+				'index_files',
+				'create_badge',
+				'update_badge',
+				'delete_badge'
 			]
 		}).notNull(),
 		olympiadId: text('olympiad_id'),
@@ -281,6 +292,99 @@ export const problemProgress = sqliteTable(
 	(t) => [
 		uniqueIndex('problem_progress_user_problem_idx').on(t.userId, t.problemId),
 		index('problem_progress_problem_idx').on(t.problemId)
+	]
+);
+
+/**
+ * A badge, earned by completing `required_count` qualifying problems.
+ *
+ * Which problems qualify is a live rule, not a snapshot: `scope = 'filter'`
+ * keeps the filter itself, so problems added or re-tagged later count without
+ * an edit. Only `scope = 'manual'` keeps an explicit list, in `badge_problems`.
+ * The rule is evaluated per user by `qualifies` in #lib/badges and, for every
+ * user at once, by `recomputeBadge` in db/queries/badges. The two must agree;
+ * see docs/data-model.md.
+ */
+export const badges = sqliteTable('badges', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	name: text('name').notNull(),
+	description: text('description').notNull().default(''),
+	// Keys into BADGE_ICONS and BADGE_COLORS in #lib. Plain text, not an enum:
+	// drizzle-kit bundles this file and doesn't resolve #lib.
+	icon: text('icon').notNull(),
+	color: text('color').notNull(),
+	requiredCount: integer('required_count').notNull(),
+	// Inclusive bounds on score / max_score, in percent. NULL is an open bound.
+	// When either is set, a completion with no score, or on a problem with no
+	// max score, never qualifies.
+	scoreMinPct: real('score_min_pct'),
+	scoreMaxPct: real('score_max_pct'),
+	// Keep in sync with BADGE_SCOPES in #lib/badges.
+	scope: text('scope', { enum: ['all', 'filter', 'manual'] }).notNull(),
+	// `filter` scope only. JSON arrays: OR within each, AND between the two, and
+	// an empty array doesn't restrict. Same semantics as the problem filters.
+	topics: text('topics').notNull().default('[]'),
+	olympiadIds: text('olympiad_ids').notNull().default('[]'),
+	// When set, users see the name, icon and description but neither the
+	// criteria nor their progress towards them. Only admins see the rule.
+	requirementHidden: integer('requirement_hidden', { mode: 'boolean' }).notNull().default(false),
+	createdAt: integer('created_at', { mode: 'timestamp_ms' })
+		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+		.notNull(),
+	updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+		.$onUpdate(() => new Date())
+		.notNull()
+});
+
+/**
+ * The problems of a `manual` badge. Both keys cascade, so, as with
+ * `problem_progress`, renaming a problem number in the year editor drops that
+ * problem from every manual badge.
+ */
+export const badgeProblems = sqliteTable(
+	'badge_problems',
+	{
+		badgeId: integer('badge_id')
+			.notNull()
+			.references(() => badges.id, { onDelete: 'cascade' }),
+		problemId: integer('problem_id')
+			.notNull()
+			.references(() => problems.id, { onDelete: 'cascade' })
+	},
+	// `problem_id` serves the per-user join (a user's progress to the manual
+	// badges it counts for) and the cascade from `problems`.
+	(t) => [
+		primaryKey({ columns: [t.badgeId, t.problemId] }),
+		index('badge_problems_problem_idx').on(t.problemId)
+	]
+);
+
+/**
+ * Who holds which badge. Derived from `problem_progress` and `badges`, and kept
+ * only so a holder count costs one aggregate instead of re-evaluating every
+ * user, which the free tier's read quota can't afford. Awards are revocable: a
+ * user's rows are re-synced whenever their badges are evaluated. See
+ * docs/data-model.md.
+ */
+export const userBadges = sqliteTable(
+	'user_badges',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		badgeId: integer('badge_id')
+			.notNull()
+			.references(() => badges.id, { onDelete: 'cascade' }),
+		earnedAt: integer('earned_at', { mode: 'timestamp_ms' })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull()
+	},
+	// The second index serves the holder counts and the cascade from `badges`.
+	(t) => [
+		uniqueIndex('user_badges_user_badge_idx').on(t.userId, t.badgeId),
+		index('user_badges_badge_idx').on(t.badgeId)
 	]
 );
 

@@ -136,9 +136,15 @@
 			});
 	});
 
-	// The one `formToasts` call for this page. No success toast for
-	// `trackProblem`: the icon changing is the feedback.
-	formToasts(() => form);
+	// The one `formToasts` call for this page. `trackProblem` toasts only when
+	// it awards a badge: otherwise the icon changing is the feedback.
+	formToasts(() => form, {
+		trackProblem: (result) => {
+			const earned = result.badgesEarned;
+			if (!Array.isArray(earned) || earned.length === 0) return;
+			return `Badge unlocked: ${earned.join(', ')}`;
+		}
+	});
 
 	/**
 	 * Merges the action's entry into the map. Lives here, not in a `formToasts`

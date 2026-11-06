@@ -172,8 +172,8 @@ test.describe('the landing page', () => {
 			);
 			await expect(hero.getByRole('link', { name: 'Contribute', exact: true })).toHaveCount(0);
 
-			// FeatureBlocks.svelte "Points blocks 03 and 04 past `/login` for signed-in
-			// visitors"; signed out, both go to it.
+			// Only signed-out visitors see the landing page (FeatureBlocks.svelte), so
+			// blocks 03 and 04 always go to sign-in.
 			await expect(page.getByRole('link', { name: 'Sign in to track' })).toHaveAttribute(
 				'href',
 				'/login'
@@ -191,29 +191,7 @@ test.describe('the landing page', () => {
 				await expect(link).toHaveAttribute('href', '/olympiads');
 		});
 
-		test.describe('signed in', () => {
-			test.use({ role: 'user' });
-
-			test('they lead to the editor and the profile instead', async ({ page }) => {
-				await gotoReady(page, '/');
-				const hero = landingSection(page, 'Every olympiad, one place.');
-				await expect(hero.getByRole('link', { name: 'Contribute', exact: true })).toHaveAttribute(
-					'href',
-					'/contribute'
-				);
-				await expect(hero.getByRole('link', { name: 'Login', exact: true })).toHaveCount(0);
-
-				await expect(page.getByRole('link', { name: 'See your progress' })).toHaveAttribute(
-					'href',
-					'/profile'
-				);
-				await expect(page.getByRole('link', { name: 'Open the editor' })).toHaveAttribute(
-					'href',
-					'/contribute'
-				);
-				await expect(page.getByRole('link', { name: /^Sign in to/ })).toHaveCount(0);
-			});
-		});
+		// Signed in, `/` is the dashboard instead: pages/dashboard.spec.ts.
 
 		test('"Browse olympiads" opens the olympiads index', async ({ page }) => {
 			await gotoReady(page, '/');

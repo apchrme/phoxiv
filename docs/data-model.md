@@ -9,11 +9,13 @@ generates every migration from it.
 ```
 olympiads ──< years ──< year_files
                   └──< problems ──< problem_files
-                             └──< problem_progress >── user
+                             ├──< problem_progress >── user
+                             └──< badge_problems >── badges ──< user_badges >── user
 ```
 
 Every arrow is `ON DELETE CASCADE`: deleting a row removes everything below it,
-including every user's progress on the problems. The cascade only reaches D1, so
+including every user's progress on the problems and the problems' places in
+manual badges. The cascade only reaches D1, so
 each action deletes its R2 objects itself. Collect the urls before the rows go,
 since the rows are the only record of the keys:
 
@@ -187,6 +189,102 @@ Progress is never served from `/api/*`, which is a shared cache. See
   for the ⌘K dialog. Don't flatten it: `progressKey` is only `(year, number)`, so
   IPhO 2019 T1 and APhO 2019 T1 would collide.
 
+### Badges: `badges`, `badge_problems`, `user_badges`
+
+A badge is earned by completing `required_count` qualifying problems. Admins
+create and edit badges at `/admin/badges/[id]`.
+
+`badges`:
+
+| Column                           | Type       | Notes                                                            |
+| -------------------------------- | ---------- | ---------------------------------------------------------------- |
+| `id`                             | INTEGER PK | autoincrement                                                    |
+| `name`, `description`            | TEXT       | not null; at most 60 and 280 characters                          |
+| `icon`, `color`                  | TEXT       | keys of `BADGE_ICON_KEYS` and `BADGE_COLORS` in `#lib/badges.ts` |
+| `required_count`                 | INTEGER    | not null, at least 1                                             |
+| `score_min_pct`, `score_max_pct` | REAL       | nullable, 0–100, inclusive; null is an open bound                |
+| `scope`                          | TEXT       | `all`, `filter` or `manual` (`BADGE_SCOPES`)                     |
+| `topics`, `olympiad_ids`         | TEXT       | JSON arrays, used only when `scope = 'filter'`                   |
+| `requirement_hidden`             | INTEGER    | boolean, default false; see "Hidden requirements" below          |
+
+`badge_problems` (`badge_id`, `problem_id`; both cascade; PK on the pair, plus
+an index on `problem_id`) lists a `manual` badge's problems. Like progress, a
+problem renumbered in the year editor is deleted and re-created, so it drops
+out of every manual list.
+
+`user_badges` (`user_id`, `badge_id`, `earned_at`; both cascade; unique on the
+pair, plus an index on `badge_id`) records who holds what.
+
+**What qualifies.** A completion counts towards a badge when both of these hold:
+
+- **The problem is in scope.**
+  - `all`: every problem.
+  - `filter`: a live rule, not a snapshot, so problems added or re-tagged later
+    count without an edit. Topics are OR within the list, olympiads too, and the
+    two are ANDed; an empty list doesn't restrict. Topics use `matchesTopics`,
+    so an untagged problem never matches a topic, as in the problem filters.
+  - `manual`: the problem is in `badge_problems`.
+- **The score is in range, if a range is set.** The completion then needs a
+  score and the problem a max score, with `min ≤ score / max × 100 ≤ max`. It
+  is compared as `score × 100 ≥ min × max_score`, so a score exactly on a bound
+  counts. With no range, any completion counts, scored or not.
+
+**Two evaluators, which must agree.** `qualifies` in
+[`#lib/badges.ts`](../src/lib/badges.ts) evaluates one user's rows in JS.
+`recomputeBadge` in
+[`db/queries/badges.ts`](../src/lib/server/db/queries/badges.ts) restates the
+same rule in SQL, to re-evaluate every user after an admin saves a badge. It
+passes the lists as one JSON parameter each, read with `json_each`, so a badge
+of any size stays under D1's 100-parameter limit. Change the two together;
+`admin/badges.spec.ts` checks that the holder count after a save (SQL) matches
+the user's own standing (JS).
+
+**Why awards are stored.** Holder counts could be derived from progress, but
+only by re-evaluating every user on every view, which is a scan of
+`problem_progress` per badge. On the free tier's enforced read quota, that is
+an outage waiting to happen. Instead, `user_badges` is kept in sync and counted
+with one aggregate:
+
+- `evaluateUserBadges` reads one user's progress rows and the badges, evaluates
+  them, then inserts awards newly earned and deletes awards lost. **Awards are
+  revocable:** un-marking a problem or lowering a score can take a badge away.
+  It writes only the difference, so usually nothing. It runs on every
+  `?/trackProblem`, every dashboard view and every `GET /progress/badges`.
+- `recomputeBadge` scans every progress row, so only a badge save calls it.
+  There is deliberately no "recompute all".
+
+**Staleness, and how it heals.** A contributor's edit (re-tagging a problem,
+changing a max score, deleting a problem) touches no awards. Each user's awards
+are corrected the next time that user tracks a problem or opens the dashboard
+or `/badges`. An admin re-saving a badge corrects that badge for everyone. Two
+concurrent tracking requests can each write from their own snapshot, and the
+next evaluation corrects that too.
+
+**Order.** Badges have no stored order. Every list shows them most holders
+first, then oldest first (`sortByHolders` in `#lib/badges.ts`), using the
+holder counts that `listBadges` already reads. The dashboard is the exception:
+`evaluateUserBadges` reads badges oldest first, because counting holders there
+would read all of `user_badges` on every dashboard view.
+
+**Hidden requirements.** With `requirement_hidden` set, users see a badge's
+name, icon, description and holder count, but not its criteria, the count
+required, or their own progress, until they earn it. Earning it reveals the
+requirement to that user, and since awards are revocable, losing it hides the
+requirement again. Admins always see everything.
+
+This is enforced on the server, not by the markup. `isRequirementVisible` in
+`#lib/badges.ts` decides, and `visibleCriteria` and `visibleCount` return
+`null` where it says no. `/api/badges` is shared by every viewer, so it never
+reveals a hidden requirement. Instead, `/progress/badges` adds the requirement
+to each hidden badge the user holds (`revealed`), and the dashboard load passes
+whether the user has earned each badge. Anything new that sends a badge to a
+non-admin must go through the same helpers.
+
+**Privacy.** Who holds a badge is never public: `/api/badges` carries counts
+only (see [auth.md](./auth.md)). A badge's criteria sentence (`describeBadge`)
+never lists a manual badge's problems, since next to a filter badge's topics
+that could pair a problem with its topic.
+
 ### `file_text`
 
 The extracted plain text of one uploaded document, and the state of its
@@ -315,7 +413,7 @@ The admin panel's audit trail, written by `logActivity()`.
 | ------------- | ------------------------------------------------------------------- |
 | `user_id`     | → `user.id`, `ON DELETE SET NULL`. The log outlives the account     |
 | `user_name`   | not null. A snapshot of the name, so the log survives renames       |
-| `action`      | one of twelve enum values; `LogAction` is derived from this column  |
+| `action`      | one of fifteen enum values; `LogAction` is derived from this column |
 | `olympiad_id` | plain TEXT, not a foreign key, so an olympiad's history survives it |
 | `year`        | nullable                                                            |
 | `detail`      | not null, default `''`; a human-readable sentence                   |
@@ -329,7 +427,7 @@ it costs an extra row write on every logged action. Rows sort by `id` but show
 
 ## JSON-encoded TEXT columns
 
-SQLite has no array type, so four columns hold JSON strings:
+SQLite has no array type, so six columns hold JSON strings:
 
 | Column                    | Contents         | Parser                                 |
 | ------------------------- | ---------------- | -------------------------------------- |
@@ -337,6 +435,8 @@ SQLite has no array type, so four columns hold JSON strings:
 | `years.extra_links`       | `{label,url}[]`  | `parseLabelledUrls`                    |
 | `problems.topics`         | `ProblemTopic[]` | `parseTopics` (`#lib/utils/topics.ts`) |
 | `user.assigned_olympiads` | `string[]`       | `parseStringArray`                     |
+| `badges.topics`           | `ProblemTopic[]` | `parseTopics`                          |
+| `badges.olympiad_ids`     | `string[]`       | `parseStringArray`                     |
 
 The parsers in [`#lib/utils/json.ts`](../src/lib/utils/json.ts) drop values of
 the wrong type and return an empty result instead of throwing, so one malformed
@@ -347,7 +447,9 @@ topic names, so renaming a topic degrades gracefully.
 
 The four tags appear in `#lib/types.ts` and again in `schema.ts`'s `enum:`.
 drizzle-kit bundles the schema with a resolver that does not understand `#lib`,
-so `schema.ts` cannot import them. Keep the two copies in sync.
+so `schema.ts` cannot import them. Keep the two copies in sync. The same goes
+for `BADGE_SCOPES` in `#lib/badges.ts` and the `badges.scope` enum. Badge icon
+and colour keys are plain TEXT instead, validated by the editor's action.
 
 ## R2 key layout
 

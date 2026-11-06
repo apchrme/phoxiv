@@ -1,6 +1,8 @@
 import type {
 	account,
 	activityLog,
+	badgeProblems,
+	badges,
 	fileText,
 	olympiads,
 	problemFiles,
@@ -8,6 +10,7 @@ import type {
 	problems,
 	session,
 	user,
+	userBadges,
 	yearFiles,
 	years
 } from '../../../src/lib/server/db/schema';
@@ -45,6 +48,9 @@ type Session = typeof session.$inferInsert;
 type Account = typeof account.$inferInsert;
 type Progress = typeof problemProgress.$inferInsert;
 type ActivityLog = typeof activityLog.$inferInsert;
+type Badge = typeof badges.$inferInsert;
+type BadgeProblem = typeof badgeProblems.$inferInsert;
+type UserBadge = typeof userBadges.$inferInsert;
 
 // ── Users ───────────────────────────────────────────────────────────────────
 
@@ -225,6 +231,28 @@ export const USERS = {
 		id: 'e2e-sf-searcher',
 		name: 'Sid Searcher',
 		email: 'searcher@e2e.test',
+		role: null
+	},
+	// ── Badges: see BADGE_ROWS ──
+	/**
+	 * owned by pages/dashboard.spec.ts and pages/badges.spec.ts, and read by
+	 * admin/badges.spec.ts; nobody tracks as this user. Progress on the badge
+	 * olympiad that hits every edge of the rule (BADGES).
+	 */
+	badgeReader: {
+		id: 'e2e-bd-reader',
+		name: 'Bea Reader',
+		email: 'bd-reader@e2e.test',
+		role: null
+	},
+	/**
+	 * owned by olympiads/progress-badges.spec.ts: tracks the badge olympiad's
+	 * 2025 problems to earn and lose `BADGES.tracker`. No seeded progress.
+	 */
+	badgeTracker: {
+		id: 'e2e-bd-tracker',
+		name: 'Tim Tracker',
+		email: 'bd-tracker@e2e.test',
 		role: null
 	},
 	// ── Credits: see CREDITS_ROWS ──
@@ -1289,6 +1317,296 @@ function accountRows(u: SeedUser, now: Date): Account[] {
 	}));
 }
 
+// ── Badges ──────────────────────────────────────────────────────────────────
+
+/**
+ * frozen. The olympiad every seeded badge is restricted to. A seeded badge must
+ * never match a frozen olympiad's problems: olympiads/progress.spec.ts asserts
+ * that tracking shows no toast, and earning a badge would show one. Last in
+ * display order, so it stays out of ⌘K's first 50 (search/problem-filters).
+ */
+export const BADGE_OLYMPIAD = {
+	id: 'e2e-badges',
+	name: 'Badge Physics Olympiad',
+	/** `USERS.badgeReader`'s problems, P1 to P6. */
+	readerYear: 2024,
+	/** `USERS.badgeTracker`'s problems, Q1 and Q2. */
+	trackerYear: 2025
+} as const;
+
+/**
+ * frozen, except `tracker`. Each badge exercises one part of `qualifies`
+ * (src/lib/badges.ts) against `USERS.badgeReader`'s progress:
+ *
+ *   P1  Thermodynamics             max 10   score 8.5   (85%, on a bound)
+ *   P2  Thermodynamics, Mechanics  max 10   no score
+ *   P3  Mechanics                  max 20   score 17    (85%)
+ *   P4  Electromagnetism           no max   score 3
+ *   P5  untagged                   max 10   score 10    (100%)
+ *   P6  Thermodynamics             max 10   untracked
+ *
+ * `count` is the reader's qualifying completions. `holders` is the seeded
+ * `user_badges` count, which only `tracker` can change: Q1 and Q2 have no topic
+ * and no max score, so they match no other badge.
+ */
+export const BADGES = {
+	/** Topic AND olympiad: P1, P2. */
+	thermo: {
+		id: 6_100_201,
+		name: 'Heat Seeker',
+		required: 2,
+		count: 2,
+		earned: true,
+		holders: 1
+	},
+	/** Topics are OR, and untagged P5 never matches: P2, P3, P4. */
+	field: {
+		id: 6_100_202,
+		name: 'Field Worker',
+		required: 4,
+		count: 3,
+		earned: false,
+		holders: 0
+	},
+	/** At least 85%, inclusive. No score (P2) and no max (P4) never count: P1, P3, P5. */
+	sharp: {
+		id: 6_100_203,
+		name: 'Sharpshooter',
+		required: 3,
+		count: 3,
+		earned: true,
+		holders: 1
+	},
+	/** 80–90%, inclusive at both ends, so P5's 100% is out: P1, P3. */
+	steady: {
+		id: 6_100_204,
+		name: 'Steady Hand',
+		required: 3,
+		count: 2,
+		earned: false,
+		holders: 0
+	},
+	/** Manual list of P4 and the untracked P6: P4. */
+	picked: {
+		id: 6_100_205,
+		name: 'Hand Picked',
+		required: 1,
+		count: 1,
+		earned: true,
+		holders: 1
+	},
+	/** owned by olympiads/progress-badges.spec.ts. Manual list of Q1 and Q2, both needed. */
+	tracker: {
+		id: 6_100_206,
+		name: 'Tracker Trophy',
+		required: 2,
+		count: 0,
+		earned: false,
+		holders: 0
+	},
+	/**
+	 * Requirement hidden. At least 100%, two needed: P5 only, so in progress, and
+	 * the 1 of 2 must never reach the reader. Q1 and Q2 have no max score, so the
+	 * tracker can't earn it.
+	 */
+	secret: {
+		id: 6_100_207,
+		name: 'Well Kept Secret',
+		required: 2,
+		count: 1,
+		earned: false,
+		holders: 0
+	},
+	/** Requirement hidden. Manual list of P5: earned, so the reader sees its rule. */
+	egg: {
+		id: 6_100_208,
+		name: 'Easter Egg',
+		required: 1,
+		count: 1,
+		earned: true,
+		holders: 1
+	}
+} as const;
+
+const BADGE_YEARS = { reader: 6_100_001, tracker: 6_100_002 } as const;
+
+/** Problem ids on the badge olympiad. */
+const BP = {
+	P1: 6_100_101,
+	P2: 6_100_102,
+	P3: 6_100_103,
+	P4: 6_100_104,
+	P5: 6_100_105,
+	P6: 6_100_106,
+	Q1: 6_100_111,
+	Q2: 6_100_112
+} as const;
+
+const ON_BADGE_OLYMPIAD = JSON.stringify([BADGE_OLYMPIAD.id]);
+
+const BADGE_ROWS = {
+	olympiads: [
+		{
+			id: BADGE_OLYMPIAD.id,
+			name: BADGE_OLYMPIAD.name,
+			summary: 'Exists for the badge specs.',
+			icon: '🏅',
+			tag: 'Open',
+			displayOrder: 9100
+		}
+	] satisfies Olympiad[],
+	years: [
+		{ id: BADGE_YEARS.reader, olympiadId: BADGE_OLYMPIAD.id, year: BADGE_OLYMPIAD.readerYear },
+		{ id: BADGE_YEARS.tracker, olympiadId: BADGE_OLYMPIAD.id, year: BADGE_OLYMPIAD.trackerYear }
+	] satisfies Year[],
+	problems: [
+		{
+			id: BP.P1,
+			yearId: BADGE_YEARS.reader,
+			number: 'P1',
+			title: 'Badge One',
+			topics: '["Thermodynamics"]',
+			maxScore: 10
+		},
+		{
+			id: BP.P2,
+			yearId: BADGE_YEARS.reader,
+			number: 'P2',
+			title: 'Badge Two',
+			topics: '["Mechanics","Thermodynamics"]',
+			maxScore: 10
+		},
+		{
+			id: BP.P3,
+			yearId: BADGE_YEARS.reader,
+			number: 'P3',
+			title: 'Badge Three',
+			topics: '["Mechanics"]',
+			maxScore: 20
+		},
+		{
+			id: BP.P4,
+			yearId: BADGE_YEARS.reader,
+			number: 'P4',
+			title: 'Badge Four',
+			topics: '["Electromagnetism"]'
+		},
+		{ id: BP.P5, yearId: BADGE_YEARS.reader, number: 'P5', title: 'Badge Five', maxScore: 10 },
+		{
+			id: BP.P6,
+			yearId: BADGE_YEARS.reader,
+			number: 'P6',
+			title: 'Badge Six',
+			topics: '["Thermodynamics"]',
+			maxScore: 10
+		},
+		{ id: BP.Q1, yearId: BADGE_YEARS.tracker, number: 'Q1', title: 'Tracked One' },
+		{ id: BP.Q2, yearId: BADGE_YEARS.tracker, number: 'Q2', title: 'Tracked Two' }
+	] satisfies Problem[],
+	progress: [
+		{ id: 6_100_301, userId: USERS.badgeReader.id, problemId: BP.P1, score: 8.5 },
+		{ id: 6_100_302, userId: USERS.badgeReader.id, problemId: BP.P2, score: null },
+		{ id: 6_100_303, userId: USERS.badgeReader.id, problemId: BP.P3, score: 17 },
+		{ id: 6_100_304, userId: USERS.badgeReader.id, problemId: BP.P4, score: 3 },
+		{ id: 6_100_305, userId: USERS.badgeReader.id, problemId: BP.P5, score: 10 }
+	] satisfies Progress[],
+	badges: [
+		{
+			id: BADGES.thermo.id,
+			name: BADGES.thermo.name,
+			description: 'Feel the heat.',
+			icon: 'flame',
+			color: 'peach',
+			requiredCount: BADGES.thermo.required,
+			scope: 'filter',
+			topics: '["Thermodynamics"]',
+			olympiadIds: ON_BADGE_OLYMPIAD
+		},
+		{
+			id: BADGES.field.id,
+			name: BADGES.field.name,
+			icon: 'magnet',
+			color: 'blue',
+			requiredCount: BADGES.field.required,
+			scope: 'filter',
+			topics: '["Mechanics","Electromagnetism"]',
+			olympiadIds: ON_BADGE_OLYMPIAD
+		},
+		{
+			id: BADGES.sharp.id,
+			name: BADGES.sharp.name,
+			icon: 'target',
+			color: 'red',
+			requiredCount: BADGES.sharp.required,
+			scoreMinPct: 85,
+			scope: 'filter',
+			olympiadIds: ON_BADGE_OLYMPIAD
+		},
+		{
+			id: BADGES.steady.id,
+			name: BADGES.steady.name,
+			icon: 'mountain',
+			color: 'green',
+			requiredCount: BADGES.steady.required,
+			scoreMinPct: 80,
+			scoreMaxPct: 90,
+			scope: 'filter',
+			olympiadIds: ON_BADGE_OLYMPIAD
+		},
+		{
+			id: BADGES.picked.id,
+			name: BADGES.picked.name,
+			icon: 'gem',
+			color: 'mauve',
+			requiredCount: BADGES.picked.required,
+			scope: 'manual'
+		},
+		{
+			id: BADGES.tracker.id,
+			name: BADGES.tracker.name,
+			icon: 'trophy',
+			color: 'yellow',
+			requiredCount: BADGES.tracker.required,
+			scope: 'manual'
+		},
+		{
+			id: BADGES.secret.id,
+			name: BADGES.secret.name,
+			description: 'Not telling.',
+			icon: 'sparkles',
+			color: 'lavender',
+			requiredCount: BADGES.secret.required,
+			scoreMinPct: 100,
+			scope: 'filter',
+			olympiadIds: ON_BADGE_OLYMPIAD,
+			requirementHidden: true
+		},
+		{
+			id: BADGES.egg.id,
+			name: BADGES.egg.name,
+			icon: 'star',
+			color: 'pink',
+			requiredCount: BADGES.egg.required,
+			scope: 'manual',
+			requirementHidden: true
+		}
+	] satisfies Badge[],
+	badgeProblems: [
+		{ badgeId: BADGES.picked.id, problemId: BP.P4 },
+		{ badgeId: BADGES.picked.id, problemId: BP.P6 },
+		{ badgeId: BADGES.tracker.id, problemId: BP.Q1 },
+		{ badgeId: BADGES.tracker.id, problemId: BP.Q2 },
+		{ badgeId: BADGES.egg.id, problemId: BP.P5 }
+	] satisfies BadgeProblem[],
+	/** Consistent with the progress, so the reader's first evaluation writes nothing. */
+	userBadges: [
+		{ id: 6_100_401, userId: USERS.badgeReader.id, badgeId: BADGES.thermo.id },
+		{ id: 6_100_402, userId: USERS.badgeReader.id, badgeId: BADGES.sharp.id },
+		{ id: 6_100_403, userId: USERS.badgeReader.id, badgeId: BADGES.picked.id },
+		{ id: 6_100_404, userId: USERS.badgeReader.id, badgeId: BADGES.egg.id }
+	] satisfies UserBadge[]
+};
+
 /** Every table's rows, in foreign-key order. */
 export function seedRows(now: Date) {
 	const users = [
@@ -1311,7 +1629,9 @@ export function seedRows(now: Date) {
 		{ id: 5_600_002, userId: USERS.progressReader.id, problemId: 2003, score: null },
 		{ id: 5_600_003, userId: USERS.progressReader.id, problemId: 2004, score: 3 },
 		// search/problem-filters.spec.ts
-		...SEARCHER_PROGRESS
+		...SEARCHER_PROGRESS,
+		// pages/dashboard.spec.ts, pages/badges.spec.ts
+		...BADGE_ROWS.progress
 	];
 	// admin/activity-log.spec.ts
 	const log: ActivityLog[] = [...logPagingRows(now)];
@@ -1322,21 +1642,24 @@ export function seedRows(now: Date) {
 			...OWNED_OLYMPIADS,
 			...FILES_PANEL_ROWS.olympiads,
 			...CREDITS_ROWS.olympiads,
-			...FILE_ORDER_ROWS.olympiads
+			...FILE_ORDER_ROWS.olympiads,
+			...BADGE_ROWS.olympiads
 		],
 		years: [
 			...YEARS,
 			...OWNED_YEARS,
 			...FILES_PANEL_ROWS.years,
 			...CREDITS_ROWS.years,
-			...FILE_ORDER_ROWS.years
+			...FILE_ORDER_ROWS.years,
+			...BADGE_ROWS.years
 		],
 		problems: [
 			...PROBLEMS,
 			...OWNED_PROBLEMS,
 			...FILES_PANEL_ROWS.problems,
 			...CREDITS_ROWS.problems,
-			...FILE_ORDER_ROWS.problems
+			...FILE_ORDER_ROWS.problems,
+			...BADGE_ROWS.problems
 		],
 		yearFiles: [
 			...YEAR_FILES,
@@ -1357,6 +1680,9 @@ export function seedRows(now: Date) {
 		session: sessions,
 		account: accounts,
 		problemProgress: progress,
+		badges: BADGE_ROWS.badges,
+		badgeProblems: BADGE_ROWS.badgeProblems,
+		userBadges: BADGE_ROWS.userBadges,
 		activityLog: log
 	};
 }

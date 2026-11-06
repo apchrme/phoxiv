@@ -1,5 +1,5 @@
 import type { APIRequestContext } from '@playwright/test';
-import { USERS, type UserKey } from '../../fixtures/seed-data';
+import { BADGES, USERS, type UserKey } from '../../fixtures/seed-data';
 import { postAction } from '../../support/actions';
 import { expect, test } from '../../support/test';
 
@@ -82,6 +82,56 @@ test.describe('access control', { tag: '@smoke' }, () => {
 		test('an admin gets /admin', async ({ apiAs }) => {
 			await expectStatus(await apiAs('admin'), '/admin', 200);
 		});
+	});
+
+	test.describe('admin badges: requireAdmin on the editor and each of its actions', () => {
+		// A frozen badge, so a guard that let a forged `delete` through would show
+		// up as a missing badge in the badge specs too.
+		const EXISTING = `/admin/badges/${BADGES.picked.id}`;
+
+		for (const who of NOT_ADMIN) {
+			test(`${who ?? 'anonymous'} is refused the badge editor and its actions`, async ({
+				apiAs
+			}) => {
+				const api = await apiAs(who);
+				await expectStatus(api, '/admin/badges/new', 403, UNAUTHORISED);
+				await expectStatus(api, EXISTING, 403, UNAUTHORISED);
+				const fields = {
+					name: 'Forged',
+					icon: 'star',
+					color: 'mauve',
+					requiredCount: '1',
+					scope: 'all'
+				};
+				await postAction(api, '/admin/badges/new?/save', fields, {
+					error: 403,
+					message: UNAUTHORISED
+				});
+				for (const action of ['save', 'delete']) {
+					await postAction(api, `${EXISTING}?/${action}`, fields, {
+						error: 403,
+						message: UNAUTHORISED
+					});
+				}
+			});
+		}
+
+		test('an admin gets the editor, and an unknown badge is a 404', async ({ apiAs }) => {
+			const admin = await apiAs('admin');
+			await expectStatus(admin, '/admin/badges/new', 200);
+			await expectStatus(admin, EXISTING, 200);
+			await expectStatus(admin, '/admin/badges/999999999', 404, 'Badge not found');
+			await expectStatus(admin, '/admin/badges/nope', 404, 'Badge not found');
+		});
+	});
+
+	test('the per-user badge standing needs a session, and only reads its own', async ({ apiAs }) => {
+		const anonymous = await (await apiAs(null)).get('/progress/badges');
+		expect(anonymous.status()).toBe(401);
+		const reader = await (await apiAs('badgeReader')).get('/progress/badges');
+		expect(reader.status()).toBe(200);
+		const body = await reader.json();
+		expect(body[BADGES.thermo.id]).toMatchObject({ count: BADGES.thermo.count });
 	});
 
 	test.describe('admin endpoints: requireAdmin called by each endpoint', () => {
@@ -266,7 +316,7 @@ test.describe('access control', { tag: '@smoke' }, () => {
 	});
 
 	test('login and profile redirect on the session', async ({ apiAs }) => {
-		await expectRedirect(await apiAs('user'), '/login', '/profile');
+		await expectRedirect(await apiAs('user'), '/login', '/');
 		await expectRedirect(await apiAs(null), '/profile', '/login');
 	});
 

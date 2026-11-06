@@ -24,8 +24,14 @@ type Row = {
 };
 
 const ROWS: Row[] = [
-	// `(reg)` pages and the landing page: the visitor's browser only, four hours.
-	{ path: '/', as: null, status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
+	// `/` is the landing page or the dashboard, and is never stored either way:
+	// a cached landing page would outlive a sign-in (src/routes/+page.server.ts).
+	{ path: '/', as: null, status: 200, cacheControl: PER_USER },
+	{ path: '/', as: 'user', status: 200, cacheControl: PER_USER },
+
+	// `(reg)` pages: the visitor's browser only, four hours.
+	{ path: '/badges', as: null, status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
+	{ path: '/badges', as: 'user', status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
 	{ path: '/olympiads', as: null, status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
 	{ path: '/olympiads/alpha', as: null, status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
 	{ path: '/blog', as: null, status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
@@ -42,12 +48,15 @@ const ROWS: Row[] = [
 	{ path: '/progress', as: 'user', status: 200, cacheControl: PER_USER },
 	{ path: '/olympiads/alpha/progress', as: null, status: 401, cacheControl: PER_USER },
 	{ path: '/olympiads/alpha/progress', as: 'user', status: 200, cacheControl: PER_USER },
+	{ path: '/progress/badges', as: null, status: 401, cacheControl: PER_USER },
+	{ path: '/progress/badges', as: 'user', status: 200, cacheControl: PER_USER },
 
 	// Admin and contribute set no header, so nothing caches them.
 	{ path: '/admin', as: 'admin', status: 200, cacheControl: null },
 	{ path: '/admin/index-stats', as: 'admin', status: 200, cacheControl: null },
 	{ path: '/admin/activity', as: 'admin', status: 200, cacheControl: null },
 	{ path: '/admin/reindex', as: 'admin', status: 200, cacheControl: null },
+	{ path: '/admin/badges/new', as: 'admin', status: 200, cacheControl: null },
 	{ path: '/contribute', as: 'contributor', status: 200, cacheControl: null },
 	{ path: '/contribute/e2e-assigned', as: 'contributor', status: 200, cacheControl: null },
 	{ path: '/contribute/e2e-assigned/2018', as: 'contributor', status: 200, cacheControl: null },
@@ -69,6 +78,8 @@ const ROWS: Row[] = [
 	},
 	{ path: '/api/search', as: null, status: 200, cacheControl: SHARED_CACHE_CONTROL },
 	{ path: '/api/stats', as: null, status: 200, cacheControl: SHARED_CACHE_CONTROL },
+	{ path: '/api/stats/problems', as: null, status: 200, cacheControl: SHARED_CACHE_CONTROL },
+	{ path: '/api/badges', as: null, status: 200, cacheControl: SHARED_CACHE_CONTROL },
 	{ path: '/api/team', as: null, status: 200, cacheControl: SHARED_CACHE_CONTROL },
 	{
 		path: `/api/search/files?q=${encodeURIComponent(PHRASES.alphaPaper)}`,
