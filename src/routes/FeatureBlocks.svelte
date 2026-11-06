@@ -32,15 +32,14 @@
 		},
 		{
 			n: '02',
-			title: 'Search it two ways',
-			body: `The site includes two different types of search. The default search allows you to find a problem you remember the number/title of. Can't remember that?
-			Deep search matches the text inside the PDFs, so you can search for problems that you remember a phrase from.`,
+			title: 'Narrow it down',
+			body: `The site includes a comprehensive search function that searches through files to find what you're searching for. Narrow down your search with topic and olympiad filters.`,
 			shortcut: true
 		},
 		{
 			n: '03',
 			title: "Track what you've solved",
-			body: `Mark any problem you have done, optionally with a score, and see per-year totals. Filter by completion status to narrow down your search.`,
+			body: `Mark any problem you have done, and include your score if you want.`,
 			href: signedIn ? resolve('profile') : resolve('login'),
 			cta: signedIn ? 'See your progress' : 'Sign in to track'
 		},

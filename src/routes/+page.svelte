@@ -167,7 +167,7 @@
 		<h2
 			class="mb-15 text-center text-3xl leading-tight font-[1000] tracking-tight text-foreground sm:text-4xl"
 		>
-			So, what can you do here?
+			Features
 		</h2>
 		<FeatureBlocks signedIn={!!data.user} />
 	</section>
