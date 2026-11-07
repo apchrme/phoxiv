@@ -1,6 +1,6 @@
 import { PRIVATE_CACHE_CONTROL, SHARED_CACHE_CONTROL } from '../../../../src/lib/server/cache';
 import type { UserKey } from '../../fixtures/seed-data';
-import { PHRASES } from '../../fixtures/seed-data';
+import { BADGES, PHRASES } from '../../fixtures/seed-data';
 import { SESSION_COOKIE } from '../../support/auth';
 import { expect, test } from '../../support/test';
 
@@ -32,6 +32,18 @@ const ROWS: Row[] = [
 	// `(reg)` pages: the visitor's browser only, four hours.
 	{ path: '/badges', as: null, status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
 	{ path: '/badges', as: 'user', status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
+	{
+		path: `/badges/${BADGES.picked.id}`,
+		as: null,
+		status: 200,
+		cacheControl: PRIVATE_CACHE_CONTROL
+	},
+	{
+		path: `/badges/${BADGES.picked.id}`,
+		as: 'user',
+		status: 200,
+		cacheControl: PRIVATE_CACHE_CONTROL
+	},
 	{ path: '/olympiads', as: null, status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
 	{ path: '/olympiads/alpha', as: null, status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
 	{ path: '/blog', as: null, status: 200, cacheControl: PRIVATE_CACHE_CONTROL },
@@ -83,6 +95,12 @@ const ROWS: Row[] = [
 	{ path: '/api/stats', as: null, status: 200, cacheControl: SHARED_CACHE_CONTROL },
 	{ path: '/api/stats/problems', as: null, status: 200, cacheControl: SHARED_CACHE_CONTROL },
 	{ path: '/api/badges', as: null, status: 200, cacheControl: SHARED_CACHE_CONTROL },
+	{
+		path: `/api/badges/${BADGES.picked.id}`,
+		as: null,
+		status: 200,
+		cacheControl: SHARED_CACHE_CONTROL
+	},
 	{ path: '/api/team', as: null, status: 200, cacheControl: SHARED_CACHE_CONTROL },
 	{
 		path: `/api/search/files?q=${encodeURIComponent(PHRASES.alphaPaper)}`,

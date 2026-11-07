@@ -312,12 +312,14 @@ Rules:
   upload counts, from shared-cached `/api/*` endpoints. Those return only those
   three fields (and the role, on `/team`), never the email or the user id, and
   leave banned accounts out. The privacy policy says so; change both together.
-  Badges follow the same rule: `/api/badges` gives each badge's holder count,
-  never who holds it.
+  Badges follow the same rule: `/api/badges` and `/api/badges/[id]` give each
+  badge's holder count, never who holds it. Only the admin badge editor lists
+  the holders, from its own `requireAdmin`-guarded load.
 - **A hidden badge requirement is for admins and holders only.** The admin
   panel and the badge editor always show it. A user sees it only for a badge
   they hold, through the per-user `/progress/badges` and the dashboard, never
-  through the shared-cached `/api/badges`. Everywhere else the criteria and the
+  through the shared-cached `/api/badges` or `/api/badges/[id]`. A manual
+  badge's problem list is part of its requirement and is hidden the same way. Everywhere else the criteria and the
   progress count are nulled on the server
   ([data-model.md](./data-model.md#badges-badges-badge_problems-user_badges)).
 

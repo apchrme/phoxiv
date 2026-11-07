@@ -139,11 +139,11 @@ and the delete go in one `db.batch()`, which D1 runs as a transaction. Every
 refusal happens before it, and the R2 and `file_text` cleanup after it. A failed
 cleanup leaves unreferenced objects, never rows pointing at deleted files.
 
-**Topics are never rendered next to a problem**, because that would spoil it.
-They do travel on `/api/olympiads/[olympiad]` and `/api/search`, because both
-topic filters run in the browser. They must never enter the search haystack
-(`searchText`), or typing "Relativity" would reveal which problems are about
-relativity. `getSearchIndex` sends `topics: []` for an untagged problem, so
+**Topics are never rendered next to a problem**, to reduce clutter; they exist
+for the topic filters. They do travel on `/api/olympiads/[olympiad]` and
+`/api/search`, because both topic filters run in the browser. They must never
+enter the search haystack (`searchText`), which is the ranking contract (see
+[search.md](./search.md)). `getSearchIndex` sends `topics: []` for an untagged problem, so
 `topics === undefined` on the client can only mean a body cached before topics
 existed. See [search.md](./search.md).
 
@@ -279,10 +279,17 @@ to each hidden badge the user holds (`revealed`), and the dashboard load passes
 whether the user has earned each badge. Anything new that sends a badge to a
 non-admin must go through the same helpers.
 
-**Privacy.** Who holds a badge is never public: `/api/badges` carries counts
-only (see [auth.md](./auth.md)). A badge's criteria sentence (`describeBadge`)
-never lists a manual badge's problems, since next to a filter badge's topics
-that could pair a problem with its topic.
+**Privacy.** Who holds a badge is never public: `/api/badges` and
+`/api/badges/[id]` carry counts only (see [auth.md](./auth.md)). Admins see the
+holders, with emails, on the badge editor (`listHolders`).
+
+**A manual badge's list is public**, on the badge's page `/badges/[id]`, as
+`BadgeProblem`s from `/api/badges/[id]`: olympiad, year, number and title, with
+no topics, as everywhere problems are listed. The list is part of the
+requirement, so a hidden manual badge's list follows the hidden-requirement rule
+above: `/api/badges/[id]` sends `problems: null`, and `/progress/badges` adds it
+to `revealed` for a holder. The criteria sentence (`describeBadge`) doesn't
+list the problems.
 
 ### `file_text`
 

@@ -42,10 +42,9 @@ the body on first open and matches every keystroke in the browser.
 Each item has a precomputed, lowercased `searchText` of olympiad id, olympiad
 name, year, problem number and title. That string is the ranking contract.
 
-> **Never put a topic name in `searchText`.** It would change the ranking and let
-> a visitor infer a problem's topic by typing "Relativity", which is the spoiler
-> the design prevents. Topics travel as structured data for the filter only, and
-> are never shown in a result row. See [data-model.md](./data-model.md#problems).
+> **Never put a topic name in `searchText`.** It would change the ranking.
+> Topics travel as structured data for the filter only, and are not shown in a
+> result row, to reduce clutter. See [data-model.md](./data-model.md#problems).
 
 Matching uses one uFuzzy instance in
 [`#lib/utils/fuzzy.ts`](../src/lib/utils/fuzzy.ts) with `intraMode: 1,

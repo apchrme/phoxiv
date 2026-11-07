@@ -8,7 +8,8 @@
 
 	/**
 	 * One problem: number, title, files, and the tracking control (or a sign-in
-	 * stand-in). Never render topics here: they would spoil the problem.
+	 * stand-in). Topics aren't rendered here, to keep the card uncluttered; the
+	 * topic filter uses them.
 	 */
 	let {
 		problem,

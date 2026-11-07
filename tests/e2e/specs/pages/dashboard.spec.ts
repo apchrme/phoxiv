@@ -77,7 +77,7 @@ test.describe('signed in', () => {
 		const recent = page.getByRole('list', { name: 'Recent' });
 		await expect(recent.getByRole('listitem')).toHaveCount(5);
 		await expect(recent).toContainText('Badge One');
-		// Topics are filters only; next to a problem they spoil it (docs/data-model.md).
+		// Topics are filters only, never shown next to a problem (docs/data-model.md).
 		for (const topic of ['Thermodynamics', 'Mechanics', 'Electromagnetism']) {
 			await expect(recent).not.toContainText(topic);
 		}

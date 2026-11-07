@@ -373,6 +373,7 @@ different values in the same shape):
    - `https://phoxiv.org/api/stats`
    - `https://phoxiv.org/api/stats/problems`
    - `https://phoxiv.org/api/badges`
+   - `https://phoxiv.org/api/badges/<id>` (one per badge)
    - `https://phoxiv.org/api/team`
 3. Reload the site and check the new payload is served.
 
@@ -384,7 +385,8 @@ answer stale. Skip the purge and a fix that works locally looks like it never
 deployed.
 
 The public shapes are `OlympiadEntry[]`, `YearEntry[]`, `SearchItem[]`,
-`FileSearchResponse`, `Contributor[]`, `TeamMember[]` and the stats triple.
+`FileSearchResponse`, `Contributor[]`, `TeamMember[]`, `PublicBadge[]`,
+`PublicBadgeDetail` and the stats triple.
 Before changing one, consider a newly deployed client reading a day-old cached
 body.
 

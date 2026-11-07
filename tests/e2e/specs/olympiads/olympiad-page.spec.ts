@@ -29,7 +29,7 @@ test('an unknown olympiad is a 404 page', async ({ page }) => {
 });
 
 test.describe('topics', () => {
-	// "Never render topics here: they would spoil the problem" (ProblemCard.svelte).
+	// "Topics aren't rendered here, to keep the card uncluttered" (ProblemCard.svelte).
 	// The topic filter's menu lists every topic by name, so the check is scoped to
 	// the year panels, which hold the problem cards, never the page as a whole.
 

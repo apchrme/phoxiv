@@ -1,5 +1,5 @@
 import type { APIRequestContext } from '@playwright/test';
-import { BADGE_OLYMPIAD, BADGES } from '../../fixtures/seed-data';
+import { BADGE_OLYMPIAD, BADGES, USERS } from '../../fixtures/seed-data';
 import { postAction, type ActionFields } from '../../support/actions';
 import { expect, test } from '../../support/test';
 import { confirmDialog, gotoReady, pickOlympiad, toast } from '../../support/ui';
@@ -76,7 +76,7 @@ test.describe('the badge editor', () => {
 		await expect(page.getByTestId('badge-available')).toHaveText('8 problems qualify right now.');
 
 		// One off again, by its chip.
-		await page.getByRole('button', { name: /^Remove Badge Physics Olympiad 2025 · Q2/ }).click();
+		await page.getByRole('button', { name: /^Remove e2e-badges 2025 · Q2/ }).click();
 		await expect(page.getByText('7 problems selected')).toBeVisible();
 
 		await page.getByRole('button', { name: 'Create badge' }).click();
@@ -281,5 +281,25 @@ test.describe('the badge editor', () => {
 				message
 			});
 		}
+	});
+
+	test('lists who holds the badge, linked from the count on the list', async ({ page }) => {
+		// `picked` is frozen and held only by the reader.
+		await gotoReady(page, '/admin/badges');
+		await page
+			.getByRole('listitem')
+			.filter({ hasText: BADGES.picked.name })
+			.getByRole('link', { name: '1 holder' })
+			.click();
+		await expect(page).toHaveURL(`/admin/badges/${BADGES.picked.id}#holders`);
+
+		const holders = page.getByTestId('badge-holder');
+		await expect(holders).toHaveCount(1);
+		await expect(holders).toContainText(USERS.badgeReader.name);
+		await expect(holders).toContainText(USERS.badgeReader.email);
+
+		// A badge nobody holds says so.
+		await gotoReady(page, `/admin/badges/${BADGES.field.id}`);
+		await expect(page.getByText('Nobody holds it yet')).toBeVisible();
 	});
 });

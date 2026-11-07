@@ -11,6 +11,7 @@
 	import { formToasts, Pending } from '#lib/forms.svelte.js';
 	import { plural } from '#lib/utils/plural.js';
 	import BadgeForm from './BadgeForm.svelte';
+	import HoldersList from './HoldersList.svelte';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
@@ -51,6 +52,8 @@
 	<BadgeForm bind:this={badgeForm} {data} {pending} />
 
 	{#if data.badge}
+		<HoldersList holders={data.holderList} />
+
 		<form
 			method="POST"
 			action="?/delete"

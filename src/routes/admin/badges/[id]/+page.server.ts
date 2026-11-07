@@ -1,15 +1,16 @@
 import { error, redirect } from '@sveltejs/kit';
-import { count, eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
-import { olympiads, userBadges, type DB } from '#lib/server/db/index.js';
+import { olympiads, type DB } from '#lib/server/db/index.js';
 import { requireAdmin } from '#lib/server/guard.js';
 import { logActivity } from '#lib/server/activity-log.js';
 import { listOlympiadOptions } from '#lib/server/db/queries/olympiads.js';
 import { actionFail, field, fieldList, ok, type Validated } from '#lib/server/forms.js';
 import {
+	countHolders,
 	deleteBadge,
 	getBadge,
 	getManualProblems,
+	listHolders,
 	recomputeBadge,
 	resolveProblemRefs,
 	saveBadge,
@@ -45,29 +46,27 @@ function parseId(raw: string): number | null {
 	return id;
 }
 
-/** How many people hold the badge, after a save's recompute. */
-async function holdersOf(db: DB, badgeId: number): Promise<number> {
-	const row = await db
-		.select({ n: count() })
-		.from(userBadges)
-		.where(eq(userBadges.badgeId, badgeId))
-		.get();
-	return row?.n ?? 0;
-}
-
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const { db } = requireAdmin(locals);
 	const id = parseId(params.id);
 
-	const [badge, manualProblems, olympiadOptions, holders] = await Promise.all([
+	const [badge, manualProblems, olympiadOptions, holderList] = await Promise.all([
 		id === null ? null : getBadge(db, id),
 		id === null ? [] : getManualProblems(db, id),
 		listOlympiadOptions(db),
-		id === null ? 0 : holdersOf(db, id)
+		// Who holds it, with emails: admin only, which the layout and
+		// `requireAdmin` above guarantee (docs/auth.md). One row per holder.
+		id === null ? [] : listHolders(db, id)
 	]);
 	if (id !== null && !badge) error(404, 'Badge not found');
 
-	return { badge: badge ?? null, manualProblems, olympiads: olympiadOptions, holders };
+	return {
+		badge: badge ?? null,
+		manualProblems,
+		olympiads: olympiadOptions,
+		holders: holderList.length,
+		holderList
+	};
 };
 
 /** A percentage bound: blank is open (`null`), otherwise 0 to 100. */
@@ -244,7 +243,7 @@ export const actions: Actions = {
 		return ok('save', {
 			id: badge.id,
 			created: id === null,
-			holders: await holdersOf(db, badge.id)
+			holders: await countHolders(db, badge.id)
 		});
 	},
 

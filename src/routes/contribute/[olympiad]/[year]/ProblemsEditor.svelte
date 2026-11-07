@@ -34,9 +34,9 @@
 				>or changing the problem number</span
 			>
 			will delete all its associated file records — and every user's tracked progress on it. Topics are
-			only used by the topic filter on the olympiad page — they are never shown next to a problem, so
-			they can't spoil it. The maximum score is optional: set it and a reader who tracks the problem sees
-			their mark out of it, leave it blank and they can still record a score with no denominator.
+			only used by the topic filter on the olympiad page — they aren't shown next to a problem. The maximum
+			score is optional: set it and a reader who tracks the problem sees their mark out of it, leave it
+			blank and they can still record a score with no denominator.
 		</Card.Description>
 	</Card.Header>
 	<Card.Content class="flex flex-col gap-3">

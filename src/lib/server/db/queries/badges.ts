@@ -5,11 +5,18 @@ import {
 	olympiads,
 	problemProgress,
 	problems,
+	user,
 	userBadges,
 	years,
 	type DB
 } from '../index';
-import { qualifies, sortByHolders, type BadgeEntry, type BadgeScope } from '#lib/badges.js';
+import {
+	qualifies,
+	sortByHolders,
+	type BadgeEntry,
+	type BadgeProblem,
+	type BadgeScope
+} from '#lib/badges.js';
 import { parseStringArray } from '#lib/utils/json.js';
 import { parseTopics, serializeTopics } from '#lib/utils/topics.js';
 import type { ProblemTopic } from '#lib/types.js';
@@ -45,8 +52,8 @@ export type BadgeInput = {
 /** A problem addressed as the app addresses it, never by `problems.id`. */
 export type ProblemRef = { olympiadId: string; year: number; number: string };
 
-/** A manual badge's problem, for the admin editor. */
-export type ManualProblem = ProblemRef & { olympiadName: string; title: string | null };
+/** A manual badge's problem, for the admin editor and the badge's public page. */
+export type ManualProblem = BadgeProblem;
 
 /** The JSON columns parsed. */
 export function toBadgeEntry(row: BadgeRow): BadgeEntry {
@@ -72,7 +79,8 @@ export type ListedBadge = BadgeEntry & { holders: number };
 /**
  * Every badge with its holder count, most holders first (`sortByHolders`).
  * Two cheap reads: one row per badge, and one aggregate over `user_badges`.
- * Counts only: who holds a badge is never public (docs/auth.md).
+ * Counts only: who holds a badge is never public (docs/auth.md); admins get the
+ * names from {@link listHolders}.
  */
 export async function listBadges(db: DB): Promise<ListedBadge[]> {
 	const [rows, counts] = await Promise.all([
@@ -93,6 +101,51 @@ export async function listBadges(db: DB): Promise<ListedBadge[]> {
 export async function getBadge(db: DB, id: number): Promise<BadgeEntry | undefined> {
 	const row = await db.select().from(badges).where(eq(badges.id, id)).get();
 	return row && toBadgeEntry(row);
+}
+
+/** How many people hold one badge. Reads its `user_badges` rows by index. */
+export async function countHolders(db: DB, badgeId: number): Promise<number> {
+	const row = await db
+		.select({ n: count() })
+		.from(userBadges)
+		.where(eq(userBadges.badgeId, badgeId))
+		.get();
+	return row?.n ?? 0;
+}
+
+/** One person holding a badge, as the admin editor lists them. */
+export type BadgeHolder = {
+	id: string;
+	name: string;
+	email: string;
+	image: string | null;
+	banned: boolean;
+	earnedAt: Date;
+};
+
+/**
+ * Who holds one badge, most recently earned first. **Admin only**: who holds a
+ * badge is never public (docs/auth.md), so only `/admin/badges/[id]` may call
+ * this. Sorted here rather than in SQL, as the users table is: `earned_at` has
+ * no index, and the rows are all read anyway.
+ */
+export async function listHolders(db: DB, badgeId: number): Promise<BadgeHolder[]> {
+	const rows = await db
+		.select({
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			image: user.image,
+			banned: user.banned,
+			earnedAt: userBadges.earnedAt
+		})
+		.from(userBadges)
+		.innerJoin(user, eq(user.id, userBadges.userId))
+		.where(eq(userBadges.badgeId, badgeId))
+		.all();
+	return rows
+		.map((r) => ({ ...r, banned: r.banned ?? false }))
+		.sort((a, b) => +b.earnedAt - +a.earnedAt || a.name.localeCompare(b.name));
 }
 
 // ── One user ────────────────────────────────────────────────────────────────
@@ -299,7 +352,11 @@ export async function recomputeBadge(db: DB, badge: BadgeEntry): Promise<void> {
 
 // ── Admin editing ───────────────────────────────────────────────────────────
 
-/** A manual badge's problems, in olympiad, year and number order. */
+/**
+ * A manual badge's problems, in olympiad, year and number order. For the admin
+ * editor, and for users only through `/api/badges/[id]` and `/progress/badges`,
+ * which leave a hidden badge's list out (docs/data-model.md).
+ */
 export async function getManualProblems(db: DB, badgeId: number): Promise<ManualProblem[]> {
 	return db
 		.select({

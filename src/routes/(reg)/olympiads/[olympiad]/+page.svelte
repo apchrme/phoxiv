@@ -198,7 +198,7 @@
 				     squeeze its placeholder to a few letters on a phone. Below `md` they
 				     get their own row and split it evenly. -->
 				<div class="flex w-full gap-2 md:w-auto">
-					<!-- Topics are never shown on a problem (spoilers), only used to filter. -->
+					<!-- Topics aren't shown on a problem, to reduce clutter; they're only used to filter. -->
 					<TopicSelect
 						bind:value={activeTopics}
 						label="All topics"

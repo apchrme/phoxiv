@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { BADGES } from '../../fixtures/seed-data';
+import { BADGE_OLYMPIAD, BADGES } from '../../fixtures/seed-data';
 import { expect, test } from '../../support/test';
 import { gotoReady } from '../../support/ui';
 
@@ -109,7 +109,20 @@ test.describe('signed in', () => {
 		// Earned: the rule comes with the standing, since /api/badges can't carry it.
 		expect(standing[BADGES.egg.id]).toMatchObject({
 			count: BADGES.egg.count,
-			revealed: { summary: 'Complete 1 of the selected problems', requiredCount: 1 }
+			revealed: {
+				summary: 'Complete 1 of the selected problems',
+				requiredCount: 1,
+				// Its list too, which /api/badges/[id] leaves out.
+				problems: [
+					{
+						olympiadId: BADGE_OLYMPIAD.id,
+						olympiadName: BADGE_OLYMPIAD.name,
+						year: BADGE_OLYMPIAD.readerYear,
+						number: 'P5',
+						title: 'Badge Five'
+					}
+				]
+			}
 		});
 		expect(standing[BADGES.egg.id].earnedAt).not.toBeNull();
 		// A badge that was never hidden has nothing to reveal.
@@ -125,5 +138,91 @@ test.describe('signed in', () => {
 		await expect(egg).toContainText('Earned ');
 		await expect(egg).toContainText('Complete 1 of the selected problems');
 		await expect(egg).not.toContainText('Requirement hidden');
+	});
+});
+
+/*
+ * `/badges/[id]`: one badge, with a manual badge's problems
+ * (src/routes/(reg)/badges/[id]/). The list comes from the shared-cached
+ * `/api/badges/[id]`, or from `/progress/badges` once the viewer holds a hidden
+ * badge. `picked` lists P4 (done by the reader) and P6 (not); `egg` is hidden
+ * and lists P5.
+ */
+test.describe("a badge's page", () => {
+	/** The rows of the problem list. */
+	const problems = (page: Page) => page.getByTestId('badge-problem');
+
+	test.describe('signed out', () => {
+		test('a card opens its page, which lists the selected problems', async ({ page }) => {
+			await gotoReady(page, '/badges');
+			await card(page, BADGES.picked.name).getByRole('link', { name: BADGES.picked.name }).click();
+			await expect(page).toHaveURL(`/badges/${BADGES.picked.id}`);
+			await expect(page.getByRole('heading', { level: 1, name: BADGES.picked.name })).toBeVisible();
+
+			await expect(page.getByTestId('badge-requirement')).toContainText(
+				'Complete 1 of the selected problems'
+			);
+			await expect(page.getByTestId('badge-requirement')).toContainText('Earned by 1 person');
+			await expect(page.getByText('2 problems', { exact: true })).toBeVisible();
+			await expect(problems(page)).toHaveText([/2024 · P4\s*Badge Four/, /2024 · P6\s*Badge Six/]);
+			// Each opens its year on the olympiad page.
+			await expect(problems(page).first().getByRole('link')).toHaveAttribute(
+				'href',
+				`/olympiads/${BADGE_OLYMPIAD.id}#${BADGE_OLYMPIAD.readerYear}`
+			);
+			// No standing, so nothing is ticked.
+			await expect(page.getByText('Completed')).toHaveCount(0);
+		});
+
+		test('a filter badge has no list', async ({ page }) => {
+			await gotoReady(page, `/badges/${BADGES.thermo.id}`);
+			await expect(page.getByTestId('badge-requirement')).toContainText(
+				'Complete 2 Badge Physics Olympiad Thermodynamics problems'
+			);
+			await expect(page.getByRole('heading', { name: 'The selected problems' })).toHaveCount(0);
+		});
+
+		test("a hidden badge's list stays hidden", async ({ page }) => {
+			await gotoReady(page, `/badges/${BADGES.egg.id}`);
+			await expect(page.getByTestId('badge-requirement')).toContainText('Requirement hidden');
+			await expect(page.getByRole('heading', { name: 'The selected problems' })).toHaveCount(0);
+			await expect(page.getByText('Badge Five')).toHaveCount(0);
+		});
+
+		test('an unknown badge is a 404', async ({ page }) => {
+			for (const id of ['999999999', 'nope']) {
+				const response = await page.goto(`/badges/${id}`);
+				expect(response?.status(), id).toBe(404);
+			}
+		});
+	});
+
+	test.describe('signed in', () => {
+		test.use({ role: 'badgeReader' });
+
+		test('ticks the problems the viewer has done', async ({ page }) => {
+			await gotoReady(page, `/badges/${BADGES.picked.id}`);
+			await expect(page.getByTestId('badge-requirement')).toContainText('You earned this');
+			await expect(page.getByText('1 of 2 problems done')).toBeVisible();
+			await expect(problems(page).filter({ hasText: 'Badge Four' })).toContainText('Completed');
+			await expect(problems(page).filter({ hasText: 'Badge Six' })).not.toContainText('Completed');
+		});
+
+		test("a hidden badge's list shows once the viewer holds it", async ({ page }) => {
+			await gotoReady(page, `/badges/${BADGES.egg.id}`);
+			await expect(page.getByTestId('badge-requirement')).toContainText(
+				'Complete 1 of the selected problems'
+			);
+			await expect(problems(page)).toHaveText([/2024 · P5\s*Badge Five\s*Completed/]);
+		});
+
+		test('the dashboard links each earned badge to its page', async ({ page }) => {
+			await gotoReady(page, '/');
+			await page
+				.getByRole('list', { name: 'Earned badges' })
+				.getByRole('link', { name: BADGES.thermo.name })
+				.click();
+			await expect(page).toHaveURL(`/badges/${BADGES.thermo.id}`);
+		});
 	});
 });

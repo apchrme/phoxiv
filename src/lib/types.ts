@@ -60,7 +60,7 @@ export type EditorFile = FileEntry & {
 	uploader: { name: string; image: string | null } | null;
 };
 
-/** Problem topics, for filtering only. Kept coarse so they don't spoil problems. */
+/** Problem topics, for the topic filters. Deliberately coarse. */
 export const PROBLEM_TOPICS = [
 	'Mechanics',
 	'Electromagnetism',
@@ -77,8 +77,8 @@ export type ProblemEntry = {
 	number: string;
 	title?: string;
 	/**
-	 * Sent in the public payloads for client-side filtering, but never render
-	 * them next to a problem (spoilers). `undefined` means a stale cached body
+	 * Sent in the public payloads for client-side filtering, but not rendered
+	 * next to a problem, to keep listings uncluttered. `undefined` means a stale cached body
 	 * from before topics existed; untagged problems get `[]`.
 	 */
 	topics?: ProblemTopic[];

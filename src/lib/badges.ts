@@ -240,8 +240,8 @@ function orList(items: readonly string[]): string {
  * The criteria in one sentence: "Complete 10 Thermodynamics problems",
  * "Complete 5 IPhO problems, scoring at least 80%".
  *
- * Never lists a manual badge's problems: next to a filter badge's topics that
- * could pair a problem with its topic, which docs/data-model.md rules out.
+ * Never lists a manual badge's problems. Those travel separately, as
+ * {@link BadgeProblem}s on the badge's own page.
  *
  * @param olympiadNames display names by id; unknown ids show as the id.
  */
@@ -322,6 +322,54 @@ export type PublicBadge = {
 	holders: number;
 };
 
+/**
+ * {@link PublicBadge}'s fields for one badge, from a badge and its holder count.
+ * Shared by `/api/badges` and `/api/badges/[id]`, so the two can't disagree.
+ * Never "earned": both are shared by every viewer, so a hidden requirement is
+ * left out, and holders get it from `/progress/badges`.
+ */
+export function toPublicBadge(
+	badge: BadgeEntry & { holders: number },
+	olympiadNames: Readonly<Record<string, string>>
+): PublicBadge {
+	return {
+		id: badge.id,
+		name: badge.name,
+		description: badge.description,
+		icon: badge.icon,
+		color: badge.color,
+		...visibleCriteria(badge, olympiadNames, false),
+		holders: badge.holders
+	};
+}
+
+/**
+ * One problem of a manual badge, addressed as the app addresses problems, never
+ * by `problems.id`. No `topics`: problems are never listed with them, to
+ * reduce clutter (docs/data-model.md).
+ */
+export type BadgeProblem = {
+	olympiadId: string;
+	olympiadName: string;
+	year: number;
+	number: string;
+	title: string | null;
+};
+
+/**
+ * One badge as `GET /api/badges/[id]` serves it, for the badge's own page.
+ * Shared-cached and public, like {@link PublicBadge}. Changing this shape
+ * needs a cache purge; see docs/deployment.md.
+ */
+export type PublicBadgeDetail = PublicBadge & {
+	/**
+	 * A manual badge's problems, in olympiad, year and number order. `null` for
+	 * any other scope, and for a manual badge whose requirement is hidden: the
+	 * list is the requirement. A holder gets it from `/progress/badges`.
+	 */
+	problems: BadgeProblem[] | null;
+};
+
 /** Where the user stands on one badge, by badge id. Body of `GET /progress/badges`. */
 export type BadgeProgressMap = Record<
 	string,
@@ -336,9 +384,11 @@ export type BadgeProgressMap = Record<
 		/**
 		 * The requirement, set only for a hidden badge this user has earned: the
 		 * one case where they may see what `/api/badges` can't show. `null`
-		 * otherwise, including for every badge that isn't hidden.
+		 * otherwise, including for every badge that isn't hidden. `problems` is
+		 * the badge's list when it is manual, as in {@link PublicBadgeDetail},
+		 * and `null` otherwise.
 		 */
-		revealed: { summary: string; requiredCount: number } | null;
+		revealed: { summary: string; requiredCount: number; problems: BadgeProblem[] | null } | null;
 	}
 >;
 

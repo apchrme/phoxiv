@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { resolve } from '$app/paths';
 	import SvelteSeo from 'svelte-seo';
 	import AwardIcon from '@lucide/svelte/icons/award';
 	import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
@@ -38,10 +39,10 @@
 
 <SvelteSeo
 	title="Badges — phoXiv"
-	description="Badges you can earn on phoXiv by completing physics olympiad problems."
+	description="Badges you can earn on phoXiv by completing problems."
 />
 
-<PageHeader title="Badges" description="Earned by completing problems. Some are hidden :)" />
+<PageHeader title="Badges" description="Earned by completing problems. Click on any badge to view its details. Some are hidden :)" />
 
 <section class="pb-16">
 	{#if catalogue.loading}
@@ -72,15 +73,25 @@
 				<!-- A hidden requirement comes only from the viewer's own standing, and
 				     only once they hold the badge. -->
 				{@const summary = badge.summary ?? standing?.revealed?.summary ?? null}
+				<!-- The whole card opens the badge's page: the heading's link stretches
+				     over it (`after:inset-0`), so there is one link per card, not a
+				     link wrapping a list of facts. -->
 				<li
 					data-testid="badge-card"
-					class="flex gap-4 rounded-xl border border-border bg-card p-4 text-card-foreground"
+					class="relative flex gap-4 rounded-xl border border-border bg-card p-4 text-card-foreground transition-colors focus-within:ring-2 focus-within:ring-ring hover:bg-muted/40"
 				>
 					<!-- Muted only once we know the viewer hasn't earned it. -->
 					<BadgeMedal icon={badge.icon} color={badge.color} earned={!standing || earned} />
 					<div class="flex min-w-0 flex-1 flex-col gap-1">
 						<div class="flex items-baseline justify-between gap-2">
-							<h2 class="m-0 truncate text-base font-semibold">{badge.name}</h2>
+							<h2 class="m-0 truncate text-base font-semibold">
+								<a
+									href={resolve(`badges/${badge.id}`)}
+									class="outline-none after:absolute after:inset-0 after:rounded-xl"
+								>
+									{badge.name}
+								</a>
+							</h2>
 							<span class="shrink-0 text-xs text-muted-foreground tabular-nums">
 								Earned by {plural(holders, 'person', 'people')}
 							</span>

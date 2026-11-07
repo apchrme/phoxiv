@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { olympiads } from '#lib/server/db/index.js';
 import { setNoStore } from '#lib/server/cache.js';
-import { evaluateUserBadges } from '#lib/server/db/queries/badges.js';
+import { evaluateUserBadges, getManualProblems } from '#lib/server/db/queries/badges.js';
 import { describeBadge, visibleCount, type BadgeProgressMap } from '#lib/badges.js';
 
 /**
@@ -11,7 +11,8 @@ import { describeBadge, visibleCount, type BadgeProgressMap } from '#lib/badges.
  * so it can write; it reads only the user's own rows.
  *
  * It also reveals the requirement of each hidden badge the user holds, which
- * the shared-cached `/api/badges` can't do.
+ * the shared-cached `/api/badges` can't do: the sentence, the count and, for a
+ * manual badge, its problem list, which `/api/badges/[id]` leaves out.
  *
  * The only input is `locals.user.id`. Never add a user id parameter.
  */
@@ -34,6 +35,14 @@ export const GET: RequestHandler = async ({ locals, setHeaders }) => {
 						await locals.db.select({ id: olympiads.id, name: olympiads.name }).from(olympiads).all()
 					).map((o) => [o.id, o.name])
 				);
+	// Likewise the lists of the hidden manual badges the user holds, usually none.
+	const lists = new Map(
+		await Promise.all(
+			reveal
+				.filter((s) => s.badge.scope === 'manual')
+				.map(async (s) => [s.badge.id, await getManualProblems(locals.db, s.badge.id)] as const)
+		)
+	);
 
 	const body: BadgeProgressMap = Object.fromEntries(
 		standings.map((s) => {
@@ -46,7 +55,8 @@ export const GET: RequestHandler = async ({ locals, setHeaders }) => {
 					revealed: reveal.includes(s)
 						? {
 								summary: describeBadge(s.badge, olympiadNames),
-								requiredCount: s.badge.requiredCount
+								requiredCount: s.badge.requiredCount,
+								problems: lists.get(s.badge.id) ?? null
 							}
 						: null
 				}

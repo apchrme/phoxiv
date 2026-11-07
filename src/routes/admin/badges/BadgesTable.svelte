@@ -62,9 +62,13 @@
 							<span class="truncate">{describeBadge(badge, olympiadNames)}</span>
 						</span>
 					</div>
-					<span class="shrink-0 text-sm text-muted-foreground tabular-nums">
+					<!-- Opens the editor at its holders list. -->
+					<a
+						href={resolve(`admin/badges/${badge.id}#holders`)}
+						class="shrink-0 text-sm text-muted-foreground tabular-nums hover:text-foreground hover:underline"
+					>
 						{plural(badge.holders, 'holder')}
-					</span>
+					</a>
 					<Button
 						variant="outline"
 						size="sm"

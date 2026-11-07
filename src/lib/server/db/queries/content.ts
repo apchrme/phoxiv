@@ -212,7 +212,7 @@ export async function getYearContent(
  *
  * `searchText` joins olympiad id, name, year, number and title in that order;
  * reordering changes ranking. Topics are sent for the topic filter but kept out
- * of `searchText`, so typing a topic can't reveal which problems have it.
+ * of `searchText`, where they would change the ranking.
  * `maxScore` and `problems.id` are not sent.
  */
 export async function getSearchIndex(db: DB): Promise<SearchItem[]> {

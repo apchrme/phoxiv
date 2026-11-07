@@ -38,7 +38,7 @@
 </script>
 
 <header class={cn('flex flex-col gap-2 py-5 md:py-8', className)}>
-	<div class="flex items-start gap-3">
+	<div class="flex items-center gap-3">
 		{#if leading}
 			<div class="shrink-0">{@render leading()}</div>
 		{/if}

@@ -96,7 +96,7 @@
 	}
 
 	function label(p: Picked): string {
-		return `${p.olympiadName} ${p.year} · ${p.number}${p.title ? ` · ${p.title}` : ''}`;
+		return `${p.olympiadId} ${p.year} · ${p.number}${p.title ? ` · ${p.title}` : ''}`;
 	}
 
 	/** What the server needs, and nothing else. */

@@ -118,7 +118,7 @@ test.describe('⌘K problem search', () => {
 
 	test('no topic label is ever rendered in a result row', async ({ page }) => {
 		// Topics "are sent in the public payloads for client-side filtering, but
-		// never render them next to a problem (spoilers)" (`ProblemEntry.topics` in
+		// not rendered next to a problem" (`ProblemEntry.topics` in
 		// src/lib/types.ts). Every alpha problem but one has a topic, and no seeded
 		// title contains a topic name.
 		await gotoReady(page, '/');

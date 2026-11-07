@@ -108,7 +108,7 @@ test.describe('the API contract', { tag: '@smoke' }, () => {
 		expect(untitled.problem).toEqual({ number: '2', topics: [], files: [] });
 		expect(untitled.searchText).toBe('alpha alpha physics olympiad 2020 2 ');
 
-		// The ranking contract: a topic in the haystack would let a search reveal it
+		// The ranking contract: a topic in the haystack would change the ranking
 		// (docs/search.md, "Never put a topic name in searchText").
 		for (const item of body) {
 			for (const topic of item.problem.topics) {
@@ -171,6 +171,65 @@ test.describe('the API contract', { tag: '@smoke' }, () => {
 		for (let i = 1; i < body.length; i++) {
 			const [a, b] = [body[i - 1], body[i]];
 			expect(a.holders > b.holders || (a.holders === b.holders && a.id < b.id), b.name).toBe(true);
+		}
+	});
+
+	test('/api/badges/[id] is a PublicBadgeDetail: a manual list, never a hidden one', async ({
+		request
+	}) => {
+		const get = (id: number | string) =>
+			request.get(`/api/badges/${id}`, { headers: { 'cache-control': 'no-cache' } });
+
+		const picked = await get(BADGES.picked.id);
+		expect(picked.headers()['cache-control']).toBe(SHARED_CACHE_CONTROL);
+		const body = await picked.json();
+		expect(body).toEqual({
+			id: BADGES.picked.id,
+			name: BADGES.picked.name,
+			description: '',
+			icon: 'gem',
+			color: 'mauve',
+			summary: 'Complete 1 of the selected problems',
+			requiredCount: BADGES.picked.required,
+			holders: BADGES.picked.holders,
+			// P4 and P6, addressed as the app addresses them: no row ids, and no
+			// topics, which problems are never listed with.
+			problems: [
+				{
+					olympiadId: BADGE_OLYMPIAD.id,
+					olympiadName: BADGE_OLYMPIAD.name,
+					year: BADGE_OLYMPIAD.readerYear,
+					number: 'P4',
+					title: 'Badge Four'
+				},
+				{
+					olympiadId: BADGE_OLYMPIAD.id,
+					olympiadName: BADGE_OLYMPIAD.name,
+					year: BADGE_OLYMPIAD.readerYear,
+					number: 'P6',
+					title: 'Badge Six'
+				}
+			]
+		});
+		// Never who holds it.
+		const text = JSON.stringify(body);
+		expect(text).not.toContain(USERS.badgeReader.id);
+		expect(text).not.toContain(USERS.badgeReader.email);
+		expect(text).not.toContain(USERS.badgeReader.name);
+
+		// A filter badge has no list.
+		expect((await (await get(BADGES.thermo.id)).json()).problems).toBeNull();
+
+		// A hidden manual badge: the list is the requirement, so it goes too.
+		const egg = await (await get(BADGES.egg.id)).json();
+		expect(egg).toMatchObject({ summary: null, requiredCount: null, problems: null });
+		expect(JSON.stringify(egg)).not.toContain('Badge Five');
+
+		// Unknown or malformed ids are real 404s, and not shared-cached.
+		for (const id of [999_999_999, 'nope', 0]) {
+			const missing = await get(id);
+			expect(missing.status(), String(id)).toBe(404);
+			expect(missing.headers()['cache-control'], String(id)).not.toBe(SHARED_CACHE_CONTROL);
 		}
 	});
 

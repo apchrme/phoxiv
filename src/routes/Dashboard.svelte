@@ -8,7 +8,7 @@
 	whole `problems` table; until they arrive, counts show without a denominator.
 
 	Topics appear only as aggregate counts, never next to a problem: "Recent"
-	lists problems without them (spoilers; docs/data-model.md).
+	lists problems without them, to reduce clutter (docs/data-model.md).
 -->
 <script lang="ts">
 	import { onMount } from 'svelte';
@@ -172,7 +172,12 @@
 							<li class="flex items-center gap-3">
 								<BadgeMedal icon={badge.icon} color={badge.color} size="sm" />
 								<div class="flex min-w-0 flex-col">
-									<span class="truncate text-sm font-medium">{badge.name}</span>
+									<a
+										href={resolve(`badges/${badge.id}`)}
+										class="truncate text-sm font-medium hover:underline"
+									>
+										{badge.name}
+									</a>
 									<span class="text-xs text-muted-foreground">
 										{formatDate(badge.earnedAt, 'short')}
 									</span>
@@ -197,7 +202,12 @@
 									<BadgeMedal icon={badge.icon} color={badge.color} size="sm" earned={false} />
 									<div class="flex min-w-0 flex-1 flex-col gap-1">
 										<div class="flex items-baseline justify-between gap-2">
-											<span class="truncate text-sm font-medium">{badge.name}</span>
+											<a
+												href={resolve(`badges/${badge.id}`)}
+												class="truncate text-sm font-medium hover:underline"
+											>
+												{badge.name}
+											</a>
 											<span class="shrink-0 text-xs text-muted-foreground tabular-nums">
 												{badge.count}/{badge.requiredCount}
 											</span>

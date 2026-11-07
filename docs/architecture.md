@@ -126,6 +126,8 @@ src/routes/
 │   ├── resources/, privacy/    .svx pages
 │   ├── team/                   admins and contributors; fetches /api/team
 │   ├── badges/                 every badge; fetches /api/badges and /progress/badges
+│   │   └── [id]/               one badge and a manual badge's problems; a small load (404,
+│   │                           title), then /api/badges/[id], /progress/badges and /progress
 │   ├── login/                  redirects to / if signed in
 │   └── profile/                redirects to /login if not
 │
@@ -133,7 +135,8 @@ src/routes/
 │   ├── +page.svelte            the menu: links to the four panels below; loads nothing
 │   ├── users/                  roles, assignments, bans; UsersTable, UserRowActions, columns.ts
 │   ├── log/                    the activity log's first page; ActivityLogTable
-│   ├── badges/                 BadgesTable, and [id]/: the editor ("new" creates); BadgeForm, ProblemPicker
+│   ├── badges/                 BadgesTable, and [id]/: the editor ("new" creates); BadgeForm, ProblemPicker,
+│   │                           HoldersList (who holds it: admin only)
 │   ├── search-index/           index counts and maintenance; IndexPanel
 │   └── reindex/, activity/     endpoints; each calls requireAdmin itself
 │
@@ -155,6 +158,7 @@ src/routes/
     ├── stats/                  landing-page counters
     ├── stats/problems/         ProblemTotals: the dashboard's denominators
     ├── badges/                 PublicBadge[]: every badge with its holder count, most held first
+    ├── badges/[id]/            PublicBadgeDetail: one badge, with a manual badge's problems
     ├── team/                   TeamMember[]: every admin and contributor
     └── auth/[...all]/          the exception: no cache headers
 ```
@@ -191,6 +195,10 @@ up to a day old, which is fine for an archive that changes rarely. Changing an
 
 The olympiad page still has a small load: one read of the olympiad's own row, so
 an unknown id is a real 404 and the title and description are server-rendered.
+A badge's page, `/badges/[id]`, does the same with the badge's row, and returns
+only its name, description, icon and colour: never the criteria, which may be
+hidden from the viewer. The criteria, holder count and problem list come from
+`/api/badges/[id]`.
 Its years, problems and files come from `/api/olympiads/[olympiad]`. Its
 contributors list comes from `/api/olympiads/[olympiad]/contributors`, fetched
 only when the list is first opened, so a visit that never opens it costs nothing.
@@ -222,11 +230,14 @@ olympiad as a `ProgressMap`: one key per tracked problem, nothing else.
 
 `/progress/badges` returns the user's standing on every badge as a
 `BadgeProgressMap`: qualifying completions, when it was earned, and, for a
-hidden badge the user holds, the requirement that `/api/badges` leaves out, by
+hidden badge the user holds, the requirement that `/api/badges` leaves out
+(and, for a manual badge, the problem list `/api/badges/[id]` leaves out), by
 badge id. Its count is `null` while the requirement is hidden from the user.
 Evaluating also syncs the user's awards, so it can write, but it reads only the
 user's own rows (see [data-model.md](./data-model.md#badges-badges-badge_problems-user_badges)).
-`/badges` itself stays in `(reg)` and shows no per-user data from its load.
+`/badges` and `/badges/[id]` stay in `(reg)` and show no per-user data from
+their loads. A badge's page also fetches `/progress`, only when it has a problem
+list, to tick the problems the viewer has completed.
 
 The dashboard is the exception to "fetch, don't load": `/` is outside `(reg)`
 and sends `no-store`, so its load can return the user's rows and badges
