@@ -42,7 +42,10 @@
 	description="Badges you can earn on phoXiv by completing problems."
 />
 
-<PageHeader title="Badges" description="Earned by completing problems. Click on any badge to view its details. Some are hidden :)" />
+<PageHeader
+	title="Badges"
+	description="Earned by completing problems. Click on any badge to view its details. Some are hidden :)"
+/>
 
 <section class="pb-16">
 	{#if catalogue.loading}
