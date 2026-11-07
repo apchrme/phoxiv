@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { enhance } from '$app/forms';
+	import { enhance, type ActionResult, type SubmitFunction } from '$app/forms';
+	import { beforeNavigate } from '$app/navigation';
 	import type { Pending } from '#lib/forms.svelte.js';
 	import { Save, Trash } from '@lucide/svelte';
 	import SubmitButton from '#lib/components/forms/SubmitButton.svelte';
@@ -57,12 +58,84 @@
 		if (bad) return `Maximum score for problem ${bad.number}: ${bad.error}.`;
 		return null;
 	}
+
+	/**
+	 * The draft as `saveMetadata` reads it: row ids are only `{#each}` keys, so
+	 * they're left out. Compared as strings so a reorder counts as an edit.
+	 */
+	function snapshot(): string {
+		return JSON.stringify([
+			notes.map((note) => note.value),
+			extraLinks.map((link) => [link.label, link.url]),
+			problemList.map((p) => [p.number, p.title, p.topics, p.maxScore])
+		]);
+	}
+
+	/**
+	 * The draft as last saved. Compared against the draft, not the load: a save
+	 * doesn't reseed the draft, and the server trims and drops blank rows, so the
+	 * reloaded data would disagree with a draft that was saved as typed.
+	 */
+	let saved = $state(snapshot());
+	const dirty = $derived(snapshot() !== saved);
+
+	/** Set once `deleteYear` redirects, so the move off the page isn't stopped. */
+	let leaving = false;
+
+	/**
+	 * `track`'s submit function, plus `start()`'s handler for the result before the
+	 * page updates. `start` runs at submit, so it can capture the draft as sent
+	 * rather than as it is when the response arrives.
+	 */
+	function withResult(
+		track: SubmitFunction,
+		start: () => (result: ActionResult) => void
+	): SubmitFunction {
+		return async (input) => {
+			const handle = start();
+			const after = await track(input);
+			// The guard cancelled the submission.
+			if (!after) return;
+			return async (options) => {
+				handle(options.result);
+				await after(options);
+			};
+		};
+	}
+
+	// The page's one `Pending` never changes, and `use:enhance` captures these at
+	// mount anyway, so reading `pending` once is right.
+	// svelte-ignore state_referenced_locally
+	const submitSave = withResult(pending.track('metadata', { guard: saveError }), () => {
+		const sent = snapshot();
+		return (result) => {
+			if (result.type === 'success') saved = sent;
+		};
+	});
+
+	// svelte-ignore state_referenced_locally
+	const submitDelete = withResult(pending.track('deleteYear', { reset: true }), () => (result) => {
+		if (result.type === 'redirect') leaving = true;
+	});
+
+	// Nothing is saved until "Save metadata", so warn before leaving with edits, as
+	// the olympiad editor does. A `'leave'` (reload, closing the tab, typing a url)
+	// can only get the browser's own prompt, which `cancel()` triggers. Switching to
+	// the Files tab isn't a navigation, and the draft survives it.
+	beforeNavigate((navigation) => {
+		if (leaving || !dirty) return;
+		if (navigation.type === 'leave') {
+			navigation.cancel();
+		} else if (!confirm('You have unsaved changes to this year. Leave without saving?')) {
+			navigation.cancel();
+		}
+	});
 </script>
 
 <form
 	method="POST"
 	action="?/saveMetadata"
-	use:enhance={pending.track('metadata', { guard: saveError })}
+	use:enhance={submitSave}
 	class="flex flex-col gap-5 pb-2"
 >
 	<!-- Bound: the editors add and remove rows in the parent's state. -->
@@ -70,25 +143,25 @@
 	<LinksEditor bind:rows={extraLinks} />
 	<ProblemsEditor bind:rows={problemList} {duplicates} {maxScoreErrors} />
 
-	<SubmitButton
-		{pending}
-		key="metadata"
-		icon={Save}
-		busyLabel="Saving…"
-		disabled={saveError() !== null}
-		class="self-start"
-	>
-		Save metadata
-	</SubmitButton>
+	<div class="flex items-center gap-3">
+		<SubmitButton
+			{pending}
+			key="metadata"
+			icon={Save}
+			busyLabel="Saving…"
+			disabled={saveError() !== null}
+		>
+			Save metadata
+		</SubmitButton>
+		{#if dirty}
+			<span class="text-xs text-muted-foreground">Unsaved changes</span>
+		{/if}
+	</div>
 </form>
 
 <!-- Keep this a sibling of the form above. Nested, the parser drops this tag and
      the button would submit `?/saveMetadata` instead. -->
-<form
-	method="POST"
-	action="?/deleteYear"
-	use:enhance={pending.track('deleteYear', { reset: true })}
->
+<form method="POST" action="?/deleteYear" use:enhance={submitDelete}>
 	<ConfirmSubmit
 		{pending}
 		key="deleteYear"

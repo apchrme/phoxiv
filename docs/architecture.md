@@ -77,8 +77,7 @@ About the shared cache:
   concurrent misses, and the zone's Tiered Cache setting does not apply to it.
   So D1 is hit up to once a day per key _per data centre that serves a
   visitor_, not once a day in total. That matters for `/api/search`, which reads
-  the whole corpus on a miss, now that D1's free-tier daily row limits are
-  enforced.
+  the whole corpus on a miss.
 - At this traffic level objects are evicted (LRU) long before `s-maxage`
   expires, so raising it buys little. To cut an endpoint's D1 cost, make the
   query cheaper.

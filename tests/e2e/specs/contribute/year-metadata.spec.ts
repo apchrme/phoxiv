@@ -2,7 +2,7 @@ import type { Locator, Page } from '@playwright/test';
 import { OWNED, OWNED_FILE_URLS } from '../../fixtures/seed-data';
 import { postAction } from '../../support/actions';
 import { expect, test } from '../../support/test';
-import { gotoReady, toast } from '../../support/ui';
+import { answerDialogs, confirmDialog, gotoReady, toast } from '../../support/ui';
 
 /*
  * The year editor's metadata tab (`/contribute/<olympiad>/<year>`, "Phase 1"):
@@ -226,5 +226,91 @@ test.describe('the year editor, metadata tab', () => {
 		await expect(label(1)).toHaveValue('Official site');
 		await expect(url(1)).toHaveValue('https://example.org/meta-2004');
 		await expect(label(2)).toHaveCount(0);
+	});
+});
+
+test.describe('the year editor warns about unsaved metadata', () => {
+	// These share YEARS.unsaved and only the last one saves, which `fullyParallel:
+	// false` keeps last within this file.
+	const EDITOR = editorPath(YEARS.unsaved);
+	const BACK = 'Back to Metadata Physics Olympiad';
+	const OLYMPIAD = `/contribute/${OWNED.metaOlympiad}`;
+
+	function note(page: Page) {
+		return page.getByLabel('Note 1', { exact: true });
+	}
+
+	test('leaving with an edit asks first, and dismissing stays', async ({ page }) => {
+		await gotoReady(page, EDITOR);
+		const dialogs = answerDialogs(page, false);
+
+		await note(page).fill('An unsaved note.');
+		await expect(page.getByText('Unsaved changes')).toBeVisible();
+
+		// Switching tabs isn't leaving, and the draft survives it.
+		await page.getByRole('tab', { name: 'Phase 2 — Files' }).click();
+		await page.getByRole('tab', { name: 'Phase 1 — Metadata' }).click();
+		expect(dialogs).toEqual([]);
+
+		await page.getByRole('link', { name: BACK }).click();
+		await expect.poll(() => dialogs).toEqual(['confirm']);
+		await expect(page).toHaveURL(EDITOR);
+		await expect(note(page)).toHaveValue('An unsaved note.');
+	});
+
+	test('accepting the warning leaves', async ({ page }) => {
+		await gotoReady(page, EDITOR);
+		const dialogs = answerDialogs(page, true);
+
+		await note(page).fill('An unsaved note.');
+		await page.getByRole('link', { name: BACK }).click();
+		await expect(page).toHaveURL(OLYMPIAD);
+		expect(dialogs).toEqual(['confirm']);
+	});
+
+	test('reloading with an edit gets the browser prompt', async ({ page }) => {
+		await gotoReady(page, EDITOR);
+		// Accepted, as in olympiad-editor.spec.ts: Playwright's dismissal of a
+		// `beforeunload` prompt doesn't reliably cancel a `reload()`.
+		const dialogs = answerDialogs(page, true);
+
+		// A click first: Chromium prompts only on a page the user interacted with.
+		await note(page).click();
+		await note(page).fill('Another unsaved note.');
+		await page.reload();
+		expect(dialogs).toEqual(['beforeunload']);
+		await expect(note(page)).toHaveValue('A note to edit.');
+	});
+
+	test('saving clears the warning, even with rows the server drops', async ({ page }) => {
+		// MetadataTab.svelte compares against the draft as sent, not the reload: the
+		// server trims the note and drops the blank link, so the stored year never
+		// matches this draft.
+		await gotoReady(page, EDITOR);
+		const dialogs = answerDialogs(page, false);
+
+		await note(page).fill('  A saved note.  ');
+		await page.getByRole('button', { name: 'Add link' }).click();
+		await expect(page.getByText('Unsaved changes')).toBeVisible();
+		await saveMetadata(page);
+		await expect(page.getByText('Unsaved changes')).toBeHidden();
+
+		await page.getByRole('link', { name: BACK }).click();
+		await expect(page).toHaveURL(OLYMPIAD);
+		expect(dialogs).toEqual([]);
+	});
+
+	test('deleting the year leaves without asking', async ({ page }) => {
+		// deleteYear redirects off the page, which is what the contributor asked for.
+		await gotoReady(page, editorPath(YEARS.unsavedDelete));
+		const dialogs = answerDialogs(page, false);
+
+		await page.getByRole('button', { name: 'Add note' }).click();
+		await expect(page.getByText('Unsaved changes')).toBeVisible();
+
+		await page.getByRole('button', { name: 'Delete this year' }).click();
+		await confirmDialog(page).getByRole('button', { name: 'Delete year' }).click();
+		await expect(page).toHaveURL(OLYMPIAD);
+		expect(dialogs).toEqual([]);
 	});
 });

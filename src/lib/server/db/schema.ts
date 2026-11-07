@@ -363,7 +363,7 @@ export const badgeProblems = sqliteTable(
 /**
  * Who holds which badge. Derived from `problem_progress` and `badges`, and kept
  * only so a holder count costs one aggregate instead of re-evaluating every
- * user, which the free tier's read quota can't afford. Awards are revocable: a
+ * user, a scan that grows with every user and tracked problem. Awards are revocable: a
  * user's rows are re-synced whenever their badges are evaluated. See
  * docs/data-model.md.
  */

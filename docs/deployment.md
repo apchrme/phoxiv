@@ -152,8 +152,8 @@ bunx wrangler d1 execute DB --remote --json --file=src/lib/server/db/backfill-up
 ```
 
 It only fills NULLs, so running it twice changes nothing. Check `rows_read` in
-the remote `--json` output against the quota (see
-[Staying inside D1's daily quotas](#staying-inside-d1s-daily-quotas)): it scans
+the remote `--json` output (see
+[Keeping D1 usage in check](#keeping-d1-usage-in-check)): it scans
 `activity_log` once per statement. Files it can't match stay null and count for
 nobody. Purge `/api/team` and the `contributors` URLs afterwards, or the
 credits appear only as the cache turns over.
@@ -285,8 +285,9 @@ How the script behaves:
   `--command` hits Windows' 8191-character command-line limit.
 
 **Don't bump `EXTRACTOR_VERSION` to force a re-run.** The bump is for changes to
-what extraction produces, and it re-queues the whole archive at 14 % of the daily
-write quota (see [below](#staying-inside-d1s-daily-quotas)).
+what extraction produces, and it re-queues the whole archive: every file is
+re-extracted and about 14,000 rows are rewritten through the FTS triggers (see
+[below](#keeping-d1-usage-in-check)).
 
 To confirm a run worked, press **Refresh** on the Index tab's Maintenance card:
 `pending` should fall and `ok` rise. The tab never refreshes its counts on its
@@ -305,29 +306,31 @@ bunx wrangler d1 execute DB --remote --command \
 ```
 
 Rough estimate: stored text plus its index costs about 70 kB per typical 40 kB
-file, so 1,000 files is about 70 MB and 5,000 about 350 MB. Free D1 allows
-500 MB.
+file, so 1,000 files is about 70 MB and 5,000 about 350 MB. A D1 database can
+hold up to 10 GB, and Workers Paid includes the first 5 GB of storage.
 
-## Staying inside D1's daily quotas
+## Keeping D1 usage in check
 
-phoXiv stays on Cloudflare's free tier. Free D1 allows **5,000,000 rows read**
-and **100,000 rows written** per day. Cloudflare enforces these: once a limit is
-hit, every query fails until midnight UTC. A quota overrun is a full outage, so
-leave plenty of headroom.
+phoXiv runs on Workers Paid, which includes **25 billion rows read** and
+**50 million rows written** per month, billed beyond that ($0.001 per million
+reads, $1.00 per million writes). Usage is nowhere near either, and going over
+costs money rather than availability. Rows read still track latency, though: a
+query that scans a table is slow on every request, and with the per-data-centre
+Cache API ([architecture.md](./architecture.md#caching-and-the-route-tree)) an expensive
+miss is paid many times a day, not once.
 
-- **Reads** are not the concern. Normal traffic reads 180,000–330,000 rows a day,
-  about 5 % of the limit. Badges are designed to keep it that way: a dashboard
-  view or a tracked problem reads only that user's progress, holder counts come
-  from `user_badges`, and only an admin saving a badge scans all progress
+- **Reads.** Normal traffic reads 180,000–330,000 rows a day. Badges are
+  designed to keep per-request reads small: a dashboard view or a tracked
+  problem reads only that user's progress, holder counts come from
+  `user_badges`, and only an admin saving a badge scans all progress
   ([data-model.md](./data-model.md#badges-badges-badge_problems-user_badges)).
   Don't add a page that re-evaluates badges for every user.
 - **The e2e suite costs nothing**, locally or in CI. It runs against local
   workerd state in `.wrangler/e2e` and never uses the remote database or bucket
   ([testing.md](./testing.md#the-safety-guards)).
-- **Writes** are the tighter limit. One full re-index sweep writes about 14,000
-  rows (14 % of the limit), because each `file_text` write fans out through the
-  FTS triggers. Spread sweeps, tokenizer changes and index rebuilds across days,
-  and prefer one sweep that covers everything over several narrow ones.
+- **Writes.** One full re-index sweep writes about 14,000 rows, because each
+  `file_text` write fans out through the FTS triggers. Prefer one sweep that
+  covers everything over several narrow ones.
 
 Check the real numbers instead of estimating. The GraphQL analytics API gives
 both meters per day:
@@ -346,11 +349,6 @@ dataset.
 To check one query before shipping it, run it with
 `wrangler d1 execute --remote --json` and read `rows_read` in the `meta`. Compare
 variants directly instead of reasoning about the query plan.
-
-The paid plan is a backstop, not the plan. Workers Paid costs $5/month. Upgrade
-rather than optimise further if reads stay above about **3,500,000/day** or
-writes above about **70,000/day**; the archive going dark costs more than $5.
-Until then, treat the free-tier quotas as engineering limits.
 
 ## Purging the cache after an API change
 

@@ -22,8 +22,7 @@
 		{
 			n: '01',
 			title: 'Browse the archive',
-			body: `Dozens of olympiads, each with problems, solutions, marking schemes and more.
-			Pages are cached, so they are lightning-fast.`,
+			body: `Browse the most comprehensive archive on the internet. Dozens of olympiads and thousands of problems, each complete with problems, solutions, marking schemes and more.`,
 			href: resolve('olympiads'),
 			cta: 'Browse olympiads'
 		},
@@ -35,8 +34,8 @@
 		},
 		{
 			n: '03',
-			title: "Track what you've solved",
-			body: `Mark any problem you have done, and include your score if you want. Earn badges along the way.`,
+			title: 'Earn shiny badges',
+			body: `Mark any problem you have done, and include your score if you want. Earn cool badges along the way.`,
 			href: resolve('login'),
 			cta: 'Sign in to track'
 		},

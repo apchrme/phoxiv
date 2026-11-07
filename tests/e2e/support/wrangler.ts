@@ -7,8 +7,8 @@ import { ENV_FILE, PROXY_PERSIST, REPO_ROOT, STATE_DIR } from './env';
 /*
  * The only way the e2e harness runs wrangler, as a child process or in-process.
  * Every call is forced local, pointed at the e2e state and given `.env.test`, so
- * nothing the suite does can reach the production database, the bucket, or the
- * free-tier quotas. See docs/testing.md, "The safety guards".
+ * nothing the suite does can reach the production database, the bucket, or
+ * their usage meters. See docs/testing.md, "The safety guards".
  */
 
 const WRANGLER_BIN = join(REPO_ROOT, 'node_modules', 'wrangler', 'bin', 'wrangler.js');

@@ -1,6 +1,6 @@
 # The gates on every pull request and every push to master: lint, type-check,
 # and the full end-to-end suite. Everything runs against local workerd state, so
-# this needs no Cloudflare secrets and uses none of the free-tier quotas.
+# this needs no Cloudflare secrets and adds nothing to production's usage.
 # See docs/testing.md, "CI".
 name: e2e
 

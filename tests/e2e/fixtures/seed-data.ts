@@ -606,9 +606,16 @@ const FILE_TEXT: FileText[] = [
 export const OWNED = {
 	/** contribute/olympiad-editor.spec.ts */
 	iconOlympiad: 'e2e-icon',
-	/** contribute/year-metadata.spec.ts: one year per test. */
+	/** contribute/year-metadata.spec.ts: one year per test, but the unsaved-changes tests that do not delete share one. */
 	metaOlympiad: 'e2e-meta',
-	metaYears: { rowShift: 2001, topics: 2002, duplicates: 2003, links: 2004 },
+	metaYears: {
+		rowShift: 2001,
+		topics: 2002,
+		duplicates: 2003,
+		links: 2004,
+		unsaved: 2005,
+		unsavedDelete: 2006
+	},
 	/** contribute/year-files.spec.ts: one year per test. */
 	filesOlympiad: 'e2e-files',
 	filesYears: { upload: 2021, noParser: 2022, search: 2023, retry: 2024 },
@@ -731,7 +738,7 @@ const OWNED_OLYMPIADS: Olympiad[] = [
 	}
 ];
 
-const { rowShift, topics, duplicates, links } = OWNED.metaYears;
+const { rowShift, topics, duplicates, links, unsaved, unsavedDelete } = OWNED.metaYears;
 const { upload, noParser, search, retry } = OWNED.filesYears;
 
 const OWNED_YEARS: Year[] = [
@@ -745,6 +752,13 @@ const OWNED_YEARS: Year[] = [
 		notes: JSON.stringify(['A seeded note.']),
 		extraLinks: JSON.stringify([{ label: 'Official site', url: 'https://example.org/meta-2004' }])
 	},
+	{
+		id: 1105,
+		olympiadId: OWNED.metaOlympiad,
+		year: unsaved,
+		notes: JSON.stringify(['A note to edit.'])
+	},
+	{ id: 1106, olympiadId: OWNED.metaOlympiad, year: unsavedDelete },
 	{ id: 1111, olympiadId: OWNED.filesOlympiad, year: upload },
 	{ id: 1112, olympiadId: OWNED.filesOlympiad, year: noParser },
 	{ id: 1113, olympiadId: OWNED.filesOlympiad, year: search },

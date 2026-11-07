@@ -156,7 +156,7 @@ at `.wrangler/e2e` and the seed lands in a database the server never reads.
 
 ### The safety guards
 
-The suite can never touch production data or the free-tier quotas. The flags are
+The suite can never touch production data or its usage meters. The flags are
 the guarantee; the environment scrub is defence in depth, since a `wrangler
 login` token lives in your user profile, beyond any environment variable.
 
@@ -540,8 +540,8 @@ and Node 24 (wrangler and Playwright run under Node). It installs Chromium with
 its system libraries and caches the download under a key from `bun.lock`.
 
 - **It holds no secrets.** The suite runs on local workerd state and
-  `.env.test`'s dummy values, so the job needs no Cloudflare token and uses none
-  of the free-tier quotas. Keep it that way (CLAUDE.md rule 10).
+  `.env.test`'s dummy values, so the job needs no Cloudflare token and adds
+  nothing to production's usage. Keep it that way (CLAUDE.md rule 10).
 - **`CI` changes three settings** in `support/config.ts`: one worker instead of
   two, `forbidOnly` (a committed `test.only` fails the run), and the `github`
   reporter, which annotates failures on the pull request.

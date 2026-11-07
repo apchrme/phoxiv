@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test';
 import { CDN_BASE_URL } from '../../../../src/lib/constants';
 import { OWNED } from '../../fixtures/seed-data';
 import { expect, test } from '../../support/test';
-import { confirmDialog, gotoReady, toast } from '../../support/ui';
+import { answerDialogs, confirmDialog, gotoReady, toast } from '../../support/ui';
 
 /*
  * The olympiad editor's icon: upload, save metadata alongside it, remove. And
@@ -120,16 +120,6 @@ test.describe('the olympiad editor icon', () => {
 		await expect(emojiField(page)).toHaveValue('');
 	});
 });
-
-/** Every dialog the page opens (`confirm()`, `beforeunload`), answered with `accept`. */
-function answerDialogs(page: Page, accept: boolean): string[] {
-	const seen: string[] = [];
-	page.on('dialog', async (dialog) => {
-		seen.push(dialog.type());
-		await (accept ? dialog.accept() : dialog.dismiss());
-	});
-	return seen;
-}
 
 test.describe('the olympiad editor warns about unsaved changes', () => {
 	test('leaving with an edit asks first, and dismissing stays', async ({ page }) => {

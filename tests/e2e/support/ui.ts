@@ -48,6 +48,20 @@ export function confirmDialog(page: Page): Locator {
 }
 
 /**
+ * Answers every native dialog the page opens from now on (`confirm()`,
+ * `beforeunload`) with `accept`, and returns their types in order. Unlike
+ * {@link confirmDialog}, these are the browser's own, not bits-ui's.
+ */
+export function answerDialogs(page: Page, accept: boolean): string[] {
+	const seen: string[] = [];
+	page.on('dialog', async (dialog) => {
+		seen.push(dialog.type());
+		await (accept ? dialog.accept() : dialog.dismiss());
+	});
+	return seen;
+}
+
+/**
  * Opens an `OlympiadPicker` from its trigger and picks `names`, then waits for
  * the panel to close. The panel is portalled; its search box filters by name
  * and id. Names match exactly: "Delta Physics Olympiad" is a prefix of another

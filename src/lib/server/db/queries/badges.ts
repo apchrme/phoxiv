@@ -17,8 +17,8 @@ import type { ProblemTopic } from '#lib/types.js';
 /*
  * Reads and writes for badges and who holds them.
  *
- * Read budget (the free tier's 5M rows a day is enforced, so going over is an
- * outage). Evaluating one user reads that user's progress rows and the badges,
+ * Read budget (these run on hot paths, so rows read are latency on every
+ * request). Evaluating one user reads that user's progress rows and the badges,
  * never other users' rows: `evaluateUserBadges` runs on every dashboard view
  * and every tracked problem. Re-evaluating everyone scans all of
  * `problem_progress`, so only `recomputeBadge` does it, and only an admin save
@@ -379,7 +379,7 @@ function toColumns(input: BadgeInput) {
 
 /**
  * Creates (`id === null`) or updates a badge and replaces its manual problem
- * list, writing only the rows that changed (the free tier's write quota).
+ * list, writing only the rows that changed (D1 bills per row written).
  * Returns the saved badge. The caller then runs {@link recomputeBadge}.
  */
 export async function saveBadge(

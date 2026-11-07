@@ -241,9 +241,8 @@ the user's own standing (JS).
 
 **Why awards are stored.** Holder counts could be derived from progress, but
 only by re-evaluating every user on every view, which is a scan of
-`problem_progress` per badge. On the free tier's enforced read quota, that is
-an outage waiting to happen. Instead, `user_badges` is kept in sync and counted
-with one aggregate:
+`problem_progress` per badge, which grows with every user and every tracked
+problem. Instead, `user_badges` is kept in sync and counted with one aggregate:
 
 - `evaluateUserBadges` reads one user's progress rows and the badges, evaluates
   them, then inserts awards newly earned and deletes awards lost. **Awards are
