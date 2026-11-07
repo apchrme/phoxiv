@@ -28,7 +28,7 @@
 			title: 'Browse the archive',
 			body: `Browse the most comprehensive archive on the internet. Dozens of olympiads and thousands of problems, each complete with problems, solutions, marking schemes and more.`,
 			href: resolve('olympiads'),
-			cta: 'Browse olympiads',
+			cta: 'Browse olympiads'
 		},
 		{
 			icon: Search,
@@ -66,11 +66,7 @@
 		>
 			<!-- Flex, not text-align: Tailwind's preflight makes an svg `display: block`. -->
 			<div class="flex sm:col-span-3 {i % 2 === 1 ? 'sm:justify-start' : 'sm:justify-end'}">
-				<block.icon
-					class="size-12 sm:size-18 {block.color}"
-					strokeWidth=3
-					aria-hidden="true"
-				/>
+				<block.icon class="size-12 sm:size-18 {block.color}" strokeWidth="3" aria-hidden="true" />
 			</div>
 
 			<div
@@ -78,9 +74,7 @@
 					? 'sm:items-end sm:text-right'
 					: 'sm:text-left'}"
 			>
-				<h2
-					class="m-0 text-2xl leading-tight font-[1000] tracking-tight {block.color} sm:text-3xl"
-				>
+				<h2 class="m-0 text-2xl leading-tight font-[1000] tracking-tight {block.color} sm:text-3xl">
 					{block.title}
 				</h2>
 				<p class="m-0 max-w-[52ch] text-base leading-relaxed text-foreground/75">
