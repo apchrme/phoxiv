@@ -971,14 +971,14 @@ const OWNED_FILE_TEXT: FileText[] = [
 // ── Activity log: admin/activity-log.spec.ts ────────────────────────────────
 // Owned by admin/activity-log.spec.ts, which only reads these rows. Other specs
 // log rows as they run (uploads, saves, creates); those get higher ids, so they
-// push this block down the Log tab but never into it.
+// push this block down the activity log but never into it.
 
 /** One row of {@link LOG_PAGING_ENTRIES}, as the spec finds it on screen. */
 export type LogPagingEntry = { id: number; detail: string; tied: boolean };
 
 /**
  * The entries, by number, that share one exact `created_at`: a run of 30. The
- * Log tab pages by 25 (`LOG_PAGE_SIZE` in admin/+page.server.ts), and any 26
+ * log pages by 25 (`LOG_PAGE_SIZE` in admin/log/+page.server.ts), and any 26
  * consecutive rows hold a page seam, so a seam falls inside the run however far
  * down other specs' rows push it. A cursor on the timestamp alone would skip or
  * repeat rows there.
@@ -986,8 +986,8 @@ export type LogPagingEntry = { id: number; detail: string; tied: boolean };
 const LOG_TIE = { from: 16, to: 45 } as const;
 
 /**
- * owned by admin/activity-log.spec.ts: 60 rows, more than two pages of the Log
- * tab, oldest (lowest id) first, ids 5_200_001 to 5_200_060. Each `detail` is
+ * owned by admin/activity-log.spec.ts: 60 rows, more than two pages of the
+ * activity log, oldest (lowest id) first, ids 5_200_001 to 5_200_060. Each `detail` is
  * unique, so the spec finds its own rows among everyone else's.
  */
 export const LOG_PAGING_ENTRIES: readonly LogPagingEntry[] = Array.from({ length: 60 }, (_, i) => ({

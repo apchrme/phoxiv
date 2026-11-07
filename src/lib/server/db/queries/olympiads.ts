@@ -25,7 +25,7 @@ export async function listOlympiads(db: DB): Promise<OlympiadRow[]> {
 
 /**
  * Id, name and icon in display order, for `OlympiadPicker` on `/contribute` and
- * `/admin`. Not cached, so its shape can change freely.
+ * `/admin/users` and `/admin/badges`. Not cached, so its shape can change freely.
  */
 export async function listOlympiadOptions(db: DB): Promise<OlympiadOption[]> {
 	return db

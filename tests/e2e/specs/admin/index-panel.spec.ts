@@ -4,11 +4,11 @@ import { expect, test } from '../../support/test';
 import { confirmDialog, gotoReady, toast } from '../../support/ui';
 
 /*
- * The admin Index tab (src/routes/admin/IndexPanel.svelte): its counts load only
- * once the tab is opened, and each maintenance action is one POST followed by
- * one refetch of the counts, then nothing more. IndexPanel.svelte and
- * admin/reindex/+server.ts both record why: "a self-resubmitting form in this
- * panel once looped forever".
+ * The admin search-index page (src/routes/admin/search-index/): its counts come
+ * from the page load, which the admin menu must not preload on hover, and each
+ * maintenance action is one POST followed by one reload of the page data, then
+ * nothing more. IndexPanel.svelte and admin/reindex/+server.ts both record why:
+ * "a self-resubmitting form in this panel once looped forever".
  *
  * The only spec that writes the global FTS index (docs/testing.md, "Seed data"),
  * so the file runs serially: Rebuild and Merge rewrite the index, and Prune
@@ -21,14 +21,20 @@ import { confirmDialog, gotoReady, toast } from '../../support/ui';
 test.describe.configure({ mode: 'serial' });
 test.use({ role: 'admin' });
 
-/** The endpoint the panel fetches its counts from. Never shared-cached. */
-const STATS = '/admin/index-stats';
+const PAGE = '/admin/search-index';
+
+/**
+ * The client-side fetch of the page's load data, which carries the counts. The
+ * first visit is server-rendered, so only navigations, Refresh and the reload
+ * after each action send it.
+ */
+const STATS = `${PAGE}/__data.json`;
 
 function isStats(response: Response): boolean {
 	return new URL(response.url()).pathname === STATS;
 }
 
-/** What the page has sent: counts fetches by method, and `/admin` action POSTs by `?/name`. */
+/** What the page has sent: counts fetches by method, and action POSTs by `?/name`. */
 type Sent = { stats: string[]; posts: string[] };
 
 /** Records every counts fetch and action POST the page sends from now on. */
@@ -37,7 +43,7 @@ function track(page: Page): Sent {
 	page.on('request', (request) => {
 		const url = new URL(request.url());
 		if (url.pathname === STATS) sent.stats.push(request.method());
-		else if (url.pathname === '/admin' && request.method() === 'POST') sent.posts.push(url.search);
+		else if (url.pathname === PAGE && request.method() === 'POST') sent.posts.push(url.search);
 	});
 	return sent;
 }
@@ -53,19 +59,16 @@ async function expectSettled(page: Page, sent: Sent, expected: Sent): Promise<vo
 	expect(sent).toEqual(expected);
 }
 
-/** Opens `/admin` on the Index tab and waits for the counts its first open fetches. */
-async function openIndexTab(page: Page): Promise<void> {
-	await gotoReady(page, '/admin');
-	const counts = page.waitForResponse(isStats);
-	await page.getByRole('tab', { name: 'Index' }).click();
-	expect((await counts).status()).toBe(200);
+/** Opens the page, server-rendered with its counts. */
+async function openIndex(page: Page): Promise<void> {
+	await gotoReady(page, PAGE);
 	await expect(page.getByText(/\d+ files in the archive/)).toBeVisible();
 }
 
 /**
  * Presses a maintenance button and waits for the action's answer and for the
- * counts refetch its `onDone` starts. `confirm` is the title of the dialog the
- * button opens first, for Prune.
+ * reload of the page data that follows it. `confirm` is the title of the dialog
+ * the button opens first, for Prune.
  */
 async function runMaintenance(
 	page: Page,
@@ -106,28 +109,23 @@ async function searchFiles(request: APIRequestContext, q: string): Promise<unkno
 
 const PRUNE_DIALOG = 'Prune orphaned index rows?';
 
-test.describe('the admin Index tab', () => {
-	test('fetches its counts when first opened, not on page load', async ({ page }) => {
+test.describe('the admin search-index page', () => {
+	test('the menu does not preload its counts on hover; opening it fetches them once', async ({
+		page
+	}) => {
 		const sent = track(page);
 		await gotoReady(page, '/admin');
 
-		// +page.svelte: "bits-ui mounts every tab's content at once, so without this
-		// gate `IndexPanel` would run its expensive stats fetch on every page load".
-		// Hydration has finished, so a panel mounted on load would be in the DOM
-		// (hidden) and its fetch already sent.
-		await expect(page.getByRole('tab', { name: 'Users' })).toHaveAttribute('aria-selected', 'true');
-		await expect(page.getByText('Full-text index')).toHaveCount(0);
-		expect(sent.stats).toEqual([]);
+		// admin/+page.svelte: "the search index's load reads thousands of D1 rows,
+		// so that link waits for a tap". The app preloads every other link on hover.
+		const link = page.getByRole('link', { name: /Search index/ });
+		await link.hover();
+		await expectSettled(page, sent, { stats: [], posts: [] });
 
 		const counts = page.waitForResponse(isStats);
-		await page.getByRole('tab', { name: 'Index' }).click();
+		await link.click();
 		expect((await counts).status()).toBe(200);
-		await expect(page.getByText(/\d+ files in the archive/)).toBeVisible();
-
-		// "Stays true, so re-entering doesn't refetch" (+page.svelte).
-		await page.getByRole('tab', { name: 'Log' }).click();
-		await expect(page.getByText(/\d+ files in the archive/)).toBeHidden();
-		await page.getByRole('tab', { name: 'Index' }).click();
+		await expect(page).toHaveURL(PAGE);
 		await expect(page.getByText(/\d+ files in the archive/)).toBeVisible();
 
 		await expectSettled(page, sent, { stats: ['GET'], posts: [] });
@@ -145,59 +143,59 @@ test.describe('the admin Index tab', () => {
 		]);
 
 		const sent = track(page);
-		await openIndexTab(page);
+		await openIndex(page);
 
 		await runMaintenance(page, 'Rebuild index', 'ensureIndex');
 		await expect(toast(page, 'Search index rebuilt')).toBeVisible();
 
-		await expectSettled(page, sent, { stats: ['GET', 'GET'], posts: ['?/ensureIndex'] });
+		await expectSettled(page, sent, { stats: ['GET'], posts: ['?/ensureIndex'] });
 		expect(await searchFiles(request, PHRASES.alphaPaper)).toEqual(before);
 	});
 
 	test('Merge segments sends one POST and refetches the counts once', async ({ page }) => {
 		const sent = track(page);
-		await openIndexTab(page);
+		await openIndex(page);
 
 		await runMaintenance(page, 'Merge segments', 'optimizeIndex');
 		await expect(toast(page, 'Index segments merged')).toBeVisible();
 
-		await expectSettled(page, sent, { stats: ['GET', 'GET'], posts: ['?/optimizeIndex'] });
+		await expectSettled(page, sent, { stats: ['GET'], posts: ['?/optimizeIndex'] });
 	});
 
 	test('Prune orphans removes the seeded orphan row, in one POST and one refetch', async ({
 		page
 	}) => {
 		const sent = track(page);
-		await openIndexTab(page);
+		await openIndex(page);
 
 		// The seed's one orphan, ORPHAN_URL. The toast names the count the action
 		// returns (+page.svelte's `pruneIndex` toast).
 		await runMaintenance(page, 'Prune orphans', 'pruneIndex', PRUNE_DIALOG);
 		await expect(toast(page, 'Removed 1 orphaned index row')).toBeVisible();
 
-		await expectSettled(page, sent, { stats: ['GET', 'GET'], posts: ['?/pruneIndex'] });
+		await expectSettled(page, sent, { stats: ['GET'], posts: ['?/pruneIndex'] });
 	});
 
 	test('a second Prune orphans finds nothing to remove', async ({ page }) => {
 		// Runs after the prune above (the file is serial), which used up the orphan.
 		const sent = track(page);
-		await openIndexTab(page);
+		await openIndex(page);
 
 		await runMaintenance(page, 'Prune orphans', 'pruneIndex', PRUNE_DIALOG);
 		await expect(toast(page, 'No orphaned index rows to remove')).toBeVisible();
 
-		await expectSettled(page, sent, { stats: ['GET', 'GET'], posts: ['?/pruneIndex'] });
+		await expectSettled(page, sent, { stats: ['GET'], posts: ['?/pruneIndex'] });
 	});
 
 	test('Refresh refetches the counts once and posts nothing', async ({ page }) => {
 		const sent = track(page);
-		await openIndexTab(page);
+		await openIndex(page);
 
 		const refetched = page.waitForResponse(isStats);
 		await page.getByRole('button', { name: 'Refresh' }).click();
 		expect((await refetched).status()).toBe(200);
 		await expect(page.getByRole('button', { name: 'Refresh' })).toBeEnabled();
 
-		await expectSettled(page, sent, { stats: ['GET', 'GET'], posts: [] });
+		await expectSettled(page, sent, { stats: ['GET'], posts: [] });
 	});
 });

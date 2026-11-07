@@ -6,7 +6,7 @@ import { expect, test } from '../../support/test';
 import { gotoReady } from '../../support/ui';
 
 /*
- * The admin Log tab's "Load more" (src/routes/admin/ActivityLogTable.svelte),
+ * The admin activity log's "Load more" (admin/log/ActivityLogTable.svelte),
  * which fetches older pages from admin/activity/+server.ts, "keyed on
  * `?before=<id>`". The cursor is the row id, never the timestamp: the seed's
  * LOG_PAGING_ENTRIES hold a run of 30 rows with one exact `created_at`, and a
@@ -24,7 +24,7 @@ import { gotoReady } from '../../support/ui';
 test.use({ role: 'admin' });
 
 /**
- * Rows per page: `LOG_PAGE_SIZE` in admin/+page.server.ts for page 1 and
+ * Rows per page: `LOG_PAGE_SIZE` in admin/log/+page.server.ts for page 1 and
  * `DEFAULT_LIMIT` in admin/activity/+server.ts after it. If it changes, check
  * the seed's tied run is still longer than a page, so a seam falls inside it.
  */
@@ -53,9 +53,9 @@ function isActivity(response: Response): boolean {
 	return new URL(response.url()).pathname === ACTIVITY;
 }
 
-/** The Log tab's panel. bits-ui mounts every tab at once; the others are hidden. */
+/** The page's main content, which on /admin/log is the log alone. */
 function logPanel(page: Page): Locator {
-	return page.getByRole('tabpanel', { name: 'Log' });
+	return page.getByRole('main');
 }
 
 /**
@@ -72,12 +72,9 @@ function ownDetails(page: Page): Locator {
 	return logPanel(page).getByRole('cell', { name: /^e2e-log entry \d{2}$/ });
 }
 
-/** Opens /admin on the Log tab, with page 1 from the load on screen. */
+/** Opens /admin/log, with page 1 from the load on screen. */
 async function openLog(page: Page): Promise<void> {
-	await gotoReady(page, '/admin');
-	const tab = page.getByRole('tab', { name: 'Log' });
-	await tab.click();
-	await expect(tab).toHaveAttribute('aria-selected', 'true');
+	await gotoReady(page, '/admin/log');
 	// A full page plus the header row, with more behind it: the seed alone has
 	// more than two pages.
 	await expect(logPanel(page).getByRole('row')).toHaveCount(PAGE_SIZE + 1);
@@ -184,7 +181,7 @@ async function getLog(api: APIRequestContext, path: string): Promise<LogPage> {
 	return (await response.json()) as LogPage;
 }
 
-test.describe('the Log tab', () => {
+test.describe('the activity log', () => {
 	test('Load more lists every row once, in order, across a seam inside a run of equal timestamps', async ({
 		page,
 		request

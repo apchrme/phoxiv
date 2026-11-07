@@ -207,8 +207,10 @@ bare error page.
 
 ## The admin panel
 
-Seven form actions, each calling `requireAdmin`. The account actions write
-Drizzle updates directly.
+`/admin` is a menu of four pages: `users/`, `log/`, `badges/` and
+`search-index/`. Seven form actions, each calling `requireAdmin`: the four
+account actions on `/admin/users`, which write Drizzle updates directly, and the
+three index actions on `/admin/search-index`.
 
 | Action                 | Effect                                                           | Refuses when                                |
 | ---------------------- | ---------------------------------------------------------------- | ------------------------------------------- |
@@ -266,21 +268,21 @@ plain DB row works too.
 
 ### Which guard each route uses
 
-| Route                                                                  | Guard                                                   |
-| ---------------------------------------------------------------------- | ------------------------------------------------------- |
-| `admin/+layout.server.ts`, the page load, all seven actions            | `requireAdmin`                                          |
-| `admin/reindex` (`GET`, `POST`), `admin/index-stats`, `admin/activity` | `requireAdmin`, called by the endpoint itself           |
-| `admin/badges/[id]` — the load, `save` and `delete`                    | `requireAdmin` (the layout's, and each action's own)    |
-| `contribute/+layout.server.ts`                                         | `requireContributor`                                    |
-| `contribute` — `selectYear`                                            | `canEditOlympiad` on the submitted olympiad id          |
-| `contribute` — `createOlympiad`                                        | `requireAdmin`                                          |
-| `contribute/[olympiad]` and `[year]` — loads and actions               | `requireOlympiadEditor`                                 |
-| `contribute/[olympiad]/titles.csv`                                     | `requireOlympiadEditor`                                 |
-| `(reg)/login`, `(reg)/profile`                                         | redirect to `/` if signed in / `/login` if not          |
-| `/`                                                                    | none: the dashboard if signed in, else the landing page |
-| `(reg)/olympiads/[olympiad]` — `?/trackProblem`                        | plain `locals.user` check                               |
-| `(reg)/olympiads/[olympiad]/progress`, `progress/`, `progress/badges`  | 401 when signed out                                     |
-| `/api/*` and everything else                                           | public                                                  |
+| Route                                                                 | Guard                                                   |
+| --------------------------------------------------------------------- | ------------------------------------------------------- |
+| `admin/+layout.server.ts`, each page load, all seven actions          | `requireAdmin`                                          |
+| `admin/reindex` (`GET`, `POST`), `admin/activity`                     | `requireAdmin`, called by the endpoint itself           |
+| `admin/badges/[id]` — the load, `save` and `delete`                   | `requireAdmin` (the layout's, and each action's own)    |
+| `contribute/+layout.server.ts`                                        | `requireContributor`                                    |
+| `contribute` — `selectYear`                                           | `canEditOlympiad` on the submitted olympiad id          |
+| `contribute` — `createOlympiad`                                       | `requireAdmin`                                          |
+| `contribute/[olympiad]` and `[year]` — loads and actions              | `requireOlympiadEditor`                                 |
+| `contribute/[olympiad]/titles.csv`                                    | `requireOlympiadEditor`                                 |
+| `(reg)/login`, `(reg)/profile`                                        | redirect to `/` if signed in / `/login` if not          |
+| `/`                                                                   | none: the dashboard if signed in, else the landing page |
+| `(reg)/olympiads/[olympiad]` — `?/trackProblem`                       | plain `locals.user` check                               |
+| `(reg)/olympiads/[olympiad]/progress`, `progress/`, `progress/badges` | 401 when signed out                                     |
+| `/api/*` and everything else                                          | public                                                  |
 
 [`tests/e2e/specs/auth/access-control.spec.ts`](../tests/e2e/specs/auth/access-control.spec.ts)
 mirrors this table row by row. Every refusal is checked for each role that must
@@ -292,9 +294,9 @@ together.
 Rules:
 
 - **A `+server.ts` runs no layout loads.** `admin/+layout.server.ts` does not
-  protect `reindex/`, `index-stats/` or `activity/`, and the contribute layout
-  does not protect `titles.csv`. Each calls its guard itself. Any new endpoint
-  under `admin/` or `contribute/` must do the same.
+  protect `reindex/` or `activity/`, and the contribute layout does not protect
+  `titles.csv`. Each calls its guard itself. Any new endpoint under `admin/` or
+  `contribute/` must do the same.
 - **The layout guard is never the only check.** The contribute layout only says
   the user may enter the area. Every load and action re-checks the olympiad with
   `requireOlympiadEditor`, so a contributor can't edit another olympiad by URL.

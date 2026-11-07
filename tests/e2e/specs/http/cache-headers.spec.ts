@@ -53,7 +53,10 @@ const ROWS: Row[] = [
 
 	// Admin and contribute set no header, so nothing caches them.
 	{ path: '/admin', as: 'admin', status: 200, cacheControl: null },
-	{ path: '/admin/index-stats', as: 'admin', status: 200, cacheControl: null },
+	{ path: '/admin/users', as: 'admin', status: 200, cacheControl: null },
+	{ path: '/admin/log', as: 'admin', status: 200, cacheControl: null },
+	{ path: '/admin/badges', as: 'admin', status: 200, cacheControl: null },
+	{ path: '/admin/search-index', as: 'admin', status: 200, cacheControl: null },
 	{ path: '/admin/activity', as: 'admin', status: 200, cacheControl: null },
 	{ path: '/admin/reindex', as: 'admin', status: 200, cacheControl: null },
 	{ path: '/admin/badges/new', as: 'admin', status: 200, cacheControl: null },

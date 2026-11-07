@@ -12,7 +12,7 @@
 	import type { PageData } from './$types';
 
 	/**
-	 * The Badges tab: every badge, most holders first as on `/badges`, with its
+	 * The badges list: every badge, most holders first as on `/badges`, with its
 	 * criteria (hidden ones too) and holder count. Editing happens on
 	 * `/admin/badges/[id]`, which is also where a badge is deleted, so this list
 	 * has no forms of its own.

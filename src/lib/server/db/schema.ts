@@ -219,7 +219,7 @@ export const verification = sqliteTable(
 	(table) => [index('verification_identifier_idx').on(table.identifier)]
 );
 
-// Contributor/admin actions, shown on the admin "Log" tab.
+// Contributor/admin actions, shown on /admin/log.
 export const activityLog = sqliteTable(
 	'activity_log',
 	{

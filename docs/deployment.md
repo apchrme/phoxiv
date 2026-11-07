@@ -272,8 +272,8 @@ How the script behaves:
   from the file tables, so it also picks up files loaded
   [by rclone](#bulk-loading-r2).
 - A file that fails three times drops out and appears under **Failures** in the
-  admin panel's Index tab. Until then a `pending` row stays retryable, so one run
-  repairs any spell of failed browser extraction.
+  admin panel's search-index page. Until then a `pending` row stays retryable,
+  so one run repairs any spell of failed browser extraction.
 - If the Worker fails to save a result (a D1 error), it still saves the rest of
   the batch and reports the failed urls. The script then stops and lists them;
   the error itself is in the Worker logs. Rerun once D1 is healthy.
@@ -289,9 +289,9 @@ what extraction produces, and it re-queues the whole archive: every file is
 re-extracted and about 14,000 rows are rewritten through the FTS triggers (see
 [below](#keeping-d1-usage-in-check)).
 
-To confirm a run worked, press **Refresh** on the Index tab's Maintenance card:
-`pending` should fall and `ok` rise. The tab never refreshes its counts on its
-own, because reading them costs thousands of D1 rows. After a large run, press
+To confirm a run worked, press **Refresh** on `/admin/search-index`: `pending`
+should fall and `ok` rise. The page never refreshes its counts on its own,
+because reading them costs thousands of D1 rows. After a large run, press
 **Merge segments** once.
 
 ### Measuring the corpus

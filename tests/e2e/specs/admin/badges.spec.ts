@@ -94,9 +94,8 @@ test.describe('the badge editor', () => {
 
 		await page.getByRole('button', { name: 'Delete badge' }).click();
 		await confirmDialog(page).getByRole('button', { name: 'Delete badge' }).click();
-		await expect(page).toHaveURL('/admin?tab=badges');
-		await expect(page.getByRole('tab', { name: 'Badges', selected: true })).toBeVisible();
-		// Scoped to the list: the Log tab, mounted too, names it twice.
+		await expect(page).toHaveURL('/admin/badges');
+		await expect(page.getByRole('heading', { level: 1, name: 'Badges' })).toBeVisible();
 		const list = page.getByRole('list', { name: 'Badges' });
 		await expect(list).toContainText(BADGES.thermo.name);
 		await expect(list).not.toContainText(name);
@@ -168,7 +167,7 @@ test.describe('the badge editor', () => {
 		expect(capped.data).toMatchObject({ holders: 0 });
 		expect(await readerStanding(apiAs, id)).toEqual({ count: 0, earnedAt: null, revealed: null });
 
-		await postAction(admin, `${path}?/delete`, {}, { redirect: '/admin?tab=badges' });
+		await postAction(admin, `${path}?/delete`, {}, { redirect: '/admin/badges' });
 		const gone = await admin.get(path, { maxRedirects: 0 });
 		expect(gone.status()).toBe(404);
 	});
@@ -185,7 +184,7 @@ test.describe('the badge editor', () => {
 		const id = created.data?.id as number;
 		expect(created.data).toMatchObject({ holders: 0 });
 		expect(await readerStanding(apiAs, id)).toEqual({ count: 5, earnedAt: null, revealed: null });
-		await postAction(admin, `/admin/badges/${id}?/delete`, {}, { redirect: '/admin?tab=badges' });
+		await postAction(admin, `/admin/badges/${id}?/delete`, {}, { redirect: '/admin/badges' });
 	});
 
 	test('a hidden requirement is a switch, shown only to admins and holders', async ({
@@ -243,7 +242,7 @@ test.describe('the badge editor', () => {
 			requiredCount: 2
 		});
 
-		await postAction(admin, `${path}?/delete`, {}, { redirect: '/admin?tab=badges' });
+		await postAction(admin, `${path}?/delete`, {}, { redirect: '/admin/badges' });
 	});
 
 	test('bad input is refused with a reason', async ({ apiAs }) => {

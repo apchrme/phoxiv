@@ -99,7 +99,7 @@ test.describe("the admin panel's ban controls", () => {
 		await gotoReady(target, '/contribute');
 		await expect(target.getByRole('heading', { level: 1, name: 'Contribute' })).toBeVisible();
 
-		await gotoReady(page, '/admin');
+		await gotoReady(page, '/admin/users');
 		const row = await userRow(page, email);
 		await row.getByRole('button', { name: 'Ban', exact: true }).click();
 
@@ -108,18 +108,18 @@ test.describe("the admin panel's ban controls", () => {
 		await expect(dialog).toHaveAccessibleName(`Ban ${name}?`);
 		await expect(dialog).toContainText('They are signed out and cannot sign in again');
 
-		const release = await holdAction(page, '/admin', 'banUser');
+		const release = await holdAction(page, '/admin/users', 'banUser');
 		await dialog.getByRole('button', { name: 'Ban user' }).click();
 		await expect(dialog).toBeHidden();
 		// Confirming must `requestSubmit()` the row's form: ConfirmSubmit.svelte,
 		// "Don't use `submit()`: it bypasses both" (use:enhance and Pending). Only
 		// an enhanced submit marks the trigger busy, its spinner ("Loading")
-		// replacing the icon, and leaves the admin on /admin.
+		// replacing the icon, and leaves the admin on /admin/users.
 		await expect(row.getByRole('button', { name: 'Loading Ban' })).toBeDisabled();
 		release();
 
 		await expect(toast(page, 'User banned')).toBeVisible();
-		await expect(page).toHaveURL('/admin');
+		await expect(page).toHaveURL('/admin/users');
 		await expect(row.getByRole('button', { name: 'Unban', exact: true })).toBeVisible();
 
 		// `banUser` deletes the target's sessions (admin/+page.server.ts: "without
@@ -140,7 +140,7 @@ test.describe("the admin panel's ban controls", () => {
 			if (request.method() === 'POST') posts.push(request.url());
 		});
 
-		await gotoReady(page, '/admin');
+		await gotoReady(page, '/admin/users');
 		const row = await userRow(page, USERS.apiTarget.email);
 		await row.getByRole('button', { name: 'Ban', exact: true }).click();
 		const dialog = confirmDialog(page);
@@ -171,9 +171,9 @@ test.describe("the admin panel's ban controls", () => {
 		await before.goto('/profile');
 		await expect(before).toHaveURL('/login');
 
-		await gotoReady(page, '/admin');
+		await gotoReady(page, '/admin/users');
 		const row = await userRow(page, email);
-		const release = await holdAction(page, '/admin', 'unbanUser');
+		const release = await holdAction(page, '/admin/users', 'unbanUser');
 		await row.getByRole('button', { name: 'Unban', exact: true }).click();
 		// The click submits at once: the button is busy and no dialog opened.
 		await expect(row.getByRole('button', { name: 'Loading Unban' })).toBeDisabled();

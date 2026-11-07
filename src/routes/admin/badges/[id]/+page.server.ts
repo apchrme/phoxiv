@@ -258,6 +258,6 @@ export const actions: Actions = {
 		if (!removed) return actionFail(404, 'delete', 'Badge not found');
 		await logActivity(db, actor, 'delete_badge', removed.name);
 
-		redirect(303, '/admin?tab=badges');
+		redirect(303, '/admin/badges');
 	}
 };

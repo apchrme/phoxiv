@@ -44,7 +44,7 @@ src/routes/
 ├── +page         landing page signed out, dashboard signed in; `private, no-store`
 ├── (reg)/        private browser cache (4h): olympiads, blog, resources, privacy, team, badges, login, profile
 │                 except olympiads/[olympiad]/progress/ — per-user, `private, no-store`
-├── admin/        never cached; includes the badge editor, badges/[id]/
+├── admin/        never cached; a menu of users/, log/, badges/ (with the editor, [id]/) and search-index/
 ├── contribute/   never cached; the olympiad and year editors
 ├── progress/     per-user progress for the ⌘K dialog, and badges/ for /badges; `private, no-store`
 └── api/          Cloudflare's shared cache (s-maxage=86400)
@@ -52,7 +52,7 @@ src/routes/
 ```
 
 **A `+server.ts` does not run layout loads, so layout guards don't protect it.**
-Endpoints under `admin/` (`reindex/`, `index-stats/`, `activity/`) each call
+Endpoints under `admin/` (`reindex/`, `activity/`) each call
 `requireAdmin` themselves. Do the same for any new endpoint.
 
 The full module inventory is in

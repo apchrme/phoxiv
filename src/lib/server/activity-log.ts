@@ -13,8 +13,8 @@ export type LogAction = NonNullable<(typeof activityLog.$inferInsert)['action']>
 type ActingUser = { id: string; name: string } | null | undefined;
 
 /**
- * Records a contributor action for the admin "Log" tab. Never throws: the log
- * must never fail a write that has already happened. Without a user it does
+ * Records a contributor action for the admin activity log (`/admin/log`).
+ * Never throws: the log must never fail a write that has already happened. Without a user it does
  * nothing; a failed insert is logged to the console and swallowed.
  */
 export async function logActivity(

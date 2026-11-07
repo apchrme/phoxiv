@@ -5,7 +5,7 @@ import { expect, test } from '../../support/test';
 import { gotoReady, holdAction, toast } from '../../support/ui';
 
 /*
- * The users table on /admin: changing a role, and what `setRole` refuses.
+ * The users table on /admin/users: changing a role, and what `setRole` refuses.
  *
  * Owns USERS.roleTarget and USERS.loopTarget. Acts as the frozen USERS.admin, and
  * reads the frozen USERS.user and USERS.superadmin rows without writing them.
@@ -43,10 +43,10 @@ async function chooseRole(page: Page, row: Locator, label: string): Promise<void
 	await expect(roleSelect(row)).toHaveText(label);
 }
 
-/** True for the role form's POST, `/admin?/setRole`. */
+/** True for the role form's POST, `/admin/users?/setRole`. */
 function isSetRole(url: URL | string): boolean {
 	const { pathname, search } = new URL(url);
-	return pathname === '/admin' && search === '?/setRole';
+	return pathname === '/admin/users' && search === '?/setRole';
 }
 
 test.describe('changing a role in the users table', () => {
@@ -59,7 +59,7 @@ test.describe('changing a role in the users table', () => {
 			if (request.method() === 'POST' && isSetRole(request.url())) posts.push(request);
 		});
 
-		await gotoReady(page, '/admin');
+		await gotoReady(page, '/admin/users');
 		const row = userRow(page, USERS.loopTarget);
 		await chooseRole(page, row, 'Contributor');
 		await row.getByRole('button', { name: 'Save' }).click();
@@ -87,12 +87,12 @@ test.describe('changing a role in the users table', () => {
 		expect(refused?.status()).toBe(403);
 		await expect(before.getByRole('heading', { level: 1 })).toHaveText('Error 403: Unauthorised');
 
-		await gotoReady(page, '/admin');
+		await gotoReady(page, '/admin/users');
 		const row = userRow(page, USERS.roleTarget);
 		await chooseRole(page, row, 'Contributor');
 		// While the request is out, Save shows its spinner and both controls are
 		// disabled, so a second click can't send a second POST.
-		const release = await holdAction(page, '/admin', 'setRole');
+		const release = await holdAction(page, '/admin/users', 'setRole');
 		await row.getByRole('button', { name: 'Save' }).click();
 		await expect(row.getByRole('button', { name: 'Loading Save' })).toBeDisabled();
 		await expect(roleSelect(row)).toBeDisabled();
@@ -113,7 +113,7 @@ test.describe('changing a role in the users table', () => {
 test("the admin's own row has no role, assignment or ban controls", async ({ page }) => {
 	// UsersTable.svelte renders no `UserRowActions` for the acting admin; the
 	// actions refuse a self-change anyway (auth/access-control's positive control).
-	await gotoReady(page, '/admin');
+	await gotoReady(page, '/admin/users');
 
 	// A positive control, so the empty row below can't pass because nothing in
 	// the table rendered: another user's row has every control.
@@ -134,7 +134,7 @@ test.describe('setRole refusals', () => {
 		// frozen row would not change.
 		await postAction(
 			request,
-			'/admin?/setRole',
+			'/admin/users?/setRole',
 			{ userId: USERS.superadmin.id, role: USERS.superadmin.role },
 			{ failure: 403, message: 'This account cannot be modified' }
 		);
@@ -145,7 +145,7 @@ test.describe('setRole refusals', () => {
 		for (const role of ['owner', 'Admin']) {
 			await postAction(
 				request,
-				'/admin?/setRole',
+				'/admin/users?/setRole',
 				{ userId: USERS.loopTarget.id, role },
 				{ failure: 400, message: 'Invalid role' }
 			);
@@ -164,7 +164,7 @@ test.describe('setRole refusals', () => {
 			await route.continue({ postData: body.toString() });
 		});
 
-		await gotoReady(page, '/admin');
+		await gotoReady(page, '/admin/users');
 		const row = userRow(page, USERS.superadmin);
 		await chooseRole(page, row, 'Contributor');
 		await row.getByRole('button', { name: 'Save' }).click();

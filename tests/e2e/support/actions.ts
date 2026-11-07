@@ -72,7 +72,7 @@ function toBody(fields: ActionFields): { form?: string; multipart?: FormData } {
 }
 
 /**
- * POSTs `fields` to the action at `path` (`/admin?/setRole`) and asserts the
+ * POSTs `fields` to the action at `path` (`/admin/users?/setRole`) and asserts the
  * answer matches `expected`. `api` carries the session; get one from the `apiAs`
  * fixture, or use the `request` fixture under `test.use({ role })`.
  *

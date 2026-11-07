@@ -2,22 +2,9 @@ import type { Actions, PageServerLoad } from './$types';
 import { eq } from 'drizzle-orm';
 import { session, user } from '#lib/server/db/index.js';
 import { isProtectedSuperadmin, requireAdmin } from '#lib/server/guard.js';
-import { listActivity } from '#lib/server/activity-log.js';
 import { listOlympiadOptions } from '#lib/server/db/queries/olympiads.js';
-import { listBadges } from '#lib/server/db/queries/badges.js';
 import { actionFail, field, fieldList, fieldOrNull, ok } from '#lib/server/forms.js';
 import { ASSIGNABLE_ROLES } from '#lib/activity.js';
-import {
-	ensureFileTextIndex,
-	optimizeFileTextIndex,
-	pruneFileText
-} from '#lib/server/db/queries/files.js';
-
-/**
- * Activity-log entries per page. The load fetches page 1;
- * `admin/activity/+server.ts` serves the rest behind "Load more".
- */
-const LOG_PAGE_SIZE = 25;
 
 /**
  * The roles the dropdown offers, plus `''`, which clears the role to NULL.
@@ -28,10 +15,7 @@ const ACCEPTED_ROLES: readonly string[] = [...ASSIGNABLE_ROLES, ''];
 export const load: PageServerLoad = async ({ locals }) => {
 	const { db } = requireAdmin(locals);
 
-	// Index stats are expensive, so `admin/index-stats/+server.ts` serves them
-	// when the Index tab opens. Don't stream them from here as an unawaited
-	// promise: that still runs the query on every page open.
-	const [users, olympiads, log, badges] = await Promise.all([
+	const [users, olympiads] = await Promise.all([
 		db
 			.select({
 				id: user.id,
@@ -48,14 +32,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 			// No `ORDER BY`: `created_at` has no index, so D1 would bill a sort.
 			// `UsersTable.svelte` sorts on the client instead.
 			.all(),
-		listOlympiadOptions(db),
-		// Same function as the endpoint, so page 1 also knows `hasMore`.
-		listActivity(db, { limit: LOG_PAGE_SIZE }),
-		// Cheap: one row per badge, and one aggregate over `user_badges`.
-		listBadges(db)
+		// For the assignment picker.
+		listOlympiadOptions(db)
 	]);
 
-	return { users, olympiads, log: log.entries, hasMore: log.hasMore, badges };
+	return { users, olympiads };
 };
 
 export const actions: Actions = {
@@ -141,31 +122,5 @@ export const actions: Actions = {
 		await db.update(user).set({ banned: false, banReason: null }).where(eq(user.id, userId)).run();
 
 		return ok('unbanUser');
-	},
-
-	/**
-	 * Recreates the FTS5 table and triggers if missing, then rebuilds the index
-	 * from `file_text` (no re-extraction). See docs/data-model.md, "Recovery".
-	 */
-	ensureIndex: async ({ locals }) => {
-		const { db } = requireAdmin(locals);
-		await ensureFileTextIndex(db);
-		return ok('ensureIndex');
-	},
-
-	/**
-	 * Merges index segments, with bounded work per call to stay under D1's query
-	 * time limit. Run again if there is more to do.
-	 */
-	optimizeIndex: async ({ locals }) => {
-		const { db } = requireAdmin(locals);
-		await optimizeFileTextIndex(db);
-		return ok('optimizeIndex');
-	},
-
-	/** Drops `file_text` rows for files that no longer exist. Reclaims space only. */
-	pruneIndex: async ({ locals }) => {
-		const { db } = requireAdmin(locals);
-		return ok('pruneIndex', { pruned: await pruneFileText(db) });
 	}
 };

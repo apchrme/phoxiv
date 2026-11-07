@@ -618,10 +618,10 @@ export async function pruneFileText(db: DB): Promise<number> {
 
 /**
  * Counts by status, plus recent failures. The type lives in `#lib/types.ts`
- * because the admin panel fetches it client-side.
+ * because a client component renders it.
  *
- * Expensive (thousands of D1 rows), so `/admin` fetches it on demand via
- * `admin/index-stats/+server.ts` rather than on page load.
+ * Expensive (thousands of D1 rows), so only `/admin/search-index` loads it,
+ * and the admin menu doesn't preload that page on hover.
  */
 export async function getFileTextStats(db: DB): Promise<FileTextStats> {
 	const [counts, failures, indexed] = await Promise.all([

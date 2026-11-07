@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { FileTextStats } from '#lib/types.js';
 	import type { Pending } from '#lib/forms.svelte.js';
-	import { onMount } from 'svelte';
-	import { Resource } from '#lib/resource.svelte.js';
+	import { invalidateAll } from '$app/navigation';
 	import { plural } from '#lib/utils/plural.js';
 	import { enhance } from '$app/forms';
 	import { Button } from '#lib/components/ui/button/index.js';
@@ -10,7 +9,6 @@
 	import ConfirmSubmit from '#lib/components/forms/ConfirmSubmit.svelte';
 	import { Badge } from '#lib/components/ui/badge/index.js';
 	import * as Card from '#lib/components/ui/card/index.js';
-	import { Skeleton } from '#lib/components/ui/skeleton/index.js';
 	import { Spinner } from '#lib/components/ui/spinner/index.js';
 	import { RefreshCw } from '@lucide/svelte';
 
@@ -20,13 +18,13 @@
 	 * No "index the next batch" button: extraction runs in the browser on upload
 	 * and in `bun run index:backfill`. Each action here does one bounded thing
 	 * and returns; a self-resubmitting form in this panel once looped forever.
-	 *
-	 * The counts are expensive, so they are fetched here, not in the page load,
-	 * and `+page.svelte` mounts this only once the Index tab is opened.
 	 */
 	let {
+		stats,
 		pending
 	}: {
+		/** From the page load, which every action and Refresh re-run. */
+		stats: FileTextStats;
 		/** The page's single tracker, so the buttons can disable themselves. */
 		pending: Pending;
 	} = $props();
@@ -42,106 +40,78 @@
 		error: 'extraction failed; see the failures below'
 	};
 
-	/**
-	 * The breakdown, refetched after every maintenance action. Uses `refresh()`,
-	 * not `loadOnce()`, so a refresh requested while the first fetch is running
-	 * isn't dropped. A refresh dims the card rather than showing the skeleton.
-	 */
-	const source = new Resource<FileTextStats>('/admin/index-stats');
-	const refresh = () => void source.refresh();
-	const stats = $derived(source.value);
+	/** True while Refresh re-runs the load. Dims the counts rather than hiding them. */
+	let refreshing = $state(false);
 
-	// Mounting is the trigger, because mounting is already gated on the tab.
-	onMount(refresh);
+	async function refresh() {
+		if (refreshing) return;
+		refreshing = true;
+		try {
+			await invalidateAll();
+		} finally {
+			refreshing = false;
+		}
+	}
 
 	const byStatus = $derived(
-		Object.fromEntries((stats?.counts ?? []).map((c) => [c.status, c.count])) as Record<
-			string,
-			number
-		>
+		Object.fromEntries(stats.counts.map((c) => [c.status, c.count])) as Record<string, number>
 	);
 	const known = $derived(ORDER.reduce((n, s) => n + (byStatus[s] ?? 0), 0));
 	/**
 	 * Files the index has never seen. Approximate: unpruned orphan rows inflate
 	 * `known` and hide some unseen files.
 	 */
-	const unseen = $derived(stats ? Math.max(stats.indexed - known, 0) : 0);
+	const unseen = $derived(Math.max(stats.indexed - known, 0));
 </script>
 
 <div class="flex flex-col gap-5">
-	{#if source.failed && stats === null}
-		<Card.Root>
-			<Card.Header class="border-b">
-				<Card.Title>Full-text index</Card.Title>
-				<Card.Description>The index report could not be loaded.</Card.Description>
-			</Card.Header>
-			<Card.Content>
-				<Button variant="outline" onclick={refresh} disabled={source.loading}>
-					{#if source.loading}<Spinner class="size-3.5" />{/if}
-					Retry
-				</Button>
-			</Card.Content>
-		</Card.Root>
-	{:else if stats === null}
-		<Card.Root>
-			<Card.Header class="border-b">
-				<Card.Title>Full-text index</Card.Title>
-				<Card.Description>Counting the archive…</Card.Description>
-			</Card.Header>
-			<Card.Content class="flex flex-col gap-3">
-				{#each ORDER as status (status)}
-					<Skeleton class="h-5 w-full max-w-md" />
-				{/each}
-			</Card.Content>
-		</Card.Root>
-	{:else}
-		<Card.Root class={source.loading ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
-			<Card.Header class="border-b">
-				<Card.Title>Full-text index</Card.Title>
-				<Card.Description>
-					{stats.indexed} files in the archive. Extraction runs in the contributor's browser on upload;
-					run <code>bun run index:backfill</code> for everything older.
-				</Card.Description>
-				<!-- The panel stays mounted, so this is how to watch a backfill progress. -->
-				<Card.Action>
-					<Button variant="ghost" size="sm" onclick={refresh} disabled={source.loading}>
-						{#if source.loading}
-							<Spinner class="size-3.5" />
-						{:else}
-							<RefreshCw class="size-3.5" />
-						{/if}
-						Refresh
-					</Button>
-				</Card.Action>
-			</Card.Header>
-			<Card.Content class="flex flex-col gap-3">
-				<dl class="flex flex-col gap-2">
-					{#each ORDER as status (status)}
-						<div class="flex items-baseline gap-3">
-							<dt class="w-24 shrink-0">
-								<Badge variant={status === 'error' ? 'destructive' : 'secondary'}>{status}</Badge>
-							</dt>
-							<dd class="flex-1 text-sm">
-								<span class="font-mono font-semibold">{byStatus[status] ?? 0}</span>
-								<span class="ml-2 text-muted-foreground">{DESCRIPTIONS[status]}</span>
-							</dd>
-						</div>
-					{/each}
-					{#if unseen > 0}
-						<div class="flex items-baseline gap-3">
-							<dt class="w-24 shrink-0"><Badge variant="outline">unseen</Badge></dt>
-							<dd class="flex-1 text-sm">
-								<span class="font-mono font-semibold">{unseen}</span>
-								<span class="ml-2 text-muted-foreground">
-									never queued — uploaded before indexing existed, or loaded straight into R2
-								</span>
-							</dd>
-						</div>
+	<Card.Root class={refreshing ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
+		<Card.Header class="border-b">
+			<Card.Title>Full-text index</Card.Title>
+			<Card.Description>
+				{stats.indexed} files in the archive. Extraction runs in the contributor's browser on upload;
+				run <code>bun run index:backfill</code> for everything older.
+			</Card.Description>
+			<!-- The counts never refresh on their own (they cost thousands of D1
+			     rows), so this is how to watch a backfill progress. -->
+			<Card.Action>
+				<Button variant="ghost" size="sm" onclick={refresh} disabled={refreshing}>
+					{#if refreshing}
+						<Spinner class="size-3.5" />
+					{:else}
+						<RefreshCw class="size-3.5" />
 					{/if}
-				</dl>
-			</Card.Content>
-		</Card.Root>
-	{/if}
+					Refresh
+				</Button>
+			</Card.Action>
+		</Card.Header>
+		<Card.Content class="flex flex-col gap-3">
+			<dl class="flex flex-col gap-2">
+				{#each ORDER as status (status)}
+					<div class="flex items-baseline gap-3">
+						<dt class="w-24 shrink-0">
+							<Badge variant={status === 'error' ? 'destructive' : 'secondary'}>{status}</Badge>
+						</dt>
+						<dd class="flex-1 text-sm">
+							<span class="font-mono font-semibold">{byStatus[status] ?? 0}</span>
+							<span class="ml-2 text-muted-foreground">{DESCRIPTIONS[status]}</span>
+						</dd>
+					</div>
+				{/each}
+				{#if unseen > 0}
+					<div class="flex items-baseline gap-3">
+						<dt class="w-24 shrink-0"><Badge variant="outline">unseen</Badge></dt>
+						<dd class="flex-1 text-sm">
+							<span class="font-mono font-semibold">{unseen}</span>
+							<span class="ml-2 text-muted-foreground">
+								never queued — uploaded before indexing existed, or loaded straight into R2
+							</span>
+						</dd>
+					</div>
+				{/if}
+			</dl>
+		</Card.Content>
+	</Card.Root>
 
 	<Card.Root>
 		<Card.Header class="border-b">
@@ -152,9 +122,9 @@
 			</Card.Description>
 		</Card.Header>
 		<!--
-			`refreshAll: false`: these actions change nothing the page load
-			reads, and invalidating would reset the activity log's "Load more"
-			pages. `onDone` runs after the write commits, so the refetch sees it.
+			Each form keeps SvelteKit's default of re-running the page load once its
+			action has committed, and that is the one refetch of the counts. Nothing
+			here resubmits on its own.
 		-->
 		<Card.Content class="flex flex-col divide-y">
 			<div class="flex flex-col gap-3 pb-4 sm:flex-row sm:items-center sm:justify-between">
@@ -170,10 +140,7 @@
 					method="POST"
 					action="?/ensureIndex"
 					class="shrink-0"
-					use:enhance={pending.track(() => 'ensureIndex', {
-						refreshAll: false,
-						onDone: refresh
-					})}
+					use:enhance={pending.track('ensureIndex')}
 				>
 					<SubmitButton {pending} key="ensureIndex" variant="outline" busyLabel="Rebuilding…">
 						Rebuild index
@@ -192,10 +159,7 @@
 					method="POST"
 					action="?/optimizeIndex"
 					class="shrink-0"
-					use:enhance={pending.track(() => 'optimizeIndex', {
-						refreshAll: false,
-						onDone: refresh
-					})}
+					use:enhance={pending.track('optimizeIndex')}
 				>
 					<SubmitButton {pending} key="optimizeIndex" variant="outline" busyLabel="Merging…">
 						Merge segments
@@ -215,10 +179,7 @@
 					method="POST"
 					action="?/pruneIndex"
 					class="shrink-0"
-					use:enhance={pending.track(() => 'pruneIndex', {
-						refreshAll: false,
-						onDone: refresh
-					})}
+					use:enhance={pending.track('pruneIndex')}
 				>
 					<!-- Confirms because it can't be undone, but `outline`, not destructive:
 					     it only removes rows whose files are already gone. -->
@@ -237,7 +198,7 @@
 		</Card.Content>
 	</Card.Root>
 
-	{#if stats && stats.failures.length > 0}
+	{#if stats.failures.length > 0}
 		<Card.Root>
 			<Card.Header class="border-b">
 				<Card.Title>Failures</Card.Title>

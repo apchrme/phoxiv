@@ -713,7 +713,7 @@ WHERE t.id IS NULL                                          -- never seen
   pick up what the browser skipped. A `.zip` stays `skipped`.
 - Files loaded out of band (e.g. by rclone) are picked up too.
 
-The admin Index tab shows counts by status and up to 50 failures, plus:
+`/admin/search-index` shows counts by status and up to 50 failures, plus:
 
 | Action             | What it does                                                                                                 |
 | ------------------ | ------------------------------------------------------------------------------------------------------------ |
@@ -723,10 +723,12 @@ The admin Index tab shows counts by status and up to 50 failures, plus:
 
 Each posted batch writes one `index_files` activity-log row, not one per file.
 
-**The tab fetches its counts from `admin/index-stats` on first open**, not in the
-page load: they cost about 4,500 D1 rows and most `/admin` visits never open the
-tab. `+page.svelte` mounts `IndexPanel` only once the tab is selected, because
-bits-ui renders all tab contents eagerly. Don't move the query back into the load.
+**The counts cost about 4,500 D1 rows, so they have a page of their own.** Its
+load reads them, and no other admin page does. The link on the `/admin` menu
+sets `data-sveltekit-preload-data="tap"`: the app preloads links on hover, and
+every pass of the pointer would otherwise pay for the counts. Each maintenance
+action and **Refresh** re-run the load once; nothing refreshes the counts on its
+own. Don't put them on the menu or on another admin page.
 
 ## Limits
 

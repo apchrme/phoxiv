@@ -97,8 +97,8 @@ About the shared cache:
 - `/admin` and `/contribute` must never be cached, so they set no header.
   SvelteKit sends no `cache-control` for a server-rendered page and Cloudflare
   does not cache HTML by default.
-- The admin endpoints `reindex/`, `index-stats/` and `activity/` also set no
-  headers. They are not under `/api/` because every handler there is shared-cached.
+- The admin endpoints `reindex/` and `activity/` also set no headers. They are
+  not under `/api/` because every handler there is shared-cached.
 - `/progress` and `/progress/badges` are per-user and call `setNoStore()`
   themselves. See [per-user progress](#per-user-progress).
 
@@ -130,9 +130,12 @@ src/routes/
 │   └── profile/                redirects to /login if not
 │
 ├── admin/                      requireAdmin in +layout.server.ts; never cached
-│   ├── reindex/, index-stats/, activity/   endpoints; each calls requireAdmin itself
-│   ├── badges/[id]/            badge editor ("new" creates); BadgeForm, ProblemPicker
-│   └── columns.ts, UsersTable, UserRowActions, ActivityLogTable, IndexPanel, BadgesTable
+│   ├── +page.svelte            the menu: links to the four panels below; loads nothing
+│   ├── users/                  roles, assignments, bans; UsersTable, UserRowActions, columns.ts
+│   ├── log/                    the activity log's first page; ActivityLogTable
+│   ├── badges/                 BadgesTable, and [id]/: the editor ("new" creates); BadgeForm, ProblemPicker
+│   ├── search-index/           index counts and maintenance; IndexPanel
+│   └── reindex/, activity/     endpoints; each calls requireAdmin itself
 │
 ├── progress/                   GlobalProgressMap for the ⌘K dialog; private, no-store
 │   └── badges/                 BadgeProgressMap for /badges; private, no-store

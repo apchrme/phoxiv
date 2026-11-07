@@ -188,7 +188,7 @@ export type TeamMember = Contributor & {
 
 // ── Admin panel shapes ──────────────────────────────────────────────────────
 
-// Bodies of `GET /admin/index-stats` and `GET /admin/activity`. Unlike the public
+// The search-index page's stats and the body of `GET /admin/activity`. Unlike the public
 // shapes above, these are uncached and can change freely. They live here because
 // client components render them.
 

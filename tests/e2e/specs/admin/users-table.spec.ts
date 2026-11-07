@@ -4,7 +4,7 @@ import { expect, test } from '../../support/test';
 import { gotoReady, holdAction, pickOlympiad, toast } from '../../support/ui';
 
 /*
- * The users table on /admin beyond a single role change (admin/users.spec.ts):
+ * The users table on /admin/users beyond a single role change (admin/users.spec.ts):
  * its pages, and assigning olympiads to a contributor.
  *
  * Owns USERS.assignTarget and the USERS_TABLE_FILLERS filler accounts
@@ -56,7 +56,7 @@ test.describe('paging the users table', () => {
 		// UsersTable.svelte: "TanStack's `autoResetPageIndex` is off because it also
 		// fires when an action reloads `users`, which would jump the admin back to
 		// page 1 mid-task."
-		await gotoReady(page, '/admin');
+		await gotoReady(page, '/admin/users');
 		const row = userRow(page, PAGE_TWO_FILLER);
 		await expect(row).toHaveCount(0);
 		await toPageTwo(page);
@@ -82,7 +82,7 @@ test.describe('paging the users table', () => {
 	// so a narrowed table would otherwise open on a page that may not exist.
 
 	test('searching goes back to page 1', async ({ page }) => {
-		await gotoReady(page, '/admin');
+		await gotoReady(page, '/admin/users');
 		await toPageTwo(page);
 
 		// Matches the fillers alone: 30 of them, two pages of 25. So a search that
@@ -93,7 +93,7 @@ test.describe('paging the users table', () => {
 	});
 
 	test('the role filter goes back to page 1', async ({ page }) => {
-		await gotoReady(page, '/admin');
+		await gotoReady(page, '/admin/users');
 		await toPageTwo(page);
 
 		// A bits-ui select, so a combobox, named "Show: <filter>" by UsersTable.svelte.
@@ -109,7 +109,7 @@ test.describe('paging the users table', () => {
 	});
 
 	test('sorting goes back to page 1', async ({ page }) => {
-		await gotoReady(page, '/admin');
+		await gotoReady(page, '/admin/users');
 		await toPageTwo(page);
 
 		await page.getByRole('columnheader', { name: 'User', exact: true }).click();
@@ -117,10 +117,10 @@ test.describe('paging the users table', () => {
 	});
 });
 
-/** True for the assignment form's POST, `/admin?/setAssignedOlympiads`. */
+/** True for the assignment form's POST, `/admin/users?/setAssignedOlympiads`. */
 function isSetAssigned(url: string): boolean {
 	const { pathname, search } = new URL(url);
-	return pathname === '/admin' && search === '?/setAssignedOlympiads';
+	return pathname === '/admin/users' && search === '?/setAssignedOlympiads';
 }
 
 /**
@@ -150,7 +150,7 @@ test.describe('assigning olympiads to a contributor', () => {
 			if (request.method() === 'POST' && isSetAssigned(request.url())) posts.push(request);
 		});
 
-		await gotoReady(page, '/admin');
+		await gotoReady(page, '/admin/users');
 		await page.getByPlaceholder('Search users…').fill(USERS.assignTarget.email);
 		const row = userRow(page, USERS.assignTarget);
 		await expect(row).toHaveCount(1);
@@ -179,7 +179,7 @@ test.describe('assigning olympiads to a contributor', () => {
 
 		// While the request is out, this Save shows its spinner and is disabled. The
 		// role form's Save is tracked under another key, so it stays at rest.
-		const release = await holdAction(page, '/admin', 'setAssignedOlympiads');
+		const release = await holdAction(page, '/admin/users', 'setAssignedOlympiads');
 		await save.click();
 		await expect(form.getByRole('button', { name: 'Loading Save' })).toBeDisabled();
 		await expect(row.getByRole('button', { name: 'Loading Save' })).toHaveCount(1);

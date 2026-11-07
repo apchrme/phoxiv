@@ -142,8 +142,8 @@ The suite already covers:
 - `tests/e2e/specs/auth/`: the role × route matrix, bans set by hand in SQL, and
   banning and unbanning from the admin panel;
 - `tests/e2e/specs/admin/`: changing a role (the submit loop), the users table's
-  paging, assigning olympiads, the Log tab's **Load more**, and the Index tab and
-  its maintenance actions;
+  paging, assigning olympiads, the admin menu, the activity log's **Load more**,
+  and the search-index page and its maintenance actions;
 - `tests/e2e/specs/contribute/`: creating an olympiad and the refused ids, the
   icon, the unsaved-changes warnings in both editors, adding years, the CSV
   export and import, the year editor's rows, topics, duplicates and links, uploads with their text extraction, and deleting files

@@ -37,7 +37,7 @@
 
 <SvelteSeo title="{data.badge ? `Edit ${data.badge.name}` : 'New badge'} — phoXiv" />
 
-<BackLink href={resolve('admin') + '?tab=badges'}>Back to badges</BackLink>
+<BackLink href={resolve('admin/badges')}>Back to badges</BackLink>
 
 <PageHeader
 	title={data.badge ? data.badge.name : 'New badge'}

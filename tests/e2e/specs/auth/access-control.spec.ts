@@ -49,29 +49,31 @@ test.describe('access control', { tag: '@smoke' }, () => {
 		const admin = await apiAs('admin');
 		await postAction(
 			admin,
-			'/admin?/setRole',
+			'/admin/users?/setRole',
 			{ userId: USERS.admin.id, role: 'user' },
 			{ failure: 400, message: 'You cannot change your own role' }
 		);
 	});
 
-	test.describe('admin: requireAdmin on the layout, the load and every action', () => {
+	test.describe('admin: requireAdmin on the layout, each page load and every action', () => {
+		/** The menu and its four panels. */
+		const PAGES = ['/admin', '/admin/users', '/admin/log', '/admin/badges', '/admin/search-index'];
+		/** Each panel's actions. The log and the badges list have none. */
+		const ACTIONS = [
+			...['setRole', 'setAssignedOlympiads', 'banUser', 'unbanUser'].map(
+				(a) => `/admin/users?/${a}`
+			),
+			...['ensureIndex', 'optimizeIndex', 'pruneIndex'].map((a) => `/admin/search-index?/${a}`)
+		];
+
 		for (const who of NOT_ADMIN) {
-			test(`${who ?? 'anonymous'} is refused /admin and its actions`, async ({ apiAs }) => {
+			test(`${who ?? 'anonymous'} is refused every admin page and action`, async ({ apiAs }) => {
 				const api = await apiAs(who);
-				await expectStatus(api, '/admin', 403, UNAUTHORISED);
-				for (const action of [
-					'setRole',
-					'setAssignedOlympiads',
-					'banUser',
-					'unbanUser',
-					'ensureIndex',
-					'optimizeIndex',
-					'pruneIndex'
-				]) {
+				for (const path of PAGES) await expectStatus(api, path, 403, UNAUTHORISED);
+				for (const path of ACTIONS) {
 					await postAction(
 						api,
-						`/admin?/${action}`,
+						path,
 						{ userId: USERS.user.id, role: 'admin' },
 						{ error: 403, message: UNAUTHORISED }
 					);
@@ -79,8 +81,9 @@ test.describe('access control', { tag: '@smoke' }, () => {
 			});
 		}
 
-		test('an admin gets /admin', async ({ apiAs }) => {
-			await expectStatus(await apiAs('admin'), '/admin', 200);
+		test('an admin gets every admin page', async ({ apiAs }) => {
+			const admin = await apiAs('admin');
+			for (const path of PAGES) await expectStatus(admin, path, 200);
 		});
 	});
 
@@ -140,7 +143,7 @@ test.describe('access control', { tag: '@smoke' }, () => {
 		for (const who of NOT_ADMIN) {
 			test(`${who ?? 'anonymous'} is refused every admin endpoint`, async ({ apiAs }) => {
 				const api = await apiAs(who);
-				for (const path of ['/admin/reindex', '/admin/index-stats', '/admin/activity']) {
+				for (const path of ['/admin/reindex', '/admin/activity']) {
 					await expectStatus(api, path, 403, UNAUTHORISED);
 				}
 				const post = await api.post('/admin/reindex', { data: { results: [] } });
@@ -151,7 +154,7 @@ test.describe('access control', { tag: '@smoke' }, () => {
 
 		test('an admin reaches every admin endpoint', async ({ apiAs }) => {
 			const api = await apiAs('admin');
-			for (const path of ['/admin/reindex', '/admin/index-stats', '/admin/activity']) {
+			for (const path of ['/admin/reindex', '/admin/activity']) {
 				await expectStatus(api, path, 200);
 			}
 			// An empty batch writes nothing.
