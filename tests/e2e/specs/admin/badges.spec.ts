@@ -113,6 +113,22 @@ test.describe('the badge editor', () => {
 		await expect(page).toHaveURL(NEW);
 	});
 
+	// Opening the picker used to jump the page to the top: `Command` scrolled its
+	// first row into view before the panel had been positioned (OlympiadPicker).
+	test('opening the olympiad picker far down the page keeps the scroll', async ({ page }) => {
+		await page.setViewportSize({ width: 1280, height: 600 });
+		await gotoReady(page, NEW);
+		await page.getByText('By topic and olympiad', { exact: true }).click();
+		await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+		const before = await page.evaluate(() => window.scrollY);
+		expect(before).toBeGreaterThan(0);
+
+		await page.getByRole('button', { name: 'Olympiads', exact: true }).click();
+		await expect(page.getByPlaceholder('Search olympiads…')).toBeFocused();
+		await expect(page.getByRole('option').first()).toBeInViewport();
+		expect(await page.evaluate(() => window.scrollY)).toBe(before);
+	});
+
 	test('filter rules: the SQL recompute agrees with the per-user evaluation', async ({ apiAs }) => {
 		const admin = await apiAs('admin');
 

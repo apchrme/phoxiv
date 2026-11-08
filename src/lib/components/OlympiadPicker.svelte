@@ -19,6 +19,12 @@
 	 * `shouldFilter={false}`: `Command`'s own filter reorders rows by score, which
 	 * would break the pinned group and the fixed standing rows.
 	 *
+	 * `disableInitialScroll`: on open, `Command` highlights the first row and
+	 * `scrollIntoView`s it before floating-ui has placed the panel, while it
+	 * still sits at `translate(0, -200%)` above the viewport. The browser then
+	 * scrolls the page to the top to reach it (seen on the admin badge editor,
+	 * where the picker is far down the page). The first row is already in view.
+	 *
 	 * The panel portals out of any surrounding `<form>`, so controls inside it
 	 * submit nothing. With `name` set, the selection is mirrored into hidden
 	 * inputs rendered in place, which `fieldList` reads on the server.
@@ -232,7 +238,7 @@
 			)}
 		>
 			<!-- `Popover.Content` focuses the input on open, so no `autofocus` is needed. -->
-			<Command.Root label={heading} shouldFilter={false}>
+			<Command.Root label={heading} shouldFilter={false} disableInitialScroll>
 				<div class="-mx-1 mb-1 flex items-center gap-2 border-b border-border/50 px-4 py-2.5">
 					<Search class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
 					<Command.Input
