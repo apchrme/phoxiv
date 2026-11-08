@@ -1442,6 +1442,18 @@ export const BADGES = {
 	}
 } as const;
 
+/**
+ * Seven more badges the reader holds (manual lists of P5), so the dashboard has
+ * more earned badges than it shows at first. Earned in 2020, a day apart, so
+ * they are the reader's oldest and the earned BADGES above are always shown.
+ * Index 0 is the oldest of all, the one left out until "Show more".
+ */
+export const COLLECTOR_BADGES = Array.from({ length: 7 }, (_, i) => ({
+	id: 6_100_211 + i,
+	name: `Collector ${i + 1}`,
+	earnedAt: new Date(Date.UTC(2020, 0, 1 + i))
+}));
+
 const BADGE_YEARS = { reader: 6_100_001, tracker: 6_100_002 } as const;
 
 /** Problem ids on the badge olympiad. */
@@ -1603,21 +1615,36 @@ const BADGE_ROWS = {
 			requiredCount: BADGES.egg.required,
 			scope: 'manual',
 			requirementHidden: true
-		}
+		},
+		...COLLECTOR_BADGES.map((b): Badge => ({
+			id: b.id,
+			name: b.name,
+			icon: 'star',
+			color: 'teal',
+			requiredCount: 1,
+			scope: 'manual'
+		}))
 	] satisfies Badge[],
 	badgeProblems: [
 		{ badgeId: BADGES.picked.id, problemId: BP.P4 },
 		{ badgeId: BADGES.picked.id, problemId: BP.P6 },
 		{ badgeId: BADGES.tracker.id, problemId: BP.Q1 },
 		{ badgeId: BADGES.tracker.id, problemId: BP.Q2 },
-		{ badgeId: BADGES.egg.id, problemId: BP.P5 }
+		{ badgeId: BADGES.egg.id, problemId: BP.P5 },
+		...COLLECTOR_BADGES.map((b) => ({ badgeId: b.id, problemId: BP.P5 }))
 	] satisfies BadgeProblem[],
 	/** Consistent with the progress, so the reader's first evaluation writes nothing. */
 	userBadges: [
 		{ id: 6_100_401, userId: USERS.badgeReader.id, badgeId: BADGES.thermo.id },
 		{ id: 6_100_402, userId: USERS.badgeReader.id, badgeId: BADGES.sharp.id },
 		{ id: 6_100_403, userId: USERS.badgeReader.id, badgeId: BADGES.picked.id },
-		{ id: 6_100_404, userId: USERS.badgeReader.id, badgeId: BADGES.egg.id }
+		{ id: 6_100_404, userId: USERS.badgeReader.id, badgeId: BADGES.egg.id },
+		...COLLECTOR_BADGES.map((b, i) => ({
+			id: 6_100_411 + i,
+			userId: USERS.badgeReader.id,
+			badgeId: b.id,
+			earnedAt: b.earnedAt
+		}))
 	] satisfies UserBadge[]
 };
 

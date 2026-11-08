@@ -1,4 +1,4 @@
-import { BADGE_OLYMPIAD, BADGES, USERS } from '../../fixtures/seed-data';
+import { BADGE_OLYMPIAD, BADGES, COLLECTOR_BADGES, USERS } from '../../fixtures/seed-data';
 import { expect, test } from '../../support/test';
 import { gotoReady } from '../../support/ui';
 
@@ -41,11 +41,7 @@ test.describe('signed in', () => {
 	test('the headline numbers', async ({ page }) => {
 		await gotoReady(page, '/');
 		await expect(page.getByTestId('stat-completed')).toContainText('5');
-		// P1 85%, P3 85%, P5 100%. P4 has a score but no max, P2 no score: neither
-		// can be a percentage, so neither is averaged.
-		const score = page.getByTestId('stat-score');
-		await expect(score).toContainText('90%');
-		await expect(score).toContainText('across 3 scored problems');
+		await expect(page.getByTestId('stat-score')).toHaveCount(0);
 	});
 
 	test('the breakdowns count each completion under each of its topics', async ({ page }) => {
@@ -104,6 +100,20 @@ test.describe('signed in', () => {
 			String(BADGES.field.count)
 		);
 		await expect(page.getByRole('link', { name: 'All badges' })).toHaveAttribute('href', '/badges');
+	});
+
+	test('only the 10 most recent earned badges show until "Show more"', async ({ page }) => {
+		await gotoReady(page, '/');
+		const earned = page.getByRole('list', { name: 'Earned badges' });
+		// At least 11 earned (admin/badges.spec.ts may award more meanwhile, all
+		// newer), so the oldest collector is always past the first 10.
+		const oldest = COLLECTOR_BADGES[0].name;
+		await expect(earned.getByRole('listitem')).toHaveCount(10);
+		await expect(earned.getByRole('link', { name: oldest, exact: true })).toHaveCount(0);
+
+		await page.getByRole('button', { name: 'Show more' }).click();
+		await expect(earned.getByRole('link', { name: oldest, exact: true })).toBeVisible();
+		await expect(page.getByRole('button', { name: 'Show more' })).toHaveCount(0);
 	});
 
 	test('a hidden requirement is never in "Next up" or the page data', async ({ page, request }) => {

@@ -64,6 +64,8 @@ test.describe('signed out', () => {
 
 	test('most held first', async ({ page }) => {
 		await gotoReady(page, '/badges');
+		// The cards come from a fetch, and allTextContents() doesn't wait for them.
+		await expect(card(page, BADGES.field.name)).toBeVisible();
 		const names = await page.getByTestId('badge-card').getByRole('heading').allTextContents();
 		// The seeded holders are one each for thermo, sharp, picked and egg, then
 		// none; ties go oldest first. `tracker` can gain a holder mid-run, and other

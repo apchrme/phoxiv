@@ -32,6 +32,8 @@
 
 	let { dashboard, userName }: { dashboard: DashboardData; userName: string } = $props();
 
+	/** How many earned badges show at first, and how many more each "Show more" adds. */
+	const EARNED_PAGE = 10;
 	/** How many unearned badges "Next up" shows. */
 	const NEXT_UP = 3;
 	/** How many problems "Recent" shows. */
@@ -43,19 +45,14 @@
 	const rows = $derived(dashboard.rows);
 	const firstName = $derived(userName.split(/\s+/)[0] || userName);
 
-	/** Scores as a fraction of the max, only where both are known. */
-	const scoredPcts = $derived(
-		rows.flatMap((r) => (r.score !== null && r.maxScore ? [(r.score / r.maxScore) * 100] : []))
-	);
-	const averagePct = $derived(
-		scoredPcts.length ? scoredPcts.reduce((a, b) => a + b, 0) / scoredPcts.length : null
-	);
-
 	const earned = $derived(
 		dashboard.badges
 			.filter((b) => b.earnedAt !== null)
 			.sort((a, b) => +(b.earnedAt ?? 0) - +(a.earnedAt ?? 0))
 	);
+	/** Every badge is already in the page data, so "Show more" only reveals. */
+	let earnedShown = $state(EARNED_PAGE);
+	const earnedVisible = $derived(earned.slice(0, earnedShown));
 	/**
 	 * Closest to earning first; the sort is stable, so ties stay oldest first.
 	 * Badges with a hidden requirement have no count to rank by, and are left out.
@@ -109,7 +106,7 @@
 
 <div class="flex flex-col gap-6 pb-16">
 	<!-- Headline numbers -->
-	<section aria-label="Summary" class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+	<section aria-label="Summary" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 		<Card.Root class="gap-1 py-5" data-testid="stat-completed">
 			<Card.Content class="flex flex-col gap-1">
 				<span class="text-sm text-muted-foreground">Problems completed</span>
@@ -117,19 +114,6 @@
 				<!-- min-h keeps the tile from growing when the total arrives. -->
 				<span class="min-h-4 text-xs text-muted-foreground">
 					{totals.value ? `of ${totals.value.total} in the archive` : ''}
-				</span>
-			</Card.Content>
-		</Card.Root>
-		<Card.Root class="gap-1 py-5" data-testid="stat-score">
-			<Card.Content class="flex flex-col gap-1">
-				<span class="text-sm text-muted-foreground">Average score</span>
-				<span class="text-3xl font-bold tabular-nums">
-					{averagePct === null ? '—' : `${formatScore(averagePct)}%`}
-				</span>
-				<span class="text-xs text-muted-foreground">
-					{scoredPcts.length
-						? `across ${plural(scoredPcts.length, 'scored problem')}`
-						: 'Record a score to see this'}
 				</span>
 			</Card.Content>
 		</Card.Root>
@@ -168,7 +152,7 @@
 			<Card.Content class="flex flex-col gap-5">
 				{#if earned.length > 0}
 					<ul aria-label="Earned badges" class="grid grid-cols-1 gap-3 xs:grid-cols-2">
-						{#each earned as badge (badge.id)}
+						{#each earnedVisible as badge (badge.id)}
 							<li class="flex items-center gap-3">
 								<BadgeMedal icon={badge.icon} color={badge.color} size="sm" />
 								<div class="flex min-w-0 flex-col">
@@ -185,6 +169,16 @@
 							</li>
 						{/each}
 					</ul>
+					{#if earned.length > earnedShown}
+						<Button
+							variant="outline"
+							size="sm"
+							class="self-center"
+							onclick={() => (earnedShown += EARNED_PAGE)}
+						>
+							Show more
+						</Button>
+					{/if}
 				{:else if dashboard.badges.length > 0}
 					<p class="m-0 text-sm text-muted-foreground">
 						None yet. Complete problems to earn your first.
