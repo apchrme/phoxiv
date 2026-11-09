@@ -143,7 +143,7 @@
 							</span>
 						</div>
 						<div class="flex flex-row justify-between gap-1">
-							<div class="flex flex-col grow items-baseline justify-between gap-1">
+							<div class="flex grow flex-col items-baseline justify-between gap-1">
 								{#if badge.description}
 									<p class="m-0 text-sm text-foreground/80">{badge.description}</p>
 								{/if}
@@ -163,7 +163,7 @@
 									{:else if standing.count !== null && badge.requiredCount !== null}
 										<!-- Both are null while the requirement is hidden: progress would
 								     give it away. -->
-										<div class="mt-1 flex items-center gap-2 w-full">
+										<div class="mt-1 flex w-full items-center gap-2">
 											<Meter
 												value={standing.count}
 												max={badge.requiredCount}
