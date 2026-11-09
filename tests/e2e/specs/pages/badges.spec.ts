@@ -19,6 +19,19 @@ function card(page: Page, name: string) {
 		.filter({ has: page.getByRole('heading', { name, exact: true }) });
 }
 
+/** The toolbar's search box. */
+const searchBox = (page: Page) => page.getByRole('searchbox');
+
+/** The standing filter's trigger, named by its current choice. */
+const standingTrigger = (page: Page) => page.getByRole('button', { name: /^Filter by standing/ });
+
+/** Pick `option` from the standing filter. */
+async function filterByStanding(page: Page, option: string) {
+	await standingTrigger(page).click();
+	await page.getByRole('menuitemradio', { name: option, exact: true }).click();
+	await expect(standingTrigger(page)).toHaveAccessibleName(`Filter by standing: ${option}`);
+}
+
 const FROZEN = [BADGES.thermo, BADGES.field, BADGES.sharp, BADGES.steady, BADGES.picked];
 /** Requirement hidden: one in progress, one earned. */
 const HIDDEN = [BADGES.secret, BADGES.egg];
@@ -76,6 +89,44 @@ test.describe('signed out', () => {
 		expect(order).toEqual([...order].sort((a, b) => a - b));
 	});
 
+	test('search matches the name, description or requirement', async ({ page }) => {
+		await gotoReady(page, '/badges');
+		// Signed out there is no standing to filter on.
+		await expect(standingTrigger(page)).toHaveCount(0);
+
+		for (const [needle, badge] of [
+			['seeker', BADGES.thermo],
+			['FEEL THE', BADGES.thermo],
+			['electromagnetism', BADGES.field]
+		] as const) {
+			await searchBox(page).fill(needle);
+			await expect(card(page, badge.name), needle).toBeVisible();
+			await expect(card(page, BADGES.steady.name), needle).toHaveCount(0);
+		}
+	});
+
+	test('no match shows the empty state, and Clear filters resets it', async ({ page }) => {
+		await gotoReady(page, '/badges');
+		await searchBox(page).fill('no badge is called this');
+		await expect(page.getByText('No badges found', { exact: true })).toBeVisible();
+		await expect(page.getByTestId('badge-card')).toHaveCount(0);
+
+		await page.getByRole('button', { name: 'Clear filters', exact: true }).click();
+		await expect(searchBox(page)).toHaveValue('');
+		await expect(card(page, BADGES.thermo.name)).toBeVisible();
+		await expect(page.getByText('No badges found', { exact: true })).toHaveCount(0);
+	});
+
+	// Guards "The text match covers only what the card shows" in
+	// src/routes/(reg)/badges/+page.svelte: a match on a hidden rule would leak it.
+	test('a hidden requirement is not searchable', async ({ page }) => {
+		await gotoReady(page, '/badges');
+		// `picked` and `egg` are both manual lists; only `picked`'s rule is public.
+		await searchBox(page).fill('selected problems');
+		await expect(card(page, BADGES.picked.name)).toBeVisible();
+		await expect(card(page, BADGES.egg.name)).toHaveCount(0);
+	});
+
 	test('the nav links to it', async ({ page }) => {
 		await gotoReady(page, '/olympiads');
 		await page.getByRole('link', { name: 'badges', exact: true }).first().click();
@@ -102,6 +153,37 @@ test.describe('signed in', () => {
 				String(badge.count)
 			);
 		}
+	});
+
+	test('filters by standing', async ({ page }) => {
+		await gotoReady(page, '/badges');
+		const earned = [...FROZEN, ...HIDDEN].filter((b) => b.earned);
+		const unearned = [...FROZEN, ...HIDDEN].filter((b) => !b.earned);
+
+		await filterByStanding(page, 'Earned');
+		for (const badge of earned) await expect(card(page, badge.name), badge.name).toBeVisible();
+		for (const badge of unearned) await expect(card(page, badge.name), badge.name).toHaveCount(0);
+
+		await filterByStanding(page, 'Not earned');
+		for (const badge of unearned) await expect(card(page, badge.name), badge.name).toBeVisible();
+		for (const badge of earned) await expect(card(page, badge.name), badge.name).toHaveCount(0);
+
+		// Combines with the search: nothing unearned is called this.
+		await searchBox(page).fill(BADGES.thermo.name);
+		await expect(page.getByText('No badges found', { exact: true })).toBeVisible();
+		await page.getByRole('button', { name: 'Clear filters', exact: true }).click();
+		await expect(standingTrigger(page)).toHaveAccessibleName('Filter by standing: All badges');
+		await expect(card(page, BADGES.thermo.name)).toBeVisible();
+		await expect(card(page, BADGES.field.name)).toBeVisible();
+	});
+
+	test("a holder finds a hidden badge by the rule they've unlocked", async ({ page }) => {
+		await gotoReady(page, '/badges');
+		await searchBox(page).fill('selected problems');
+		await expect(card(page, BADGES.egg.name)).toBeVisible();
+		// Not held, so still unsearchable.
+		await searchBox(page).fill('100%');
+		await expect(card(page, BADGES.secret.name)).toHaveCount(0);
 	});
 
 	test('a hidden requirement stays hidden until earned', async ({ page, apiAs }) => {

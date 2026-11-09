@@ -106,7 +106,7 @@
 
 <div class="flex flex-col gap-6 pb-16">
 	<!-- Headline numbers -->
-	<section aria-label="Summary" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+	<section aria-label="Summary" class="grid grid-cols-1 gap-6 sm:grid-cols-2">
 		<Card.Root class="gap-1 py-5" data-testid="stat-completed">
 			<Card.Content class="flex flex-col gap-1">
 				<span class="text-sm text-muted-foreground">Problems completed</span>
