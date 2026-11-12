@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { enhance, type ActionResult, type SubmitFunction } from '$app/forms';
-	import { beforeNavigate } from '$app/navigation';
-	import type { Pending } from '#lib/forms.svelte.js';
+	import { confirmBeforeLeaving, type Pending } from '#lib/forms.svelte.js';
 	import { Save, Trash } from '@lucide/svelte';
 	import SubmitButton from '#lib/components/forms/SubmitButton.svelte';
 	import ConfirmSubmit from '#lib/components/forms/ConfirmSubmit.svelte';
@@ -79,8 +78,14 @@
 	let saved = $state(snapshot());
 	const dirty = $derived(snapshot() !== saved);
 
-	/** Set once `deleteYear` redirects, so the move off the page isn't stopped. */
-	let leaving = false;
+	// Nothing is saved until "Save metadata", so warn before leaving with edits, as
+	// the olympiad editor does. Switching to the Files tab isn't a navigation, and
+	// the draft survives it. `allowLeave` is called once `deleteYear` redirects,
+	// so the move off the page isn't stopped.
+	const allowLeave = confirmBeforeLeaving(
+		() => dirty,
+		'You have unsaved changes to this year. Leave without saving?'
+	);
 
 	/**
 	 * `track`'s submit function, plus `start()`'s handler for the result before the
@@ -115,20 +120,7 @@
 
 	// svelte-ignore state_referenced_locally
 	const submitDelete = withResult(pending.track('deleteYear', { reset: true }), () => (result) => {
-		if (result.type === 'redirect') leaving = true;
-	});
-
-	// Nothing is saved until "Save metadata", so warn before leaving with edits, as
-	// the olympiad editor does. A `'leave'` (reload, closing the tab, typing a url)
-	// can only get the browser's own prompt, which `cancel()` triggers. Switching to
-	// the Files tab isn't a navigation, and the draft survives it.
-	beforeNavigate((navigation) => {
-		if (leaving || !dirty) return;
-		if (navigation.type === 'leave') {
-			navigation.cancel();
-		} else if (!confirm('You have unsaved changes to this year. Leave without saving?')) {
-			navigation.cancel();
-		}
+		if (result.type === 'redirect') allowLeave();
 	});
 </script>
 

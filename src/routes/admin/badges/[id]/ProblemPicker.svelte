@@ -7,14 +7,14 @@
 	import EmptyState from '#lib/components/EmptyState.svelte';
 	import OlympiadPicker from '#lib/components/OlympiadPicker.svelte';
 	import TopicSelect from '#lib/components/TopicSelect.svelte';
-	import { matchesTopics } from '#lib/filters.js';
+	import { matchesOlympiadsAndTopics } from '#lib/filters.js';
+	import { problemRefKey, type BadgeProblem } from '#lib/badges.js';
 	import { rank } from '#lib/utils/fuzzy.js';
 	import { plural } from '#lib/utils/plural.js';
 	import type { Resource } from '#lib/resource.svelte.js';
 	import type { OlympiadOption, ProblemTopic, SearchItem } from '#lib/types.js';
-	import type { PageData } from './$types';
 
-	type Picked = PageData['manualProblems'][number];
+	type Picked = BadgeProblem;
 
 	/**
 	 * Chooses a manual badge's problems from the whole corpus (`/api/search`,
@@ -45,16 +45,19 @@
 	let topics = $state<ProblemTopic[]>([]);
 	let olympiadIds = $state<string[]>([]);
 
-	const keyOf = (p: { olympiadId: string; year: number; number: string }) =>
-		`${p.olympiadId}\u0000${p.year}\u0000${p.number}`;
+	const selectedKeys = $derived(new Set(selected.map(problemRefKey)));
 
-	const selectedKeys = $derived(new Set(selected.map(keyOf)));
+	/** A corpus row's key, the same as its picked form's. */
+	const itemKey = (item: SearchItem) =>
+		problemRefKey({ olympiadId: item.olympiadId, year: item.year, number: item.problem.number });
 
 	const pool = $derived(
-		(corpus.value ?? []).filter(
-			(item) =>
-				(olympiadIds.length === 0 || olympiadIds.includes(item.olympiadId)) &&
-				matchesTopics(item.problem.topics, topics)
+		(corpus.value ?? []).filter((item) =>
+			matchesOlympiadsAndTopics(
+				{ olympiadId: item.olympiadId, topics: item.problem.topics },
+				olympiadIds,
+				topics
+			)
 		)
 	);
 	/** Every match: the whole filtered pool, or its fuzzy-ranked hits. */
@@ -68,7 +71,7 @@
 				)
 			: pool
 	);
-	const unpicked = $derived(matches.filter((i) => !selectedKeys.has(keyOf(toPicked(i)))));
+	const unpicked = $derived(matches.filter((i) => !selectedKeys.has(itemKey(i))));
 
 	function toPicked(item: SearchItem): Picked {
 		return {
@@ -82,8 +85,8 @@
 
 	function toggle(item: SearchItem, checked: boolean) {
 		const picked = toPicked(item);
-		const key = keyOf(picked);
-		selected = checked ? [...selected, picked] : selected.filter((p) => keyOf(p) !== key);
+		const key = problemRefKey(picked);
+		selected = checked ? [...selected, picked] : selected.filter((p) => problemRefKey(p) !== key);
 	}
 
 	function addAll() {
@@ -91,8 +94,8 @@
 	}
 
 	function remove(p: Picked) {
-		const key = keyOf(p);
-		selected = selected.filter((s) => keyOf(s) !== key);
+		const key = problemRefKey(p);
+		selected = selected.filter((s) => problemRefKey(s) !== key);
 	}
 
 	function label(p: Picked): string {
@@ -117,7 +120,7 @@
 		</div>
 		{#if selected.length > 0}
 			<ul aria-label="Selected problems" class="flex max-h-40 flex-wrap gap-1.5 overflow-y-auto">
-				{#each selected as p (keyOf(p))}
+				{#each selected as p (problemRefKey(p))}
 					<li
 						class="flex items-center gap-1 rounded-md border border-border bg-muted py-0.5 pr-0.5 pl-2 text-xs"
 					>
@@ -179,8 +182,8 @@
 				</Button>
 			</div>
 			<ul aria-label="Matching problems" class="flex max-h-72 flex-col overflow-y-auto">
-				{#each matches.slice(0, SHOWN) as item (keyOf(toPicked(item)))}
-					{@const checked = selectedKeys.has(keyOf(toPicked(item)))}
+				{#each matches.slice(0, SHOWN) as item (itemKey(item))}
+					{@const checked = selectedKeys.has(itemKey(item))}
 					<li>
 						<label
 							class="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 text-sm hover:bg-muted"

@@ -221,8 +221,10 @@ pair, plus an index on `badge_id`) records who holds what.
   - `all`: every problem.
   - `filter`: a live rule, not a snapshot, so problems added or re-tagged later
     count without an edit. Topics are OR within the list, olympiads too, and the
-    two are ANDed; an empty list doesn't restrict. Topics use `matchesTopics`,
-    so an untagged problem never matches a topic, as in the problem filters.
+    two are ANDed; an empty list doesn't restrict. This is
+    `matchesOlympiadsAndTopics` in `#lib/filters.ts`, which the editor's
+    preview and the manual-badge picker also use, so an untagged problem never
+    matches a topic, as in the problem filters.
   - `manual`: the problem is in `badge_problems`.
 - **The score is in range, if a range is set.** The completion then needs a
   score and the problem a max score, with `min ≤ score / max × 100 ≤ max`. It
@@ -248,9 +250,19 @@ problem. Instead, `user_badges` is kept in sync and counted with one aggregate:
   them, then inserts awards newly earned and deletes awards lost. **Awards are
   revocable:** un-marking a problem or lowering a score can take a badge away.
   It writes only the difference, so usually nothing. It runs on every
-  `?/trackProblem`, every dashboard view and every `GET /progress/badges`.
-- `recomputeBadge` scans every progress row, so only a badge save calls it.
+  `?/trackProblem`, every dashboard view and every `GET /progress/badges`. It
+  reports as newly earned only the rows its own insert wrote, so when two
+  tracking requests race, only one shows the "Badge unlocked" toast.
+- `recomputeBadge` scans every progress row, so only a badge save runs it.
   There is deliberately no "recompute all".
+
+**Saving a badge is one transaction.** `saveBadge` sends the badge's update,
+the changes to its `badge_problems` and `recomputeBadge`'s two statements in
+one `db.batch`, which D1 runs as a transaction. A failure partway through
+leaves the old badge and its awards as they were. A new badge must be inserted
+first to get its id, so only its links and recompute share the batch. Every
+multi-row write here is chunked to stay under D1's 100 bound parameters per
+statement.
 
 **Staleness, and how it heals.** A contributor's edit (re-tagging a problem,
 changing a max score, deleting a problem) touches no awards. Each user's awards
@@ -273,7 +285,9 @@ requirement again. Admins always see everything.
 
 This is enforced on the server, not by the markup. `isRequirementVisible` in
 `#lib/badges.ts` decides, and `visibleCriteria` and `visibleCount` return
-`null` where it says no. `/api/badges` is shared by every viewer, so it never
+`null` where it says no. `toVisibleBadge` (used by the dashboard) and
+`toPublicBadge` (the API) build on them, and `badgeFace` picks the fields any
+viewer may see one by one, so a hidden rule can't ride along. `/api/badges` is shared by every viewer, so it never
 reveals a hidden requirement. Instead, `/progress/badges` adds the requirement
 to each hidden badge the user holds (`revealed`), and the dashboard load passes
 whether the user has earned each badge. Anything new that sends a badge to a
@@ -288,7 +302,8 @@ holders, with emails, on the badge editor (`listHolders`).
 no topics, as everywhere problems are listed. The list is part of the
 requirement, so a hidden manual badge's list follows the hidden-requirement rule
 above: `/api/badges/[id]` sends `problems: null`, and `/progress/badges` adds it
-to `revealed` for a holder. The criteria sentence (`describeBadge`) doesn't
+to `revealed` for a holder, reading every such list in one query
+(`getManualProblemsFor`). The criteria sentence (`describeBadge`) doesn't
 list the problems.
 
 ### `file_text`

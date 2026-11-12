@@ -11,11 +11,13 @@ import {
 	type DB
 } from '../index';
 import {
+	problemRefKey,
 	qualifies,
 	sortByHolders,
 	type BadgeEntry,
 	type BadgeProblem,
-	type BadgeScope
+	type BadgeScope,
+	type ProblemRef
 } from '#lib/badges.js';
 import { parseStringArray } from '#lib/utils/json.js';
 import { parseTopics, serializeTopics } from '#lib/utils/topics.js';
@@ -48,12 +50,6 @@ export type BadgeInput = {
 	olympiadIds: string[];
 	requirementHidden: boolean;
 };
-
-/** A problem addressed as the app addresses it, never by `problems.id`. */
-export type ProblemRef = { olympiadId: string; year: number; number: string };
-
-/** A manual badge's problem, for the admin editor and the badge's public page. */
-export type ManualProblem = BadgeProblem;
 
 /** The JSON columns parsed. */
 export function toBadgeEntry(row: BadgeRow): BadgeEntry {
@@ -240,7 +236,7 @@ export async function evaluateUserBadges(db: DB, userId: string): Promise<UserBa
 	const now = new Date();
 
 	const standings: BadgeStanding[] = [];
-	const newlyEarned: BadgeEntry[] = [];
+	const awarding: BadgeEntry[] = [];
 	const lost: number[] = [];
 	for (const row of badgeRows) {
 		const badge = toBadgeEntry(row);
@@ -252,7 +248,7 @@ export async function evaluateUserBadges(db: DB, userId: string): Promise<UserBa
 		let earnedAt = awarded.get(badge.id) ?? null;
 		if (earned && !earnedAt) {
 			earnedAt = now;
-			newlyEarned.push(badge);
+			awarding.push(badge);
 		} else if (!earned && earnedAt) {
 			earnedAt = null;
 			lost.push(badge.id);
@@ -260,29 +256,60 @@ export async function evaluateUserBadges(db: DB, userId: string): Promise<UserBa
 		standings.push({ badge, count: n, earnedAt });
 	}
 
-	if (newlyEarned.length > 0 || lost.length > 0) {
-		// Conflicts are ignored so a concurrent call that got there first wins.
-		const writes = [];
-		if (newlyEarned.length > 0) {
-			writes.push(
-				db
-					.insert(userBadges)
-					.values(newlyEarned.map((b) => ({ userId, badgeId: b.id, earnedAt: now })))
-					.onConflictDoNothing()
-			);
-		}
-		if (lost.length > 0) {
-			writes.push(
-				db
-					.delete(userBadges)
-					.where(and(eq(userBadges.userId, userId), inArray(userBadges.badgeId, lost)))
-			);
-		}
-		await db.batch(writes as [(typeof writes)[number], ...(typeof writes)[number][]]);
+	if (awarding.length === 0 && lost.length === 0) {
+		return { rows: toProgressRows(inputs), standings, newlyEarned: [] };
 	}
 
-	const rows: ProgressRow[] = inputs.map(({ problemId: _, ...rest }) => rest);
-	return { rows, standings, newlyEarned };
+	// Chunked to stay under D1's 100 bound parameters per statement: three per
+	// inserted row, one per deleted id plus the user id. A new user's first
+	// evaluation can award every badge at once.
+	const inserts = [];
+	for (let i = 0; i < awarding.length; i += 30) {
+		inserts.push(
+			db
+				.insert(userBadges)
+				.values(awarding.slice(i, i + 30).map((b) => ({ userId, badgeId: b.id, earnedAt: now })))
+				// A concurrent call that got there first wins, and its row is not
+				// returned here, so only one of the two reports the award.
+				.onConflictDoNothing()
+				.returning({ badgeId: userBadges.badgeId })
+		);
+	}
+	const deletes = [];
+	for (let i = 0; i < lost.length; i += 90) {
+		deletes.push(
+			db
+				.delete(userBadges)
+				.where(
+					and(eq(userBadges.userId, userId), inArray(userBadges.badgeId, lost.slice(i, i + 90)))
+				)
+		);
+	}
+	const results = await db.batch(nonEmpty([...inserts, ...deletes]));
+
+	// Only the rows this call inserted, so the "Badge unlocked" toast shows once
+	// even when two tracking changes race.
+	const inserted = new Set(
+		results
+			.slice(0, inserts.length)
+			.flatMap((r) => r as { badgeId: number }[])
+			.map((r) => r.badgeId)
+	);
+	const newlyEarned = awarding.filter((b) => inserted.has(b.id));
+	return { rows: toProgressRows(inputs), standings, newlyEarned };
+}
+
+/** The progress rows without `problems.id`, which never reaches the client. */
+function toProgressRows(inputs: (ProgressRow & { problemId: number })[]): ProgressRow[] {
+	return inputs.map(({ problemId: _, ...rest }) => rest);
+}
+
+/**
+ * `db.batch` takes a non-empty tuple, which spreading a list of statements
+ * loses. Callers only pass lists they know aren't empty.
+ */
+function nonEmpty<T>(items: T[]): [T, ...T[]] {
+	return items as [T, ...T[]];
 }
 
 // ── Every user, after an admin edit ─────────────────────────────────────────
@@ -325,21 +352,25 @@ function qualifyingCondition(badge: BadgeEntry): SQL {
 }
 
 /**
- * Re-evaluates one badge for every user and syncs `user_badges` to match:
- * awards it to everyone who now qualifies and takes it from everyone who no
- * longer does. Existing holders keep their `earned_at`.
+ * The two statements that re-evaluate one badge for every user and sync
+ * `user_badges` to match: they award it to everyone who now qualifies and take
+ * it from everyone who no longer does. Existing holders keep their `earned_at`.
  *
- * Scans every progress row, so only an admin save calls it, and there is no
+ * Returned rather than run, so {@link saveBadge} can put them in the same batch
+ * (one transaction) as the badge's own writes: a failure then leaves neither a
+ * half-saved badge nor awards for a rule that was never stored.
+ *
+ * Scans every progress row, so only an admin save runs it, and there is no
  * "recompute all" (that would be one scan per badge).
  */
-export async function recomputeBadge(db: DB, badge: BadgeEntry): Promise<void> {
+function recomputeBadge(db: DB, badge: BadgeEntry) {
 	const holders = sql`SELECT pp.user_id FROM problem_progress pp
 		JOIN problems p ON p.id = pp.problem_id
 		JOIN years y ON y.id = p.year_id
 		WHERE ${qualifyingCondition(badge)}
 		GROUP BY pp.user_id
 		HAVING count(*) >= ${badge.requiredCount}`;
-	await db.batch([
+	return [
 		db.run(sql`DELETE FROM user_badges
 			WHERE badge_id = ${badge.id} AND user_id NOT IN (${holders})`),
 		// `WHERE true` resolves SQLite's parsing ambiguity between a join's ON and
@@ -347,19 +378,26 @@ export async function recomputeBadge(db: DB, badge: BadgeEntry): Promise<void> {
 		db.run(sql`INSERT INTO user_badges (user_id, badge_id)
 			SELECT user_id, ${badge.id} FROM (${holders}) WHERE true
 			ON CONFLICT (user_id, badge_id) DO NOTHING`)
-	]);
+	] as const;
 }
 
 // ── Admin editing ───────────────────────────────────────────────────────────
 
 /**
- * A manual badge's problems, in olympiad, year and number order. For the admin
- * editor, and for users only through `/api/badges/[id]` and `/progress/badges`,
- * which leave a hidden badge's list out (docs/data-model.md).
+ * The problems of several manual badges in one query, each list in olympiad,
+ * year and number order. A badge with no problems left is absent from the map.
+ * For the admin editor, and for users only through `/api/badges/[id]` and
+ * `/progress/badges`, which leave a hidden badge's list out (docs/data-model.md).
  */
-export async function getManualProblems(db: DB, badgeId: number): Promise<ManualProblem[]> {
-	return db
+export async function getManualProblemsFor(
+	db: DB,
+	badgeIds: readonly number[]
+): Promise<Map<number, BadgeProblem[]>> {
+	const lists = new Map<number, BadgeProblem[]>();
+	if (badgeIds.length === 0) return lists;
+	const rows = await db
 		.select({
+			badgeId: badgeProblems.badgeId,
 			olympiadId: years.olympiadId,
 			olympiadName: olympiads.name,
 			year: years.year,
@@ -370,14 +408,23 @@ export async function getManualProblems(db: DB, badgeId: number): Promise<Manual
 		.innerJoin(problems, eq(problems.id, badgeProblems.problemId))
 		.innerJoin(years, eq(years.id, problems.yearId))
 		.innerJoin(olympiads, eq(olympiads.id, years.olympiadId))
-		.where(eq(badgeProblems.badgeId, badgeId))
+		// One JSON parameter, so any number of badges stays under D1's limit.
+		.where(
+			sql`${badgeProblems.badgeId} IN (SELECT value FROM json_each(${JSON.stringify(badgeIds)}))`
+		)
 		.orderBy(asc(olympiads.displayOrder), asc(years.olympiadId), asc(years.year), asc(problems.id))
 		.all();
+	for (const { badgeId, ...problem } of rows) {
+		const list = lists.get(badgeId);
+		if (list) list.push(problem);
+		else lists.set(badgeId, [problem]);
+	}
+	return lists;
 }
 
-/** The key a {@link ProblemRef} is matched on. */
-function refKey(ref: ProblemRef): string {
-	return `${ref.olympiadId}\u0000${ref.year}\u0000${ref.number}`;
+/** One manual badge's problems; see {@link getManualProblemsFor}. */
+export async function getManualProblems(db: DB, badgeId: number): Promise<BadgeProblem[]> {
+	return (await getManualProblemsFor(db, [badgeId])).get(badgeId) ?? [];
 }
 
 /**
@@ -404,11 +451,11 @@ export async function resolveProblemRefs(
 			sql`${years.olympiadId} IN (SELECT value FROM json_each(${JSON.stringify(olympiadIds)}))`
 		)
 		.all();
-	const byKey = new Map(rows.map((r) => [refKey(r), r.id]));
+	const byKey = new Map(rows.map((r) => [problemRefKey(r), r.id]));
 	const ids = new Set<number>();
 	const missing: ProblemRef[] = [];
 	for (const ref of refs) {
-		const id = byKey.get(refKey(ref));
+		const id = byKey.get(problemRefKey(ref));
 		if (id === undefined) missing.push(ref);
 		else ids.add(id);
 	}
@@ -435,63 +482,97 @@ function toColumns(input: BadgeInput) {
 }
 
 /**
- * Creates (`id === null`) or updates a badge and replaces its manual problem
- * list, writing only the rows that changed (D1 bills per row written).
- * Returns the saved badge. The caller then runs {@link recomputeBadge}.
+ * The statements that turn a badge's manual list from `current` into `wanted`,
+ * touching only the rows that change (D1 bills per row written). Chunked to
+ * stay under D1's 100 bound parameters per statement: two per inserted row,
+ * one per deleted id plus the badge id.
+ */
+function linkWrites(
+	db: DB,
+	badgeId: number,
+	current: ReadonlySet<number>,
+	wanted: ReadonlySet<number>
+) {
+	const added = [...wanted].filter((p) => !current.has(p));
+	const removed = [...current].filter((p) => !wanted.has(p));
+	const writes = [];
+	for (let i = 0; i < added.length; i += 40) {
+		writes.push(
+			db
+				.insert(badgeProblems)
+				.values(added.slice(i, i + 40).map((problemId) => ({ badgeId, problemId })))
+				.onConflictDoNothing()
+		);
+	}
+	for (let i = 0; i < removed.length; i += 90) {
+		writes.push(
+			db
+				.delete(badgeProblems)
+				.where(
+					and(
+						eq(badgeProblems.badgeId, badgeId),
+						inArray(badgeProblems.problemId, removed.slice(i, i + 90))
+					)
+				)
+		);
+	}
+	return writes;
+}
+
+/**
+ * Creates (`id === null`) or updates a badge, replaces its manual problem list,
+ * and re-evaluates it for every user ({@link recomputeBadge}). Returns the
+ * saved badge, or `undefined` when `id` names no badge.
+ *
+ * Atomic: an update's row, its links and the recompute go in one batch, which
+ * D1 runs as a transaction, so a failure part way leaves the old badge and its
+ * awards as they were. A create has to insert first for the new id, so only
+ * its links and recompute share a batch; if that fails, the new badge exists
+ * with no awards and no list, and saving it again repairs it.
  */
 export async function saveBadge(
 	db: DB,
 	id: number | null,
 	input: BadgeInput,
 	problemIds: readonly number[]
-): Promise<BadgeEntry> {
+): Promise<BadgeEntry | undefined> {
 	const columns = toColumns(input);
-	const row =
-		id === null
-			? await db.insert(badges).values(columns).returning().get()
-			: await db
-					.update(badges)
-					.set({ ...columns, updatedAt: new Date() })
-					.where(eq(badges.id, id))
-					.returning()
-					.get();
-
 	const wanted = new Set(input.scope === 'manual' ? problemIds : []);
-	const current = new Set(
-		id === null
-			? []
-			: (
-					await db
-						.select({ problemId: badgeProblems.problemId })
-						.from(badgeProblems)
-						.where(eq(badgeProblems.badgeId, row.id))
-						.all()
-				).map((r) => r.problemId)
-	);
-	const added = [...wanted].filter((p) => !current.has(p));
-	const removed = [...current].filter((p) => !wanted.has(p));
 
-	// Chunked to stay under D1's 100 bound parameters (two per row).
-	for (let i = 0; i < added.length; i += 40) {
-		await db
-			.insert(badgeProblems)
-			.values(added.slice(i, i + 40).map((problemId) => ({ badgeId: row.id, problemId })))
-			.onConflictDoNothing()
-			.run();
-	}
-	for (let i = 0; i < removed.length; i += 90) {
-		await db
-			.delete(badgeProblems)
-			.where(
-				and(
-					eq(badgeProblems.badgeId, row.id),
-					inArray(badgeProblems.problemId, removed.slice(i, i + 90))
-				)
-			)
-			.run();
+	if (id === null) {
+		const row = await db.insert(badges).values(columns).returning().get();
+		const badge = toBadgeEntry(row);
+		await db.batch(
+			nonEmpty([...linkWrites(db, row.id, new Set(), wanted), ...recomputeBadge(db, badge)])
+		);
+		return badge;
 	}
 
-	return toBadgeEntry(row);
+	// One round trip for the existence check and the current list.
+	const [existing, links] = await db.batch([
+		db.select().from(badges).where(eq(badges.id, id)),
+		db
+			.select({ problemId: badgeProblems.problemId })
+			.from(badgeProblems)
+			.where(eq(badgeProblems.badgeId, id))
+	]);
+	if (existing.length === 0) return undefined;
+
+	// What the update will store, so the recompute can be built before it runs.
+	const badge = toBadgeEntry({ ...existing[0], ...columns });
+	const [updated] = await db.batch([
+		db
+			.update(badges)
+			.set({ ...columns, updatedAt: new Date() })
+			.where(eq(badges.id, id))
+			.returning(),
+		...linkWrites(db, id, new Set(links.map((l) => l.problemId)), wanted),
+		...recomputeBadge(db, badge)
+	]);
+	// Empty only if the badge was deleted since the read above. The update then
+	// matched nothing, and any write that referenced the badge failed its foreign
+	// key and rolled the whole batch back.
+	return updated[0] ? toBadgeEntry(updated[0]) : undefined;
 }
 
 /** Deletes a badge. Its problem links and awards cascade. */

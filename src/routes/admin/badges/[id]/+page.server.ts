@@ -11,18 +11,17 @@ import {
 	getBadge,
 	getManualProblems,
 	listHolders,
-	recomputeBadge,
 	resolveProblemRefs,
 	saveBadge,
-	type BadgeInput,
-	type ProblemRef
+	type BadgeInput
 } from '#lib/server/db/queries/badges.js';
 import {
 	BADGE_DESCRIPTION_MAX as DESCRIPTION_MAX,
 	BADGE_NAME_MAX as NAME_MAX,
 	isBadgeColor,
 	isBadgeIcon,
-	isBadgeScope
+	isBadgeScope,
+	type ProblemRef
 } from '#lib/badges.js';
 import { normalizeTopic } from '#lib/utils/topics.js';
 import { PROBLEM_TOPICS } from '#lib/types.js';
@@ -38,17 +37,21 @@ import { PROBLEM_TOPICS } from '#lib/types.js';
 /** A sanity bound, not a design limit: no badge needs more completions. */
 const REQUIRED_MAX = 10000;
 
-/** The route param as a badge id, `null` for `new`, or a 404. */
-function parseId(raw: string): number | null {
+/**
+ * The route param as a badge id, `null` for `new`, or `'invalid'`. The load
+ * turns `'invalid'` into a 404 page and the actions into `actionFail`, since
+ * `error()` in an action would replace the page (CLAUDE.md, rule 6).
+ */
+function parseId(raw: string): number | null | 'invalid' {
 	if (raw === 'new') return null;
 	const id = Number(raw);
-	if (!Number.isInteger(id) || id <= 0) error(404, 'Badge not found');
-	return id;
+	return Number.isInteger(id) && id > 0 ? id : 'invalid';
 }
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const { db } = requireAdmin(locals);
 	const id = parseId(params.id);
+	if (id === 'invalid') error(404, 'Badge not found');
 
 	const [badge, manualProblems, olympiadOptions, holderList] = await Promise.all([
 		id === null ? null : getBadge(db, id),
@@ -64,7 +67,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		badge: badge ?? null,
 		manualProblems,
 		olympiads: olympiadOptions,
-		holders: holderList.length,
 		holderList
 	};
 };
@@ -206,6 +208,7 @@ export const actions: Actions = {
 	save: async ({ request, params, locals }) => {
 		const { db, user: actor } = requireAdmin(locals);
 		const id = parseId(params.id);
+		if (id === 'invalid') return actionFail(404, 'save', 'Badge not found');
 		const data = await request.formData();
 
 		const parsed = await parseBadgeForm(db, data);
@@ -234,10 +237,10 @@ export const actions: Actions = {
 			}
 		}
 
-		if (id !== null && !(await getBadge(db, id))) return actionFail(404, 'save', 'Badge not found');
-
+		// Saves and re-evaluates the badge for every user in one transaction;
+		// `undefined` means the badge no longer exists.
 		const badge = await saveBadge(db, id, input, problemIds);
-		await recomputeBadge(db, badge);
+		if (!badge) return actionFail(404, 'save', 'Badge not found');
 		await logActivity(db, actor, id === null ? 'create_badge' : 'update_badge', badge.name);
 
 		return ok('save', {
@@ -251,6 +254,7 @@ export const actions: Actions = {
 	delete: async ({ params, locals }) => {
 		const { db, user: actor } = requireAdmin(locals);
 		const id = parseId(params.id);
+		if (id === 'invalid') return actionFail(404, 'delete', 'Badge not found');
 		if (id === null) return actionFail(400, 'delete', 'Nothing to delete');
 
 		const removed = await deleteBadge(db, id);

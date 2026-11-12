@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { enhance } from '$app/forms';
-	import { beforeNavigate } from '$app/navigation';
-	import type { Pending } from '#lib/forms.svelte.js';
+	import { confirmBeforeLeaving, type Pending } from '#lib/forms.svelte.js';
 	import * as Card from '#lib/components/ui/card/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
 	import { Textarea } from '#lib/components/ui/textarea/index.js';
@@ -66,16 +65,11 @@
 	);
 
 	// Nothing here is saved until "Save changes", so warn before leaving with edits.
-	// A `'leave'` (reload, closing the tab, typing a url) can only get the browser's
-	// own prompt, which `cancel()` triggers; anything else gets `confirm()`.
-	beforeNavigate((navigation) => {
-		if (!dirty) return;
-		if (navigation.type === 'leave') {
-			navigation.cancel();
-		} else if (!confirm('You have unsaved changes to this olympiad. Leave without saving?')) {
-			navigation.cancel();
-		}
-	});
+	// `confirmBeforeLeaving` explains why a reload gets only the browser's prompt.
+	confirmBeforeLeaving(
+		() => dirty,
+		'You have unsaved changes to this olympiad. Leave without saving?'
+	);
 </script>
 
 <form method="POST" action="?/updateOlympiad" use:enhance={pending.track('updateOlympiad')}>

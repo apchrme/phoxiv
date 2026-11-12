@@ -3,19 +3,24 @@
 	import { resolve } from '$app/paths';
 	import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 	import CheckIcon from '@lucide/svelte/icons/check';
-	import EyeOffIcon from '@lucide/svelte/icons/eye-off';
 	import ListIcon from '@lucide/svelte/icons/list';
 	import PageHeader from '#lib/components/PageHeader.svelte';
 	import EmptyState from '#lib/components/EmptyState.svelte';
 	import BadgeMedal from '#lib/components/BadgeMedal.svelte';
-	import Meter from '#lib/components/Meter.svelte';
+	import BadgeRequirement from '#lib/components/BadgeRequirement.svelte';
+	import BadgeStanding from '#lib/components/BadgeStanding.svelte';
 	import Skeleton from '#lib/components/ui/skeleton/skeleton.svelte';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Resource } from '#lib/resource.svelte.js';
 	import { isDone } from '#lib/filters.js';
-	import { formatDate } from '#lib/utils/date.js';
 	import { plural } from '#lib/utils/plural.js';
-	import type { BadgeProblem, BadgeProgressMap, PublicBadgeDetail } from '#lib/badges.js';
+	import {
+		mergeStanding,
+		problemRefKey,
+		type BadgeProblem,
+		type BadgeProgressMap,
+		type PublicBadgeDetail
+	} from '#lib/badges.js';
 	import type { GlobalProgressMap } from '#lib/progress.js';
 	import type { PageData } from './$types';
 
@@ -43,17 +48,10 @@
 	});
 
 	const standing = $derived(mine.value?.[badge.id]);
+	/** `null` until the badge arrives; the page shows a skeleton meanwhile. */
+	const merged = $derived(detail.value ? mergeStanding(detail.value, standing) : null);
 	const earned = $derived(!!standing?.earnedAt);
-	// A hidden requirement comes only from the viewer's own standing, and only
-	// once they hold the badge.
-	const summary = $derived(detail.value?.summary ?? standing?.revealed?.summary ?? null);
-	const requiredCount = $derived(
-		detail.value?.requiredCount ?? standing?.revealed?.requiredCount ?? null
-	);
-	const problems = $derived(detail.value?.problems ?? standing?.revealed?.problems ?? null);
-	// The count can be a day old, the viewer's standing never is, so don't show
-	// "0 people" on a badge the viewer holds.
-	const holders = $derived(Math.max(detail.value?.holders ?? 0, earned ? 1 : 0));
+	const problems = $derived(merged?.problems ?? null);
 
 	$effect(() => {
 		if (signedIn && problems) void progress.loadOnce();
@@ -99,41 +97,27 @@
 				<Button variant="outline" size="sm" onclick={() => location.reload()}>Reload</Button>
 			{/snippet}
 		</EmptyState>
-	{:else}
+	{:else if merged}
 		<section
 			aria-label="Requirement"
 			data-testid="badge-requirement"
 			class="flex flex-col gap-2 rounded-xl border border-border bg-card p-4 text-card-foreground"
 		>
 			<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-				{#if summary !== null}
-					<p class="m-0 font-medium">{summary}</p>
-				{:else}
-					<p class="m-0 flex items-center gap-1.5 text-muted-foreground italic">
-						<EyeOffIcon class="size-4 shrink-0" /> Requirement hidden
-					</p>
-				{/if}
+				<BadgeRequirement summary={merged.summary} size="md" />
 				<span class="shrink-0 text-sm text-muted-foreground tabular-nums">
-					Earned by {plural(holders, 'person', 'people')}
+					Earned by {plural(merged.holders, 'person', 'people')}
 				</span>
 			</div>
 
-			{#if standing}
-				{#if earned}
-					<p class="m-0 flex items-center gap-1 text-sm font-medium text-primary">
-						<CheckIcon class="size-4" /> You earned this {formatDate(standing.earnedAt, 'short')}
-					</p>
-				{:else if standing.count !== null && requiredCount !== null}
-					<!-- Both are null while the requirement is hidden: progress would give
-					     it away. -->
-					<div class="flex items-center gap-2">
-						<Meter value={standing.count} max={requiredCount} label="{badge.name} progress" />
-						<span class="shrink-0 text-xs text-muted-foreground tabular-nums">
-							{Math.min(standing.count, requiredCount)}/{requiredCount}
-						</span>
-					</div>
-				{/if}
-			{/if}
+			<BadgeStanding
+				name={badge.name}
+				earnedAt={merged.earnedAt}
+				count={merged.count}
+				requiredCount={merged.requiredCount}
+				size="md"
+				earnedLabel="You earned this"
+			/>
 		</section>
 
 		{#if problems}
@@ -163,7 +147,7 @@
 								aria-label="{group.name} problems"
 								class="m-0 flex list-none flex-col divide-y divide-border overflow-hidden rounded-xl border border-border bg-card p-0"
 							>
-								{#each group.problems as p (`${p.year}\u0000${p.number}`)}
+								{#each group.problems as p (problemRefKey(p))}
 									{@const done =
 										progress.value !== null &&
 										isDone(progress.value, p.olympiadId, p.year, p.number)}

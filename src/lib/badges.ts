@@ -1,5 +1,5 @@
 import type { ProblemTopic } from '#lib/types.js';
-import { matchesTopics } from '#lib/filters.js';
+import { matchesOlympiadsAndTopics } from '#lib/filters.js';
 import { plural } from '#lib/utils/plural.js';
 
 /*
@@ -187,9 +187,9 @@ export function hasScoreRange(rule: Pick<BadgeRule, 'scoreMinPct' | 'scoreMaxPct
 /**
  * Whether one completed problem counts towards `rule`.
  *
- * Topics use {@link matchesTopics}, so a filter badge agrees with the problem
- * filters: OR within topics, and an untagged problem never matches a topic.
- * Olympiads are also OR, and the two lists are ANDed.
+ * A filter badge uses {@link matchesOlympiadsAndTopics}, so it agrees with the
+ * problem filters: OR within each list, the two ANDed, and an untagged problem
+ * never matches a topic.
  *
  * The score test compares `score * 100` against `pct * maxScore` instead of
  * dividing, so a score exactly on a bound (8.5 of 10 against 85%) is inside it.
@@ -202,9 +202,8 @@ export function qualifies(
 	manual: ReadonlySet<number> | undefined
 ): boolean {
 	if (rule.scope === 'manual' && !manual?.has(row.problemId)) return false;
-	if (rule.scope === 'filter') {
-		if (rule.olympiadIds.length > 0 && !rule.olympiadIds.includes(row.olympiadId)) return false;
-		if (!matchesTopics(row.topics, rule.topics)) return false;
+	if (rule.scope === 'filter' && !matchesOlympiadsAndTopics(row, rule.olympiadIds, rule.topics)) {
+		return false;
 	}
 	if (!hasScoreRange(rule)) return true;
 	if (row.score === null || row.maxScore === null) return false;
@@ -228,6 +227,21 @@ function scorePhrase(rule: Pick<BadgeRule, 'scoreMinPct' | 'scoreMaxPct'>): stri
 	if (min !== null) return `scoring at least ${pct(min)}`;
 	if (max !== null) return `scoring at most ${pct(max)}`;
 	return '';
+}
+
+/**
+ * Display names by olympiad id, the form {@link describeBadge} takes them in,
+ * from any list of olympiads (the server's rows, or the editor's options).
+ */
+export function olympiadNamesById(
+	list: readonly { id: string; name: string }[]
+): Record<string, string> {
+	return Object.fromEntries(list.map((o) => [o.id, o.name]));
+}
+
+/** Whether {@link describeBadge} reads olympiad names for any of `rules`. */
+export function needsOlympiadNames(rules: readonly BadgeRule[]): boolean {
+	return rules.some((r) => r.scope === 'filter' && r.olympiadIds.length > 0);
 }
 
 /** "A, B or C". */
@@ -322,6 +336,36 @@ export type PublicBadge = {
 	holders: number;
 };
 
+/** What anyone may see of a badge, whatever its rule: name, icon and the rest. */
+export type BadgeFace = Pick<BadgeEntry, 'id' | 'name' | 'description' | 'icon' | 'color'>;
+
+/**
+ * A badge's {@link BadgeFace}, picked field by field so nothing else (above
+ * all a hidden rule) can ride along into page data or a response.
+ */
+export function badgeFace(badge: BadgeEntry): BadgeFace {
+	return {
+		id: badge.id,
+		name: badge.name,
+		description: badge.description,
+		icon: badge.icon,
+		color: badge.color
+	};
+}
+
+/**
+ * A badge as one viewer may see it: its face, plus the criteria unless they
+ * are hidden from that viewer ({@link visibleCriteria}). The dashboard calls it
+ * per user; {@link toPublicBadge} with `earned = false` for everyone.
+ */
+export function toVisibleBadge(
+	badge: BadgeEntry,
+	olympiadNames: Readonly<Record<string, string>>,
+	earned: boolean
+): BadgeFace & ReturnType<typeof visibleCriteria> {
+	return { ...badgeFace(badge), ...visibleCriteria(badge, olympiadNames, earned) };
+}
+
 /**
  * {@link PublicBadge}'s fields for one badge, from a badge and its holder count.
  * Shared by `/api/badges` and `/api/badges/[id]`, so the two can't disagree.
@@ -332,15 +376,18 @@ export function toPublicBadge(
 	badge: BadgeEntry & { holders: number },
 	olympiadNames: Readonly<Record<string, string>>
 ): PublicBadge {
-	return {
-		id: badge.id,
-		name: badge.name,
-		description: badge.description,
-		icon: badge.icon,
-		color: badge.color,
-		...visibleCriteria(badge, olympiadNames, false),
-		holders: badge.holders
-	};
+	return { ...toVisibleBadge(badge, olympiadNames, false), holders: badge.holders };
+}
+
+/** A problem addressed as the app addresses it, never by `problems.id`. */
+export type ProblemRef = { olympiadId: string; year: number; number: string };
+
+/**
+ * A string that identifies a {@link ProblemRef}, for maps, sets and `#each`
+ * keys. The NUL separator can't occur in an olympiad id or a problem number.
+ */
+export function problemRefKey(ref: ProblemRef): string {
+	return `${ref.olympiadId}\u0000${ref.year}\u0000${ref.number}`;
 }
 
 /**
@@ -391,6 +438,45 @@ export type BadgeProgressMap = Record<
 		revealed: { summary: string; requiredCount: number; problems: BadgeProblem[] | null } | null;
 	}
 >;
+
+/** A badge as one viewer sees it: the shared response with their standing laid over it. */
+export type MergedStanding = {
+	/** Whether the viewer holds it; `false` signed out or before the standing arrives. */
+	earned: boolean;
+	earnedAt: string | null;
+	/** `null` while the requirement is hidden from this viewer. */
+	summary: string | null;
+	requiredCount: number | null;
+	/** Qualifying completions; `null` signed out, or while hidden. */
+	count: number | null;
+	/** A manual badge's list where the viewer may see it, else `null`. */
+	problems: BadgeProblem[] | null;
+	holders: number;
+};
+
+/**
+ * Lays the viewer's `/progress/badges` entry over the shared-cached badge, as
+ * `/badges` and a badge's own page show it.
+ *
+ * A hidden requirement comes only from the entry's `revealed`, and only once
+ * the viewer holds the badge. The holder count can be a day old while the
+ * standing never is, so a badge the viewer holds never says "0 people".
+ */
+export function mergeStanding(
+	badge: PublicBadge & { problems?: BadgeProblem[] | null },
+	entry: BadgeProgressMap[string] | undefined
+): MergedStanding {
+	const earned = !!entry?.earnedAt;
+	return {
+		earned,
+		earnedAt: entry?.earnedAt ?? null,
+		summary: badge.summary ?? entry?.revealed?.summary ?? null,
+		requiredCount: badge.requiredCount ?? entry?.revealed?.requiredCount ?? null,
+		count: entry?.count ?? null,
+		problems: badge.problems ?? entry?.revealed?.problems ?? null,
+		holders: Math.max(badge.holders, earned ? 1 : 0)
+	};
+}
 
 /** Longest badge name the editor accepts. Cards truncate beyond about this. */
 export const BADGE_NAME_MAX = 60;

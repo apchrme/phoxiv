@@ -2,6 +2,7 @@ import { asc, eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import { olympiads, type DB } from '../index';
 import type { OlympiadEntry, OlympiadOption, OlympiadTag } from '#lib/types.js';
+import { olympiadNamesById } from '#lib/badges.js';
 
 /** Reads and DTO shaping for the `olympiads` table. */
 
@@ -33,6 +34,18 @@ export async function listOlympiadOptions(db: DB): Promise<OlympiadOption[]> {
 		.from(olympiads)
 		.orderBy(...displayOrder())
 		.all();
+}
+
+/**
+ * Display names by id, as `describeBadge` takes them. One small read: a caller
+ * that hasn't read its badges yet runs it alongside that query, since deciding
+ * first would cost a round trip; one that has them skips it unless
+ * `needsOlympiadNames` (#lib/badges) says otherwise.
+ */
+export async function getOlympiadNames(db: DB): Promise<Record<string, string>> {
+	return olympiadNamesById(
+		await db.select({ id: olympiads.id, name: olympiads.name }).from(olympiads).all()
+	);
 }
 
 /** One olympiad, or `undefined`. */

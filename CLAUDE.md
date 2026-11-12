@@ -98,16 +98,13 @@ olympiads in their `assignedOlympiads`. That check lives only in
    scripts build first. A change to behaviour comes with a spec; click through
    only what the suite can't reach (see
    [contributing.md](./docs/contributing.md#the-gates)).
-8. **Comment the _why_.** Some comments record real incidents, such as an
-   infinite submit loop in the admin panel and a data-loss bug in the olympiad
-   editor. Don't delete one without understanding what it prevents.
-9. **Warn me before changing an `/api/*` response shape.** The old response stays
+8. **Warn me before changing an `/api/*` response shape.** The old response stays
    in Cloudflare's shared cache for up to a day, so I need to purge it. See
    [deployment.md](./docs/deployment.md#purging-the-cache-after-an-api-change).
-10. **The e2e suite runs only on its own local state.** Never give it `--remote`,
-    a Cloudflare token, or a `baseURL` that isn't loopback, and never set
-    `NODE_ENV=test` or `TEST` for it. See
-    [testing.md](./docs/testing.md#the-safety-guards).
+9. **The e2e suite runs only on its own local state.** Never give it `--remote`,
+   a Cloudflare token, or a `baseURL` that isn't loopback, and never set
+   `NODE_ENV=test` or `TEST` for it. See
+   [testing.md](./docs/testing.md#the-safety-guards).
 
 # Svelte usage
 

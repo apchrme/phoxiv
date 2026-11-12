@@ -34,6 +34,21 @@ export function matchesTopics(
 	return problemTopics?.some((t) => topics.includes(t)) ?? false;
 }
 
+/**
+ * True if a problem is in one of `olympiadIds` and has one of `topics`. Each
+ * list is OR, the two are ANDed, and an empty list doesn't restrict. The rule
+ * of a `filter` badge (`qualifies` in #lib/badges), its editor's preview, and
+ * the manual-badge picker's narrowing all use it, so all three agree.
+ */
+export function matchesOlympiadsAndTopics(
+	problem: { olympiadId: string; topics: readonly ProblemTopic[] | undefined },
+	olympiadIds: readonly string[],
+	topics: readonly ProblemTopic[]
+): boolean {
+	if (olympiadIds.length > 0 && !olympiadIds.includes(problem.olympiadId)) return false;
+	return matchesTopics(problem.topics, topics);
+}
+
 /** Whether a problem's completion satisfies the status filter. */
 export function matchesStatus(done: boolean, status: ProblemStatus): boolean {
 	if (status === 'all') return true;

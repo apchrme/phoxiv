@@ -2,7 +2,7 @@ import type { APIRequestContext } from '@playwright/test';
 import { BADGE_OLYMPIAD, BADGES, USERS } from '../../fixtures/seed-data';
 import { postAction, type ActionFields } from '../../support/actions';
 import { expect, test } from '../../support/test';
-import { confirmDialog, gotoReady, pickOlympiad, toast } from '../../support/ui';
+import { answerDialogs, confirmDialog, gotoReady, pickOlympiad, toast } from '../../support/ui';
 
 /*
  * The admin badge editor (src/routes/admin/badges/[id]/).
@@ -111,6 +111,31 @@ test.describe('the badge editor', () => {
 		).toBeVisible();
 		await expect(page.getByLabel('Name')).toHaveValue('E2E Refused');
 		await expect(page).toHaveURL(NEW);
+	});
+
+	// Creating a badge moves to its own URL on the same route, which reused the
+	// form and kept the flag that let that move past the prompt, so every later
+	// edit could be lost without a warning. The page now remounts the form.
+	test('after creating a badge, leaving with an edit still asks', async ({ page, apiAs }) => {
+		await gotoReady(page, NEW);
+		const dialogs = answerDialogs(page, false);
+
+		await page.getByLabel('Name').fill('E2E Still Guarded');
+		// Out of reach for anyone, so nobody is awarded it while it exists.
+		await page.getByLabel('Problems required').fill('9999');
+		await page.getByRole('button', { name: 'Create badge' }).click();
+		await expect(toast(page, 'Badge saved. 0 people hold it.')).toBeVisible();
+		await expect(page).toHaveURL(/\/admin\/badges\/\d+$/);
+		const path = new URL(page.url()).pathname;
+		expect(dialogs).toEqual([]);
+
+		await page.getByLabel('Name').fill('E2E Still Guarded, edited');
+		await page.getByRole('link', { name: 'Back to badges' }).click();
+		await expect.poll(() => dialogs).toEqual(['confirm']);
+		await expect(page).toHaveURL(path);
+		await expect(page.getByLabel('Name')).toHaveValue('E2E Still Guarded, edited');
+
+		await postAction(await apiAs('admin'), `${path}?/delete`, {}, { redirect: '/admin/badges' });
 	});
 
 	// Opening the picker used to jump the page to the top: `Command` scrolled its

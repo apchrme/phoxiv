@@ -26,7 +26,7 @@
 			icon: Trophy,
 			color: 'text-blue-500 dark:text-blue-300',
 			title: 'Browse the archive',
-			body: `Browse the most comprehensive archive on the internet. Dozens of olympiads and thousands of problems, each complete with problems, solutions, marking schemes and more.`,
+			body: `Browse the most comprehensive archive on the internet. Dozens of olympiads and thousands of problems, each complete with solutions, marking schemes and more.`,
 			href: resolve('olympiads'),
 			cta: 'Browse olympiads'
 		},

@@ -1,9 +1,14 @@
 import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { olympiads } from '#lib/server/db/index.js';
 import { setNoStore } from '#lib/server/cache.js';
-import { evaluateUserBadges, getManualProblems } from '#lib/server/db/queries/badges.js';
-import { describeBadge, visibleCount, type BadgeProgressMap } from '#lib/badges.js';
+import { evaluateUserBadges, getManualProblemsFor } from '#lib/server/db/queries/badges.js';
+import { getOlympiadNames } from '#lib/server/db/queries/olympiads.js';
+import {
+	describeBadge,
+	needsOlympiadNames,
+	visibleCount,
+	type BadgeProgressMap
+} from '#lib/badges.js';
 
 /**
  * The signed-in user's standing on every badge, for `/badges`. Outside `/api/`
@@ -24,25 +29,18 @@ export const GET: RequestHandler = async ({ locals, setHeaders }) => {
 
 	const { standings } = await evaluateUserBadges(locals.db, locals.user.id);
 
-	// Olympiad names only go into a revealed sentence, so they are read only
-	// when the user holds a hidden badge.
-	const reveal = standings.filter((s) => s.badge.requirementHidden && s.earnedAt !== null);
-	const olympiadNames =
-		reveal.length === 0
-			? {}
-			: Object.fromEntries(
-					(
-						await locals.db.select({ id: olympiads.id, name: olympiads.name }).from(olympiads).all()
-					).map((o) => [o.id, o.name])
-				);
-	// Likewise the lists of the hidden manual badges the user holds, usually none.
-	const lists = new Map(
-		await Promise.all(
-			reveal
-				.filter((s) => s.badge.scope === 'manual')
-				.map(async (s) => [s.badge.id, await getManualProblems(locals.db, s.badge.id)] as const)
+	// What it reveals needs olympiad names (for a filter badge's sentence) and
+	// the hidden manual lists, both read only when the user holds a hidden badge
+	// that uses them, which is usually none. One round trip for both.
+	const reveal = new Set(standings.filter((s) => s.badge.requirementHidden && s.earnedAt !== null));
+	const revealed = [...reveal].map((s) => s.badge);
+	const [olympiadNames, lists] = await Promise.all([
+		needsOlympiadNames(revealed) ? getOlympiadNames(locals.db) : {},
+		getManualProblemsFor(
+			locals.db,
+			revealed.filter((b) => b.scope === 'manual').map((b) => b.id)
 		)
-	);
+	]);
 
 	const body: BadgeProgressMap = Object.fromEntries(
 		standings.map((s) => {
@@ -52,11 +50,13 @@ export const GET: RequestHandler = async ({ locals, setHeaders }) => {
 				{
 					count: visibleCount(s.badge, s.count, earned),
 					earnedAt: s.earnedAt?.toISOString() ?? null,
-					revealed: reveal.includes(s)
+					revealed: reveal.has(s)
 						? {
 								summary: describeBadge(s.badge, olympiadNames),
 								requiredCount: s.badge.requiredCount,
-								problems: lists.get(s.badge.id) ?? null
+								// A manual badge whose problems were all removed has no
+								// entry: an empty list, as `/api/badges/[id]` gives.
+								problems: s.badge.scope === 'manual' ? (lists.get(s.badge.id) ?? []) : null
 							}
 						: null
 				}

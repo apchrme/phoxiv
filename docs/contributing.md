@@ -245,6 +245,10 @@ Use these instead of writing the markup again:
 | `PageHeader.svelte`          | the block at the top of a page                                                            |
 | `OlympiadPicker.svelte`      | picking one or several olympiads                                                          |
 | `OlympiadIcon.svelte`        | an olympiad's icon, at one of four named sizes                                            |
+| `IconFilterMenu.svelte`      | an icon-only dropdown filter; `StatusFilter` and `/badges`' standing filter wrap it       |
+| `BadgeStanding.svelte`       | "Earned {date}", or the progress meter with `count/required`, from `mergeStanding`        |
+| `BadgeRequirement.svelte`    | a badge's criteria sentence, or "Requirement hidden"                                      |
+| `confirmBeforeLeaving()`     | an editor's unsaved-changes prompt (`#lib/forms.svelte.ts`); returns `allowLeave`         |
 | `#lib/resource.svelte.ts`    | a JSON body the browser fetches, with its loading and failed flags                        |
 | `#lib/utils/plural.ts`       | `plural(n, noun)`. Numbers are printed raw, with no thousands separators, everywhere      |
 

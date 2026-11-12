@@ -126,7 +126,7 @@ src/routes/
 │   ├── resources/, privacy/    .svx pages
 │   ├── team/                   admins and contributors; fetches /api/team
 │   ├── badges/                 every badge; fetches /api/badges and /progress/badges
-│   │   └── [id]/               one badge and a manual badge's problems; a small load (404,
+│   │   └── [id=id]/            one badge and a manual badge's problems; a small load (404,
 │   │                           title), then /api/badges/[id], /progress/badges and /progress
 │   ├── login/                  redirects to / if signed in
 │   └── profile/                redirects to /login if not
@@ -158,10 +158,17 @@ src/routes/
     ├── stats/                  landing-page counters
     ├── stats/problems/         ProblemTotals: the dashboard's denominators
     ├── badges/                 PublicBadge[]: every badge with its holder count, most held first
-    ├── badges/[id]/            PublicBadgeDetail: one badge, with a manual badge's problems
+    ├── badges/[id=id]/         PublicBadgeDetail: one badge, with a manual badge's problems
     ├── team/                   TeamMember[]: every admin and contributor
     └── auth/[...all]/          the exception: no cache headers
 ```
+
+`[id=id]` uses the `id` matcher in [`src/params.ts`](../src/params.ts): a
+positive integer, passed to the route as a number. Anything else doesn't match
+the route, so it 404s before a load or endpoint runs. For `/api/badges/[id]`
+that matters beyond tidiness: the 404 never reaches `setSharedCache`, so it
+isn't cached for a day. The admin editor's `[id]` has no matcher because it also
+takes `new`.
 
 [`+layout.ts`](../src/routes/+layout.ts) redirects legacy URLs (`/ipho/…`,
 `/contests/…`, and document extensions, which go to the CDN). It must return the
@@ -245,7 +252,8 @@ directly. The archive-wide totals it divides by are the same for everyone, so
 they come from the shared-cached `/api/stats/problems` instead.
 
 `StatusFilter.svelte` (All / Done / To do) filters these maps in the browser and
-shows only when signed in. The olympiad page and the ⌘K dialog share it and
+shows only when signed in. It and `/badges`' `BadgeStatusFilter` are thin
+wrappers over `IconFilterMenu.svelte`, which owns the dropdown. The olympiad page and the ⌘K dialog share it and
 `#lib/filters.ts`, so they agree on what "Done" means — see
 [search.md](./search.md#the-filters-and-why-they-vanish). Signed-out visitors see
 `SignInToTrack.svelte`, a dimmed circle with a hint; it is not a guard.
@@ -290,11 +298,11 @@ Drizzle's relational queries (`db.query`) are not set up: `drizzle()` gets no
 
 | Query module      | Reads / writes                                                               |
 | ----------------- | ---------------------------------------------------------------------------- |
-| `olympiads.ts`    | the olympiad list and one olympiad's row; `toOlympiadEntry`, the public DTO  |
+| `olympiads.ts`    | the olympiad list, names by id, one olympiad's row; `toOlympiadEntry`        |
 | `years.ts`        | one year's row, an olympiad's year numbers, and creating a year              |
 | `content.ts`      | joined reads for the public API shapes and the year editor; `getSearchIndex` |
 | `progress.ts`     | a user's tracked problems, per olympiad and archive-wide                     |
-| `badges.ts`       | badges, evaluating and syncing one user's awards, `recomputeBadge`, editing  |
+| `badges.ts`       | badges, evaluating and syncing one user's awards, and the atomic `saveBadge` |
 | `files.ts`        | the full-text index: query sanitising, reads, writes, upkeep                 |
 | `contributors.ts` | upload counts per user, for an olympiad's contributors list and `/team`      |
 
@@ -309,12 +317,12 @@ Drizzle's relational queries (`db.query`) are not set up: `drizzle()` gets no
 | `posts.ts`                    | loads blog posts from `#lib/posts/*.svx`                                                                        |
 | `activity.ts`                 | activity-log labels, and the assignable roles with their labels                                                 |
 | `progress.ts`                 | score rules for the editor, CSV import, `trackProblem` and problem cards                                        |
-| `filters.ts`                  | topic and progress predicates for the olympiad page and ⌘K dialog                                               |
+| `filters.ts`                  | topic, olympiad and progress predicates for the olympiad page, ⌘K dialog and badge rules                        |
 | `badges.ts`                   | what qualifies for a badge (`qualifies`), its order, colours and summary sentence, and what users may see of it |
 | `badge-icons.ts`              | the badge icon keys' Lucide components                                                                          |
 | `search.ts`                   | deep-search normalisation for the dialog, the endpoint and text extraction                                      |
 | `pdf-text.ts`                 | browser-side PDF text extraction                                                                                |
-| `forms.svelte.ts`             | `formToasts` and `Pending`                                                                                      |
+| `forms.svelte.ts`             | `formToasts`, `Pending`, and `confirmBeforeLeaving` for the editors' unsaved-changes prompt                     |
 | `resource.svelte.ts`          | `Resource`: fetches a JSON endpoint, tracking value, loading and failure                                        |
 | `auth-client.ts`              | the BetterAuth browser client, for sign-in and sign-out                                                         |
 | `auth-providers.ts`           | the sign-in providers, their labels and order, and sign-in error messages                                       |

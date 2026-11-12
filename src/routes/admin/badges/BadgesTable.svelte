@@ -7,7 +7,7 @@
 	import { Button } from '#lib/components/ui/button/index.js';
 	import EmptyState from '#lib/components/EmptyState.svelte';
 	import BadgeMedal from '#lib/components/BadgeMedal.svelte';
-	import { describeBadge } from '#lib/badges.js';
+	import { describeBadge, olympiadNamesById } from '#lib/badges.js';
 	import { plural } from '#lib/utils/plural.js';
 	import type { PageData } from './$types';
 
@@ -25,7 +25,7 @@
 		olympiads: PageData['olympiads'];
 	} = $props();
 
-	const olympiadNames = $derived(Object.fromEntries(olympiads.map((o) => [o.id, o.name])));
+	const olympiadNames = $derived(olympiadNamesById(olympiads));
 </script>
 
 <div class="flex flex-col gap-3">

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
-	import { beforeNavigate } from '$app/navigation';
 	import SaveIcon from '@lucide/svelte/icons/save';
 	import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 	import EyeOffIcon from '@lucide/svelte/icons/eye-off';
@@ -15,8 +14,8 @@
 	import OlympiadPicker from '#lib/components/OlympiadPicker.svelte';
 	import TopicSelect from '#lib/components/TopicSelect.svelte';
 	import { Resource } from '#lib/resource.svelte.js';
-	import type { Pending } from '#lib/forms.svelte.js';
-	import { matchesTopics } from '#lib/filters.js';
+	import { confirmBeforeLeaving, type Pending } from '#lib/forms.svelte.js';
+	import { matchesOlympiadsAndTopics } from '#lib/filters.js';
 	import { plural } from '#lib/utils/plural.js';
 	import { cn } from '#lib/utils.js';
 	import {
@@ -26,6 +25,7 @@
 		BADGE_ICON_KEYS,
 		BADGE_NAME_MAX,
 		describeBadge,
+		olympiadNamesById,
 		type BadgeScope
 	} from '#lib/badges.js';
 	import type { ProblemTopic, SearchItem } from '#lib/types.js';
@@ -41,18 +41,38 @@
 
 	const badge = $derived(data.badge);
 
-	let name = $derived(badge?.name ?? '');
-	let description = $derived(badge?.description ?? '');
-	let icon = $derived<string>(badge?.icon ?? 'trophy');
-	let color = $derived<string>(badge?.color ?? 'mauve');
-	let requiredCount = $derived<string | number>(String(badge?.requiredCount ?? 1));
-	let scoreMinPct = $derived<string | number>(badge?.scoreMinPct?.toString() ?? '');
-	let scoreMaxPct = $derived<string | number>(badge?.scoreMaxPct?.toString() ?? '');
-	let requirementHidden = $derived(badge?.requirementHidden ?? false);
-	let scope = $derived<BadgeScope>(badge?.scope ?? 'all');
-	let topics = $derived<ProblemTopic[]>(badge?.topics ?? []);
-	let olympiadIds = $derived<string[]>(badge?.olympiadIds ?? []);
-	let problems = $derived(data.manualProblems);
+	/**
+	 * The stored badge as form values, or a new badge's defaults. Every field
+	 * starts from it, and `dirty` compares against it, so the two can't drift.
+	 * Numbers are strings, as the inputs hold them.
+	 */
+	const initial = $derived({
+		name: badge?.name ?? '',
+		description: badge?.description ?? '',
+		icon: badge?.icon ?? 'trophy',
+		color: badge?.color ?? 'mauve',
+		requiredCount: String(badge?.requiredCount ?? 1),
+		scoreMinPct: badge?.scoreMinPct?.toString() ?? '',
+		scoreMaxPct: badge?.scoreMaxPct?.toString() ?? '',
+		requirementHidden: badge?.requirementHidden ?? false,
+		scope: badge?.scope ?? ('all' as BadgeScope),
+		topics: badge?.topics ?? ([] as ProblemTopic[]),
+		olympiadIds: badge?.olympiadIds ?? ([] as string[]),
+		problems: data.manualProblems
+	});
+
+	let name = $derived(initial.name);
+	let description = $derived(initial.description);
+	let icon = $derived<string>(initial.icon);
+	let color = $derived<string>(initial.color);
+	let requiredCount = $derived<string | number>(initial.requiredCount);
+	let scoreMinPct = $derived<string | number>(initial.scoreMinPct);
+	let scoreMaxPct = $derived<string | number>(initial.scoreMaxPct);
+	let requirementHidden = $derived(initial.requirementHidden);
+	let scope = $derived<BadgeScope>(initial.scope);
+	let topics = $derived<ProblemTopic[]>(initial.topics);
+	let olympiadIds = $derived<string[]>(initial.olympiadIds);
+	let problems = $derived(initial.problems);
 
 	/**
 	 * The corpus, for the manual picker and the filter preview. Shared-cached
@@ -72,7 +92,7 @@
 	];
 
 	const required = $derived(Number(requiredCount));
-	const olympiadNames = $derived(Object.fromEntries(data.olympiads.map((o) => [o.id, o.name])));
+	const olympiadNames = $derived(olympiadNamesById(data.olympiads));
 
 	/** The criteria sentence, as `/badges` will show it. */
 	const summary = $derived(
@@ -92,71 +112,49 @@
 
 	/**
 	 * How many problems qualify right now, before scores. `null` until the corpus
-	 * loads. Uses the same predicates as `qualifies`.
+	 * loads. Uses the same predicate as `qualifies`.
 	 */
 	const available = $derived.by(() => {
 		if (scope === 'manual') return problems.length;
 		if (!corpus.value) return null;
 		if (scope === 'all') return corpus.value.length;
-		return corpus.value.filter(
-			(i) =>
-				(olympiadIds.length === 0 || olympiadIds.includes(i.olympiadId)) &&
-				matchesTopics(i.problem.topics, topics)
+		return corpus.value.filter((i) =>
+			matchesOlympiadsAndTopics(
+				{ olympiadId: i.olympiadId, topics: i.problem.topics },
+				olympiadIds,
+				topics
+			)
 		).length;
 	});
 
 	const hasRange = $derived(scoreMinPct !== '' || scoreMaxPct !== '');
 
-	const saved = $derived({
-		name: badge?.name ?? '',
-		description: badge?.description ?? '',
-		icon: badge?.icon ?? 'trophy',
-		color: badge?.color ?? 'mauve',
-		requiredCount: String(badge?.requiredCount ?? 1),
-		scoreMinPct: badge?.scoreMinPct?.toString() ?? '',
-		scoreMaxPct: badge?.scoreMaxPct?.toString() ?? '',
-		requirementHidden: badge?.requirementHidden ?? false,
-		scope: badge?.scope ?? 'all',
-		topics: JSON.stringify(badge?.topics ?? []),
-		olympiadIds: JSON.stringify(badge?.olympiadIds ?? []),
-		problems: JSON.stringify(data.manualProblems)
-	});
-
 	/** `String()` because number inputs write numbers back through `bind:value`. */
 	const dirty = $derived(
-		name !== saved.name ||
-			description !== saved.description ||
-			icon !== saved.icon ||
-			color !== saved.color ||
-			String(requiredCount) !== saved.requiredCount ||
-			String(scoreMinPct) !== saved.scoreMinPct ||
-			String(scoreMaxPct) !== saved.scoreMaxPct ||
-			requirementHidden !== saved.requirementHidden ||
-			scope !== saved.scope ||
-			JSON.stringify(topics) !== saved.topics ||
-			JSON.stringify(olympiadIds) !== saved.olympiadIds ||
-			JSON.stringify(problems) !== saved.problems
+		name !== initial.name ||
+			description !== initial.description ||
+			icon !== initial.icon ||
+			color !== initial.color ||
+			String(requiredCount) !== initial.requiredCount ||
+			String(scoreMinPct) !== initial.scoreMinPct ||
+			String(scoreMaxPct) !== initial.scoreMaxPct ||
+			requirementHidden !== initial.requirementHidden ||
+			scope !== initial.scope ||
+			JSON.stringify(topics) !== JSON.stringify(initial.topics) ||
+			JSON.stringify(olympiadIds) !== JSON.stringify(initial.olympiadIds) ||
+			JSON.stringify(problems) !== JSON.stringify(initial.problems)
 	);
 
 	/**
-	 * Set by the page just before it navigates after a save, so a new badge's
-	 * move to its own URL isn't stopped by the unsaved-changes prompt.
+	 * Nothing is saved until "Save", so warn before leaving with edits, as the
+	 * olympiad editor does. The page calls `allowLeave` just before a new badge
+	 * moves to its own URL, and after a delete redirects; it keys this form by
+	 * badge, so the flag doesn't outlive the move.
 	 */
-	let leaving = false;
-	export function allowLeave() {
-		leaving = true;
-	}
-
-	// Nothing is saved until "Save", so warn before leaving with edits, as the
-	// olympiad editor does. A `'leave'` (reload, closing the tab) can only get the
-	// browser's own prompt.
-	beforeNavigate((navigation) => {
-		if (leaving || !dirty) return;
-		if (navigation.type === 'leave') navigation.cancel();
-		else if (!confirm('You have unsaved changes to this badge. Leave without saving?')) {
-			navigation.cancel();
-		}
-	});
+	export const allowLeave = confirmBeforeLeaving(
+		() => dirty,
+		'You have unsaved changes to this badge. Leave without saving?'
+	);
 </script>
 
 <form method="POST" action="?/save" use:enhance={pending.track('save')} class="flex flex-col gap-5">

@@ -1,7 +1,7 @@
 import type { RequestHandler } from './$types';
-import { olympiads } from '#lib/server/db/index.js';
 import { setSharedCache } from '#lib/server/cache.js';
 import { listBadges } from '#lib/server/db/queries/badges.js';
+import { getOlympiadNames } from '#lib/server/db/queries/olympiads.js';
 import { toPublicBadge, type PublicBadge } from '#lib/badges.js';
 
 /**
@@ -14,11 +14,12 @@ import { toPublicBadge, type PublicBadge } from '#lib/badges.js';
 export const GET: RequestHandler = async ({ locals, setHeaders }) => {
 	setSharedCache(setHeaders);
 
-	const [list, names] = await Promise.all([
+	// The names are read alongside the badges: waiting to see whether one
+	// needs them would cost another round trip.
+	const [list, olympiadNames] = await Promise.all([
 		listBadges(locals.db),
-		locals.db.select({ id: olympiads.id, name: olympiads.name }).from(olympiads).all()
+		getOlympiadNames(locals.db)
 	]);
-	const olympiadNames = Object.fromEntries(names.map((o) => [o.id, o.name]));
 
 	const body: PublicBadge[] = list.map((badge) => toPublicBadge(badge, olympiadNames));
 	return Response.json(body);

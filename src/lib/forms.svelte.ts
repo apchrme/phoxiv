@@ -1,4 +1,5 @@
-import type { SubmitFunction } from '$app/forms';
+import type { ActionResult, SubmitFunction } from '$app/forms';
+import { beforeNavigate } from '$app/navigation';
 import { toast } from 'svelte-sonner';
 
 /*
@@ -23,8 +24,12 @@ export type TrackOptions = {
 	 * Not for confirmations: use `ConfirmSubmit`, which asks before submitting.
 	 */
 	guard?: () => string | null;
-	/** Runs once the response is in, before the page data updates. */
-	onDone?: () => void;
+	/**
+	 * Runs once the response is in, before the page data updates. It runs after
+	 * a refusal too, so check `result.type` for anything that should follow only
+	 * a success or a redirect.
+	 */
+	onDone?: (result: ActionResult) => void;
 };
 
 /**
@@ -64,13 +69,38 @@ export class Pending {
 			const resolved = (typeof key === 'function' ? key() : key) ?? '';
 			this.#busy[resolved] = true;
 
-			return async ({ update }) => {
+			return async ({ result, update }) => {
 				this.#busy[resolved] = false;
-				options.onDone?.();
+				options.onDone?.(result);
 				await update({ reset: options.reset ?? false, refreshAll: options.refreshAll });
 			};
 		};
 	}
+}
+
+/**
+ * Warns before navigating away from an editor with unsaved edits. Call it at the
+ * top level of the editor's `<script>`, as `beforeNavigate` requires.
+ *
+ * A `'leave'` (reload, closing the tab, typing a url) can only get the
+ * browser's own prompt, which `cancel()` triggers; anything else gets
+ * `confirm(message)`.
+ *
+ * Returns `allowLeave`: call it when a navigation the editor caused itself,
+ * such as a delete's redirect, must not be stopped. It stays set for the
+ * component's life, so call it only for a navigation that leaves the editor,
+ * or remount the editor afterwards (the badge editor is keyed for this).
+ */
+export function confirmBeforeLeaving(isDirty: () => boolean, message: string): () => void {
+	let leaving = false;
+	beforeNavigate((navigation) => {
+		if (leaving || !isDirty()) return;
+		if (navigation.type === 'leave') navigation.cancel();
+		else if (!confirm(message)) navigation.cancel();
+	});
+	return () => {
+		leaving = true;
+	};
 }
 
 /**
