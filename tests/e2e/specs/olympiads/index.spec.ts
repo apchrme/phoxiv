@@ -5,12 +5,10 @@ import { expect, test } from '../../support/test';
 import { gotoReady } from '../../support/ui';
 
 /*
- * The olympiads index, src/routes/(reg)/olympiads/+page.svelte: one card per
- * olympiad from `/api/olympiads`, in display order, narrowed by a search box and
- * an icon-only tag filter, with its own loading, failed and empty states.
+ * The olympiads index, src/routes/(reg)/olympiads/+page.svelte.
  *
  * Reads frozen olympiads, and two this spec owns (`e2e-idx-tie-*`, which tie on
- * display order). Writes nothing. Other specs create olympiads, so no test here
+ * display order). Writes nothing. Other specs create olympiads, so no test
  * counts every card or checks the order of any but these.
  */
 

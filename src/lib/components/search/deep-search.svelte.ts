@@ -155,18 +155,14 @@ export class DeepSearch {
 	}
 
 	/**
-	 * Fetches one key. `query` and `olympiad` are passed alongside `key` rather
-	 * than parsed back out of it.
-	 *
-	 * The url omits `olympiad` when unfiltered and keeps a fixed parameter order,
-	 * so each search has exactly one Cloudflare cache key.
+	 * Fetches one key. The url omits `olympiad` when unfiltered and keeps a fixed
+	 * parameter order, so each search has exactly one Cloudflare cache key.
 	 *
 	 * Check `res.ok` before `json()`: an HTML error body would throw and leave
 	 * the panel claiming there are no files.
 	 *
-	 * The response is cached even if superseded (backspacing to it shouldn't
-	 * refetch), but only shown if this is still the newest call. An `AbortError`
-	 * is not a failure.
+	 * A superseded response is still cached (backspacing to it shouldn't
+	 * refetch) but not shown. An `AbortError` is not a failure.
 	 */
 	async run(
 		key: string,

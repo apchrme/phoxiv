@@ -4,17 +4,13 @@ import { expect, test } from '../../support/test';
 import { gotoReady } from '../../support/ui';
 
 /*
- * The sign-in providers: the login page offers GitHub and Google, each button
- * starts that provider's OAuth flow with the right client and callback, a
- * failed sign-in comes back to the login page with a reason, and the profile
- * lists every provider linked to the user.
+ * The GitHub and Google sign-in providers, on the login and profile pages.
  *
- * No test completes an OAuth round trip: the guards abort every external
- * request, so a provider's authorisation request is caught, read and dropped.
- * Implicit linking itself is BetterAuth's; docs/testing.md lists the manual
- * check. Reads the frozen USERS.user (GitHub and Google) and USERS.admin
- * (GitHub only). Each sign-in attempt writes a `verification` row for its OAuth
- * state, which nothing reads.
+ * No test completes an OAuth round trip: the guards abort the external
+ * authorisation request, which the test reads instead. Implicit linking is
+ * checked by hand (docs/testing.md). Reads the frozen USERS.user (GitHub and
+ * Google) and USERS.admin (GitHub only). Each attempt writes an unread
+ * `verification` row.
  */
 
 /** Clicks a provider's button and returns the authorisation URL the browser was sent to. */

@@ -3,10 +3,8 @@ import { expect, test } from '../../support/test';
 import { gotoReady } from '../../support/ui';
 
 /*
- * SignInToTrack.svelte on a touch screen, signed out. With a mouse the circle
- * is a link to /login (specs/olympiads/progress); on touch a tap must show the
- * notice instead, because bits-ui never opens a tooltip from touch and a phone
- * has no hover, so the notice would otherwise never be seen.
+ * SignInToTrack.svelte on a touch screen, signed out: a tap must show the
+ * notice, because bits-ui never opens a tooltip from touch.
  *
  * Reads the frozen alpha olympiad. Writes nothing.
  */
@@ -15,11 +13,9 @@ const PAGE = '/olympiads/alpha';
 const NOTICE = 'Only signed-in users can track completed problems.';
 
 /**
- * Taps the hint once its last press has settled. The button eases back from
- * `active:translate-y-px` (`transition-all`), and while it moves, Playwright
- * finds it unstable and retries the tap, scrolling the page to a new position
- * each time. bits-ui closes an open tooltip on scroll, so under load the retry
- * closed the notice the last tap had opened, and this tap then opened it again.
+ * Taps the hint once its last press has settled. While it eases back from
+ * `active:translate-y-px`, Playwright retries the tap and scrolls, and the
+ * scroll closed the notice the last tap had opened.
  */
 async function tapWhenStill(hint: Locator): Promise<void> {
 	await expect(hint).toHaveCSS('translate', 'none');

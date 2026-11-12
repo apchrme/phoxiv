@@ -57,16 +57,12 @@ export function authOptions(database: Parameters<typeof drizzleAdapter>[0], env:
 		},
 		account: {
 			accountLinking: {
-				// Implicit linking: signing in with a second provider under the same
-				// email joins the existing user instead of creating a second one, so
-				// role, assignments, uploads and progress follow the person. These are
-				// BetterAuth's defaults, spelled out because the rules matter. It links
-				// only when the new provider says the email is verified AND the
-				// existing user's email is verified (`requireLocalEmailVerified`).
-				// Never add `trustedProviders` or `requireLocalEmailVerified: false`:
-				// either lets someone who registers an unverified copy of a victim's
-				// email at one provider take over the victim's user through the other.
-				// See docs/auth.md, "Account linking".
+				// Implicit linking (BetterAuth's defaults, spelled out because they
+				// matter): a second provider with the same email joins the existing
+				// user, but only when both sides say the email is verified. Never add
+				// `trustedProviders` or `requireLocalEmailVerified: false`: either lets
+				// an unverified copy of a victim's email take over their user. See
+				// docs/auth.md, "Account linking".
 				enabled: true,
 				disableImplicitLinking: false
 			}

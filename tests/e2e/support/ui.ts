@@ -62,16 +62,14 @@ export function answerDialogs(page: Page, accept: boolean): string[] {
 }
 
 /**
- * Opens an `OlympiadPicker` from its trigger and picks `names`, then waits for
- * the panel to close. The panel is portalled; its search box filters by name
- * and id. Names match exactly: "Delta Physics Olympiad" is a prefix of another
- * seeded name.
+ * Opens an `OlympiadPicker` from its trigger, picks `names` (matched exactly:
+ * "Delta Physics Olympiad" is a prefix of another seeded name), and waits for
+ * the panel to close.
  *
- * One name is a single-mode pick: the picker closes itself. An array is a
- * multiple-mode pick: the panel stays open, so Escape closes it. Say which,
- * rather than checking whether the panel is still open: a single-mode panel is
- * still visible while it closes, and inside the ⌘K dialog that Escape reached
- * the dialog and closed it.
+ * One name is a single-mode pick, which closes itself; an array is multiple
+ * mode, closed with Escape. Don't infer the mode from the panel still being
+ * open: a closing single-mode panel is still visible, and inside the ⌘K dialog
+ * that Escape closed the dialog.
  */
 export async function pickOlympiad(
 	page: Page,

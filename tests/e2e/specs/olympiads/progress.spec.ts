@@ -4,10 +4,8 @@ import { expect, test } from '../../support/test';
 import { gotoReady, toast } from '../../support/ui';
 
 /*
- * Tracking progress on an olympiad page: marking a problem done, recording a
- * score, un-marking it, and refusing a bad score. The controls are
- * ProgressControl.svelte when signed in and SignInToTrack.svelte when signed
- * out, in src/routes/(reg)/olympiads/[olympiad]/.
+ * Tracking progress on an olympiad page: ProgressControl.svelte signed in,
+ * SignInToTrack.svelte signed out.
  *
  * Owns USERS.tracker. Tracks the frozen alpha 2019 T1 (max 10) and T3 (max 7.5),
  * which writes only the tracker's own `problem_progress` rows, never alpha.

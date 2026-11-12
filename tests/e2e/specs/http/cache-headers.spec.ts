@@ -164,14 +164,9 @@ test.describe('cache headers', { tag: '@smoke' }, () => {
 	});
 
 	test('no /api/* response sets a cookie, even for a session due a refresh', async ({ apiAs }) => {
-		// hooks.server.ts skips the session lookup on `/api/*`, so a refresh can't
-		// put Set-Cookie on a shared-cached body. USERS.stale's refresh is due, so a
-		// lookup here would show up as a cookie. `/api/auth/*` is the documented
-		// exception and is left out.
-		//
-		// `no-cache` makes the `sharedCache` hook skip `caches.default`: these URLs
-		// were cached by earlier tests, and a cache hit never reaches the session
-		// lookup.
+		// USERS.stale's refresh is due, so a session lookup on `/api/*` would show
+		// up as a cookie (`/api/auth/*` is the documented exception). `no-cache`
+		// skips the shared cache, since a hit never reaches the lookup.
 		const api = await apiAs('stale');
 		for (const path of ['/api/olympiads', '/api/olympiads/alpha', '/api/search', '/api/stats']) {
 			const response = await api.get(path, { headers: { 'cache-control': 'no-cache' } });

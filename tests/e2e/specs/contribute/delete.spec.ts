@@ -7,26 +7,20 @@ import { expect, test } from '../../support/test';
 import { confirmDialog, gotoReady, holdAction, toast } from '../../support/ui';
 
 /*
- * Deleting from the year editor (`/contribute/<olympiad>/<year>`): a file from
- * the Files tab, and the whole year from the metadata tab. Both ask first
- * (ConfirmSubmit), and both must take the files' indexed text with them, so deep
- * search stops finding it. See docs/data-model.md, "Every arrow is `ON DELETE
- * CASCADE`", and docs/search.md.
+ * Deleting a file or a whole year from the year editor, which must take the
+ * files' indexed text with it. See docs/data-model.md, "Every arrow is `ON
+ * DELETE CASCADE`", and docs/search.md.
  *
  * Owns OWNED.delOlympiad, one year per test (OWNED.delYears), plus a witness
  * year that is only ever searched. Acts as the frozen USERS.admin.
  *
- * A `file_text` row left behind never shows as a result: search joins every hit
- * back to the file tables (queries/files.ts: "stale `file_text` row can never
- * produce a result"). But `searchFiles` decides `truncated` from the index hits, before
- * that join. So the witness year holds DEL_WITNESSES files, one full page, that
- * share a count phrase with the files a test deletes. A scoped search for that
- * phrase is `truncated` while any deleted file's row is left, and fills the page
- * exactly once they are all gone. Nothing else the app serves shows whether a
- * delete dropped the row.
+ * Why the witness year: a leftover `file_text` row is never a result
+ * (queries/files.ts: "stale `file_text` row can never produce a result"), but it
+ * still counts towards `truncated`. The witness year fills one page with a
+ * phrase the deleted files share, so `truncated` shows whether any row is left.
+ * Nothing else the app serves shows it.
  *
- * Seeded objects are not in R2 (docs/testing.md, "Seed data"); deleting a
- * missing object is a no-op, so the deletes run as they would in production.
+ * Seeded objects are not in R2; deleting a missing object is a no-op.
  */
 
 test.use({ role: 'admin' });

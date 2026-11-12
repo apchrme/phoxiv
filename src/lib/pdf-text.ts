@@ -11,14 +11,8 @@ import type { PDFDocumentLoadingTask, PDFDocumentProxy, PDFPageProxy, PDFWorker 
 
 /**
  * Text extraction in the contributor's browser. Browser-only: nothing under
- * `#lib/server/` may import it.
- *
- * Not in the Worker because pdf.js is about as large as the whole server bundle,
- * and every route would pay its cold-start cost for a path that runs a few times
- * a month. Extracting on file-pick also lets the editor flag a scanned PDF while
- * the contributor can still swap it.
- *
- * See docs/search.md.
+ * `#lib/server/` may import it. Why it isn't in the Worker: docs/search.md, "The
+ * parser runs in the contributor's browser".
  */
 
 /**

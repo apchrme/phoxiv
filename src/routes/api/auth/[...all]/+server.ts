@@ -5,16 +5,12 @@ import type { RequestHandler } from './$types';
  * BetterAuth's own endpoints, forwarded to `locals.auth.handler` with two
  * exceptions (docs/auth.md, "Sessions"):
  *
- * - `/api/auth/admin/*` is closed. The admin plugin serves `set-role`,
- *   `ban-user`, `impersonate-user` and more over HTTP, and an admin's cookie
- *   reaches them, but they skip the admin panel's rules: the superadmin, the
- *   self-protection and `ACCEPTED_ROLES` (admin/+page.server.ts). Through
- *   `set-role` an admin could demote the superadmin. The app never calls them:
- *   every admin action is a form action. The plugin itself stays, because it
- *   provides `role`, `banned` and the sign-in ban check.
- * - A banned user is signed out here too, as in hooks.server.ts. BetterAuth
- *   checks `banned` only when it creates a session, so a session kept after a
- *   ban set by hand in SQL still answered `get-session` and `update-user`.
+ * - `/api/auth/admin/*` is closed. Those endpoints skip the admin panel's rules
+ *   (the superadmin, self-protection, `ACCEPTED_ROLES`): through `set-role` an
+ *   admin could demote the superadmin. The app never calls them; the plugin
+ *   stays for `role`, `banned` and the sign-in ban check.
+ * - A banned user is signed out here too, as in hooks.server.ts: BetterAuth
+ *   checks `banned` only when it creates a session.
  *
  * Never add cache headers: this route carries Set-Cookie and session state.
  */

@@ -46,11 +46,9 @@ export default defineConfig(
 		}
 	},
 	{
-		// The e2e suite: Playwright's recommended rules, which also allow the
-		// `async ({}, use)` fixture signature Playwright requires. Fixed waits,
-		// `networkidle` and `force: true` are errors (docs/testing.md, "Avoiding
-		// flakes"). The one allowed wait, a bounded "nothing else happens within 1s"
-		// after a loop regression, carries a disable comment citing the incident.
+		// The e2e suite. Fixed waits, `networkidle` and `force: true` are errors
+		// (docs/testing.md, "Avoiding flakes"); each allowed wait carries a disable
+		// comment citing the loop regression it guards.
 		...playwright.configs['flat/recommended'],
 		files: ['tests/e2e/**/*.ts'],
 		rules: {

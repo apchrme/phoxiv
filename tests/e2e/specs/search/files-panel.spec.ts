@@ -4,14 +4,11 @@ import { expect, test } from '../../support/test';
 import { gotoReady, openSearch } from '../../support/ui';
 
 /*
- * The ⌘K dialog in files mode, past the basics in search/files.spec.ts: the
- * session cache, the length limit, how the query ladder ranks a pasted
- * sentence, what a row says about its problems, the hidden problems panel, the
- * mode switch keeping problem filters, and a failed request. docs/search.md,
- * "What the panel can show", lists the branches.
+ * The ⌘K dialog in files mode, past the basics in search/files.spec.ts.
+ * docs/search.md, "What the panel can show", lists the branches.
  *
  * Reads the FILES_PANEL rows in seed-data.ts, which no spec writes. Every query
- * here matches only those documents, so no other spec's uploads can add a row.
+ * matches only those documents, so other specs' uploads can't add a row.
  */
 
 /** Any page will do: the dialog is mounted by the root layout. */
@@ -105,12 +102,7 @@ async function filterByTopic(page: Page, dialog: Locator, topic: string): Promis
 	await expect(dialog).toBeVisible();
 }
 
-/*
- * Debounce-timed tests run on Playwright's fake clock, as in search/files.spec.ts:
- * installed before the page loads, running in real time through load and
- * hydration, and paused once the dialog is open. Then "during the debounce"
- * lasts as long as the assertions take, and `runFor` ends it exactly.
- */
+/* Debounce-timed tests run on Playwright's fake clock, set up as in search/files.spec.ts. */
 const CLOCK_START = new Date('2026-01-01T00:00:00Z');
 const CLOCK_PAUSE = new Date('2026-01-01T01:00:00Z');
 /** Well past DEEP_DEBOUNCE_MS (250). */

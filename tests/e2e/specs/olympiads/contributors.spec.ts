@@ -4,9 +4,7 @@ import { expect, test } from '../../support/test';
 import { gotoReady } from '../../support/ui';
 
 /*
- * The olympiad page's contributors list: a button beside "Back to olympiads"
- * that opens, in a popover, everyone credited with one of the olympiad's
- * files, most uploads first. ContributorsButton.svelte.
+ * The olympiad page's contributors popover (ContributorsButton.svelte).
  *
  * Reads the frozen CREDITS olympiads only. Writes nothing.
  */

@@ -5,14 +5,10 @@ import { gotoReady } from '../../support/ui';
 
 /*
  * The animated paths, which every other project skips by reducing motion: the
- * landing page's GSAP reveals and drifting corpus band (src/routes/+page.svelte,
- * CorpusBand.svelte), and the ⌘K dialog's open and close animations
- * (GlobalSearch.svelte). The `test` fixture fails a test on any uncaught page
- * error, so a tween that throws fails here too.
+ * landing page's GSAP reveals and corpus band, and the ⌘K dialog's animations.
  *
  * Reads the frozen delta olympiad's 2020 problem (Delta Lens) for the ⌘K test.
- * The corpus tiles link olympiads the seed doesn't have.
- * Writes nothing.
+ * The corpus tiles link olympiads the seed doesn't have. Writes nothing.
  */
 
 /**

@@ -6,9 +6,7 @@ import { gotoReady, openSearch } from '../../support/ui';
 
 /*
  * The ⌘K dialog in problem mode (src/lib/components/search/GlobalSearch.svelte),
- * driven through the UI: the reset on open, the highlight, Enter on the hovered
- * row, escaping, the session caches, and topics never shown. See docs/search.md,
- * "The client".
+ * driven through the UI. See docs/search.md, "The client".
  *
  * Reads frozen seed rows only (alpha, delta, delta-w), never owned ones: another
  * spec may rename those, and `/api/search` is shared-cached from whenever the

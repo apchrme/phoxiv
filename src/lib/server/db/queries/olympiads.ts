@@ -37,10 +37,9 @@ export async function listOlympiadOptions(db: DB): Promise<OlympiadOption[]> {
 }
 
 /**
- * Display names by id, as `describeBadge` takes them. One small read: a caller
- * that hasn't read its badges yet runs it alongside that query, since deciding
- * first would cost a round trip; one that has them skips it unless
- * `needsOlympiadNames` (#lib/badges) says otherwise.
+ * Display names by id, as `describeBadge` takes them. A caller that hasn't read
+ * its badges yet runs this alongside that read rather than first checking
+ * `needsOlympiadNames` (#lib/badges), which would cost a round trip.
  */
 export async function getOlympiadNames(db: DB): Promise<Record<string, string>> {
 	return olympiadNamesById(

@@ -36,18 +36,15 @@
 	 * The ⌘K search dialog, mounted once by the root layout.
 	 *
 	 * All state lives in this shell because bits-ui unmounts `Dialog.Content`'s
-	 * subtree on close; state in a child would be rebuilt, and its caches
-	 * refetched, on every open. The `<svelte:window>` handler opens the dialog,
-	 * so it must live out here too.
+	 * subtree on close, which would rebuild a child's state and refetch its
+	 * caches on every open.
 	 *
-	 * Two modes, two `Tabs.Content` panels, but only one list is ever active:
-	 * arrows and Enter work over one array. bits-ui keeps the inactive panel
-	 * mounted (just `hidden`), so each panel guards its body on the mode.
+	 * Two modes, two `Tabs.Content` panels, one active list: arrows and Enter
+	 * work over one array. bits-ui keeps the inactive panel mounted, so each
+	 * panel guards its body on the mode.
 	 *
-	 * Network, each fetched once and cached for the session: the problem index
-	 * (first open), `/progress` (first open when signed in, and when `userId`
-	 * changes), `/api/olympiads` (first entry into files mode), and deep-search
-	 * responses per (query, olympiad) key.
+	 * What is fetched when: docs/search.md, "Why every piece of state lives in
+	 * the shell".
 	 */
 	let {
 		open = $bindable(false),
@@ -79,10 +76,8 @@
 	// ---------------------------------------------------------------------------
 
 	/**
-	 * `Resource` holds the body in `$state.raw` (a deep proxy over thousands of
-	 * items would slow the per-keystroke filter), keeps only a success, so a
-	 * failure is retried on the next open, and joins a request already in flight,
-	 * so repeated ⌘K presses send one.
+	 * `Resource` keeps the body in `$state.raw`: a deep proxy over thousands of
+	 * items would slow the per-keystroke filter.
 	 */
 	const indexSource = new Resource<SearchItem[]>('/api/search');
 	const NO_ITEMS: SearchItem[] = [];
@@ -211,14 +206,10 @@
 	// ---------------------------------------------------------------------------
 
 	/**
-	 * Every olympiad, for `OlympiadPicker`. Fetched on first entry into files
-	 * mode, so ⌘K costs nothing extra for people who never use deep search.
-	 *
-	 * Don't derive it from `index`: that has one entry per problem, so it would
-	 * miss an olympiad with files but no problems.
-	 *
-	 * No loading or error UI: until the list lands the filter just isn't shown,
-	 * and a failure retries on the next entry into files mode.
+	 * Every olympiad, for `OlympiadPicker`, fetched on first entry into files
+	 * mode. Don't derive it from `index`, which would miss an olympiad with files
+	 * but no problems. No loading or error UI: the filter just isn't shown until
+	 * the list lands, and a failure retries on the next entry.
 	 */
 	const olympiadsSource = new Resource<OlympiadEntry[]>('/api/olympiads');
 	const NO_OLYMPIADS: OlympiadEntry[] = [];

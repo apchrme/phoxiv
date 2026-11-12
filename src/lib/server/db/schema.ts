@@ -298,12 +298,10 @@ export const problemProgress = sqliteTable(
 /**
  * A badge, earned by completing `required_count` qualifying problems.
  *
- * Which problems qualify is a live rule, not a snapshot: `scope = 'filter'`
- * keeps the filter itself, so problems added or re-tagged later count without
- * an edit. Only `scope = 'manual'` keeps an explicit list, in `badge_problems`.
- * The rule is evaluated per user by `qualifies` in #lib/badges and, for every
- * user at once, by `recomputeBadge` in db/queries/badges. The two must agree;
- * see docs/data-model.md.
+ * A `filter` badge stores the rule, not a snapshot, so problems added or
+ * re-tagged later count without an edit; only `manual` keeps a list, in
+ * `badge_problems`. `qualifies` (#lib/badges) and `recomputeBadge` evaluate the
+ * rule and must agree; see docs/data-model.md.
  */
 export const badges = sqliteTable('badges', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
@@ -361,11 +359,9 @@ export const badgeProblems = sqliteTable(
 );
 
 /**
- * Who holds which badge. Derived from `problem_progress` and `badges`, and kept
- * only so a holder count costs one aggregate instead of re-evaluating every
- * user, a scan that grows with every user and tracked problem. Awards are revocable: a
- * user's rows are re-synced whenever their badges are evaluated. See
- * docs/data-model.md.
+ * Who holds which badge. Derived from `problem_progress` and `badges`, kept so a
+ * holder count is one aggregate rather than a scan of everyone's progress.
+ * Re-synced whenever a user's badges are evaluated. See docs/data-model.md.
  */
 export const userBadges = sqliteTable(
 	'user_badges',
@@ -390,13 +386,12 @@ export const userBadges = sqliteTable(
 
 /**
  * Extracted plain text for one uploaded file, plus its extraction state.
- *
- * Keyed by the full CDN url, the same string the file tables hold, so search
- * joins straight back to them. A row whose url is no longer referenced is
- * simply not found. Not keyed by row id, because renaming a problem recreates
- * its `problem_files` rows. No foreign key, because `url` is not unique in the
- * file tables. Kept out of the file tables so bulk reads don't carry the text.
  * See docs/search.md.
+ *
+ * Keyed by the full CDN url, so search joins straight back to the file tables;
+ * not by row id, because renaming a problem recreates its `problem_files` rows.
+ * No foreign key, because `url` is not unique in the file tables. Kept out of
+ * the file tables so bulk reads don't carry the text.
  */
 export const fileText = sqliteTable(
 	'file_text',

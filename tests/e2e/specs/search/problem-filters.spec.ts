@@ -5,12 +5,8 @@ import { gotoReady, openSearch } from '../../support/ui';
 
 /*
  * The ⌘K dialog's problem filters, keyboard and failure states
- * (src/lib/components/search/GlobalSearch.svelte): which filters show for whom,
- * the progress filter agreeing with the olympiad page, filters applying before
- * ranking, the filtered pool's order with no query, the shortcut, the tabs and
- * the topic menu from the keyboard, and what a failed `/api/search` or
- * `/progress` shows. See docs/search.md, "Problem mode: the fuzzy index" and
- * "The client".
+ * (src/lib/components/search/GlobalSearch.svelte). See docs/search.md, "Problem
+ * mode: the fuzzy index" and "The client".
  *
  * Owns USERS.searcher, whose progress rows (SEARCHER_PROGRESS) are seeded and
  * never changed, and the RANKING olympiad, which it only reads. Reads frozen

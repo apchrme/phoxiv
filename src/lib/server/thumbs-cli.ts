@@ -1,14 +1,11 @@
 /**
  * Renders the landing page's corpus thumbnails offline: `bun run thumbs:render`.
- * Never imported by application code. Lives under `src/` (not `scripts/`) so
- * `bun run check` type-checks it.
+ * Never imported by application code; under `src/` so `bun run check` covers it.
  *
- * For each {@link CORPUS} entry, fetches the PDF and writes
- * `src/lib/assets/thumbs/<slug>.png` (committed):
- * 1. Ghostscript renders page 1 at 150 dpi.
- * 2. ImageMagick flattens onto white, fills and crops from the top to 420×594 so
- *    all tiles match, strips metadata and reduces to 64 colours.
- * PNG compresses text pages well; enhanced-img converts to AVIF/WebP at build.
+ * For each {@link CORPUS} entry, writes `src/lib/assets/thumbs/<slug>.png`
+ * (committed): Ghostscript renders page 1, then ImageMagick crops it to 420×594
+ * so all tiles match and reduces it to 64 colours. enhanced-img converts to
+ * AVIF/WebP at build.
  *
  * Requires Ghostscript (`gswin64c` on Windows, `gs` elsewhere) and ImageMagick 7
  * on `PATH`.

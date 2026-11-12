@@ -6,11 +6,9 @@
 type SetHeaders = (headers: Record<string, string>) => void;
 
 /**
- * For `/api/*`. Cloudflare's shared cache keeps it for a day (`s-maxage`), so a
- * bad payload needs a manual purge. Browsers must revalidate every time:
- * `max-age=0` alone would still let them reuse a stored copy, so keep
- * `must-revalidate` too. That way a purge reaches every visitor on their next
- * request.
+ * For `/api/*`. Cloudflare's shared cache keeps it a day (`s-maxage`), so a bad
+ * payload needs a manual purge. Keep `must-revalidate`: `max-age=0` alone lets
+ * browsers reuse a stored copy, and a purge would not reach them.
  */
 export const SHARED_CACHE_CONTROL = 'max-age=0, s-maxage=86400, must-revalidate';
 

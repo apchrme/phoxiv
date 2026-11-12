@@ -6,10 +6,9 @@ import { toPublicBadge, type PublicBadge } from '#lib/badges.js';
 
 /**
  * Every badge with its holder count, most holders first, for `/badges`.
- * Shared-cached for a day, so an admin edit or a new holder can take that long
- * to show (as with contributor edits), and so can the order. The counts come
- * from `user_badges`, one aggregate per cache miss, never from re-evaluating
- * users. A hidden requirement is left out by `toPublicBadge`.
+ * Shared-cached for a day, so an edit or a new holder can take that long to
+ * show. The counts are one aggregate over `user_badges`, never a re-evaluation
+ * of users. A hidden requirement is left out by `toPublicBadge`.
  */
 export const GET: RequestHandler = async ({ locals, setHeaders }) => {
 	setSharedCache(setHeaders);

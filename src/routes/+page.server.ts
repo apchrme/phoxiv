@@ -5,13 +5,10 @@ import { getOlympiadNames } from '#lib/server/db/queries/olympiads.js';
 import { toVisibleBadge, visibleCount } from '#lib/badges.js';
 
 /**
- * `/` is the landing page when signed out and the dashboard when signed in.
- *
- * Outside `(reg)`, so it sets its own header, and that header is `no-store`
- * either way. Signed in, a cached dashboard would lag every tracked problem.
- * Signed out, a landing page cached for four hours would still be served right
- * after signing in, since the browser cache doesn't key on the cookie. The
- * landing page reads nothing from D1, so not caching it costs only a render.
+ * `/` is the landing page signed out and the dashboard signed in. It sets its
+ * own `no-store` header either way: a cached dashboard would lag every tracked
+ * problem, and a cached landing page would outlive signing in, since the
+ * browser cache doesn't key on the cookie. See docs/architecture.md.
  */
 export const load: PageServerLoad = async ({ locals, setHeaders }) => {
 	setNoStore(setHeaders);

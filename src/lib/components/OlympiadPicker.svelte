@@ -12,22 +12,19 @@
 	 * The one olympiad picker: searchable, keyboard-driven, single or multiple,
 	 * with a form-field or icon-only trigger.
 	 *
-	 * Built from bits-ui `Popover` + `Command`, hand-styled, because the vendored
-	 * `ui/combobox/` makes the input the trigger, which can't be an icon button.
-	 * Don't add `popover` or `command` through the shadcn CLI (CLAUDE.md rule 2).
+	 * Hand-built from bits-ui `Popover` + `Command`, because the vendored
+	 * `ui/combobox/` can't have an icon-button trigger. Don't add `popover` or
+	 * `command` through the shadcn CLI (CLAUDE.md rule 2).
 	 *
-	 * `shouldFilter={false}`: `Command`'s own filter reorders rows by score, which
-	 * would break the pinned group and the fixed standing rows.
+	 * `shouldFilter={false}`: `Command`'s own filter reorders rows by score,
+	 * breaking the pinned group and the fixed standing rows.
 	 *
-	 * `disableInitialScroll`: on open, `Command` highlights the first row and
-	 * `scrollIntoView`s it before floating-ui has placed the panel, while it
-	 * still sits at `translate(0, -200%)` above the viewport. The browser then
-	 * scrolls the page to the top to reach it (seen on the admin badge editor,
-	 * where the picker is far down the page). The first row is already in view.
+	 * `disableInitialScroll`: otherwise `Command` scrolls its first row into view
+	 * before floating-ui has placed the panel, jumping the page to the top (seen
+	 * on the admin badge editor).
 	 *
-	 * The panel portals out of any surrounding `<form>`, so controls inside it
-	 * submit nothing. With `name` set, the selection is mirrored into hidden
-	 * inputs rendered in place, which `fieldList` reads on the server.
+	 * The panel portals out of any `<form>`, so with `name` set the selection is
+	 * mirrored into hidden inputs rendered in place, for `fieldList`.
 	 */
 	let {
 		value = $bindable(null),

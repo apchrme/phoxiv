@@ -3,16 +3,10 @@ import { expect, test } from '../../support/test';
 import { gotoReady } from '../../support/ui';
 
 /*
- * The ⌘K dialog on a phone (src/lib/components/search/GlobalSearch.svelte): at
- * the narrowest widths it must still fit its rows, with no control pushed out
- * of the viewport or clipped by the dialog's `overflow-hidden`, and its popups
- * must stay on screen. Real phones are still checked by hand (docs/contributing.md,
- * "The gates").
- *
- * `toBeInViewport({ ratio: 1 })` is the check throughout: it measures with an
- * IntersectionObserver, which clips by every `overflow` ancestor on the way to
- * the viewport, so a control the dialog cuts off fails it as surely as one past
- * the screen's edge.
+ * The ⌘K dialog on a phone (src/lib/components/search/GlobalSearch.svelte): no
+ * control pushed off screen or clipped by the dialog's `overflow-hidden`.
+ * `toBeInViewport({ ratio: 1 })` catches both, since it clips by every
+ * `overflow` ancestor. Real phones are still checked by hand.
  *
  * Reads frozen seed rows only. Writes nothing.
  */
@@ -141,11 +135,8 @@ test.describe('⌘K at 390px, files mode', () => {
 		await expect.poll(() => inputWidth(box)).toBeGreaterThan(120);
 
 		// The panel is "Portalled because the ⌘K dialog is `overflow-hidden` and would
-		// clip it" (OlympiadPicker.svelte), anchored to the trigger's end
-		// (`align="end"`), so it opens leftwards from a trigger near the right edge.
-		// (Its `max-w-[calc(100vw-2rem)]` cap only binds below about 320px, so this
-		// width doesn't test it.) It has no role of its own; `data-popover-content` is
-		// bits-ui's hook on it.
+		// clip it" (OlympiadPicker.svelte), and opens leftwards from the trigger's end
+		// (`align="end"`). It has no role; `data-popover-content` is bits-ui's hook.
 		await olympiad.tap();
 		const panel = page.locator('[data-popover-content]');
 		const panelSearch = page.getByPlaceholder('Search olympiads…');

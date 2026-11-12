@@ -100,12 +100,10 @@ async function expectDraftKept(page: Page, values: Draft): Promise<void> {
 
 /**
  * Submits through `submit` and expects `createOlympiad` to refuse with
- * `actionFail(status, …, message)`, and the page to toast the message.
- *
- * `actionFail()` answers with its status and `type: 'failure'`; `error()` would
- * answer `type: 'error'` and replace the page, discarding what was typed
- * (#lib/server/forms.ts, `actionFail`: "`error()` replaces the page and discards
- * what the user typed"; CLAUDE.md rule 6).
+ * `actionFail(status, …, message)` (`type: 'failure'`), and the page to toast the
+ * message. `error()` would fail this (#lib/server/forms.ts, `actionFail`:
+ * "`error()` replaces the page and discards what the user typed"; CLAUDE.md
+ * rule 6).
  */
 async function expectCreateRefused(
 	page: Page,

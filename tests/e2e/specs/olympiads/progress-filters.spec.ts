@@ -4,11 +4,8 @@ import { expect, test } from '../../support/test';
 import { gotoReady, openSearch } from '../../support/ui';
 
 /*
- * The olympiad page's filters over the user's progress, and the two guards in
- * src/routes/(reg)/olympiads/[olympiad]/+page.svelte that keep a late response
- * from overwriting newer state: the progress race guard and the stale-olympiad
- * guard. The status filter is StatusFilter.svelte (All problems / Done / To do,
- * an icon-only trigger); the predicates are in filter.ts and #lib/filters.ts.
+ * The olympiad page's progress filters, and the race and stale-olympiad guards
+ * in src/routes/(reg)/olympiads/[olympiad]/+page.svelte.
  *
  * Owns USERS.progressReader, whose seeded progress on the frozen alpha is only
  * ever read, so every list below is known in advance:

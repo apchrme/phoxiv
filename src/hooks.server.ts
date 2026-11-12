@@ -7,17 +7,14 @@ import { SHARED_CACHE_CONTROL } from '#lib/server/cache.js';
 
 /**
  * Serves `/api/*` from `caches.default`, the shared cache in docs/architecture.md.
- *
- * adapter-cloudflare up to v7 did this in its worker; v8 does not, and after
- * the upgrade every `/api/*` request went to D1 until this hook replaced it. It
- * runs first, so a hit returns before `app` touches D1 or auth.
+ * adapter-cloudflare v8 dropped this; without it every `/api/*` request hit D1.
+ * Runs first, so a hit never touches D1 or auth.
  *
  * - Only a 200 carrying {@link SHARED_CACHE_CONTROL} is stored, so an endpoint
- *   opts in by calling `setSharedCache()` and a 404 or a thrown 500 never is.
+ *   opts in with `setSharedCache()` and an error response never is.
  * - `/api/auth/*` is skipped: it carries `Set-Cookie` and session state.
- * - A request with `Cache-Control: no-cache` skips the lookup but still stores
- *   the fresh response, as the adapter's worker did. The e2e specs rely on it
- *   to read past entries cached earlier in the run (docs/testing.md).
+ * - `Cache-Control: no-cache` skips the lookup but still stores the response;
+ *   the e2e specs rely on it (docs/testing.md).
  */
 const sharedCache: Handle = async ({ event, resolve }) => {
 	const { request, url } = event;
@@ -47,19 +44,16 @@ const sharedCache: Handle = async ({ event, resolve }) => {
 /**
  * Builds `locals.db`, `locals.auth` and `locals.user` / `locals.session`.
  *
- * db and auth are created per request, from `env` read inside the hook; don't
- * make them module-level singletons. Outside a running server (`vite build`
- * imports this module) the adapter's `env` throws on access, so reading it at
- * module scope breaks the build. The session is looked up once here for every
- * route. See docs/architecture.md.
+ * db and auth are built per request from `env`; don't make them module-level
+ * singletons: `vite build` imports this module, and `env` throws outside a
+ * running server. See docs/architecture.md.
  *
- * Three rules about the session lookup (docs/auth.md):
- * - `/api/*` skips it. Those responses go in Cloudflare's shared cache, so none
- *   may depend on the user or carry `Set-Cookie`; with `locals.user` always null
- *   there, none can. `/api/auth/*` does its own lookup through the handler.
- * - The `Set-Cookie` BetterAuth emits when it extends a session (daily, by
- *   `updateAge`) is forwarded. Dropping it let every cookie die seven days
- *   after sign-in, however active the user was.
+ * The session lookup (docs/auth.md):
+ * - `/api/*` skips it, so no shared-cache response can depend on the user or
+ *   carry `Set-Cookie`. `/api/auth/*` looks it up through the handler.
+ * - The `Set-Cookie` BetterAuth emits when it extends a session is forwarded.
+ *   Dropping it let every cookie die seven days after sign-in, however active
+ *   the user was.
  * - A banned user is treated as signed out, whatever sessions they still hold.
  *   BetterAuth only checks `banned` when a session is created.
  */

@@ -17,16 +17,12 @@ import { extensionOf } from '#lib/uploads.js';
 
 /**
  * The backfill endpoint for `bun run index:backfill` (`reindex-cli.ts`): GET
- * hands out the pending list, POST accepts results. The Worker never parses a
- * file here; extraction happens on the maintainer's machine. Don't add a
- * batch-indexing action to the admin panel: a self-resubmitting form there once
- * looped forever.
+ * hands out the pending list, POST accepts results. Extraction happens on the
+ * maintainer's machine, never in the Worker. Don't add a batch-indexing action
+ * to the admin panel: a self-resubmitting form there once looped forever.
  *
- * `requireAdmin` is called here because a `+server.ts` runs no layout loads, so
- * `admin/+layout.server.ts` does not cover it.
- *
- * Auth is the ordinary session cookie, so there is no second auth mechanism. No
- * cache headers, like everything under `/admin`.
+ * Calls `requireAdmin` itself, since a `+server.ts` runs no layout loads. Auth is
+ * the ordinary session cookie; no cache headers, like everything under `/admin`.
  */
 
 /** Batch sizes the script may ask for. Bounded so one request stays small. */

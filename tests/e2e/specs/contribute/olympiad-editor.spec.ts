@@ -9,12 +9,8 @@ import { answerDialogs, confirmDialog, gotoReady, toast } from '../../support/ui
  * the warning before leaving the metadata form with unsaved edits.
  *
  * Owns OWNED.iconOlympiad. Every test starts by uploading an icon, so none
- * depends on what an earlier test left behind; they only need to run one at a
- * time, which `fullyParallel: false` guarantees within a file.
- *
- * Uploads need R2, which only `wrangler dev` gives the suite (docs/testing.md,
- * "The e2e server"). The browser never loads the uploaded image: the CDN is
- * external, so the `test` fixture aborts the request.
+ * depends on an earlier one; `fullyParallel: false` runs them one at a time.
+ * The uploaded image never loads: the `test` fixture aborts CDN requests.
  */
 
 test.use({ role: 'admin' });

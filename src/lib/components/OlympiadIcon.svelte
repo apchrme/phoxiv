@@ -24,9 +24,8 @@
 		/** The raw emoji / icon string. May be blank. */
 		icon?: string;
 		/**
-		 * Optional olympiad ID (e.g. "ipho", "eupho").
-		 * When provided, a file at /src/lib/assets/icons/olympiads/<id>.<ext> will be
-		 * used instead of the flag CDN or raw emoji, if one exists.
+		 * The olympiad id. A file at `src/lib/assets/icons/olympiads/<id>.<ext>`, if
+		 * any, takes priority over the flag CDN and raw emoji.
 		 */
 		id?: string;
 		size?: keyof typeof SIZES;

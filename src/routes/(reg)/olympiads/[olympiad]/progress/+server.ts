@@ -6,12 +6,11 @@ import { getOlympiadProgress } from '#lib/server/db/queries/progress.js';
 /**
  * The signed-in user's progress in one olympiad, as a `ProgressMap`.
  *
- * Must stay outside `/api/`, whose responses go in the shared cache and would
- * serve one user's data to everyone. Per-user data only; max scores come with
- * the cached API payload. Fetched by the client, not the page load, because the
- * `(reg)` layout has already set a private cache header that can't be replaced.
- * A `+server.ts` runs no layout loads, so neither that header nor `+layout.ts`'s
- * redirects apply here.
+ * Must stay outside `/api/`, whose shared cache would serve one user's data to
+ * everyone. Per-user data only; max scores come with the cached API payload.
+ * Fetched by the client because the `(reg)` layout's cache header can't be
+ * replaced; as a `+server.ts` this runs no layout loads, so it escapes that
+ * header and `+layout.ts`'s redirects.
  */
 export const GET: RequestHandler = async ({ params, locals, setHeaders }) => {
 	// Before the guard, so a 401 is uncached too.

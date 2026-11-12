@@ -1,31 +1,22 @@
 /**
- * Backfills the index for the existing corpus, run from a maintainer's machine.
+ * Backfills the index for the existing corpus, from a maintainer's machine:
  *
  * ```sh
  * PHOXIV_URL=https://phoxiv.org PHOXIV_SESSION='<cookie value>' bun run index:backfill
  * ```
  *
  * ```powershell
- * # PowerShell has no inline env-var prefix, so the line above is a parse error there
  * $env:PHOXIV_URL = 'https://phoxiv.org'; $env:PHOXIV_SESSION = '<cookie value>'; bun run index:backfill
  * ```
  *
- * Never imported by application code (like `auth-cli.ts`). It lives under
- * `src/` rather than `scripts/` so `bun run check` type-checks it.
+ * Never imported by application code; under `src/` so `bun run check` covers it.
+ * Extracting locally keeps `unpdf` and `fflate` out of the bundle and can read
+ * `.docx`/`.xlsx`. Bytes come from the local `files/` mirror, else the CDN.
  *
- * Extraction runs locally, so heavy devDependencies (`unpdf`, `fflate`) never
- * enter a bundle, and it can read `.docx`/`.xlsx`, which the browser skips.
- *
- * Results are POSTed to `/admin/reindex`, where the text is a bound parameter.
- * Don't use `wrangler d1 execute`: D1 caps a statement at 100 KB.
- *
- * Bytes come from the local `files/` rclone mirror, else the public CDN, so no
- * R2 credentials are needed.
- *
- * Auth is the ordinary session cookie of a signed-in admin, so there is no
- * second auth mechanism. BetterAuth names it `__Secure-better-auth.session_token`
- * in production and `better-auth.session_token` in dev, and a wrong name is a
- * silent 403, so {@link authHeaders} sends both.
+ * Results are POSTed to `/admin/reindex`; don't use `wrangler d1 execute`,
+ * which caps a statement at 100 KB. Auth is an admin's session cookie, whose
+ * name differs between production (`__Secure-` prefix) and dev; a wrong name is
+ * a silent 403, so {@link authHeaders} sends both.
  */
 
 import { readFile } from 'node:fs/promises';

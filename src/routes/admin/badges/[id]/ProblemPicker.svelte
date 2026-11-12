@@ -17,14 +17,11 @@
 	type Picked = BadgeProblem;
 
 	/**
-	 * Chooses a manual badge's problems from the whole corpus (`/api/search`,
-	 * already shared-cached for the ⌘K dialog), so no new endpoint is needed.
-	 * Narrow by text, topic and olympiad, then tick rows one at a time or "Add
-	 * all" to bulk-assign everything matching.
+	 * Chooses a manual badge's problems from the whole corpus, via the
+	 * shared-cached `/api/search` the ⌘K dialog already uses.
 	 *
-	 * Problems are addressed as (olympiad, year, number) and submitted as JSON in
-	 * one hidden input; the server resolves them to ids. `problems.id` never
-	 * reaches the browser.
+	 * Problems are submitted as (olympiad, year, number) JSON in one hidden input
+	 * and resolved to ids on the server: `problems.id` never reaches the browser.
 	 */
 	let {
 		corpus,

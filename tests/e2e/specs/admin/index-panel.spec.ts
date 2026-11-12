@@ -4,18 +4,14 @@ import { expect, test } from '../../support/test';
 import { confirmDialog, gotoReady, toast } from '../../support/ui';
 
 /*
- * The admin search-index page (src/routes/admin/search-index/): its counts come
- * from the page load, which the admin menu must not preload on hover, and each
- * maintenance action is one POST followed by one reload of the page data, then
- * nothing more. IndexPanel.svelte and admin/reindex/+server.ts both record why:
- * "a self-resubmitting form in this panel once looped forever".
+ * The admin search-index page (src/routes/admin/search-index/). Each maintenance
+ * action must be one POST and one reload of the page data, then nothing more.
+ * IndexPanel.svelte and admin/reindex/+server.ts both record why: "a
+ * self-resubmitting form in this panel once looped forever".
  *
  * The only spec that writes the global FTS index (docs/testing.md, "Seed data"),
- * so the file runs serially: Rebuild and Merge rewrite the index, and Prune
- * deletes the seeded orphan row (ORPHAN_URL in fixtures/seed-data.ts), which is
- * why the second prune must find nothing. The prune counts are global, so the
- * file runs in its own `index` project, after every desktop spec: a file delete
- * leaves its text row orphaned for a moment, and a prune landing then counted it.
+ * so it runs serially, in its own `index` project (support/config.ts says why).
+ * Prune deletes the seeded orphan (ORPHAN_URL), so the second prune finds nothing.
  */
 
 test.describe.configure({ mode: 'serial' });

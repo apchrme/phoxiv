@@ -1,11 +1,9 @@
 /**
- * The hand-picked files shown in the landing page's corpus band.
+ * The hand-picked files in the landing page's corpus band, read by
+ * `CorpusBand.svelte` and `#lib/server/thumbs-cli.ts`. See docs/contributing.md,
+ * "The landing page's corpus band".
  *
- * Read by both `CorpusBand.svelte` and `#lib/server/thumbs-cli.ts`. To add one:
- * add an entry, run `bun run thumbs:render`, commit the PNG. See
- * docs/contributing.md, "The landing page's corpus band".
- *
- * Every `url` is copied from the production API, not constructed, so it
+ * Copy every `url` from the production API rather than constructing it, so it
  * matches a real object.
  */
 export type CorpusEntry = {

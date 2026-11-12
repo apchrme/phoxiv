@@ -23,16 +23,14 @@ import { olympiadUrlRange } from '#lib/server/storage.js';
 
 /**
  * The full-text index over extracted file text: writing, querying, cleanup.
- *
- * Correctness does not depend on cleanup. {@link searchFiles} joins every hit's
- * url back to `year_files` / `problem_files` and drops any with no owner, so a
- * stale `file_text` row can never produce a result. That is why the table needs
- * no foreign key.
- *
- * No function here returns `file_text.text`. Only `snippet()` reads it, so the
- * corpus can't be bulk-downloaded through search.
- *
  * See docs/search.md.
+ *
+ * Correctness does not depend on cleanup: {@link searchFiles} joins every hit
+ * back to the file tables, so a stale `file_text` row can never produce a
+ * result. Hence no foreign key.
+ *
+ * No function here returns `file_text.text`; only `snippet()` reads it, so the
+ * corpus can't be bulk-downloaded through search.
  */
 
 // ── Query sanitisation ──────────────────────────────────────────────────────
@@ -91,41 +89,18 @@ function tokenize(query: string): Token[] {
 }
 
 /**
- * Turns a user query into a ladder of FTS5 `MATCH` expressions, none of which
- * can be a syntax error.
+ * Turns a user query into a ladder of FTS5 `MATCH` expressions, most precise
+ * first, none of which can be a syntax error: every token is double-quoted,
+ * which makes `"`, `*`, `-`, `NEAR`, `OR` and `(` inert. The rungs and worked
+ * examples are in docs/search.md, "The query ladder".
  *
- * `MATCH` is a bound parameter, so this isn't about injection. But FTS5 parses
- * the string, and a bare `"`, `*`, `-`, `NEAR`, `OR` or `(` is a syntax error,
- * which would be a 500. So every token is double-quoted, which makes every
- * operator inert. {@link tokenize} has removed every `"`, so nothing needs
- * escaping.
+ * Don't collapse the ladder into one AND expression: capped, it stops
+ * narrowing; uncapped, one term lost at extraction zeroes the result.
  *
- * | rung | expression | built when |
- * | --- | --- | --- |
- * | 1 phrase | `"w1 w2 … wN"`, `*` on the last word | ≥2 tokens, none quoted |
- * | 2 and | `"w1" AND … AND "wN"`, `*` on the last | any token at all |
- * | 3 or | `"w1" OR … OR "wN"`, no `*` | ≥3 tokens |
- *
- * Don't collapse this into one AND expression: capped, it stops narrowing;
- * uncapped, one term lost at extraction zeroes the result. Rung 3 still ranks
- * well because bm25 favours coverage.
- *
- * Rung 1 is skipped once the user quotes something; they have said where the
- * phrase is. Its trailing `*` keeps search-as-you-type alive: `"two water
- * reserv"*` matches, `"two water reserv"` does not.
- *
- * A prefix `*` goes only on the last token (the word being typed), never on a
- * single character (`a*` scans a large slice of the index), and never on a
- * phrase the user closed. Caps keep the first N tokens, so plans stay stable as
- * the user types.
- *
- * | typed | plans |
- * | --- | --- |
- * | `mc^2 relativ` | `"mc 2 relativ"*`, `"mc" AND "2" AND "relativ"*`, `"mc" OR "2" OR "relativ"` |
- * | `"black hole" entropy` | `"black hole" AND "entropy"*` |
- * | `"black hol` | `"black hol"` |
- * | `-NEAR("a" b)` | `"near" AND "a" AND "b"`, `"near" OR "a" OR "b"` |
- * | `???` | none |
+ * Rung 1 (the phrase) is skipped once the user quotes something. Its trailing
+ * `*` keeps search-as-you-type alive: `"two water reserv"*` matches,
+ * `"two water reserv"` does not. A prefix `*` goes only on the last token,
+ * never on a single character (`a*` scans much of the index).
  */
 export function sanitizeFtsQuery(query: string): SanitizedQuery {
 	const tokens = tokenize(query);
@@ -204,31 +179,23 @@ export function splitSnippet(marked: string): { snippet: string; matches: [numbe
 type FtsHit = { url: string; snippet: string };
 
 /**
- * The only function that knows the index's shape. Its contract: a url
- * byte-identical to the file tables', best-first order, and a `LIMIT`.
+ * The only function that knows the index's shape: urls byte-identical to the
+ * file tables', best first, at most `limit`. See docs/search.md, "Two passes
+ * per rung".
  *
- * Two passes, and don't fold them into one to save a round trip:
- * - Pass 1 ranks rowids and must not select `snippet()`. On an external-content
- *   table, `snippet()` beside an unconstrained `MATCH` walks the whole content
- *   table whatever the `LIMIT` (about 20× the rows read).
- * - Pass 2 computes snippets for just those rowids, which seeks instead.
+ * Don't fold the two passes into one: `snippet()` beside an unconstrained
+ * `MATCH` walks the whole content table whatever the `LIMIT` (about 20× the
+ * rows), so pass 1 ranks rowids only and pass 2 snippets just those.
  *
  * Every eligibility filter (`status = 'ok'`, the olympiad scope) runs in pass 1,
- * before the `LIMIT`. Applied after, it would shrink the window instead of
- * narrowing it, often to nothing, and break {@link searchFiles}' `+ 1`
- * truncation check. The status join stays even though non-ok rows index as ''
- * today, so this doesn't rely on every writer nulling `text`.
+ * before the `LIMIT`. Applied after, it would shrink the window, often to
+ * nothing, and break {@link searchFiles}' `+ 1` truncation check. Keep the status
+ * join even though non-ok rows index as ''. The scope is a url range
+ * ({@link olympiadUrlRange}), not a join, so it costs no extra D1 rows.
  *
- * The scope is a url range (see {@link olympiadUrlRange}), not a join, because
- * it costs no extra D1 rows: the `file_text` row is already read by the status
- * join. A scoped query does walk further, one row per discarded candidate.
- *
- * Pass 2 returns rows in rowid order, so results are re-emitted in pass 1's
- * order: the array order is the rank. A row missing from pass 2 (say, after a
- * concurrent write) is dropped: fewer results, never a wrong one.
- *
- * Pass 2 binds one parameter per rowid, so raising `DEEP_SEARCH_LIMIT` past ~90
- * needs chunking against D1's 100-parameter cap.
+ * Results keep pass 1's order; a row missing from pass 2 is dropped. Pass 2
+ * binds one parameter per rowid, so raising `DEEP_SEARCH_LIMIT` past ~90 needs
+ * chunking (D1 caps at 100).
  */
 async function selectFtsHits(
 	db: DB,
@@ -289,10 +256,7 @@ type Owner = Omit<FileSearchResult, 'snippet' | 'matches'>;
  * Two parallel queries folded into a map, not a `UNION`: the problem side has
  * extra columns, and the map also collapses a multi-problem file into one hit.
  * Problem rows go first, so a url that is both problem- and year-level keeps the
- * more specific label; `ORDER BY id` makes that stable.
- *
- * One bound parameter per url, so past ~90 urls this needs chunking (D1 caps at
- * 100). The caller dedupes and truncates first.
+ * more specific label. One bound parameter per url: chunk past ~90 (D1 caps at 100).
  */
 async function resolveOwners(db: DB, urls: string[]): Promise<Map<string, Owner>> {
 	const [problemRows, yearRows] = await Promise.all([
@@ -372,28 +336,18 @@ async function resolveOwners(db: DB, urls: string[]): Promise<Map<string, Owner>
 /**
  * Files whose extracted text matches `query`, best first.
  *
- * Walks {@link sanitizeFtsQuery}'s ladder and stops at the first rung with a
- * hit. That is the ranking, not an optimisation: a phrase hit must not be
- * diluted by a looser rung's near misses. A query that sanitises to nothing
- * costs no D1 read.
+ * Stops at the first rung of {@link sanitizeFtsQuery}'s ladder with a hit. That
+ * is the ranking, not an optimisation: a phrase hit must not be diluted by a
+ * looser rung's near misses. A scoped search tries every rung within the scope,
+ * so it may reach a looser rung; don't pin it to the unfiltered search's rung.
  *
- * Under an olympiad scope every rung is tried within the scope, so a scoped
- * search can reach a looser rung than the unfiltered one. That is intended;
- * don't pin it to the unfiltered search's rung.
- *
- * Fetches `DEEP_SEARCH_LIMIT + 1` so `truncated` can tell "exactly the limit"
- * from "more". That is only sound because {@link selectFtsHits} filters before
- * its `LIMIT`.
- *
- * `ORDER BY rank` scores every match whatever the `LIMIT`, so
- * `MAX_DEEP_QUERY_TOKENS` is the only bound on the bm25 scan. That is why the
- * broad OR rung runs last.
- *
- * `indexEmpty` stays global under a scope: it describes the pipeline, not the
- * query.
+ * Fetches `DEEP_SEARCH_LIMIT + 1` to detect truncation, sound only because
+ * {@link selectFtsHits} filters before its `LIMIT`. `ORDER BY rank` scores every
+ * match, so `MAX_DEEP_QUERY_TOKENS` is the only bound on the bm25 scan; hence
+ * the broad OR rung runs last. `indexEmpty` stays global under a scope.
  *
  * No try/catch turning an FTS error into `[]`: that would park an empty body in
- * the shared cache for a day. The sanitiser is the defence.
+ * the shared cache for a day.
  */
 export async function searchFiles(
 	db: DB,
@@ -508,30 +462,18 @@ export async function writeFileText(db: DB, w: FileTextWrite): Promise<void> {
 /**
  * Stores the text a contributor's browser extracted, as one upsert.
  *
- * `submitted` is client-supplied. What contains that:
- * - Only olympiad editors reach this, and they could already upload a
- *   mislabelled file.
- * - The server re-runs `normalizeExtracted`. This is the security step: it
- *   strips forged STX/ETX sentinels.
- * - A size gate well under D1's 2 MB row limit, then `TEXT_CHAR_CAP`.
- * - The text only leaves the server as a plain-text snippet, never HTML.
- *
- * | cause | row |
- * | --- | --- |
- * | ext not in `EXTRACTABLE_EXTS` | `skipped` |
- * | blank, and the browser read the file and found no text | `empty` (a scan) |
- * | field absent or blank (old browser, JS off, extraction failed) | `pending` |
- * | over the size gate | `pending`, with `error` |
- * | under `MIN_EXTRACTED_CHARS` after normalising | `empty` (a scan) |
- * | otherwise | `ok` |
+ * `submitted` is client-supplied, and contained: only olympiad editors reach
+ * this; re-running `normalizeExtracted` strips forged STX/ETX sentinels (the
+ * security step); a size gate sits well under D1's 2 MB row limit; and the text
+ * leaves the server only as a plain-text snippet. A blank field (JS off,
+ * extraction failed) stays `pending` for the backfill.
  *
  * Can throw on a D1 error; the upload action catches it so indexing never fails
  * an upload.
  *
- * @param foundNoText the browser's verdict that the file is a scan. A scan sends
- *   no text, and without this it would wait as `pending` for a backfill that can
- *   only reach the same verdict. Trusting it grants nothing new: a client could
- *   already get `empty` by submitting a short string.
+ * @param foundNoText the browser's verdict that the file is a scan, stored as
+ *   `empty` rather than left `pending` for a backfill that would reach the same
+ *   verdict. Trusting it grants nothing: a short string gets `empty` anyway.
  */
 export async function putFileText(
 	db: DB,
@@ -672,16 +614,13 @@ export async function getFileTextStatuses(
 export type IndexCandidate = { url: string; ext: string };
 
 /**
- * The backfill's work queue, derived from the file tables rather than stored.
- * Processing a candidate writes its row, which removes it from the set, so the
- * sweep is idempotent and resumable, and files loaded out of band (rclone) are
- * picked up automatically.
+ * The backfill's work queue, derived from the file tables rather than stored:
+ * writing a candidate's row removes it, so the sweep is idempotent, resumable,
+ * and picks up files loaded out of band (rclone).
  *
- * `withCount` is opt-in because the count scans the whole file union (thousands
- * of D1 rows). The CLI asks for it once per sweep.
- *
- * The `skipped` clause lets a wider extractor pick up what a narrower one
- * passed on: the local script can read `.docx`/`.xlsx`, which the browser skips.
+ * `withCount` is opt-in: the count scans the whole file union (thousands of D1
+ * rows). The `skipped` clause lets a wider extractor (the local script reads
+ * `.docx`/`.xlsx`) pick up what the browser passed on.
  */
 export async function selectIndexCandidates(
 	db: DB,

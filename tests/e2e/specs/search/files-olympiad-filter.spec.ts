@@ -4,9 +4,7 @@ import { expect, test } from '../../support/test';
 import { gotoReady, openSearch, pickOlympiad } from '../../support/ui';
 
 /*
- * The ⌘K dialog's olympiad filter, which scopes files mode (deep search): what
- * a scope returns, the session cache across scopes, the picker panel's search
- * and keyboard, "On this page", and how problem mode shows a filter it ignores.
+ * The ⌘K dialog's olympiad filter, which scopes files mode (deep search).
  * docs/search.md, "The olympiad filter" and "The olympiad filter: a url range,
  * not a join".
  *

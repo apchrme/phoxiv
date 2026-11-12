@@ -3,10 +3,9 @@ import { expect, test } from '../../support/test';
 import { gotoReady } from '../../support/ui';
 
 /*
- * The olympiad page's search toolbar on a phone. The captioned Topics and
- * Progress triggers sit in SearchBar's `filters`, so below `md` they leave the
- * input its own row and share the row beneath it, filling its width. Beside
- * the input they squeezed its placeholder to "Search by".
+ * The olympiad page's search toolbar on a phone: below `md` the Topics and
+ * Progress triggers share a row under the input. Beside it, they squeezed its
+ * placeholder to "Search by".
  *
  * Reads the frozen alpha olympiad as a signed-in user, so both filters show.
  * Writes nothing.

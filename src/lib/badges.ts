@@ -429,11 +429,9 @@ export type BadgeProgressMap = Record<
 		/** ISO time the award was recorded, or `null` while not earned. */
 		earnedAt: string | null;
 		/**
-		 * The requirement, set only for a hidden badge this user has earned: the
-		 * one case where they may see what `/api/badges` can't show. `null`
-		 * otherwise, including for every badge that isn't hidden. `problems` is
-		 * the badge's list when it is manual, as in {@link PublicBadgeDetail},
-		 * and `null` otherwise.
+		 * The requirement, set only for a hidden badge this user has earned, which
+		 * `/api/badges` can't show; `null` otherwise. `problems` is the manual
+		 * badge's list, as in {@link PublicBadgeDetail}, else `null`.
 		 */
 		revealed: { summary: string; requiredCount: number; problems: BadgeProblem[] | null } | null;
 	}

@@ -23,14 +23,9 @@ import { SUPERADMIN_EMAIL } from '../support/env';
  * freshly migrated database on every server start. Typed against `schema.ts`, so
  * a schema change that breaks the seed fails `bun run check`.
  *
- * Each row belongs to one class (docs/testing.md, "Seed data"):
- * - frozen: read by many specs, written by none;
- * - owned: written by exactly one spec file, named in a comment;
- * - per-test: rows a test creates itself, under an id unique to that test;
- * - global: written by the index spec only (the FTS index), in its own project.
+ * Each row is frozen, owned, per-test or global (docs/testing.md, "Seed data").
  *
- * No spec asserts a global total, but a few read a position or a count, so a
- * new row can still break one. Keep `USERS` under the users table's page size of
+ * A few specs read a position or a count, so a new row can break one. Keep `USERS` under the users table's page size of
  * 25 (admin/users finds its rows on page 1), keep ORPHAN_URL the only `file_text`
  * row with no file (admin/index-panel expects "Removed 1"), and keep the frozen
  * olympiads first in display order, so their problems stay in ⌘K's first 50
@@ -314,12 +309,10 @@ export function usersTableFiller(n: number): { id: string; name: string; email: 
 }
 
 /**
- * owned by admin/users-table.spec.ts. Plain users with no session, each joined a
- * minute after the one before and all after every {@link USERS} account. The
- * table sorts oldest first by default, so those accounts all stay on page 1,
- * where admin/users.spec.ts looks for them without searching, and the fillers
- * fill the rest of page 1 and page 2. A minute apart, so no tie in the sort
- * leaves which filler lands on which page to the engine.
+ * owned by admin/users-table.spec.ts. Plain users with no session, joined after
+ * every {@link USERS} account, so the oldest-first sort keeps those accounts on
+ * page 1 (admin/users.spec.ts relies on it). A minute apart, so no sort tie
+ * decides which page a filler lands on.
  */
 function usersTableFillerRows(now: Date): User[] {
 	return Array.from({ length: USERS_TABLE_FILLERS }, (_, i) => ({
@@ -908,10 +901,8 @@ export const DEL_FILE_URLS = {
 } as const;
 
 /**
- * How many files contribute/delete.spec.ts's witness year holds:
- * DEEP_SEARCH_LIMIT, copied, since `#lib/search.js` imports through `#lib`. A scoped
- * search for a count phrase then fills the page exactly once the deleted files'
- * rows are gone, and is `truncated` while any is left.
+ * How many files contribute/delete.spec.ts's witness year holds: one page,
+ * DEEP_SEARCH_LIMIT, copied because `#lib/search.js` imports through `#lib`.
  */
 export const DEL_WITNESSES = 20;
 

@@ -7,19 +7,15 @@ import { expect, test } from '../../support/test';
 import { gotoReady, holdAction, toast } from '../../support/ui';
 
 /*
- * The olympiad editor (`/contribute/<olympiad>`): adding a year from the Years
- * card (`?/selectYear`), and the titles.csv round trip: the export
- * (`titles.csv/+server.ts`) and the import (`?/importTitles`). The two share a
- * format, docs/data-model.md, "The `titles.csv` contract".
+ * The olympiad editor's Years card and the titles.csv round trip (export and
+ * `?/importTitles`). See docs/data-model.md, "The `titles.csv` contract".
  *
- * Owns two olympiads. OWNED.csvOlympiad's problems never change: its export is
- * checked byte for byte, re-imported unchanged, and every refused import must
- * leave it so. The year the Years test adds has no problems, so it never reaches
- * the export. OWNED.csvFillOlympiad takes the one import that writes. Acts as
- * the frozen USERS.admin.
+ * Owns two olympiads. OWNED.csvOlympiad's problems never change, so its export
+ * is checked byte for byte; the year the Years test adds has no problems, so it
+ * never reaches the export. OWNED.csvFillOlympiad takes the one import that
+ * writes. Acts as the frozen USERS.admin.
  *
- * Every write is read back through what is never cached: the editors and
- * titles.csv itself, which is not under `/api/`.
+ * Writes are read back only through uncached routes (not `/api/`).
  */
 
 test.use({ role: 'admin' });
@@ -111,12 +107,10 @@ async function importCsv(page: Page, file: FilePayload): Promise<Response> {
 }
 
 /**
- * Expects `importTitles` to have refused with `actionFail(400, …, message)`, and
- * the page to toast it.
- *
- * `actionFail()` answers with its status and `type: 'failure'`; `error()` would
- * answer `type: 'error'` and replace the page (#lib/server/forms.ts: "`error()`
- * replaces the page and discards what the user typed"; CLAUDE.md rule 6).
+ * Expects `importTitles` to have refused with `actionFail(400, …, message)`
+ * (`type: 'failure'`), and the page to toast it. `error()` would fail this
+ * (#lib/server/forms.ts: "`error()` replaces the page and discards what the
+ * user typed"; CLAUDE.md rule 6).
  */
 async function expectImportRefused(page: Page, answer: Response, message: string): Promise<void> {
 	const body = (await answer.json()) as { type: string; status: number; data: string };

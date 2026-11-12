@@ -23,11 +23,10 @@
 	let { data }: PageProps = $props();
 
 	/**
-	 * The catalogue and holder counts, from the shared-cached `/api/badges`, so a
-	 * visit costs no D1 read. It comes most holders first; the page keeps that
-	 * order. The viewer's own standing comes separately from the
-	 * uncached `/progress/badges`: this page is in `(reg)` and cached for four
-	 * hours, so it must not carry per-user data itself.
+	 * The catalogue and holder counts, most holders first, from the shared-cached
+	 * `/api/badges`. The viewer's standing comes from the uncached
+	 * `/progress/badges`, since this browser-cached `(reg)` page must not carry
+	 * per-user data.
 	 */
 	const catalogue = new Resource<PublicBadge[]>('/api/badges');
 	const mine = new Resource<BadgeProgressMap>('/progress/badges');

@@ -26,13 +26,9 @@
 
 	/**
 	 * One badge: what it takes, how many hold it, where the viewer stands, and,
-	 * for a hand-picked badge, exactly which problems count.
-	 *
-	 * Fetched like `/badges`: the badge from the shared-cached `/api/badges/[id]`,
-	 * and the viewer's standing from the uncached `/progress/badges`, which also
-	 * carries a hidden badge's requirement (list included) once the viewer holds
-	 * it. Problems are listed without topics, as everywhere else
-	 * (docs/data-model.md).
+	 * for a hand-picked badge, which problems count. Fetched like `/badges`, from
+	 * `/api/badges/[id]` and `/progress/badges`. Problems are listed without
+	 * topics (docs/data-model.md).
 	 */
 	let { badge, signedIn }: { badge: PageData['badge']; signedIn: boolean } = $props();
 

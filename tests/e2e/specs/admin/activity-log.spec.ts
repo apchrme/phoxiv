@@ -8,17 +8,13 @@ import { gotoReady } from '../../support/ui';
 /*
  * The admin activity log's "Load more" (admin/log/ActivityLogTable.svelte),
  * which fetches older pages from admin/activity/+server.ts, "keyed on
- * `?before=<id>`". The cursor is the row id, never the timestamp: the seed's
- * LOG_PAGING_ENTRIES hold a run of 30 rows with one exact `created_at`, and a
- * page seam always falls inside that run, where a cursor on the timestamp alone
- * would skip the rest of the run (`<`) or repeat it (`<=`). activity-log.ts:
- * "Don't switch to ordering by `created_at`".
+ * `?before=<id>`". A page seam falls inside the seed's run of rows with one
+ * `created_at`, where a timestamp cursor would skip or repeat rows
+ * (activity-log.ts: "Don't switch to ordering by `created_at`").
  *
  * Owns LOG_PAGING_ENTRIES (fixtures/seed-data.ts) and only reads them. Other
- * specs log rows while this one runs, always with higher ids, so they push these
- * rows down the log, by a different amount each run. No assertion reads a total
- * or the newest rows: only this spec's own rows, by their unique details. One
- * test creates the per-test olympiad `e2e-created-log`.
+ * specs log newer rows meanwhile, so assertions read only this spec's rows, by
+ * their unique details. One test creates the per-test olympiad `e2e-created-log`.
  */
 
 test.use({ role: 'admin' });

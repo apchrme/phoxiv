@@ -26,12 +26,10 @@ import type { ProblemTopic } from '#lib/types.js';
 /*
  * Reads and writes for badges and who holds them.
  *
- * Read budget (these run on hot paths, so rows read are latency on every
- * request). Evaluating one user reads that user's progress rows and the badges,
- * never other users' rows: `evaluateUserBadges` runs on every dashboard view
- * and every tracked problem. Re-evaluating everyone scans all of
- * `problem_progress`, so only `recomputeBadge` does it, and only an admin save
- * calls that. Holder counts come from `user_badges` for the same reason.
+ * Read budget: evaluating one user reads only that user's progress and the
+ * badges, since `evaluateUserBadges` runs on every dashboard view and tracked
+ * problem. Only `recomputeBadge` (an admin save) scans all of
+ * `problem_progress`. Holder counts come from `user_badges` for the same reason.
  */
 
 export type BadgeRow = typeof badges.$inferSelect;
@@ -179,14 +177,11 @@ export type UserBadges = {
 
 /**
  * Evaluates every badge for one user and syncs their `user_badges` rows to the
- * result: inserts new awards, deletes lost ones (awards are revocable), and
- * writes nothing when nothing changed.
+ * result: inserts new awards, deletes lost ones, and writes nothing when nothing
+ * changed. Reads only the user's own rows (the read budget above).
  *
- * Reads only the user's own rows; see the read budget above. Because every
- * call re-syncs, awards left stale by a content edit (a re-tagged problem, a
- * new max score, a deleted problem) correct themselves on the user's next
- * dashboard view or tracked problem. Two concurrent calls can each write from
- * their own snapshot; the next call corrects that too.
+ * Because every call re-syncs, awards left stale by a content edit or by two
+ * racing calls correct themselves on the user's next view or tracked problem.
  */
 export async function evaluateUserBadges(db: DB, userId: string): Promise<UserBadges> {
 	const [progress, manualLinks, badgeRows, awards] = await db.batch([
@@ -352,16 +347,11 @@ function qualifyingCondition(badge: BadgeEntry): SQL {
 }
 
 /**
- * The two statements that re-evaluate one badge for every user and sync
- * `user_badges` to match: they award it to everyone who now qualifies and take
- * it from everyone who no longer does. Existing holders keep their `earned_at`.
- *
- * Returned rather than run, so {@link saveBadge} can put them in the same batch
- * (one transaction) as the badge's own writes: a failure then leaves neither a
- * half-saved badge nor awards for a rule that was never stored.
- *
- * Scans every progress row, so only an admin save runs it, and there is no
- * "recompute all" (that would be one scan per badge).
+ * The two statements that sync one badge's `user_badges` rows to everyone who
+ * now qualifies; existing holders keep their `earned_at`. Returned rather than
+ * run, so {@link saveBadge} batches them with the badge's own writes in one
+ * transaction. Scans every progress row, so only an admin save runs it, and
+ * there is no "recompute all" (one scan per badge).
  */
 function recomputeBadge(db: DB, badge: BadgeEntry) {
 	const holders = sql`SELECT pp.user_id FROM problem_progress pp
@@ -524,11 +514,9 @@ function linkWrites(
  * and re-evaluates it for every user ({@link recomputeBadge}). Returns the
  * saved badge, or `undefined` when `id` names no badge.
  *
- * Atomic: an update's row, its links and the recompute go in one batch, which
- * D1 runs as a transaction, so a failure part way leaves the old badge and its
- * awards as they were. A create has to insert first for the new id, so only
- * its links and recompute share a batch; if that fails, the new badge exists
- * with no awards and no list, and saving it again repairs it.
+ * An update is one batch (a D1 transaction), so a failure leaves the old badge
+ * and awards intact. A create must insert first for its id; if the batch after
+ * fails, the badge exists with no awards or list, and saving again repairs it.
  */
 export async function saveBadge(
 	db: DB,

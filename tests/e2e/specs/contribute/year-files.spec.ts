@@ -6,10 +6,9 @@ import { expect, test } from '../../support/test';
 import { gotoReady, toast } from '../../support/ui';
 
 /*
- * The year editor's Files tab: text extraction in the browser on file pick, the
- * upload, the per-file status badge, and the uploaded text reaching deep search.
- * See docs/search.md, "The parser runs in the contributor's browser" and "The
- * write path".
+ * The year editor's Files tab, from extraction to deep search. See
+ * docs/search.md, "The parser runs in the contributor's browser" and "The write
+ * path".
  *
  * Owns OWNED.filesOlympiad, one year per test (OWNED.filesYears). The scanned
  * PDF goes to the seeded problem P1 of the upload year, so it never shares a
@@ -143,13 +142,9 @@ test.describe('the year editor, Files tab', () => {
 		await expect(year.getByText(SEARCHABLE)).toBeVisible();
 		await upload(page, year, 'Problems');
 
-		// The upload wrote a `file_text` row; only the FTS5 triggers put it in the
-		// index. PHRASES.textPdf is nowhere in the seed, so a hit can only come from
-		// an upload. The first test uploads text.pdf to this olympiad too, so look
-		// for this year's url rather than counting results.
-		//
-		// `no-cache` bypasses the shared cache, so the answer is this run's index,
-		// not a body stored before the upload.
+		// Only the FTS5 triggers can have indexed the upload's `file_text` row.
+		// The first test uploads text.pdf here too, so look for this year's url
+		// rather than counting results. `no-cache` skips the shared cache.
 		const params = new URLSearchParams({ q: PHRASES.textPdf, olympiad: OLYMPIAD });
 		const response = await request.get(`/api/search/files?${params}`, {
 			headers: { 'cache-control': 'no-cache' }
