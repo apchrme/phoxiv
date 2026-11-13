@@ -559,6 +559,16 @@ year,number,title,topics,max_score
 The import only fills gaps. It creates missing years and never overwrites an
 existing value, so re-importing is safe.
 
+The Import card's **Copy AI prompt** button copies a prompt for an AI agent with
+web access. The agent fetches `/api/olympiads/<id>` on the site's own origin,
+reads the papers it links to, and writes this CSV for the problems missing a
+title, topics or maximum score. The prompt is built in
+[`contribute/[olympiad]/prompt.ts`](../src/routes/contribute/[olympiad]/prompt.ts).
+It restates this contract and describes that endpoint's `YearEntry[]` shape, so
+change it along with either. The topics and their separator are filled in from
+the constants the import reads. Because the endpoint is shared-cached, an agent
+may not see files uploaded in the last day.
+
 ## Migration workflow
 
 ```sh

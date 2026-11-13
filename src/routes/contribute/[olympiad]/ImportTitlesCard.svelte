@@ -1,25 +1,29 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { page } from '$app/state';
 	import type { Pending } from '#lib/forms.svelte.js';
 	import * as Card from '#lib/components/ui/card/index.js';
 	import { Button } from '#lib/components/ui/button/index.js';
 	import { Input } from '#lib/components/ui/input/index.js';
 	import { Separator } from '#lib/components/ui/separator/index.js';
 	import SubmitButton from '#lib/components/forms/SubmitButton.svelte';
-	import { FileUp, Download, X } from '@lucide/svelte';
+	import { FileUp, Download, X, ClipboardCopy } from '@lucide/svelte';
+	import { toast } from 'svelte-sonner';
 	import { PROBLEM_TOPICS } from '#lib/types.js';
 	import { CSV_UPLOAD } from '#lib/uploads.js';
+	import { titlesCsvPrompt } from './prompt.js';
 
 	/**
-	 * CSV export and import of problem titles, topics and max scores. The export
+	 * CSV export and import of problem titles, topics and max scores, plus a
+	 * prompt that has an AI agent write that CSV from the public API. The export
 	 * link uses `data-sveltekit-reload` because it downloads a file, not a page.
-	 * Don't render errors inline: the page's `formToasts` already toasts them.
+	 * Don't render import errors inline: the page's `formToasts` already toasts them.
 	 */
 	let {
-		olympiadId,
+		olympiad,
 		pending
 	}: {
-		olympiadId: string;
+		olympiad: { id: string; name: string };
 		/** The page's single `Pending`, so the submit button can disable itself. */
 		pending: Pending;
 	} = $props();
@@ -35,6 +39,17 @@
 
 	function onFileChange(e: Event) {
 		fileName = (e.currentTarget as HTMLInputElement).files?.[0]?.name ?? null;
+	}
+
+	async function copyPrompt() {
+		try {
+			await navigator.clipboard.writeText(titlesCsvPrompt(olympiad, page.url.origin));
+			toast.success('Prompt copied', {
+				description: 'Paste it into an AI agent that can browse the web.'
+			});
+		} catch {
+			toast.error('Could not copy the prompt');
+		}
 	}
 </script>
 
@@ -61,7 +76,7 @@
 				Download the current titles and topics for this olympiad to edit and re-upload.
 			</p>
 			<Button
-				href="/contribute/{olympiadId}/titles.csv"
+				href="/contribute/{olympiad.id}/titles.csv"
 				variant="outline"
 				size="sm"
 				class="shrink-0"
@@ -69,6 +84,17 @@
 			>
 				<Download class="size-3.5" />
 				Export titles
+			</Button>
+		</div>
+		<div class="flex items-center justify-between gap-3">
+			<p class="text-sm text-muted-foreground">
+				Copy a prompt for an AI agent with web access. It reads this olympiad's papers from phoXiv
+				and writes the CSV. Files uploaded in the last day may not be visible to it yet. Check its
+				output before you import it.
+			</p>
+			<Button type="button" variant="outline" size="sm" class="shrink-0" onclick={copyPrompt}>
+				<ClipboardCopy class="size-3.5" />
+				Copy prompt
 			</Button>
 		</div>
 		<Separator />

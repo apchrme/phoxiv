@@ -348,3 +348,60 @@ test.describe('titles.csv', () => {
 		});
 	}
 });
+
+test.describe('the AI prompt', () => {
+	test('copies a prompt that points at this olympiad’s API and the CSV contract', async ({
+		page,
+		context,
+		request
+	}) => {
+		await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+		await gotoReady(page, editorPath(OLYMPIAD));
+		await page.getByRole('button', { name: 'Copy prompt', exact: true }).click();
+		await expect(toast(page, 'Prompt copied')).toBeVisible();
+
+		// The Windows clipboard hands `\n` back as `\r\n`.
+		const prompt = (await page.evaluate(() => navigator.clipboard.readText())).replace(
+			/\r\n/g,
+			'\n'
+		);
+		expect(prompt).toContain(`CSV Physics Olympiad (${OLYMPIAD})`);
+		expect(prompt).toContain(`The first line is exactly: ${HEADER}`);
+		// Every topic, spelt and separated as `parseTopicsCsvCell` reads them.
+		expect(prompt).toContain(
+			'Mechanics;Electromagnetism;Thermodynamics;Waves and Optics;Relativity;Modern;Others'
+		);
+		expect(prompt).toContain(
+			['```csv', HEADER, '2019,T1,Physics of a Slinky,Mechanics;Waves and Optics,10'].join('\n')
+		);
+
+		// The site's own origin, so the agent reads the same database the import writes.
+		const api = `${new URL(page.url()).origin}/api/olympiads/${OLYMPIAD}`;
+		expect(prompt).toContain(`Fetch ${api}.`);
+
+		// The endpoint still has the fields the prompt tells the agent to read.
+		// 2001's problems never change, so reading them through the shared cache is
+		// safe. Its T1 has everything set and its T2 has nothing.
+		expect(prompt).toContain('{ year, yearFiles, problems }');
+		expect(prompt).toContain('{ number, title?, topics, maxScore?, files }');
+		const response = await request.get(api);
+		expect(response.status()).toBe(200);
+		const body = (await response.json()) as Record<string, unknown>[];
+		const year = body.find((y) => y.year === 2001);
+		expect(Object.keys(year ?? {})).toEqual(
+			expect.arrayContaining(['year', 'yearFiles', 'problems'])
+		);
+		const problems = year!.problems as Record<string, unknown>[];
+		expect(problems.find((p) => p.number === 'T1')).toMatchObject({
+			title: 'Spinning Top',
+			topics: ['Mechanics', 'Waves and Optics'],
+			maxScore: 10,
+			files: expect.any(Array)
+		});
+		// Unset values are omitted or empty, as the prompt says.
+		const t2 = problems.find((p) => p.number === 'T2')!;
+		expect(t2).not.toHaveProperty('title');
+		expect(t2).not.toHaveProperty('maxScore');
+		expect(t2.topics).toEqual([]);
+	});
+});

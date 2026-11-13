@@ -101,5 +101,5 @@
 
 	<OlympiadMetadataForm olympiad={data.olympiad} bind:icon {savedIcon} {pending} />
 
-	<ImportTitlesCard bind:this={importCard} olympiadId={data.olympiad.id} {pending} />
+	<ImportTitlesCard bind:this={importCard} olympiad={data.olympiad} {pending} />
 </div>
