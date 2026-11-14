@@ -71,7 +71,7 @@
 </script>
 
 <Card.Root id={String(year.year)} class="gap-y-4 py-4">
-	<Card.Header class="border-b px-4! sm:px-5! pb-3!">
+	<Card.Header class="border-b px-4! pb-3! sm:px-5!">
 		<Card.Title class="font-mono text-lg font-semibold text-foreground tabular-nums">
 			{year.year}
 		</Card.Title>
@@ -139,7 +139,7 @@
 				<Collapsible.Trigger
 					class={cn(
 						buttonVariants({ variant: 'ghost', size: 'sm' }),
-						'-mx-4 w-fit -mb-1 gap-1.5 bg-transparent! text-muted-foreground hover:text-foreground'
+						'-mx-4 -mb-1 w-fit gap-1.5 bg-transparent! text-muted-foreground hover:text-foreground'
 					)}
 				>
 					<ChevronRight
