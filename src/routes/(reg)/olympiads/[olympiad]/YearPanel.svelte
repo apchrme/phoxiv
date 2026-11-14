@@ -70,14 +70,14 @@
 	let open = $derived(narrowed || targeted);
 </script>
 
-<Card.Root id={String(year.year)} class="pt-5 pb-3 sm:py-5">
+<Card.Root id={String(year.year)} class="gap-y-4 py-3">
 	<Card.Header class="border-b">
 		<Card.Title class="font-mono text-lg font-semibold text-foreground tabular-nums">
 			{year.year}
 		</Card.Title>
 		{#if signedIn && totals.completed > 0}
 			<!-- The card header lays out a `Card.Action` top-right by itself. -->
-			<Card.Action class="flex flex-wrap items-center justify-end gap-x-2 gap-y-0.5">
+			<Card.Action class="flex flex-wrap items-center justify-end gap-x-2 gap-y-0.5 self-center">
 				<span class="text-sm text-muted-foreground tabular-nums">
 					{totals.completed}/{totals.total} done
 				</span>
@@ -98,7 +98,7 @@
 		{/if}
 	</Card.Header>
 
-	<div class="flex flex-col gap-4 px-3 sm:px-5">
+	<div class="flex flex-col gap-3 px-4 sm:px-5">
 		{#if showYearLevel && hasYearLevelContent(year)}
 			<div class="flex flex-col gap-2">
 				<!-- Keyed by index: nothing makes notes or link labels unique, and a
@@ -153,7 +153,7 @@
 				<!-- `hiddenUntilFound`: collapsed rows stay in the DOM, so the browser's
 				     find-in-page still reaches a title and opens the section. -->
 				<Collapsible.Content hiddenUntilFound>
-					<ul class="mt-2 list-none divide-y divide-border/60 rounded-xl bg-muted/50 p-0">
+					<ul class="my-2 list-none divide-y divide-border/60 rounded-xl bg-muted/50 p-0">
 						{#each withoutFiles as problem (problem.number)}
 							<ProblemRow
 								{problem}
