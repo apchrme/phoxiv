@@ -139,7 +139,7 @@
 				<Collapsible.Trigger
 					class={cn(
 						buttonVariants({ variant: 'ghost', size: 'sm' }),
-						'-mx-4 w-fit gap-1.5 text-muted-foreground hover:text-foreground bg-transparent!'
+						'-mx-4 w-fit gap-1.5 bg-transparent! text-muted-foreground hover:text-foreground'
 					)}
 				>
 					<ChevronRight
