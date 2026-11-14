@@ -80,6 +80,14 @@ Worker runtime. GitHub Actions runs the same lint, check and full suite on every
 pull request and every push to `master` ([testing.md](./testing.md#ci)); it never
 deploys.
 
+Workers Builds also deploys every push to `master`, running `bun run build` and
+then `bunx wrangler deploy`. It takes its Bun version from the `packageManager`
+field in `package.json`, and so does GitHub Actions. Keep that field pinned to
+the Bun you build with locally. Without the pin, Workers Builds used its image
+default, Bun 1.2.15. Under that version `vite build` sometimes exited with status
+0 straight after `Analysing routes`, before the client build and the adapter ran,
+and the deploy then failed with `.svelte-kit/cloudflare/_worker.js was not found`.
+
 After deploying, check whether you also need to:
 
 - [purge the cache](#purging-the-cache-after-an-api-change), if anything an
