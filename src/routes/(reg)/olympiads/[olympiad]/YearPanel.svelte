@@ -70,8 +70,8 @@
 	let open = $derived(narrowed || targeted);
 </script>
 
-<Card.Root id={String(year.year)} class="gap-y-4 py-3">
-	<Card.Header class="border-b">
+<Card.Root id={String(year.year)} class="gap-y-4 py-4">
+	<Card.Header class="border-b px-4! sm:px-5! pb-3!">
 		<Card.Title class="font-mono text-lg font-semibold text-foreground tabular-nums">
 			{year.year}
 		</Card.Title>
@@ -98,7 +98,7 @@
 		{/if}
 	</Card.Header>
 
-	<div class="flex flex-col gap-3 px-4 sm:px-5">
+	<div class="flex flex-col gap-3 px-4">
 		{#if showYearLevel && hasYearLevelContent(year)}
 			<div class="flex flex-col gap-2">
 				<!-- Keyed by index: nothing makes notes or link labels unique, and a
@@ -139,7 +139,7 @@
 				<Collapsible.Trigger
 					class={cn(
 						buttonVariants({ variant: 'ghost', size: 'sm' }),
-						'-mx-4 w-fit gap-1.5 bg-transparent! text-muted-foreground hover:text-foreground'
+						'-mx-4 w-fit -mb-1 gap-1.5 bg-transparent! text-muted-foreground hover:text-foreground'
 					)}
 				>
 					<ChevronRight
@@ -153,7 +153,7 @@
 				<!-- `hiddenUntilFound`: collapsed rows stay in the DOM, so the browser's
 				     find-in-page still reaches a title and opens the section. -->
 				<Collapsible.Content hiddenUntilFound>
-					<ul class="my-2 list-none divide-y divide-border/60 rounded-xl bg-muted/50 p-0">
+					<ul class="mt-3 list-none divide-y divide-border/60 rounded-xl bg-muted/50 p-0">
 						{#each withoutFiles as problem (problem.number)}
 							<ProblemRow
 								{problem}
