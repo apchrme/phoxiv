@@ -9,10 +9,17 @@
 	 * Signed-out stand-in for `ProgressControl`: the same circle, dimmed, linking
 	 * to `/login`, with a tooltip explaining that tracking needs an account.
 	 *
-	 * Keep the trigger's position classes in sync with `ProgressControl`, or the
-	 * circle jumps when you sign in.
+	 * The caller positions the trigger through `class`, with the same classes it
+	 * gives `ProgressControl`, or the circle jumps when you sign in.
 	 */
-	let { number }: { number: string } = $props();
+	let {
+		number,
+		class: className
+	}: {
+		number: string;
+		/** Positions the trigger in its card or row. */
+		class?: string;
+	} = $props();
 
 	/** Driven by hand for touch, since bits-ui never opens tooltips from touch. */
 	let open = $state(false);
@@ -36,11 +43,11 @@
 	<Tooltip.Trigger
 		class={cn(
 			buttonVariants({ variant: 'ghost', size: 'xs' }),
-			// Same position as ProgressControl's trigger.
-			'-mt-1 -mr-2 shrink-0 px-1.5',
+			'shrink-0 px-1.5',
 			// Never use `disabled`: it blocks pointer events and bits-ui's handlers,
 			// so the tooltip would never open.
-			'text-muted-foreground/60 hover:text-foreground'
+			'text-muted-foreground/60 hover:text-foreground',
+			className
 		)}
 		aria-label="Sign in to track problem {number}"
 		onpointerdown={(e) => {

@@ -10,9 +10,10 @@
 	import { exactScore, formatScore, progressKey, type ProblemProgress } from '#lib/progress.js';
 
 	/**
-	 * A problem card's tracking control: a state icon that opens a form to record,
+	 * A problem's tracking control: a state icon that opens a form to record,
 	 * change or remove a score. Signed-in only; `SignInToTrack` is the signed-out
-	 * version. Keep the trigger's position classes in sync with it.
+	 * version. The caller positions the trigger through `class`, and passes both
+	 * the same classes, so the circle doesn't jump when you sign in.
 	 *
 	 * Uses bits-ui `Popover` directly (CLAUDE.md rule 2). Portalled, because the
 	 * card is `overflow-hidden`. A popover, not a `DropdownMenu`, because menu
@@ -23,7 +24,8 @@
 		number,
 		maxScore,
 		entry,
-		pending
+		pending,
+		class: className
 	}: {
 		year: number;
 		/** The problem number, e.g. `T1`. */
@@ -34,6 +36,8 @@
 		entry: ProblemProgress | undefined;
 		/** The page's single `Pending`, so the buttons can disable themselves. */
 		pending: Pending;
+		/** Positions the trigger in its card or row. */
+		class?: string;
 	} = $props();
 
 	/** Completion is the entry existing; there is no flag. */
@@ -70,9 +74,9 @@
 	<Popover.Trigger
 		class={cn(
 			buttonVariants({ variant: 'ghost', size: 'xs' }),
-			// Pulled into the card's padding to line up with the problem number.
-			'-mt-1 -mr-2 shrink-0 gap-1 px-1.5 font-mono tabular-nums',
-			completed ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+			'shrink-0 gap-1 px-1.5 font-mono tabular-nums',
+			completed ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+			className
 		)}
 		title={triggerLabel}
 		aria-label={triggerLabel}

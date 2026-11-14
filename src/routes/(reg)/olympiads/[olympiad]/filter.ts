@@ -116,6 +116,15 @@ export function showYearLevel(year: YearEntry, { query, showFullYear }: FilterSt
 	return !q || String(year.year).includes(q) || showFullYear;
 }
 
+/**
+ * True while any query or filter narrows the list. Each year panel then opens
+ * its "problems without files" section, because a match hidden behind a
+ * collapsed toggle would look like no match at all.
+ */
+export function isNarrowed(state: FilterState): boolean {
+	return state.query.trim() !== '' || isFiltering(state);
+}
+
 /** True when the year has any year-level material worth a section. */
 export function hasYearLevelContent(year: YearEntry): boolean {
 	return year.yearFiles.length > 0 || year.notes.length > 0 || year.extraLinks.length > 0;

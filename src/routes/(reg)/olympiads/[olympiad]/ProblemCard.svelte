@@ -7,9 +7,10 @@
 	import SignInToTrack from './SignInToTrack.svelte';
 
 	/**
-	 * One problem: number, title, files, and the tracking control (or a sign-in
-	 * stand-in). Topics aren't rendered here, to keep the card uncluttered; the
-	 * topic filter uses them.
+	 * One problem with files: number, title, files, and the tracking control (or
+	 * a sign-in stand-in). A problem without files is a `ProblemRow` instead.
+	 * Topics aren't rendered here, to keep the card uncluttered; the topic filter
+	 * uses them.
 	 */
 	let {
 		problem,
@@ -26,6 +27,9 @@
 		pending: Pending;
 		signedIn: boolean;
 	} = $props();
+
+	/** Pulled into the card's padding to line up with the problem number. */
+	const controlPosition = '-mt-1 -mr-2';
 </script>
 
 <div class="flex flex-col gap-2 rounded-xl bg-muted/50 p-4 sm:p-5">
@@ -43,9 +47,10 @@
 				maxScore={problem.maxScore ?? null}
 				{entry}
 				{pending}
+				class={controlPosition}
 			/>
 		{:else}
-			<SignInToTrack number={problem.number} />
+			<SignInToTrack number={problem.number} class={controlPosition} />
 		{/if}
 	</div>
 	<div class="flex flex-wrap gap-2">

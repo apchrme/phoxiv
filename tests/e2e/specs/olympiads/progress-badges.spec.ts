@@ -3,7 +3,7 @@ import type { BadgeProgressMap } from '../../../../src/lib/badges';
 import { BADGE_OLYMPIAD, BADGES } from '../../fixtures/seed-data';
 import { postAction } from '../../support/actions';
 import { expect, test } from '../../support/test';
-import { gotoReady, toast } from '../../support/ui';
+import { gotoReady, showProblemsWithoutFiles, toast } from '../../support/ui';
 
 /*
  * Tracking a problem re-evaluates the user's badges: the last qualifying
@@ -52,6 +52,8 @@ test.describe('earning and losing a badge', () => {
 		expect(await standing(request)).toEqual({ count: 1, earnedAt: null, revealed: null });
 
 		await gotoReady(page, PAGE);
+		// Q2 has no files, so its control is in the collapsed section.
+		await showProblemsWithoutFiles(page, BADGE_OLYMPIAD.trackerYear);
 		await page.getByRole('button', { name: 'Mark problem Q2 as done', exact: true }).click();
 		await page.getByRole('button', { name: 'Mark done', exact: true }).click();
 		await expect(toast(page, `Badge unlocked: ${BADGES.tracker.name}`)).toBeVisible();

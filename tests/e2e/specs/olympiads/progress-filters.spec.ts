@@ -1,7 +1,7 @@
 import type { APIRequestContext, Locator, Page } from '@playwright/test';
 import { postAction } from '../../support/actions';
 import { expect, test } from '../../support/test';
-import { gotoReady, openSearch } from '../../support/ui';
+import { gotoReady, openSearch, showProblemsWithoutFiles } from '../../support/ui';
 
 /*
  * The olympiad page's progress filters, and the race and stale-olympiad guards
@@ -45,6 +45,10 @@ const CONTROL = /^(Mark problem \S+ as done|Problem \S+ — .+)$/;
  * Asserts that a year's panel lists exactly these problems, in order, each
  * named by its tracking control, which also states its progress. One retrying
  * read of every name, so a list mid-change can't pass half a check.
+ *
+ * Only T1 has files; the rest are in the year's "problems without files"
+ * section, whose controls count only while it is open. A query or filter opens
+ * it; with none set, open it with {@link showAll} first.
  */
 async function expectListed(page: Page, year: number, controls: string[]): Promise<void> {
 	const listed = yearPanel(page, year).getByRole('button', { name: CONTROL });
@@ -92,9 +96,19 @@ const READER = {
 	p2: 'Mark problem 2 as done'
 };
 
+/**
+ * Opens both years' problems without files, collapsed whenever no query or
+ * filter is set (YearPanel.svelte).
+ */
+async function showAll(page: Page): Promise<void> {
+	await showProblemsWithoutFiles(page, 2019);
+	await showProblemsWithoutFiles(page, 2020);
+}
+
 /** Opens alpha and waits until the reader's progress has landed. */
 async function openAsReader(page: Page): Promise<void> {
 	await gotoReady(page, PAGE);
+	await showAll(page);
 	// Every control reads "Mark problem … as done" until the progress fetch
 	// lands, and a filter picked before then would filter an empty map.
 	await expectListed(page, 2019, [READER.t1, READER.t2, READER.t3]);
@@ -118,7 +132,9 @@ test.describe('the status filter', () => {
 		await expectListed(page, 2019, [READER.t2]);
 		await expectListed(page, 2020, [READER.p2]);
 
+		// No filter left, so the sections are collapsed again.
 		await filterByStatus(page, 'To do', 'All problems');
+		await showAll(page);
 		await expectListed(page, 2019, [READER.t1, READER.t2, READER.t3]);
 		await expectListed(page, 2020, [READER.p1, READER.p2]);
 	});
@@ -150,6 +166,7 @@ test.describe('the status filter', () => {
 			'title',
 			'All topics'
 		);
+		await showAll(page);
 		await expectListed(page, 2019, [READER.t1, READER.t2, READER.t3]);
 		await expectListed(page, 2020, [READER.p1, READER.p2]);
 	});
@@ -301,6 +318,10 @@ test.describe('tracking while the progress request is in flight', () => {
 
 		await gotoReady(page, PAGE);
 		await taken;
+		// Opened before the snapshot lands, so problem 1's row being visible after
+		// it also guards "the page passes a new `year` object every time the
+		// progress fetch lands" (YearPanel.svelte): that once collapsed them again.
+		await showAll(page);
 
 		// Until the snapshot lands, every problem looks untracked. Change three, in
 		// all three ways a key can differ from the snapshot:
@@ -358,6 +379,7 @@ test.describe('tracking while the progress request is in flight', () => {
 
 	test('under To do, a problem leaves the list as soon as it is tracked', async ({ page }) => {
 		await gotoReady(page, PAGE);
+		await showProblemsWithoutFiles(page, 2019);
 		await expectListed(page, 2019, [
 			'Problem T1 — 4 out of 10',
 			'Mark problem T2 as done',

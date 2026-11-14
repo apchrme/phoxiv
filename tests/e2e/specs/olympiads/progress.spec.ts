@@ -1,7 +1,7 @@
 import type { APIRequestContext, Page, Response } from '@playwright/test';
 import { postAction } from '../../support/actions';
 import { expect, test } from '../../support/test';
-import { gotoReady, toast } from '../../support/ui';
+import { gotoReady, showProblemsWithoutFiles, toast } from '../../support/ui';
 
 /*
  * Tracking progress on an olympiad page: ProgressControl.svelte signed in,
@@ -34,6 +34,17 @@ function popoverButton(page: Page, name: 'Save' | 'Mark done' | 'Remove') {
 async function reload(page: Page): Promise<void> {
 	await page.reload();
 	await expect(page.locator('html')).toHaveAttribute('data-hydrated', '');
+	// The reload collapses it again.
+	await showProblemsWithoutFiles(page, 2019);
+}
+
+/**
+ * Opens alpha with 2019's problems without files shown. T3 has no files, so its
+ * control is in that section, collapsed until opened; T1 has a card.
+ */
+async function open(page: Page): Promise<void> {
+	await gotoReady(page, PAGE);
+	await showProblemsWithoutFiles(page, 2019);
 }
 
 /** The `?/trackProblem` POST that a popover submit sends. */
@@ -88,7 +99,7 @@ test.describe('tracking a problem', () => {
 	});
 
 	test('a score shows against the maximum, and survives a reload', async ({ page, request }) => {
-		await gotoReady(page, PAGE);
+		await open(page);
 		await control(page, 'Mark problem T3 as done').click();
 		const scoreBox = page.getByLabel('Score for T3, out of 7.5');
 		// Three decimals, so the display rounds it and the box must not.
@@ -119,7 +130,7 @@ test.describe('tracking a problem', () => {
 		page,
 		request
 	}) => {
-		await gotoReady(page, PAGE);
+		await open(page);
 		const untracked = control(page, 'Mark problem T3 as done');
 		await untracked.click();
 		const scoreBox = page.getByLabel('Score for T3, out of 7.5');

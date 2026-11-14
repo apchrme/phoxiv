@@ -149,7 +149,8 @@ The suite already covers:
   export and import, the year editor's rows, topics, duplicates and links, uploads with their text extraction, and deleting files
   and years (their text leaves the index);
 - `tests/e2e/specs/olympiads/`: the index, the olympiad page's 404, what it must
-  never render, tracking progress, and the status filter;
+  never render, its collapsed problems without files, tracking progress, and the
+  status filter;
 - `tests/e2e/specs/search/`: the ⌘K dialog in both modes: reset, Enter, escaping,
   the session caches, filters before ranking, the keyboard (caps lock included),
   failures, the debounce, the length limit, ranking, what a file result is, and
@@ -174,6 +175,12 @@ Then click through whatever you touched that the suite doesn't reach, under
 - Anything you restyled, in dark mode as well as light: Catppuccin Mocha maps
   several tokens to the same colour (see
   [shadcn-svelte components are vendored](#shadcn-svelte-components-are-vendored)).
+
+**Olympiad page**
+
+- Find-in-page (Ctrl+F) for the title of a problem without files opens its
+  collapsed section and highlights the title. The rows are `hidden="until-found"`,
+  and Playwright can't drive the browser's find bar.
 
 **⌘K search**
 

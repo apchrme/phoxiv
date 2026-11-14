@@ -120,8 +120,9 @@ src/routes/
 │
 ├── (reg)/                      private browser cache
 │   ├── olympiads/              index, and [olympiad]/ with YearPanel, ProblemCard,
-│   │                           ProgressControl, SignInToTrack, ContributorsButton,
-│   │                           filter.ts, and progress/ (endpoint, private, no-store)
+│   │                           ProblemRow, ProgressControl, SignInToTrack,
+│   │                           ContributorsButton, filter.ts, and progress/
+│   │                           (endpoint, private, no-store)
 │   ├── blog/                   index and [slug]/, from #lib/posts/*.svx
 │   ├── resources/, privacy/    .svx pages
 │   ├── team/                   admins and contributors; fetches /api/team

@@ -87,6 +87,27 @@ export async function pickOlympiad(
 }
 
 /**
+ * The toggle of a year's "problems without files" section on an olympiad page
+ * ("2 problems without files"). The year panel's `id` is the year.
+ */
+export function withoutFilesToggle(page: Page, year: number): Locator {
+	return page
+		.locator(`[id="${year}"]`)
+		.getByRole('button', { name: /^\d+ problems? without files$/ });
+}
+
+/**
+ * Opens a year's "problems without files" section if it is collapsed, as it is
+ * unless a query or filter is set (YearPanel.svelte). Their rows, and the
+ * tracking controls in them, are hidden until then.
+ */
+export async function showProblemsWithoutFiles(page: Page, year: number): Promise<void> {
+	const toggle = withoutFilesToggle(page, year);
+	if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+	await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+}
+
+/**
  * Opens the ⌘K dialog from the desktop nav button and returns it. The mobile
  * nav's button has the same name but is hidden at desktop width, so the role
  * query finds only the visible one.

@@ -1,7 +1,7 @@
 import type { Locator, Page } from '@playwright/test';
 import { RANKING, XSS_TITLE } from '../../fixtures/seed-data';
 import { expect, test } from '../../support/test';
-import { gotoReady, openSearch } from '../../support/ui';
+import { gotoReady, openSearch, showProblemsWithoutFiles } from '../../support/ui';
 
 /*
  * The ⌘K dialog's problem filters, keyboard and failure states
@@ -258,6 +258,10 @@ test.describe('⌘K problem filters', () => {
 			await filterByProgress(page, page, 'To do');
 			await expectOlympiadPageLists(page, ALPHA_TODO);
 			await filterByProgress(page, page, 'All problems');
+			// With no filter, the problems without files are collapsed again
+			// (YearPanel.svelte); a filter had opened them.
+			await showProblemsWithoutFiles(page, 2019);
+			await showProblemsWithoutFiles(page, 2020);
 			await expectOlympiadPageLists(page, ALPHA_PROBLEMS);
 		});
 

@@ -21,6 +21,7 @@
 	import {
 		filterYears,
 		hasProblemMatches,
+		isNarrowed,
 		showYearLevel,
 		type FilterState,
 		type ProblemStatus
@@ -165,6 +166,7 @@
 	 */
 	const filtered = $derived.by(() => filterYears(years, filterState, progress));
 	const canShowFullYear = $derived.by(() => hasProblemMatches(years, filterState, progress));
+	const narrowed = $derived(isNarrowed(filterState));
 </script>
 
 <SvelteSeo
@@ -247,6 +249,7 @@
 				<YearPanel
 					{year}
 					showYearLevel={showYearLevel(year, filterState)}
+					{narrowed}
 					{progress}
 					{pending}
 					{signedIn}

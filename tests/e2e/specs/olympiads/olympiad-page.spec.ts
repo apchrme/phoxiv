@@ -2,7 +2,7 @@ import type { Locator, Page } from '@playwright/test';
 import { PROBLEM_TOPICS, type YearEntry } from '../../../../src/lib/types';
 import { XSS_TITLE } from '../../fixtures/seed-data';
 import { expect, test } from '../../support/test';
-import { gotoReady } from '../../support/ui';
+import { gotoReady, showProblemsWithoutFiles, withoutFilesToggle } from '../../support/ui';
 
 /*
  * The public olympiad page, src/routes/(reg)/olympiads/[olympiad]/: what it must
@@ -47,6 +47,9 @@ test.describe('topics', () => {
 		test(`are never shown on a problem (${role ?? 'signed out'})`, async ({ as }) => {
 			const page = await as(role);
 			await gotoReady(page, '/olympiads/alpha');
+			// The rows too, not only the cards: Heat Engine has no files.
+			await showProblemsWithoutFiles(page, 2019);
+			await showProblemsWithoutFiles(page, 2020);
 
 			// A title in each panel first: the problems come from a fetch after
 			// hydration, and an empty panel would pass the checks below.
@@ -60,6 +63,68 @@ test.describe('topics', () => {
 			}
 		});
 	}
+});
+
+test.describe('problems without files', () => {
+	// Alpha 2019: T1 has a file; T2 and T3 don't. 2020: neither problem has one.
+
+	test('are one-line rows in a section that starts collapsed', async ({ page }) => {
+		await gotoReady(page, '/olympiads/alpha');
+		const y2019 = yearPanel(page, 2019);
+
+		// T1 keeps its card, with its file.
+		await expect(y2019.getByText('Rolling Cylinder', { exact: true })).toBeVisible();
+		await expect(y2019.getByRole('link', { name: 'Solution' })).toBeVisible();
+
+		const toggle = withoutFilesToggle(page, 2019);
+		await expect(toggle).toHaveText('2 problems without files');
+		await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+		await expect(y2019.getByText('Fast Rocket', { exact: true })).toBeHidden();
+		// A year with no files at all is only the toggle.
+		await expect(withoutFilesToggle(page, 2020)).toHaveAttribute('aria-expanded', 'false');
+		await expect(yearPanel(page, 2020).getByText('Heat Engine', { exact: true })).toBeHidden();
+
+		await toggle.click();
+		await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+		// One row each, holding the number, the title and the tracking control.
+		const rows = y2019.getByRole('listitem');
+		await expect(rows).toHaveCount(2);
+		const t3 = rows.filter({ hasText: 'Fast Rocket' });
+		await expect(t3).toContainText('T3');
+		await expect(
+			t3.getByRole('link', { name: 'Sign in to track problem T3', exact: true })
+		).toBeVisible();
+
+		await toggle.click();
+		await expect(y2019.getByText('Fast Rocket', { exact: true })).toBeHidden();
+	});
+
+	test('a query opens them, and clearing it closes them again', async ({ page }) => {
+		// "a match hidden behind a collapsed toggle would look like no match at
+		// all" (filter.ts, isNarrowed).
+		await gotoReady(page, '/olympiads/alpha');
+		const toggle = withoutFilesToggle(page, 2019);
+		await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+
+		const query = page.getByPlaceholder('Search by year or problem…');
+		await query.fill('rocket');
+		await expect(toggle).toHaveText('1 problem without files');
+		await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+		await expect(yearPanel(page, 2019).getByText('Fast Rocket', { exact: true })).toBeVisible();
+
+		await query.fill('');
+		await expect(toggle).toHaveText('2 problems without files');
+		await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+	});
+
+	test('the year a link points at opens them', async ({ page }) => {
+		// "⌘K, the dashboard and badge pages all link to the year, and the problem
+		// they mean may be in this section" (YearPanel.svelte).
+		await gotoReady(page, '/olympiads/alpha#2020');
+		await expect(withoutFilesToggle(page, 2020)).toHaveAttribute('aria-expanded', 'true');
+		await expect(yearPanel(page, 2020).getByText('Heat Engine', { exact: true })).toBeVisible();
+		await expect(withoutFilesToggle(page, 2019)).toHaveAttribute('aria-expanded', 'false');
+	});
 });
 
 test('a stored javascript: link is not rendered as a link', async ({ page }) => {
@@ -82,6 +147,8 @@ test('a stored javascript: link is not rendered as a link', async ({ page }) => 
 
 test('an XSS problem title renders as literal text', async ({ page }) => {
 	await gotoReady(page, '/olympiads/alpha');
+	// T2 has no files, so it is a row in the collapsed section.
+	await showProblemsWithoutFiles(page, 2019);
 	await expect(yearPanel(page, 2019).getByText(XSS_TITLE, { exact: true })).toBeVisible();
 	// Parsed as markup, the title would be an `<img>`, whose `onerror` runs once
 	// `x` fails to load. The element would exist as soon as the card rendered.
