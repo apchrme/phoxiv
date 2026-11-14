@@ -134,12 +134,12 @@
 		{/if}
 
 		{#if withoutFiles.length > 0}
-			<Collapsible.Root bind:open class="flex flex-col gap-2">
-				<!-- `-ml-2.5`: lines the chevron up with the cards' left edge. -->
+			<Collapsible.Root bind:open class="flex flex-col">
+				<!-- -mx-4 aligns the chevron with the left edge of the files -->
 				<Collapsible.Trigger
 					class={cn(
 						buttonVariants({ variant: 'ghost', size: 'sm' }),
-						'w-fit gap-1.5 text-muted-foreground hover:text-foreground'
+						'-mx-4 w-fit gap-1.5 text-muted-foreground hover:text-foreground bg-transparent!'
 					)}
 				>
 					<ChevronRight
@@ -153,7 +153,7 @@
 				<!-- `hiddenUntilFound`: collapsed rows stay in the DOM, so the browser's
 				     find-in-page still reaches a title and opens the section. -->
 				<Collapsible.Content hiddenUntilFound>
-					<ul class="m-0 list-none divide-y divide-border/60 rounded-xl bg-muted/50 p-0">
+					<ul class="mt-2 list-none divide-y divide-border/60 rounded-xl bg-muted/50 p-0">
 						{#each withoutFiles as problem (problem.number)}
 							<ProblemRow
 								{problem}
