@@ -117,6 +117,66 @@ test.describe('problems without files', () => {
 		await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 	});
 
+	test('the display menu makes them cards, and the choice outlives a reload', async ({ page }) => {
+		// "Kept in `localStorage`, not on the account, so it works signed out"
+		// (display.ts), hence a signed-out page.
+		await gotoReady(page, '/olympiads/alpha');
+		const y2019 = yearPanel(page, 2019);
+		const display = page
+			.getByRole('main')
+			.getByRole('button', { name: /^Problems without files: / });
+		await expect(display).toHaveAccessibleName('Problems without files: Collapsed list');
+		await expect(withoutFilesToggle(page, 2019)).toBeVisible();
+
+		await display.click();
+		await page.getByRole('menuitemradio', { name: 'Cards', exact: true }).click();
+		await expect(display).toHaveAccessibleName('Problems without files: Cards');
+
+		async function expectCards(): Promise<void> {
+			// No section and no rows: every problem is a card, in the year's order.
+			await expect(withoutFilesToggle(page, 2019)).toHaveCount(0);
+			await expect(withoutFilesToggle(page, 2020)).toHaveCount(0);
+			await expect(y2019.getByRole('listitem')).toHaveCount(0);
+			await expect(y2019.getByText(/^T\d$/)).toHaveText(['T1', 'T2', 'T3']);
+			await expect(y2019.getByText('Fast Rocket', { exact: true })).toBeVisible();
+			await expect(
+				y2019.getByRole('link', { name: 'Sign in to track problem T3', exact: true })
+			).toBeVisible();
+			await expect(yearPanel(page, 2020).getByText('Heat Engine', { exact: true })).toBeVisible();
+		}
+		await expectCards();
+
+		await page.reload();
+		await expect(page.locator('html')).toHaveAttribute('data-hydrated', '');
+		await expect(display).toHaveAccessibleName('Problems without files: Cards');
+		await expectCards();
+
+		// And back, which is remembered too.
+		await display.click();
+		await page.getByRole('menuitemradio', { name: 'Collapsed list', exact: true }).click();
+		await expect(withoutFilesToggle(page, 2019)).toHaveAttribute('aria-expanded', 'false');
+		await expect(y2019.getByText('Fast Rocket', { exact: true })).toBeHidden();
+		await page.reload();
+		await expect(withoutFilesToggle(page, 2019)).toHaveAttribute('aria-expanded', 'false');
+	});
+
+	test('"Clear filters" leaves the display choice alone', async ({ page }) => {
+		// "A display preference, not a filter: … never reset by 'Clear filters'"
+		// (+page.svelte).
+		await gotoReady(page, '/olympiads/alpha');
+		const display = page
+			.getByRole('main')
+			.getByRole('button', { name: /^Problems without files: / });
+		await display.click();
+		await page.getByRole('menuitemradio', { name: 'Cards', exact: true }).click();
+
+		await page.getByPlaceholder('Search by year or problem…').fill('no such problem');
+		await page.getByRole('button', { name: 'Clear filters' }).click();
+		await expect(yearPanel(page, 2019).getByText('Fast Rocket', { exact: true })).toBeVisible();
+		await expect(display).toHaveAccessibleName('Problems without files: Cards');
+		await expect(withoutFilesToggle(page, 2019)).toHaveCount(0);
+	});
+
 	test('the year a link points at opens them', async ({ page }) => {
 		// "⌘K, the dashboard and badge pages all link to the year, and the problem
 		// they mean may be in this section" (YearPanel.svelte).

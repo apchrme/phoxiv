@@ -12,18 +12,21 @@
 	import ProblemCard from './ProblemCard.svelte';
 	import ProblemRow from './ProblemRow.svelte';
 	import { hasYearLevelContent, type FilteredYear } from './filter';
+	import type { ProblemDisplay } from './display';
 	import { isHttpUrl } from '#lib/uploads.js';
 
 	/**
 	 * One year: its notes, links and files, then the matching problems. Problems
-	 * with files are cards; those without are one-line rows in a section that
-	 * starts collapsed. The card `id` is the target for `#2019`-style links from
-	 * search.
+	 * with files are cards. Those without are, by default, one-line rows in a
+	 * section that starts collapsed; with `display` set to `'cards'` they are
+	 * cards too, in order among the rest. The card `id` is the target for
+	 * `#2019`-style links from search.
 	 */
 	let {
 		year,
 		showYearLevel,
 		narrowed,
+		display,
 		progress,
 		pending,
 		signedIn
@@ -33,6 +36,8 @@
 		showYearLevel: boolean;
 		/** A query or filter is set, so the problems without files start open. */
 		narrowed: boolean;
+		/** Whether problems without files are collapsed rows or cards. */
+		display: ProblemDisplay;
 		/** The user's progress across the whole olympiad. */
 		progress: ProgressMap;
 		/** The page's single `Pending`, so each problem's buttons can disable themselves. */
@@ -50,8 +55,14 @@
 	 */
 	const links = $derived(year.extraLinks.filter((link) => isHttpUrl(link.url)));
 
-	const withFiles = $derived(year.matchedProblems.filter((p) => p.files.length > 0));
-	const withoutFiles = $derived(year.matchedProblems.filter((p) => p.files.length === 0));
+	const asCards = $derived(
+		display === 'cards'
+			? year.matchedProblems
+			: year.matchedProblems.filter((p) => p.files.length > 0)
+	);
+	const withoutFiles = $derived(
+		display === 'cards' ? [] : year.matchedProblems.filter((p) => p.files.length === 0)
+	);
 
 	/** True when a `#2019` link points at this year. */
 	const targeted = $derived(page.url.hash === `#${year.year}`);
@@ -119,9 +130,9 @@
 			</div>
 		{/if}
 
-		{#if withFiles.length > 0}
+		{#if asCards.length > 0}
 			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-				{#each withFiles as problem (problem.number)}
+				{#each asCards as problem (problem.number)}
 					<ProblemCard
 						{problem}
 						year={year.year}
@@ -139,7 +150,7 @@
 				<Collapsible.Trigger
 					class={cn(
 						buttonVariants({ variant: 'ghost', size: 'sm' }),
-						'-mx-4 -mb-1 w-fit gap-1.5 bg-transparent! text-muted-foreground hover:text-foreground'
+						'-mx-4 -mb-1 w-full justify-start gap-1.5 bg-transparent! text-muted-foreground hover:text-foreground'
 					)}
 				>
 					<ChevronRight

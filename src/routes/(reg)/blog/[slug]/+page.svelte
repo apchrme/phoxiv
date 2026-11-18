@@ -17,7 +17,7 @@
 
 <article class="pb-10">
 	<!-- Back link -->
-	<BackLink href={resolve('blog')}>Back to blog</BackLink>
+	<BackLink href={resolve('blog')}>Blog</BackLink>
 
 	<!-- Post header -->
 	<header class="flex flex-col gap-3 py-3 md:py-5">

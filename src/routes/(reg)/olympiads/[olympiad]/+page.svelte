@@ -10,7 +10,7 @@
 	import { SearchX, TriangleAlert } from '@lucide/svelte';
 	import BackLink from '#lib/components/BackLink.svelte';
 	import SvelteSeo from 'svelte-seo';
-	import { tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { resolve } from '$app/paths';
 	import Skeleton from '#lib/components/ui/skeleton/skeleton.svelte';
 	import { formToasts, Pending } from '#lib/forms.svelte.js';
@@ -18,6 +18,8 @@
 	import YearPanel from './YearPanel.svelte';
 	import ContributorsButton from './ContributorsButton.svelte';
 	import StatusFilter from '#lib/components/StatusFilter.svelte';
+	import DisplayMenu from './DisplayMenu.svelte';
+	import { loadDisplay, saveDisplay, type ProblemDisplay } from './display';
 	import {
 		filterYears,
 		hasProblemMatches,
@@ -42,6 +44,16 @@
 	let activeTopics = $state<ProblemTopic[]>([]);
 	/** Signed-in only; anonymous visitors have no progress to filter. */
 	let status = $state<ProblemStatus>('all');
+
+	/**
+	 * A display preference, not a filter: it survives navigating between
+	 * olympiads and is never reset by "Clear filters". Read on mount, since
+	 * `localStorage` doesn't exist on the server; see `display.ts`.
+	 */
+	let display = $state<ProblemDisplay>('grouped');
+	onMount(() => {
+		display = loadDisplay();
+	});
 
 	/** The user's scores keyed by `progressKey`. Maximums come with `years`. */
 	let progress = $state<ProgressMap>({});
@@ -177,7 +189,7 @@
 
 <!-- `mt-0`: BackLink brings its own `mt-5`, which the row carries instead. -->
 <div class="mt-5 flex flex-wrap items-center justify-between gap-2">
-	<BackLink href={resolve('olympiads')} class="mt-0">Back to olympiads</BackLink>
+	<BackLink href={resolve('olympiads')} class="mt-0">Olympiads</BackLink>
 	<ContributorsButton olympiadId={olympiad.id} />
 </div>
 
@@ -196,7 +208,7 @@
 	<div class="mb-5">
 		<SearchBar placeholder="Search by year or problem…" bind:value={query}>
 			{#snippet filters()}
-				<!-- In `filters`, not `trailing`: two captioned triggers beside the input
+				<!-- In `filters`, not `trailing`: captioned triggers beside the input
 				     squeeze its placeholder to a few letters on a phone. Below `md` they
 				     get their own row and split it evenly. -->
 				<div class="flex w-full gap-2 md:w-auto">
@@ -213,6 +225,16 @@
 					{#if signedIn}
 						<StatusFilter bind:value={status} caption="Progress" class="flex-1 md:flex-none" />
 					{/if}
+					<DisplayMenu
+						bind:value={
+							() => display,
+							(v) => {
+								display = v;
+								saveDisplay(v);
+							}
+						}
+						class="flex-1 md:flex-none"
+					/>
 				</div>
 				<!-- Keep the `{#if}` outside the element: an empty element here would
 				     still take up a flex gap. -->
@@ -250,6 +272,7 @@
 					{year}
 					showYearLevel={showYearLevel(year, filterState)}
 					{narrowed}
+					{display}
 					{progress}
 					{pending}
 					{signedIn}

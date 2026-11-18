@@ -11,7 +11,7 @@ import { gotoReady } from '../../support/ui';
 
 /** The page's back link and the contributors trigger, which share one row. */
 function backLink(page: Page): Locator {
-	return page.getByRole('link', { name: 'Back to olympiads' });
+	return page.getByRole('link', { name: 'Olympiads' });
 }
 
 function trigger(page: Page): Locator {

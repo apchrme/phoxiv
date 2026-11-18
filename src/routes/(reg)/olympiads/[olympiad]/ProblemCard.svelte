@@ -7,10 +7,10 @@
 	import SignInToTrack from './SignInToTrack.svelte';
 
 	/**
-	 * One problem with files: number, title, files, and the tracking control (or
-	 * a sign-in stand-in). A problem without files is a `ProblemRow` instead.
-	 * Topics aren't rendered here, to keep the card uncluttered; the topic filter
-	 * uses them.
+	 * One problem: number, title, files, and the tracking control (or a sign-in
+	 * stand-in). A problem without files is a `ProblemRow` instead, unless the
+	 * reader has chosen cards for those too. Topics aren't rendered here, to keep
+	 * the card uncluttered; the topic filter uses them.
 	 */
 	let {
 		problem,
@@ -53,9 +53,12 @@
 			<SignInToTrack number={problem.number} class={controlPosition} />
 		{/if}
 	</div>
-	<div class="flex flex-wrap gap-2">
-		{#each problem.files as file (file.label)}
-			<FileBadge href={file.url} label={file.label} />
-		{/each}
-	</div>
+	<!-- Skipped when empty: an empty row would still take the column's gap. -->
+	{#if problem.files.length > 0}
+		<div class="flex flex-wrap gap-2">
+			{#each problem.files as file (file.label)}
+				<FileBadge href={file.url} label={file.label} />
+			{/each}
+		</div>
+	{/if}
 </div>

@@ -12,6 +12,10 @@
 	 *
 	 * The first option is "no filter": the trigger is outlined on it and filled
 	 * on any other, since with no label the fill is the only cue.
+	 *
+	 * The olympiad page's `DisplayMenu` uses it with `fill={false}` for a
+	 * display option, which narrows nothing, so must never look like a filter
+	 * that is on.
 	 */
 	let {
 		value = $bindable(),
@@ -20,6 +24,7 @@
 		caption = undefined,
 		size = caption ? 'default' : 'icon',
 		disabled = false,
+		fill = true,
 		class: className
 	}: {
 		value: T;
@@ -34,12 +39,16 @@
 		caption?: string;
 		size?: ButtonSize;
 		disabled?: boolean;
+		/** Fill the trigger off the first option. False for anything that isn't a filter. */
+		fill?: boolean;
 		class?: string;
 	} = $props();
 
 	const current = $derived(options.find((o) => o.value === value) ?? options[0]);
 	const CurrentIcon = $derived(current.icon);
-	const triggerVariant = $derived(current.value === options[0].value ? 'outline' : 'default');
+	const triggerVariant = $derived(
+		fill && current.value !== options[0].value ? 'default' : 'outline'
+	);
 </script>
 
 <DropdownMenu.Root>

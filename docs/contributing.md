@@ -149,7 +149,8 @@ The suite already covers:
   export and import, the year editor's rows, topics, duplicates and links, uploads with their text extraction, and deleting files
   and years (their text leaves the index);
 - `tests/e2e/specs/olympiads/`: the index, the olympiad page's 404, what it must
-  never render, its collapsed problems without files, tracking progress, and the
+  never render, its problems without files (collapsed, or cards from the Display
+  menu), tracking progress, and the
   status filter;
 - `tests/e2e/specs/search/`: the ⌘K dialog in both modes: reset, Enter, escaping,
   the session caches, filters before ranking, the keyboard (caps lock included),
@@ -242,22 +243,22 @@ is the reference.
 
 Use these instead of writing the markup again:
 
-| Component                    | Use it for                                                                                |
-| ---------------------------- | ----------------------------------------------------------------------------------------- |
-| `forms/Field.svelte`         | a labelled control. Omit `for` when the control is a button; the label becomes a `<span>` |
-| `forms/SubmitButton.svelte`  | any submit. Takes the `Pending` key the form was tracked under and owns the busy state    |
-| `forms/ConfirmSubmit.svelte` | a destructive submit. The only way this app asks for confirmation; never `window.confirm` |
-| `forms/Repeater.svelte`      | a list of rows the contributor adds to and deletes from                                   |
-| `EmptyState.svelte`          | an empty list, or a failed fetch. They differ, hence `variant`                            |
-| `PageHeader.svelte`          | the block at the top of a page                                                            |
-| `OlympiadPicker.svelte`      | picking one or several olympiads                                                          |
-| `OlympiadIcon.svelte`        | an olympiad's icon, at one of four named sizes                                            |
-| `IconFilterMenu.svelte`      | an icon-only dropdown filter; `StatusFilter` and `/badges`' standing filter wrap it       |
-| `BadgeStanding.svelte`       | "Earned {date}", or the progress meter with `count/required`, from `mergeStanding`        |
-| `BadgeRequirement.svelte`    | a badge's criteria sentence, or "Requirement hidden"                                      |
-| `confirmBeforeLeaving()`     | an editor's unsaved-changes prompt (`#lib/forms.svelte.ts`); returns `allowLeave`         |
-| `#lib/resource.svelte.ts`    | a JSON body the browser fetches, with its loading and failed flags                        |
-| `#lib/utils/plural.ts`       | `plural(n, noun)`. Numbers are printed raw, with no thousands separators, everywhere      |
+| Component                    | Use it for                                                                                                                                     |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `forms/Field.svelte`         | a labelled control. Omit `for` when the control is a button; the label becomes a `<span>`                                                      |
+| `forms/SubmitButton.svelte`  | any submit. Takes the `Pending` key the form was tracked under and owns the busy state                                                         |
+| `forms/ConfirmSubmit.svelte` | a destructive submit. The only way this app asks for confirmation; never `window.confirm`                                                      |
+| `forms/Repeater.svelte`      | a list of rows the contributor adds to and deletes from                                                                                        |
+| `EmptyState.svelte`          | an empty list, or a failed fetch. They differ, hence `variant`                                                                                 |
+| `PageHeader.svelte`          | the block at the top of a page                                                                                                                 |
+| `OlympiadPicker.svelte`      | picking one or several olympiads                                                                                                               |
+| `OlympiadIcon.svelte`        | an olympiad's icon, at one of four named sizes                                                                                                 |
+| `IconFilterMenu.svelte`      | an icon-only dropdown filter; `StatusFilter` and `/badges`' standing filter wrap it. `fill={false}` for a display option, which isn't a filter |
+| `BadgeStanding.svelte`       | "Earned {date}", or the progress meter with `count/required`, from `mergeStanding`                                                             |
+| `BadgeRequirement.svelte`    | a badge's criteria sentence, or "Requirement hidden"                                                                                           |
+| `confirmBeforeLeaving()`     | an editor's unsaved-changes prompt (`#lib/forms.svelte.ts`); returns `allowLeave`                                                              |
+| `#lib/resource.svelte.ts`    | a JSON body the browser fetches, with its loading and failed flags                                                                             |
+| `#lib/utils/plural.ts`       | `plural(n, noun)`. Numbers are printed raw, with no thousands separators, everywhere                                                           |
 
 Use them even for a single call site, because some encode rules:
 
@@ -335,6 +336,18 @@ Fetches:
   and a reactive flag would make the effect refetch on every failure.
 - Check `res.ok` before `res.json()`. An error page's HTML makes `json()` throw,
   and the UI then claims there is no data instead of reporting a failure.
+
+Remembered preferences:
+
+- A reader's display choice that needs no account, such as the olympiad page's
+  "Display" menu for problems without files, lives in `localStorage`, read in
+  `onMount` and written by the control's setter. Wrap both in `try`: storage
+  throws in some private windows, and the page must still work, defaulting.
+- Not a cookie: the `(reg)` pages sit in the browser's private cache for 4h, so
+  server-rendered HTML can't follow a change to one. Not the account either,
+  unless the choice should follow the reader across devices.
+- This works without a flash only where the affected markup renders after a
+  client-side fetch anyway, as the olympiad page's problems do.
 
 ### Styling and theming
 

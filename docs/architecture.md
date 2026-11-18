@@ -121,7 +121,8 @@ src/routes/
 ├── (reg)/                      private browser cache
 │   ├── olympiads/              index, and [olympiad]/ with YearPanel, ProblemCard,
 │   │                           ProblemRow, ProgressControl, SignInToTrack,
-│   │                           ContributorsButton, filter.ts, and progress/
+│   │                           ContributorsButton, DisplayMenu, filter.ts,
+│   │                           display.ts (localStorage), and progress/
 │   │                           (endpoint, private, no-store)
 │   ├── blog/                   index and [slug]/, from #lib/posts/*.svx
 │   ├── resources/, privacy/    .svx pages
