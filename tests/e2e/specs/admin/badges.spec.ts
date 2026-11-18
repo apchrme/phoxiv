@@ -130,7 +130,7 @@ test.describe('the badge editor', () => {
 		expect(dialogs).toEqual([]);
 
 		await page.getByLabel('Name').fill('E2E Still Guarded, edited');
-		await page.getByRole('link', { name: 'Badges' }).click();
+		await page.getByRole('main').getByRole('link', { name: 'Badges' }).click();
 		await expect.poll(() => dialogs).toEqual(['confirm']);
 		await expect(page).toHaveURL(path);
 		await expect(page.getByLabel('Name')).toHaveValue('E2E Still Guarded, edited');

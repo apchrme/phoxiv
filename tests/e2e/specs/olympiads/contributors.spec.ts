@@ -9,9 +9,12 @@ import { gotoReady } from '../../support/ui';
  * Reads the frozen CREDITS olympiads only. Writes nothing.
  */
 
-/** The page's back link and the contributors trigger, which share one row. */
+/**
+ * The page's back link and the contributors trigger, which share one row.
+ * Scoped to `main`: the site nav has an "Olympiads" link of its own.
+ */
 function backLink(page: Page): Locator {
-	return page.getByRole('link', { name: 'Olympiads' });
+	return page.getByRole('main').getByRole('link', { name: 'Olympiads', exact: true });
 }
 
 function trigger(page: Page): Locator {

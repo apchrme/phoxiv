@@ -343,7 +343,7 @@ test.describe('the blog', () => {
 			expect(response?.status()).toBe(200);
 			await expect(page.locator('html')).toHaveAttribute('data-hydrated', '');
 			await expect(page.getByRole('heading', { level: 1 })).toHaveText(post.title);
-			await expect(page.getByRole('link', { name: 'Blog' })).toHaveAttribute('href', '/blog');
+			await expect(page.getByRole('main').getByRole('link', { name: 'Blog' })).toHaveAttribute('href', '/blog');
 		});
 	}
 

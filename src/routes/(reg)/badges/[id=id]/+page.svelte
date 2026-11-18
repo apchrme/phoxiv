@@ -13,7 +13,7 @@
 	description={data.badge.description || `The ${data.badge.name} badge on phoXiv.`}
 />
 
-<BackLink href={resolve('badges')}>All badges</BackLink>
+<BackLink href={resolve('badges')}>Badges</BackLink>
 
 <!-- Keyed, so moving to another badge's page starts its fetches afresh. -->
 {#key data.badge.id}
