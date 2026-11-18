@@ -37,10 +37,10 @@
 	/** Summary line for a finished CSV import. */
 	type ImportStats = {
 		created: number;
-		filled: number;
-		topicsFilled: number;
-		maxScoresFilled: number;
-		kept: number;
+		titlesUpdated: number;
+		topicsUpdated: number;
+		maxScoresUpdated: number;
+		unchanged: number;
 		yearsCreated: number;
 		/** Rows with no valid year or number (or a `/` in it), which were skipped. */
 		skippedInvalid: number;
@@ -49,8 +49,9 @@
 	};
 	function importSummary(s: ImportStats) {
 		return (
-			`Import complete — ${s.created} created, ${s.filled} titles filled, ` +
-			`${s.topicsFilled} topics filled, ${s.maxScoresFilled} max scores filled, ${s.kept} kept` +
+			`Import complete — ${s.created} created, ${s.titlesUpdated} titles updated, ` +
+			`${s.topicsUpdated} topics updated, ${s.maxScoresUpdated} max scores updated, ` +
+			`${s.unchanged} unchanged` +
 			`${s.yearsCreated ? `, ${s.yearsCreated} years added` : ''}` +
 			`${s.skippedInvalid ? `, ${s.skippedInvalid} invalid rows skipped` : ''}` +
 			`${s.badMaxScores ? `, ${s.badMaxScores} max scores ignored` : ''}.`

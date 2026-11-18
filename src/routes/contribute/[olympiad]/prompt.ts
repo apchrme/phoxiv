@@ -33,12 +33,13 @@ COLUMNS
 - year: the four-digit year, as in the JSON.
 - number: for a problem the JSON lists, copy its number exactly. phoXiv matches rows by year and number, so a different label (1 instead of T1, say) creates a duplicate problem instead of filling in the existing one. Never use "/".
 - title: the problem's title as the paper prints it, in plain text (no LaTeX or Markdown). Turn an ALL-CAPS heading into title case. Leave it empty if the paper gives no title; don't make one up.
-- topics: the main areas of physics the problem uses, usually one or two, from exactly these names: ${topics}. Separate several with semicolons and no spaces, e.g. Mechanics;Waves and Optics. Use Others only when none of the rest fit. Any other name is ignored.
+- topics: the main areas of physics the problem uses, usually one or two, from exactly these names: ${topics}. Separate several with semicolons and no spaces, e.g. Mechanics;Waves and Optics. Experiment is not an area of physics: add it to every experimental problem (one set in the experimental exam or paper), alongside that problem's areas, e.g. Electromagnetism;Experiment. Never give Experiment to a theory problem. Use Others only when none of the areas fit. Any other name is ignored.
 - max_score: the total marks the problem is worth, as a plain number above zero, e.g. 10 or 7.5, with no units. The marking scheme or the paper's header usually gives it. Leave it empty if you can't find it.
 
 RULES
-- Include a row for every problem that is missing a title, topics or max score. Leave out problems that already have all three.
-- A value that is already set is never overwritten, so you can leave its cell empty.
+- Include a row for every problem that is missing a title, topics or max score, or is an experimental problem whose topics don't include Experiment. Leave out the other problems: phoXiv leaves a problem the CSV doesn't mention unchanged.
+- A filled-in cell replaces the value phoXiv already has, and an empty cell keeps it. So fill in only the values that are missing, and leave every cell whose value is already set empty. The exception is topics: for an experimental problem missing Experiment, write its full topic list, the existing topics plus Experiment, because the cell replaces the whole list.
+- If a value that is already set looks wrong, don't change it in the CSV. List it after the code block instead.
 - If a year's papers hold problems the JSON doesn't list, add rows for them, numbered the way that year's other problems are.
 - Use only what the papers say. When you're unsure of a value, leave its cell empty instead of guessing: an empty cell costs nothing, and a wrong one has to be fixed by hand.
 
@@ -48,6 +49,7 @@ year,number,title,topics,max_score
 2019,T1,Physics of a Slinky,Mechanics;Waves and Optics,10
 2019,T2,"Springs, ""Coupled""",Mechanics,10
 2019,T3,,,
+2019,E1,Magnetic Permeability of Water,Electromagnetism;Experiment,10
 \`\`\`
 
 After the code block, list each cell you left empty or weren't sure about, with the reason, so I can check it.

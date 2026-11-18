@@ -68,7 +68,9 @@ export const PROBLEM_TOPICS = [
 	'Waves and Optics',
 	'Relativity',
 	'Modern',
-	'Others'
+	'Others',
+	// Not an area of physics: marks experimental problems, alongside their areas.
+	'Experiment'
 ] as const;
 
 export type ProblemTopic = (typeof PROBLEM_TOPICS)[number];

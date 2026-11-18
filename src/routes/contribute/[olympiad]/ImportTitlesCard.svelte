@@ -59,8 +59,9 @@
 		<Card.Description>
 			Upload a CSV with columns
 			<code class="font-mono text-xs">year,number,title,topics,max_score</code>. New problems are
-			created (missing years are added automatically); a title, topic list or maximum score that is
-			already set is left unchanged. The <code class="font-mono text-xs">topics</code> and
+			created (missing years are added automatically). For existing problems, a filled-in cell
+			replaces the stored title, topic list or maximum score, and an empty cell leaves it unchanged.
+			Problems not in the CSV are left alone. The <code class="font-mono text-xs">topics</code> and
 			<code class="font-mono text-xs">max_score</code>
 			columns are both optional, so older exports still import. Separate multiple topics with semicolons,
 			e.g. <code class="font-mono text-xs">Mechanics;Waves and Optics</code>. Allowed topics: {PROBLEM_TOPICS.join(

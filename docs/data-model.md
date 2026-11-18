@@ -147,6 +147,10 @@ enter the search haystack (`searchText`), which is the ranking contract (see
 `topics === undefined` on the client can only mean a body cached before topics
 existed. See [search.md](./search.md).
 
+`PROBLEM_TOPICS` are areas of physics, plus `Experiment`, which is not an area:
+it marks experimental problems and sits alongside their areas
+(`Electromagnetism;Experiment`).
+
 `max_score` is REAL because a maximum is not always whole. It is set in the year
 editor or through [`titles.csv`](#the-titlescsv-contract). It travels in the
 shared-cached `/api/olympiads/[olympiad]` body, so an edit takes up to a day to
@@ -556,13 +560,21 @@ year,number,title,topics,max_score
 - The export writes a UTF-8 BOM and CRLF line endings, or Excel garbles accents.
 - Fields are quoted only when they contain `"`, `,`, CR or LF.
 
-The import only fills gaps. It creates missing years and never overwrites an
-existing value, so re-importing is safe.
+The import creates missing years and problems. For a problem that already
+exists, **a non-empty cell overrides the stored value and an empty cell keeps
+it**, so editing titles in the export and re-importing it bulk-renames. A
+`topics` cell replaces the whole list. A cell that reads as empty (only unknown
+topics, or an unreadable `max_score`) keeps the stored value too. A problem the
+CSV doesn't list is left alone, so the import never deletes. When rows repeat a
+problem, the last one wins. Re-importing an unchanged export writes nothing.
 
 The Import card's **Copy AI prompt** button copies a prompt for an AI agent with
 web access. The agent fetches `/api/olympiads/<id>` on the site's own origin,
 reads the papers it links to, and writes this CSV for the problems missing a
-title, topics or maximum score. The prompt is built in
+title, topics or maximum score, and for experimental problems not yet tagged
+`Experiment`. Since a filled cell overrides, the prompt tells the agent to fill
+only missing values and to report doubtful existing ones instead of changing
+them. The prompt is built in
 [`contribute/[olympiad]/prompt.ts`](../src/routes/contribute/[olympiad]/prompt.ts).
 It restates this contract and describes that endpoint's `YearEntry[]` shape, so
 change it along with either. The topics and their separator are filled in from

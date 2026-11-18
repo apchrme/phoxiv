@@ -615,8 +615,8 @@ export const OWNED = {
 	// contribute/olympiad-years-csv.spec.ts
 	/** The export, the unchanged round trip, the refused imports and an added year. */
 	csvOlympiad: 'e2e-csv',
-	/** The import that fills gaps. Its own olympiad, so the export above never changes. */
-	csvFillOlympiad: 'e2e-csv-fill',
+	/** The import that writes. Its own olympiad, so the export above never changes. */
+	csvImportOlympiad: 'e2e-csv-fill',
 	/**
 	 * contribute/delete.spec.ts: one year per test, and a witness year it only
 	 * searches, never writes.
@@ -683,7 +683,7 @@ const OWNED_OLYMPIADS: Olympiad[] = [
 		displayOrder: 103
 	},
 	{
-		id: OWNED.csvFillOlympiad,
+		id: OWNED.csvImportOlympiad,
 		name: 'CSV Fill Physics Olympiad',
 		summary: 'Owned by contribute/olympiad-years-csv.spec.ts.',
 		icon: '🧮',
@@ -760,7 +760,7 @@ const OWNED_YEARS: Year[] = [
 	// problem, so an export ordered by id rather than by year shows up.
 	{ id: 5_300_001, olympiadId: OWNED.csvOlympiad, year: 2002 },
 	{ id: 5_300_002, olympiadId: OWNED.csvOlympiad, year: 2001 },
-	{ id: 5_300_011, olympiadId: OWNED.csvFillOlympiad, year: 2001 },
+	{ id: 5_300_011, olympiadId: OWNED.csvImportOlympiad, year: 2001 },
 	// contribute/delete.spec.ts
 	{ id: 5_400_001, olympiadId: OWNED.delOlympiad, year: OWNED.delYears.file },
 	{ id: 5_400_002, olympiadId: OWNED.delOlympiad, year: OWNED.delYears.reupload },
@@ -834,10 +834,34 @@ const OWNED_PROBLEMS: Problem[] = [
 	},
 	{ id: 5_300_103, yearId: 5_300_002, number: 'T2' },
 	{ id: 5_300_104, yearId: 5_300_002, number: 'T3', title: 'Springs, "Coupled"', maxScore: 0.001 },
-	// The import that fills gaps: T1's title is set and must survive an edited
-	// CSV; T2 has nothing set, so the CSV fills it.
-	{ id: 5_300_111, yearId: 5_300_011, number: 'T1', title: 'Kept Title' },
+	// The import that writes: the CSV renames T1 and leaves its other cells
+	// empty, fills T2, which has nothing set, leaves T3 out, and tags T4 as an
+	// experiment.
+	{
+		id: 5_300_111,
+		yearId: 5_300_011,
+		number: 'T1',
+		title: 'Old Title',
+		topics: JSON.stringify(['Mechanics']),
+		maxScore: 10
+	},
 	{ id: 5_300_112, yearId: 5_300_011, number: 'T2' },
+	{
+		id: 5_300_113,
+		yearId: 5_300_011,
+		number: 'T3',
+		title: 'Untouched',
+		topics: JSON.stringify(['Thermodynamics']),
+		maxScore: 4
+	},
+	{
+		id: 5_300_114,
+		yearId: 5_300_011,
+		number: 'T4',
+		title: 'Lab Work',
+		topics: JSON.stringify(['Electromagnetism']),
+		maxScore: 8
+	},
 	// contribute/delete.spec.ts: a problem file in each year whose files it deletes.
 	{ id: 5_400_101, yearId: 5_400_001, number: 'T1', title: 'Pruned Problem' },
 	{ id: 5_400_103, yearId: 5_400_003, number: 'T1', title: 'Vanishing Problem' },

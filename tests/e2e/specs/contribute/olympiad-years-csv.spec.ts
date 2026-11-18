@@ -12,7 +12,7 @@ import { gotoReady, holdAction, toast } from '../../support/ui';
  *
  * Owns two olympiads. OWNED.csvOlympiad's problems never change, so its export
  * is checked byte for byte; the year the Years test adds has no problems, so it
- * never reaches the export. OWNED.csvFillOlympiad takes the one import that
+ * never reaches the export. OWNED.csvImportOlympiad takes the one import that
  * writes. Acts as the frozen USERS.admin.
  *
  * Writes are read back only through uncached routes (not `/api/`).
@@ -21,7 +21,7 @@ import { gotoReady, holdAction, toast } from '../../support/ui';
 test.use({ role: 'admin' });
 
 const OLYMPIAD = OWNED.csvOlympiad;
-const FILL_OLYMPIAD = OWNED.csvFillOlympiad;
+const IMPORT_OLYMPIAD = OWNED.csvImportOlympiad;
 
 const HEADER = 'year,number,title,topics,max_score';
 
@@ -194,13 +194,14 @@ test.describe('titles.csv', () => {
 		await expect(page.getByRole('button', { name: 'Loading Importing…' })).toBeDisabled();
 		release();
 
-		// "Fill-only: existing values are never overwritten, so re-importing is
-		// safe" (`importTitles` in +page.server.ts). T2 has nothing set, and the CSV
-		// offers nothing for it, so it is kept too.
+		// Every cell matches what is stored, and an empty one keeps it, so nothing
+		// is written (`importTitles` in +page.server.ts). T2 has nothing set, and
+		// the CSV offers nothing for it, so it is unchanged too.
 		await expect(
 			toast(
 				page,
-				'Import complete — 0 created, 0 titles filled, 0 topics filled, 0 max scores filled, 4 kept.'
+				'Import complete — 0 created, 0 titles updated, 0 topics updated, ' +
+					'0 max scores updated, 4 unchanged.'
 			)
 		).toBeVisible();
 		// The page clears the picked file once an import lands.
@@ -210,20 +211,34 @@ test.describe('titles.csv', () => {
 		expect((await exportTitles(page, OLYMPIAD)).toString('utf8')).toBe(EXPORT);
 	});
 
-	test('an edited CSV fills what is blank and never overwrites', async ({ page, request }) => {
-		await gotoReady(page, editorPath(FILL_OLYMPIAD));
-		const text = (await exportTitles(page, FILL_OLYMPIAD)).toString('utf8');
-		expect(text).toBe(exported(HEADER, '2001,T1,Kept Title,,', '2001,T2,,,'));
+	test('an edited CSV overrides what it sets, and keeps the rest', async ({ page, request }) => {
+		await gotoReady(page, editorPath(IMPORT_OLYMPIAD));
+		const text = (await exportTitles(page, IMPORT_OLYMPIAD)).toString('utf8');
+		expect(text).toBe(
+			exported(
+				HEADER,
+				'2001,T1,Old Title,Mechanics,10',
+				'2001,T2,,,',
+				'2001,T3,Untouched,Thermodynamics,4',
+				'2001,T4,Lab Work,Electromagnetism,8'
+			)
+		);
 
-		// Edited as in a spreadsheet: both titles changed, T2's topics and maximum
-		// filled in, and rows added for a year the olympiad doesn't have yet. One
+		// Edited as in a spreadsheet: T1 renamed with its other cells emptied, T2
+		// filled in, T3's row deleted, T4 tagged as an experiment with a new
+		// maximum, and rows added for a year the olympiad doesn't have yet. One
 		// added row has a `/` in its number, which "would nest the problem's R2
 		// keys" (`importTitles`), one a maximum of 0, and one repeats P1: a
-		// duplicate meets the problem its first row just created, and is kept.
+		// duplicate meets the problem its first row just created, and overrides it.
 		const edited =
 			text
-				.replace('2001,T1,Kept Title,,', '2001,T1,Overwritten Title,,')
-				.replace('2001,T2,,,', '2001,T2,Filled Title,Thermodynamics,5') +
+				.replace('2001,T1,Old Title,Mechanics,10', '2001,T1,Renamed Title,,')
+				.replace('2001,T2,,,', '2001,T2,Filled Title,Thermodynamics,5')
+				.replace('2001,T3,Untouched,Thermodynamics,4\r\n', '')
+				.replace(
+					'2001,T4,Lab Work,Electromagnetism,8',
+					'2001,T4,Lab Work,Electromagnetism;Experiment,20'
+				) +
 			[
 				'2005,P1,Brand New,Others,12',
 				'2005,P2/x,Slashed,,',
@@ -233,15 +248,17 @@ test.describe('titles.csv', () => {
 				.map((line) => `${line}\r\n`)
 				.join('');
 		await importCsv(page, {
-			name: `${FILL_OLYMPIAD}-titles.csv`,
+			name: `${IMPORT_OLYMPIAD}-titles.csv`,
 			mimeType: 'text/csv',
 			buffer: Buffer.from(edited, 'utf8')
 		});
+		// T4's unchanged title isn't counted as an update.
 		await expect(
 			toast(
 				page,
-				'Import complete — 2 created, 1 titles filled, 1 topics filled, 1 max scores filled, ' +
-					'2 kept, 1 years added, 1 invalid rows skipped, 1 max scores ignored.'
+				'Import complete — 2 created, 3 titles updated, 3 topics updated, ' +
+					'3 max scores updated, 0 unchanged, 1 years added, 1 invalid rows skipped, ' +
+					'1 max scores ignored.'
 			)
 		).toBeVisible();
 
@@ -249,30 +266,36 @@ test.describe('titles.csv', () => {
 		// without a reload.
 		await expect(yearLinks(page)).toHaveText(['2005', '2001']);
 
-		// The blank title was filled, and the set one kept: the import "only fills
-		// gaps" (docs/data-model.md).
-		await gotoReady(page, `${editorPath(FILL_OLYMPIAD)}/2001`);
-		await expect(page.getByLabel('Problem 1 title', { exact: true })).toHaveValue('Kept Title');
+		// T1 renamed, with its emptied cells kept; T3, left out, still there.
+		await gotoReady(page, `${editorPath(IMPORT_OLYMPIAD)}/2001`);
+		await expect(page.getByLabel('Problem 1 title', { exact: true })).toHaveValue('Renamed Title');
+		await expect(page.getByLabel('Problem 1 maximum score', { exact: true })).toHaveValue('10');
 		await expect(page.getByLabel('Problem 2 title', { exact: true })).toHaveValue('Filled Title');
 		await expect(page.getByLabel('Problem 2 maximum score', { exact: true })).toHaveValue('5');
+		await expect(page.getByLabel('Problem 3 title', { exact: true })).toHaveValue('Untouched');
+		await expect(page.getByLabel('Problem 4 maximum score', { exact: true })).toHaveValue('20');
 
 		// The year was created with its rows, once each and without the slashed
 		// one, and the unreadable maximum was left blank.
-		await gotoReady(page, `${editorPath(FILL_OLYMPIAD)}/2005`);
+		await gotoReady(page, `${editorPath(IMPORT_OLYMPIAD)}/2005`);
 		await expect(page.getByLabel('Problem 1 number', { exact: true })).toHaveValue('P1');
-		await expect(page.getByLabel('Problem 1 title', { exact: true })).toHaveValue('Brand New');
-		await expect(page.getByLabel('Problem 1 maximum score', { exact: true })).toHaveValue('12');
+		await expect(page.getByLabel('Problem 1 title', { exact: true })).toHaveValue(
+			'Duplicate Title'
+		);
+		await expect(page.getByLabel('Problem 1 maximum score', { exact: true })).toHaveValue('3');
 		await expect(page.getByLabel('Problem 2 number', { exact: true })).toHaveValue('P3');
 		await expect(page.getByLabel('Problem 2 maximum score', { exact: true })).toHaveValue('');
 		await expect(page.getByLabel('Problem 3 number', { exact: true })).toHaveCount(0);
 
 		// And every field, topics included, as the next export has it.
-		expect(await currentExport(request, FILL_OLYMPIAD)).toBe(
+		expect(await currentExport(request, IMPORT_OLYMPIAD)).toBe(
 			exported(
 				HEADER,
-				'2001,T1,Kept Title,,',
+				'2001,T1,Renamed Title,Mechanics,10',
 				'2001,T2,Filled Title,Thermodynamics,5',
-				'2005,P1,Brand New,Others,12',
+				'2001,T3,Untouched,Thermodynamics,4',
+				'2001,T4,Lab Work,Electromagnetism;Experiment,20',
+				'2005,P1,Duplicate Title,Mechanics,3',
 				'2005,P3,Bad Score,,'
 			)
 		);
@@ -369,8 +392,10 @@ test.describe('the AI prompt', () => {
 		expect(prompt).toContain(`The first line is exactly: ${HEADER}`);
 		// Every topic, spelt and separated as `parseTopicsCsvCell` reads them.
 		expect(prompt).toContain(
-			'Mechanics;Electromagnetism;Thermodynamics;Waves and Optics;Relativity;Modern;Others'
+			'Mechanics;Electromagnetism;Thermodynamics;Waves and Optics;Relativity;Modern;Others;Experiment'
 		);
+		// A filled cell overrides, so the agent is told to leave set values alone.
+		expect(prompt).toContain('A filled-in cell replaces the value phoXiv already has');
 		expect(prompt).toContain(
 			['```csv', HEADER, '2019,T1,Physics of a Slinky,Mechanics;Waves and Optics,10'].join('\n')
 		);

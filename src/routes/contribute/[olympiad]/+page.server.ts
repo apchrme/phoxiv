@@ -173,8 +173,9 @@ export const actions: Actions = {
 	},
 
 	/**
-	 * Bulk-imports problems from a `titles.csv`-format CSV. Fill-only: existing
-	 * values are never overwritten, so re-importing is safe.
+	 * Bulk-imports problems from a `titles.csv`-format CSV. A non-empty cell
+	 * overrides the stored value, so it can bulk-rename; an empty cell keeps it.
+	 * Problems the CSV doesn't list are never touched, and none are deleted.
 	 */
 	importTitles: async ({ request, params, locals }) => {
 		const { db, user } = requireOlympiadEditor(locals, params.olympiad);
@@ -285,10 +286,10 @@ export const actions: Actions = {
 		}
 
 		let created = 0;
-		let filled = 0;
-		let topicsFilled = 0;
-		let maxScoresFilled = 0;
-		let kept = 0;
+		let titlesUpdated = 0;
+		let topicsUpdated = 0;
+		let maxScoresUpdated = 0;
+		let unchanged = 0;
 		for (const e of entries) {
 			const yearId = yearIdByYear.get(e.year)!;
 			const key = `${yearId}:${e.number}`;
@@ -315,32 +316,32 @@ export const actions: Actions = {
 				continue;
 			}
 
-			// The problem already exists — only fill in what it's missing.
+			// The problem already exists: a non-empty cell overrides what is stored,
+			// and an empty one keeps it. Only real changes are written and counted.
 			const patch: { title?: string; topics?: string; maxScore?: number } = {};
-			if ((existing.title === null || existing.title === '') && e.title) patch.title = e.title;
-			if (existing.topics.length === 0 && e.topics.length > 0) {
+			if (e.title !== null && e.title !== existing.title) patch.title = e.title;
+			if (e.topics.length > 0 && e.topics.join(';') !== existing.topics.join(';')) {
 				patch.topics = serializeTopics(e.topics);
 			}
-			if (existing.maxScore === null && e.maxScore !== null) patch.maxScore = e.maxScore;
+			if (e.maxScore !== null && e.maxScore !== existing.maxScore) patch.maxScore = e.maxScore;
 
 			if (patch.title === undefined && patch.topics === undefined && patch.maxScore === undefined) {
-				// Nothing missing (or nothing offered by the CSV) — leave it alone.
-				kept++;
+				unchanged++;
 				continue;
 			}
 
 			await db.update(problems).set(patch).where(eq(problems.id, existing.id)).run();
 			if (patch.title !== undefined) {
 				existing.title = patch.title;
-				filled++;
+				titlesUpdated++;
 			}
 			if (patch.topics !== undefined) {
 				existing.topics = e.topics;
-				topicsFilled++;
+				topicsUpdated++;
 			}
 			if (patch.maxScore !== undefined) {
 				existing.maxScore = patch.maxScore;
-				maxScoresFilled++;
+				maxScoresUpdated++;
 			}
 		}
 
@@ -348,8 +349,9 @@ export const actions: Actions = {
 			db,
 			user,
 			'import_titles',
-			`Imported titles from CSV (${created} created, ${filled} titles filled, ` +
-				`${topicsFilled} topics filled, ${maxScoresFilled} max scores filled, ${kept} kept` +
+			`Imported titles from CSV (${created} created, ${titlesUpdated} titles updated, ` +
+				`${topicsUpdated} topics updated, ${maxScoresUpdated} max scores updated, ` +
+				`${unchanged} unchanged` +
 				`${yearsCreated ? `, ${yearsCreated} years added` : ''}` +
 				`${badMaxScores ? `, ${badMaxScores} unreadable max scores ignored` : ''})`,
 			{ olympiadId: params.olympiad }
@@ -358,10 +360,10 @@ export const actions: Actions = {
 		return ok('importTitles', {
 			stats: {
 				created,
-				filled,
-				topicsFilled,
-				maxScoresFilled,
-				kept,
+				titlesUpdated,
+				topicsUpdated,
+				maxScoresUpdated,
+				unchanged,
 				yearsCreated,
 				skippedInvalid,
 				badMaxScores
