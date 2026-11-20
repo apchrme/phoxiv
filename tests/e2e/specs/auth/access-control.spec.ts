@@ -232,6 +232,28 @@ test.describe('access control', { tag: '@smoke' }, () => {
 		}
 	});
 
+	test('contribute/[olympiad]: deleteOlympiad is superadmin-only, even for admins', async ({
+		apiAs
+	}) => {
+		// `e2e-unassigned` doesn't exist, so past a broken guard the action would
+		// find nothing to delete and write nothing.
+		for (const who of [...NOT_ADMIN, 'admin'] as const) {
+			await postAction(
+				await apiAs(who),
+				'/contribute/e2e-unassigned?/deleteOlympiad',
+				{},
+				{ error: 403, message: UNAUTHORISED }
+			);
+		}
+		// The superadmin passes the guard, and then finds nothing.
+		await postAction(
+			await apiAs('superadmin'),
+			'/contribute/e2e-unassigned?/deleteOlympiad',
+			{},
+			{ failure: 404, message: 'Olympiad not found' }
+		);
+	});
+
 	test.describe('contribute/[olympiad] and [year]: requireOlympiadEditor', () => {
 		test('a contributor reaches only their olympiad', async ({ apiAs }) => {
 			const api = await apiAs('contributor');

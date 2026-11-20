@@ -26,7 +26,15 @@ since the rows are the only record of the keys:
 - `removeIcon` is the only action that leaves an object behind (the next icon
   upload replaces it).
 
-There is no action that deletes an olympiad; that is done by hand, R2 included.
+- `deleteOlympiad` (superadmin only) removes every object of every year and
+  problem, plus the icon in every extension, then the olympiad row, which
+  cascades. It also strips the id from every user's `assigned_olympiads`, so a
+  re-created olympiad with the same id doesn't resurrect an assignment. It
+  leaves `badges.olympiad_ids` alone (a dead id matches nothing), and awards
+  heal lazily as described under badges.
+
+The shared-cached `/api/*` bodies still list a deleted olympiad until they
+expire or are [purged](./deployment.md#purging-the-cache-after-an-api-change).
 
 ### `olympiads`
 
@@ -438,7 +446,7 @@ The admin panel's audit trail, written by `logActivity()`.
 | ------------- | ------------------------------------------------------------------- |
 | `user_id`     | → `user.id`, `ON DELETE SET NULL`. The log outlives the account     |
 | `user_name`   | not null. A snapshot of the name, so the log survives renames       |
-| `action`      | one of fifteen enum values; `LogAction` is derived from this column |
+| `action`      | one of sixteen enum values; `LogAction` is derived from this column |
 | `olympiad_id` | plain TEXT, not a foreign key, so an olympiad's history survives it |
 | `year`        | nullable                                                            |
 | `detail`      | not null, default `''`; a human-readable sentence                   |

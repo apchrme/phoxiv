@@ -3,6 +3,7 @@
 /** Human-readable label for each logged action. */
 export const ACTION_LABELS: Record<string, string> = {
 	create_olympiad: 'Created olympiad',
+	delete_olympiad: 'Deleted olympiad',
 	update_olympiad: 'Updated metadata',
 	upload_icon: 'Uploaded icon',
 	remove_icon: 'Removed icon',

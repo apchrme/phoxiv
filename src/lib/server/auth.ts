@@ -45,14 +45,19 @@ export function authOptions(database: Parameters<typeof drizzleAdapter>[0], env:
 		socialProviders: {
 			github: {
 				clientId: env.GITHUB_CLIENT_ID as string,
-				clientSecret: env.GITHUB_CLIENT_SECRET as string
+				clientSecret: env.GITHUB_CLIENT_SECRET as string,
+				// No session is issued while the local user's email is unverified, so
+				// an unverified address can't be used to dodge a ban or impersonate
+				// the superadmin's email. See docs/auth.md, "Unverified emails".
+				requireEmailVerification: true
 			},
 			google: {
 				clientId: env.GOOGLE_CLIENT_ID as string,
 				clientSecret: env.GOOGLE_CLIENT_SECRET as string,
 				// Without it Google silently reuses the browser's current Google
 				// account, so someone signed into the wrong one has no way to switch.
-				prompt: 'select_account'
+				prompt: 'select_account',
+				requireEmailVerification: true
 			}
 		},
 		account: {

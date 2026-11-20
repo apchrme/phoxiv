@@ -79,13 +79,26 @@ export type SeedUser = {
 export const USERS = {
 	/** frozen. The admin most specs act as. Never a target. */
 	admin: { id: 'e2e-admin', name: 'Ada Admin', email: 'admin@e2e.test', role: 'admin' },
-	/** frozen. The `SUPERADMIN_EMAIL` account: a target only. */
+	/**
+	 * frozen. The `SUPERADMIN_EMAIL` account: a target of the admin panel, and the
+	 * only user who may delete an olympiad. Never written.
+	 */
 	superadmin: {
 		id: 'e2e-superadmin',
 		name: 'Sam Superadmin',
 		email: SUPERADMIN_EMAIL,
-		role: 'admin',
-		session: 'none'
+		role: 'admin'
+	},
+	/**
+	 * owned by contribute/delete-olympiad.spec.ts: a contributor assigned to the
+	 * olympiad that spec deletes, with progress on its problem.
+	 */
+	nukeAssignee: {
+		id: 'e2e-nuke-assignee',
+		name: 'Nia Nuked',
+		email: 'nuke-assignee@e2e.test',
+		role: 'contributor',
+		assignedOlympiads: ['e2e-nuke']
 	},
 	/** frozen. Assigned to `e2e-assigned` only. */
 	contributor: {
@@ -622,7 +635,16 @@ export const OWNED = {
 	 * searches, never writes.
 	 */
 	delOlympiad: 'e2e-del',
-	delYears: { file: 2001, reupload: 2002, year: 2003, witness: 2004 }
+	delYears: { file: 2001, reupload: 2002, year: 2003, witness: 2004 },
+	/** contribute/delete-olympiad.spec.ts: deleted whole, by the superadmin. */
+	nukeOlympiad: 'e2e-nuke',
+	nukeYear: 2005
+} as const;
+
+/** contribute/delete-olympiad.spec.ts's year-level file, and the phrase in its text. */
+export const NUKE_FILE = {
+	url: cdn(`olympiads/e2e-nuke/2005/problems.pdf`),
+	phrase: 'pangolin sextant escarpment'
 } as const;
 
 // ── search/problem-filters.spec.ts ──
@@ -699,6 +721,15 @@ const OWNED_OLYMPIADS: Olympiad[] = [
 		tag: 'Open',
 		displayOrder: 540
 	},
+	// contribute/delete-olympiad.spec.ts
+	{
+		id: OWNED.nukeOlympiad,
+		name: 'Demolition Physics Olympiad',
+		summary: 'Owned by contribute/delete-olympiad.spec.ts, which deletes it.',
+		icon: '💥',
+		tag: 'Open',
+		displayOrder: 541
+	},
 	// olympiads/index.spec.ts: read only, by that spec alone. Two olympiads that tie
 	// on display order, so only the id tiebreaker (listOlympiads) orders them.
 	// Inserted, and named, in the opposite order to their ids, so neither insertion
@@ -766,6 +797,8 @@ const OWNED_YEARS: Year[] = [
 	{ id: 5_400_002, olympiadId: OWNED.delOlympiad, year: OWNED.delYears.reupload },
 	{ id: 5_400_003, olympiadId: OWNED.delOlympiad, year: OWNED.delYears.year },
 	{ id: 5_400_004, olympiadId: OWNED.delOlympiad, year: OWNED.delYears.witness },
+	// contribute/delete-olympiad.spec.ts
+	{ id: 5_410_001, olympiadId: OWNED.nukeOlympiad, year: OWNED.nukeYear },
 	// ── search/problem-filters.spec.ts ──
 	{ id: 5_700_001, olympiadId: RANKING.olympiad, year: RANKING.year }
 ];
@@ -865,6 +898,8 @@ const OWNED_PROBLEMS: Problem[] = [
 	// contribute/delete.spec.ts: a problem file in each year whose files it deletes.
 	{ id: 5_400_101, yearId: 5_400_001, number: 'T1', title: 'Pruned Problem' },
 	{ id: 5_400_103, yearId: 5_400_003, number: 'T1', title: 'Vanishing Problem' },
+	// contribute/delete-olympiad.spec.ts
+	{ id: 5_410_101, yearId: 5_410_001, number: 'T1', title: 'Doomed Problem' },
 	// ── search/problem-filters.spec.ts ──
 	// The target has the lowest id, so it comes first in the index: only the
 	// ranking can push it past the top 50.
@@ -949,6 +984,8 @@ const OWNED_YEAR_FILES: YearFile[] = [
 	{ id: 5_400_202, yearId: 5_400_001, label: 'Solutions', url: DEL_FILE_URLS.fileSolutions },
 	{ id: 5_400_211, yearId: 5_400_002, label: 'Problems', url: DEL_FILE_URLS.reupload },
 	{ id: 5_400_221, yearId: 5_400_003, label: 'Problems', url: DEL_FILE_URLS.yearProblems },
+	// contribute/delete-olympiad.spec.ts
+	{ id: 5_410_201, yearId: 5_410_001, label: 'Problems', url: NUKE_FILE.url },
 	...delWitnessUrls.map((url, i) => ({
 		id: 5_400_301 + i,
 		yearId: 5_400_004,
@@ -959,6 +996,8 @@ const OWNED_YEAR_FILES: YearFile[] = [
 
 /** The indexed text of owned files. */
 const OWNED_FILE_TEXT: FileText[] = [
+	// contribute/delete-olympiad.spec.ts
+	indexed(NUKE_FILE.url, `Problem 1. A ${NUKE_FILE.phrase} on a slope.`),
 	// contribute/delete.spec.ts
 	indexed(
 		DEL_FILE_URLS.fileProblems,

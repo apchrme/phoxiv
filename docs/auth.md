@@ -59,15 +59,15 @@ Drizzle model does not match.
 
 This is all of `authOptions`. Everything else is BetterAuth's default.
 
-| Option                   | Value                                                            |
-| ------------------------ | ---------------------------------------------------------------- |
-| `secret`                 | `BETTER_AUTH_SECRET`                                             |
-| `trustedOrigins`         | `TRUSTED_ORIGINS`, comma-split; `[]` if unset                    |
-| `database`               | `drizzleAdapter` over the four auth tables, `provider: 'sqlite'` |
-| `socialProviders`        | `github`, and `google` with `prompt: 'select_account'`           |
-| `account.accountLinking` | `enabled: true`, `disableImplicitLinking: false` (the defaults)  |
-| `user.additionalFields`  | `assignedOlympiads`, with `input: false`                         |
-| `plugins`                | `admin({ adminRoles: ['admin'] })`                               |
+| Option                   | Value                                                                                         |
+| ------------------------ | --------------------------------------------------------------------------------------------- |
+| `secret`                 | `BETTER_AUTH_SECRET`                                                                          |
+| `trustedOrigins`         | `TRUSTED_ORIGINS`, comma-split; `[]` if unset                                                 |
+| `database`               | `drizzleAdapter` over the four auth tables, `provider: 'sqlite'`                              |
+| `socialProviders`        | `github`, and `google` with `prompt: 'select_account'`; both `requireEmailVerification: true` |
+| `account.accountLinking` | `enabled: true`, `disableImplicitLinking: false` (the defaults)                               |
+| `user.additionalFields`  | `assignedOlympiads`, with `input: false`                                                      |
+| `plugins`                | `admin({ adminRoles: ['admin'] })`                                                            |
 
 - There is no email/password sign-in.
 - Google asks which Google account to use every time (`select_account`).
@@ -188,6 +188,24 @@ bare error page.
 - There is no unlink UI. `/profile` lists the linked providers, read from
   `account`.
 
+## Unverified emails
+
+Both providers set `requireEmailVerification: true`. If the local user's
+`email_verified` is false after sign-in, BetterAuth issues no session and sends
+the visitor back to the login page with `?error=email_not_verified`. The user
+and account rows are still written. Without this, someone could register an
+unverified copy of a banned user's email, or of the superadmin's, at a provider
+and get a session under it.
+
+- The gate reads the local `user.email_verified`, not the provider's claim on
+  each request. A user verified earlier keeps access if the provider later
+  reports the email unverified.
+- No verification email is sent: there is no `emailVerification` sender. The
+  visitor verifies with the provider and signs in again, and the flag flips on
+  that sign-in.
+- Only enable it for providers that report a trustworthy `email_verified`.
+  GitHub and Google both do.
+
 ## The three roles
 
 | Role          | Stored `role`      | May do                                                         |
@@ -248,6 +266,12 @@ It uses email because the variable is set before the account exists. If the
 variable is unset it returns `false` and there is no superadmin, so a
 self-hosted instance need not name one. It is not a role and is not stored.
 
+The superadmin is also the only user who may **delete an olympiad**
+(`deleteOlympiad`, behind `requireSuperadmin`: role `admin` and the matching
+email). The button on `/contribute/[olympiad]` is shown only when the load's
+`canDelete` says so; the action checks for itself, before it checks the
+olympiad exists.
+
 ## The guards
 
 All in `guard.ts`. Each returns `{ db, user }` with a non-nullable `user`, ready
@@ -256,6 +280,7 @@ for `logActivity` ([data-model.md](./data-model.md#activity_log)).
 | Guard                               | Behaviour                                                      |
 | ----------------------------------- | -------------------------------------------------------------- |
 | `requireAdmin(locals)`              | 403 unless `role === 'admin'`                                  |
+| `requireSuperadmin(locals)`         | 403 unless an admin whose email is `SUPERADMIN_EMAIL`          |
 | `requireContributor(locals, url)`   | 303 to `/login` if signed out; 403 unless admin or contributor |
 | `requireOlympiadEditor(locals, id)` | 403 unless admin, or a contributor assigned to `id`            |
 
@@ -277,6 +302,7 @@ plain DB row works too.
 | `contribute` — `selectYear`                                           | `canEditOlympiad` on the submitted olympiad id          |
 | `contribute` — `createOlympiad`                                       | `requireAdmin`                                          |
 | `contribute/[olympiad]` and `[year]` — loads and actions              | `requireOlympiadEditor`                                 |
+| `contribute/[olympiad]` — `deleteOlympiad`                            | `requireSuperadmin`                                     |
 | `contribute/[olympiad]/titles.csv`                                    | `requireOlympiadEditor`                                 |
 | `(reg)/login`, `(reg)/profile`                                        | redirect to `/` if signed in / `/login` if not          |
 | `/`                                                                   | none: the dashboard if signed in, else the landing page |

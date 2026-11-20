@@ -286,29 +286,30 @@ Each seeded user also has one `account` row per provider in its `providers`
 (GitHub alone by default), with no tokens, since nothing calls a provider. The
 profile reads them to list the sign-in methods.
 
-| Key              | Role                                             | Use                                                  | Owner                                     |
-| ---------------- | ------------------------------------------------ | ---------------------------------------------------- | ----------------------------------------- |
-| `admin`          | admin                                            | the admin most specs act as; never a target          | frozen                                    |
-| `superadmin`     | admin, `SUPERADMIN_EMAIL`, no session            | a target the admin panel must refuse to modify       | frozen                                    |
-| `contributor`    | contributor, assigned `e2e-assigned`             | the contributor in the access-control matrix         | frozen                                    |
-| `user`           | none; GitHub and Google linked                   | a plain signed-in visitor                            | frozen                                    |
-| `banned`         | contributor, `banned` set by hand, session kept  | must be treated as signed out everywhere             | frozen                                    |
-| `stale`          | none; the session is due a refresh               | the refreshed cookie must reach the browser          | http/cache-headers                        |
-| `apiTarget`      | none, no session                                 | the target of closed admin calls and a cancelled ban | auth/ban                                  |
-| `banTarget`      | contributor, assigned `e2e-assigned`             | banned through the admin panel                       | auth/ban                                  |
-| `unbanTarget`    | none, `banned` set by hand, session kept         | unbanned through the admin panel                     | auth/ban                                  |
-| `roleTarget`     | none                                             | promoted through the admin panel                     | admin/users                               |
-| `loopTarget`     | none, no session                                 | the role change in the submit-loop regression        | admin/users                               |
-| `tracker`        | none                                             | marks problems done                                  | olympiads/progress                        |
-| `assignTarget`   | contributor, assigned `alpha`                    | assigned other olympiads through the admin panel     | admin/users-table                         |
-| `progressReader` | none, with seeded progress on `alpha`            | what the status filter and year totals are read from | olympiads/progress-filters                |
-| `progressRacer`  | none                                             | tracks while its progress request is held            | olympiads/progress-filters                |
-| `searcher`       | none, with seeded progress (`SEARCHER_PROGRESS`) | what ⌘K's progress filter is read from               | search/problem-filters                    |
-| `badgeReader`    | none, with seeded progress on the badge olympiad | what the dashboard and badge standings are read from | pages/dashboard, pages/badges (read only) |
-| `badgeTracker`   | none                                             | earns and loses `BADGES.tracker` by tracking         | olympiads/progress-badges                 |
-| `creditTop`      | contributor, no session                          | credited with three `CREDITS` files                  | frozen                                    |
-| `creditAdmin`    | admin, no session                                | credited with one `CREDITS` file                     | frozen                                    |
-| `creditIdle`     | contributor, no session                          | on `/team` with no uploads                           | frozen                                    |
+| Key              | Role                                             | Use                                                     | Owner                                     |
+| ---------------- | ------------------------------------------------ | ------------------------------------------------------- | ----------------------------------------- |
+| `admin`          | admin                                            | the admin most specs act as; never a target             | frozen                                    |
+| `superadmin`     | admin, `SUPERADMIN_EMAIL`                        | a target the panel refuses to modify; deletes olympiads | frozen                                    |
+| `nukeAssignee`   | contributor, assigned `e2e-nuke`                 | loses that assignment when the olympiad is deleted      | contribute/delete-olympiad                |
+| `contributor`    | contributor, assigned `e2e-assigned`             | the contributor in the access-control matrix            | frozen                                    |
+| `user`           | none; GitHub and Google linked                   | a plain signed-in visitor                               | frozen                                    |
+| `banned`         | contributor, `banned` set by hand, session kept  | must be treated as signed out everywhere                | frozen                                    |
+| `stale`          | none; the session is due a refresh               | the refreshed cookie must reach the browser             | http/cache-headers                        |
+| `apiTarget`      | none, no session                                 | the target of closed admin calls and a cancelled ban    | auth/ban                                  |
+| `banTarget`      | contributor, assigned `e2e-assigned`             | banned through the admin panel                          | auth/ban                                  |
+| `unbanTarget`    | none, `banned` set by hand, session kept         | unbanned through the admin panel                        | auth/ban                                  |
+| `roleTarget`     | none                                             | promoted through the admin panel                        | admin/users                               |
+| `loopTarget`     | none, no session                                 | the role change in the submit-loop regression           | admin/users                               |
+| `tracker`        | none                                             | marks problems done                                     | olympiads/progress                        |
+| `assignTarget`   | contributor, assigned `alpha`                    | assigned other olympiads through the admin panel        | admin/users-table                         |
+| `progressReader` | none, with seeded progress on `alpha`            | what the status filter and year totals are read from    | olympiads/progress-filters                |
+| `progressRacer`  | none                                             | tracks while its progress request is held               | olympiads/progress-filters                |
+| `searcher`       | none, with seeded progress (`SEARCHER_PROGRESS`) | what ⌘K's progress filter is read from                  | search/problem-filters                    |
+| `badgeReader`    | none, with seeded progress on the badge olympiad | what the dashboard and badge standings are read from    | pages/dashboard, pages/badges (read only) |
+| `badgeTracker`   | none                                             | earns and loses `BADGES.tracker` by tracking            | olympiads/progress-badges                 |
+| `creditTop`      | contributor, no session                          | credited with three `CREDITS` files                     | frozen                                    |
+| `creditAdmin`    | admin, no session                                | credited with one `CREDITS` file                        | frozen                                    |
+| `creditIdle`     | contributor, no session                          | on `/team` with no uploads                              | frozen                                    |
 
 The `CREDITS` olympiads (`e2e-credits`, `e2e-credits-none`) are frozen too: who
 uploaded each of their files is fixed, so the contributors list, `/team` and the

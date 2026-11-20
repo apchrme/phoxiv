@@ -27,6 +27,8 @@ export function signInErrorMessage(code: string): string {
 			// Implicit linking refused: the email belongs to an existing user, but
 			// one side has not verified it. See docs/auth.md, "Account linking".
 			return 'An account with this email already exists, but the email isn’t verified on both sign-in methods, so we couldn’t join them. Sign in the way you did before, or verify your email with the provider and try again.';
+		case 'email_not_verified':
+			return 'Your email isn’t verified with that sign-in method. Verify it with the provider, then try again.';
 		case 'access_denied':
 			return 'Sign-in was cancelled.';
 		default:

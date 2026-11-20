@@ -102,6 +102,19 @@ export async function deleteStaleIcons(
 	);
 }
 
+/**
+ * Removes an olympiad's icon in every extension, for deleting the olympiad. A
+ * removed icon leaves its object behind, so the stored `icon` can't be trusted
+ * to name it.
+ */
+export async function deleteAllIcons(
+	bucket: R2Bucket,
+	olympiadId: string,
+	allExts: readonly string[]
+): Promise<void> {
+	await deleteStaleIcons(bucket, olympiadId, '', allExts);
+}
+
 export { CDN_BASE_URL };
 
 // Defined in `#lib/uploads.ts` because the browser needs it too (collision

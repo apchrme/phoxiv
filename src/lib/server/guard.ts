@@ -61,12 +61,36 @@ export function requireOlympiadEditor(locals: App.Locals, olympiadId: string): G
 }
 
 /**
- * True if `userId` is the superadmin, who must not be modified. Matched by email
- * since the config predates the account. If `SUPERADMIN_EMAIL` is unset, nobody is.
+ * True if `email` is `SUPERADMIN_EMAIL`. Matched by email since the config
+ * predates the account. If the variable is unset, nobody matches.
+ */
+function isSuperadminEmail(email: string | null | undefined): boolean {
+	const superadminEmail = env.SUPERADMIN_EMAIL;
+	return !!superadminEmail && email === superadminEmail;
+}
+
+/** True if `u` is an admin whose email is `SUPERADMIN_EMAIL`. */
+export function isSuperadmin(
+	u: { role?: string | null; email?: string | null } | null | undefined
+) {
+	return !!u && u.role === 'admin' && isSuperadminEmail(u.email);
+}
+
+/**
+ * Throws 403 unless the current user is the superadmin. For what even an admin
+ * may not do, such as deleting an olympiad.
+ */
+export function requireSuperadmin(locals: App.Locals): GuardedContext {
+	if (!isSuperadmin(locals.user)) error(403, 'Unauthorised');
+	return { db: locals.db, user: locals.user! };
+}
+
+/**
+ * True if `userId` is the superadmin, who must not be modified. See
+ * {@link isSuperadminEmail}.
  */
 export async function isProtectedSuperadmin(db: DB, userId: string): Promise<boolean> {
-	const superadminEmail = env.SUPERADMIN_EMAIL;
-	if (!superadminEmail) return false;
+	if (!env.SUPERADMIN_EMAIL) return false;
 	const target = await db.select({ email: user.email }).from(user).where(eq(user.id, userId)).get();
-	return target?.email === superadminEmail;
+	return isSuperadminEmail(target?.email);
 }

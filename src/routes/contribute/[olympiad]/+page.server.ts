@@ -1,9 +1,18 @@
 import { redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { eq, inArray } from 'drizzle-orm';
-import { olympiads, problems, years } from '#lib/server/db/index.js';
+import { eq, inArray, sql } from 'drizzle-orm';
+import {
+	olympiads,
+	problemFiles,
+	problems,
+	user as userTable,
+	yearFiles,
+	years
+} from '#lib/server/db/index.js';
 import { parse } from 'csv-parse/sync';
-import { requireOlympiadEditor } from '#lib/server/guard.js';
+import { isSuperadmin, requireOlympiadEditor, requireSuperadmin } from '#lib/server/guard.js';
+import { deleteFileTextForUrls } from '#lib/server/db/queries/files.js';
+import { parseStringArray } from '#lib/utils/json.js';
 import { logActivity } from '#lib/server/activity-log.js';
 import { renderMarkdownOrNull } from '#lib/server/markdown.js';
 import {
@@ -24,6 +33,8 @@ import {
 } from '#lib/server/forms.js';
 import {
 	cdnUrl,
+	deleteAllIcons,
+	deleteByUrls,
 	deleteStaleIcons,
 	getBucket,
 	iconKey,
@@ -56,7 +67,9 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 			descriptionMd: olympiadRow.descriptionMd ?? '',
 			displayOrder: olympiadRow.displayOrder
 		},
-		years: await listYearNumbers(db, params.olympiad)
+		years: await listYearNumbers(db, params.olympiad),
+		// Only to show the delete button. `deleteOlympiad` checks for itself.
+		canDelete: isSuperadmin(locals.user)
 	};
 };
 
@@ -151,6 +164,79 @@ export const actions: Actions = {
 		});
 
 		return ok('removeIcon');
+	},
+
+	/**
+	 * Superadmin-only. Deletes the olympiad, its years and problems, every user's
+	 * progress on them, and every R2 object they own, icon included.
+	 */
+	deleteOlympiad: async ({ params, locals }) => {
+		// Before the existence check, so nobody else learns which ids exist.
+		const { db, user } = requireSuperadmin(locals);
+		const bucket = getBucket();
+		if (!bucket) return actionFail(500, 'deleteOlympiad', STORAGE_UNAVAILABLE);
+
+		const olympiad = await getOlympiad(db, params.olympiad);
+		if (!olympiad) return actionFail(404, 'deleteOlympiad', OLYMPIAD_NOT_FOUND);
+
+		// Collect URLs before the rows go; they are the only record of the R2 keys.
+		const [yearFileRows, problemFileRows] = await Promise.all([
+			db
+				.select({ url: yearFiles.url })
+				.from(yearFiles)
+				.innerJoin(years, eq(years.id, yearFiles.yearId))
+				.where(eq(years.olympiadId, params.olympiad))
+				.all(),
+			db
+				.select({ url: problemFiles.url })
+				.from(problemFiles)
+				.innerJoin(problems, eq(problems.id, problemFiles.problemId))
+				.innerJoin(years, eq(years.id, problems.yearId))
+				.where(eq(years.olympiadId, params.olympiad))
+				.all()
+		]);
+		const urls = [...yearFileRows, ...problemFileRows].map((f) => f.url);
+
+		await deleteByUrls(bucket, urls);
+		await deleteAllIcons(bucket, params.olympiad, ICON_UPLOAD.exts);
+
+		// Cascades to years, problems, files, progress and manual-badge lists.
+		await db.delete(olympiads).where(eq(olympiads.id, params.olympiad)).run();
+
+		// Best-effort from here: the olympiad is gone, so nothing below may fail the
+		// action. Leftover `file_text` rows never show up in search (it joins back to
+		// the file tables).
+		await deleteFileTextForUrls(db, urls).catch(() => {});
+
+		// A contributor's assignment would otherwise come back to life if an olympiad
+		// with this id is ever created again.
+		try {
+			const assigned = await db
+				.select({ id: userTable.id, assignedOlympiads: userTable.assignedOlympiads })
+				.from(userTable)
+				.where(sql`instr(${userTable.assignedOlympiads}, ${JSON.stringify(params.olympiad)}) > 0`)
+				.all();
+			for (const u of assigned) {
+				const kept = parseStringArray(u.assignedOlympiads).filter((id) => id !== params.olympiad);
+				await db
+					.update(userTable)
+					.set({ assignedOlympiads: JSON.stringify(kept) })
+					.where(eq(userTable.id, u.id))
+					.run();
+			}
+		} catch (err) {
+			console.error('deleteOlympiad: could not unassign contributors:', err);
+		}
+
+		await logActivity(
+			db,
+			user,
+			'delete_olympiad',
+			`Deleted "${olympiad.name}" (${olympiad.id}), with ${urls.length} files`,
+			{ olympiadId: params.olympiad }
+		);
+
+		redirect(303, '/contribute');
 	},
 
 	/** Like `/contribute`'s selectYear, with the olympiad taken from the URL. */

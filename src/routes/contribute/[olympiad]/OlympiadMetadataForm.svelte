@@ -66,10 +66,13 @@
 
 	// Nothing here is saved until "Save changes", so warn before leaving with edits.
 	// `confirmBeforeLeaving` explains why a reload gets only the browser's prompt.
-	confirmBeforeLeaving(
+	const allowLeave = confirmBeforeLeaving(
 		() => dirty,
 		'You have unsaved changes to this olympiad. Leave without saving?'
 	);
+
+	/** For when the olympiad is deleted: the redirect must not ask about its edits. */
+	export { allowLeave };
 </script>
 
 <form method="POST" action="?/updateOlympiad" use:enhance={pending.track('updateOlympiad')}>

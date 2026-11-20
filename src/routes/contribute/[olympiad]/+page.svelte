@@ -10,6 +10,7 @@
 	import IconCard from './IconCard.svelte';
 	import OlympiadMetadataForm from './OlympiadMetadataForm.svelte';
 	import ImportTitlesCard from './ImportTitlesCard.svelte';
+	import DeleteOlympiadCard from './DeleteOlympiadCard.svelte';
 
 	let { data, form }: PageProps = $props();
 
@@ -33,6 +34,7 @@
 	// Both cards have inputs the page resets after a successful action.
 	let iconCard: ReturnType<typeof IconCard> | undefined = $state();
 	let importCard: ReturnType<typeof ImportTitlesCard> | undefined = $state();
+	let metadataForm: ReturnType<typeof OlympiadMetadataForm> | undefined = $state();
 
 	/** Summary line for a finished CSV import. */
 	type ImportStats = {
@@ -100,7 +102,21 @@
 
 	<IconCard bind:this={iconCard} olympiadId={data.olympiad.id} {icon} {pending} />
 
-	<OlympiadMetadataForm olympiad={data.olympiad} bind:icon {savedIcon} {pending} />
+	<OlympiadMetadataForm
+		bind:this={metadataForm}
+		olympiad={data.olympiad}
+		bind:icon
+		{savedIcon}
+		{pending}
+	/>
 
 	<ImportTitlesCard bind:this={importCard} olympiad={data.olympiad} {pending} />
+
+	{#if data.canDelete}
+		<DeleteOlympiadCard
+			olympiadName={data.olympiad.name}
+			{pending}
+			onDeleted={() => metadataForm?.allowLeave()}
+		/>
+	{/if}
 </div>

@@ -230,6 +230,7 @@ export const activityLog = sqliteTable(
 		action: text('action', {
 			enum: [
 				'create_olympiad',
+				'delete_olympiad',
 				'update_olympiad',
 				'upload_icon',
 				'remove_icon',
