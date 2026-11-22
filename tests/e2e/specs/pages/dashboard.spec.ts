@@ -1,3 +1,4 @@
+import { DESCRIPTIONS, GREETINGS } from '../../../../src/lib/greetings';
 import { BADGE_OLYMPIAD, BADGES, COLLECTOR_BADGES, USERS } from '../../fixtures/seed-data';
 import { expect, test } from '../../support/test';
 import { gotoReady } from '../../support/ui';
@@ -18,7 +19,8 @@ test.describe('signed out', () => {
 		await expect(
 			page.getByRole('heading', { level: 1, name: 'Every olympiad, one place.' })
 		).toBeVisible();
-		await expect(page.getByRole('heading', { name: /^Welcome back/ })).toHaveCount(0);
+		const first = USERS.badgeReader.name.split(' ')[0];
+		await expect(page.getByRole('heading', { name: new RegExp(`, ${first}$`) })).toHaveCount(0);
 	});
 });
 
@@ -32,6 +34,24 @@ test.describe('signed in', () => {
 			page.getByRole('heading', { level: 1, name: new RegExp(`, ${first}$`) })
 		).toBeVisible();
 		await expect(page.getByRole('heading', { name: 'Every olympiad, one place.' })).toHaveCount(0);
+	});
+
+	test.describe('without scripts', () => {
+		test.use({ javaScriptEnabled: false });
+
+		// The greeting is chosen in the page load, so it is already in the HTML.
+		test('the greeting and description are rendered on the server', async ({ page }) => {
+			await page.goto('/');
+			const first = USERS.badgeReader.name.split(' ')[0];
+			const heading = page.getByRole('heading', { level: 1 });
+			const greeting = (await heading.textContent())?.trim() ?? '';
+			const all = Object.values(GREETINGS).flat();
+			expect(all.map((g) => `${g}, ${first}`)).toContain(greeting);
+			const description = (
+				await heading.locator('xpath=following-sibling::p').textContent()
+			)?.trim();
+			expect(DESCRIPTIONS).toContain(description);
+		});
 	});
 
 	test('the headline numbers', async ({ page }) => {

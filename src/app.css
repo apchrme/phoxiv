@@ -40,8 +40,9 @@
 	--input: oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
 	--ring: oklch(42% 0.1 257); /* Brand blue #A9CDFF, darkened */
 
-	/* Brand orange #FFB568, darkened for text contrast. Not --secondary, which
-	   stays a neutral surface for the secondary button and badge. */
+	/* Brand orange #FFB568, darkened to about 3:1 on Base: enough for icons, not
+	   for body text (that needs ~52% L). Not --secondary, which stays a neutral
+	   surface for the secondary button and badge. */
 	--highlight: oklch(62% 0.15 60);
 
 	--chart-1: oklch(68.64% 0.173 40.63); /* Peach     #fe640b */

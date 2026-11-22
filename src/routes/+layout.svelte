@@ -16,6 +16,7 @@
 	import LogIn from '#lib/components/buttons/LogIn.svelte';
 	import { buttonVariants } from '#lib/components/ui/button/index.js';
 	import brand from '#lib/assets/branding/brand.svg';
+	import ogImage from '#lib/assets/branding/og.png';
 	import * as Kbd from '#lib/components/ui/kbd/index.js';
 	import DarkModeButton from '#lib/components/buttons/DarkModeButton.svelte';
 	import GitHubButton from '#lib/components/buttons/GitHubButton.svelte';
@@ -25,6 +26,7 @@
 	import { onMount } from 'svelte';
 
 	const secondaryNav = $derived(secondaryNavFor(data.user));
+	const ogImageUrl = $derived(new URL(ogImage, page.url.origin).href);
 
 	let searchOpen = $state(false);
 
@@ -36,8 +38,21 @@
 	});
 </script>
 
+<!-- Link previews (Discord, Slack, X…). Title and description come from each
+     page's SvelteSeo, which unfurlers fall back to without og:title. The image
+     URL must be absolute; it is hashed, so a new card busts unfurl caches. -->
 <svelte:head>
 	<link rel="icon" href="/favicon.ico" />
+	<meta name="theme-color" content="#a9cdff" />
+	<meta property="og:site_name" content="phoXiv" />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content={page.url.origin + page.url.pathname} />
+	<meta property="og:image" content={ogImageUrl} />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
+	<meta property="og:image:alt" content="phoXiv: every olympiad, one place." />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:image" content={ogImageUrl} />
 </svelte:head>
 
 <ModeWatcher />
@@ -92,8 +107,8 @@
 							</NavigationMenu.Item>
 						{/each}
 						<NavigationMenu.Item openOnHover={false}>
-							<NavigationMenu.Trigger class="transition-colors duration-250">
-								<p class="text-base">more</p>
+							<NavigationMenu.Trigger class="text-base transition-colors duration-250">
+								more
 							</NavigationMenu.Trigger>
 							<NavigationMenu.Content>
 								<ul class="flex flex-col gap-1">

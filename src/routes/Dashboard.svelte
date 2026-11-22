@@ -22,12 +22,6 @@
 	import BadgeMedal from '#lib/components/BadgeMedal.svelte';
 	import Meter from '#lib/components/Meter.svelte';
 	import logo from '#lib/assets/branding/logo.svg';
-	import {
-		DEFAULT_DESCRIPTION,
-		DEFAULT_GREETING,
-		pickDescription,
-		pickGreeting
-	} from '#lib/greetings.js';
 	import { Resource } from '#lib/resource.svelte.js';
 	import { PROBLEM_TOPICS, type ProblemTotals } from '#lib/types.js';
 	import { formatScore } from '#lib/progress.js';
@@ -47,17 +41,7 @@
 	const RECENT = 5;
 
 	const totals = new Resource<ProblemTotals>('/api/stats/problems');
-
-	// Chosen after mount: the greeting depends on the visitor's local hour, which
-	// the server can't know, and a random pick would mismatch on hydration.
-	let greeting = $state(DEFAULT_GREETING);
-	let description = $state(DEFAULT_DESCRIPTION);
-
-	onMount(() => {
-		greeting = pickGreeting(new Date().getHours());
-		description = pickDescription();
-		void totals.loadOnce();
-	});
+	onMount(() => void totals.loadOnce());
 
 	const rows = $derived(dashboard.rows);
 	const firstName = $derived(userName.split(/\s+/)[0] || userName);
@@ -115,10 +99,10 @@
 	const recent = $derived([...rows].sort((a, b) => +b.updatedAt - +a.updatedAt).slice(0, RECENT));
 </script>
 
-<PageHeader title="{greeting}, {firstName}" {description}>
+<PageHeader title="{dashboard.greeting}, {firstName}" description={dashboard.description}>
 	{#snippet actions()}
-		<!-- Below `md` the sidebar's mobile nav already shows the brand. -->
-		<img src={logo} alt="phoXiv" class="hidden size-14 select-none md:block" />
+		<!-- Decorative: below `md` the mobile nav pill already shows the brand. -->
+		<img src={logo} alt="" class="hidden size-14 select-none md:block" />
 	{/snippet}
 </PageHeader>
 

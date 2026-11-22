@@ -29,7 +29,7 @@
 	} = $props();
 
 	/** Pulled into the card's padding to line up with the problem number. */
-	const controlPosition = '-mt-1 -mr-2';
+	const controlPosition = '-mr-2';
 </script>
 
 <div class="flex flex-col gap-2 rounded-xl bg-muted/50 p-4 sm:p-5">

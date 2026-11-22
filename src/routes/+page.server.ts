@@ -3,6 +3,7 @@ import { setNoStore } from '#lib/server/cache.js';
 import { evaluateUserBadges } from '#lib/server/db/queries/badges.js';
 import { getOlympiadNames } from '#lib/server/db/queries/olympiads.js';
 import { toVisibleBadge, visibleCount } from '#lib/badges.js';
+import { hourIn, pickDescription, pickGreeting } from '#lib/greetings.js';
 
 /**
  * `/` is the landing page signed out and the dashboard signed in. It sets its
@@ -10,7 +11,7 @@ import { toVisibleBadge, visibleCount } from '#lib/badges.js';
  * problem, and a cached landing page would outlive signing in, since the
  * browser cache doesn't key on the cookie. See docs/architecture.md.
  */
-export const load: PageServerLoad = async ({ locals, setHeaders }) => {
+export const load: PageServerLoad = async ({ locals, request, setHeaders }) => {
 	setNoStore(setHeaders);
 	if (!locals.user) return { dashboard: null };
 
@@ -26,8 +27,13 @@ export const load: PageServerLoad = async ({ locals, setHeaders }) => {
 	// Page data is readable in the page source, so a hidden requirement and the
 	// progress towards it are nulled here, not just left unrendered, until the
 	// user earns the badge.
+	// Chosen here, per request, so the header is right on first paint. Cloudflare
+	// puts the visitor's IANA zone on `request.cf`; without it the hour is UTC.
+	const timeZone = (request as Request & { cf?: { timezone?: string } }).cf?.timezone;
 	return {
 		dashboard: {
+			greeting: pickGreeting(hourIn(timeZone)),
+			description: pickDescription(),
 			rows,
 			badges: standings.map(({ badge, count, earnedAt }) => ({
 				...toVisibleBadge(badge, olympiadNames, earnedAt !== null),

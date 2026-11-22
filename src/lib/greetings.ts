@@ -1,13 +1,14 @@
 /**
- * The dashboard's greeting and description. Both are picked at random, and the
- * greeting also depends on the visitor's local hour, so they are chosen in the
- * browser: the server only knows UTC.
+ * The dashboard's greeting and description. Both are picked at random on every
+ * request, in the page load: `/` is `no-store`, so a refresh gets a new pick,
+ * and the text is right on first paint. The greeting also depends on the
+ * visitor's local hour, from the timezone Cloudflare derives from their IP.
  */
 
 type Period = 'morning' | 'afternoon' | 'evening' | 'night';
 
 /** Every greeting is followed by `, {name}`. */
-const GREETINGS: Record<Period | 'any', string[]> = {
+export const GREETINGS: Record<Period | 'any', string[]> = {
 	morning: ['Good morning', 'Rise and shine', 'Morning'],
 	afternoon: ['Good afternoon', 'Afternoon'],
 	evening: ['Good evening', 'Evening'],
@@ -22,15 +23,28 @@ export const DESCRIPTIONS = [
 	"How's it going?"
 ];
 
-/** The greeting used before the browser has chosen one (and when scripts are off). */
-export const DEFAULT_GREETING = 'Welcome back';
-export const DEFAULT_DESCRIPTION = DESCRIPTIONS[0];
-
 export function periodOf(hour: number): Period {
 	if (hour >= 5 && hour < 12) return 'morning';
 	if (hour >= 12 && hour < 17) return 'afternoon';
 	if (hour >= 17 && hour < 22) return 'evening';
 	return 'night';
+}
+
+/** The hour (0–23) in an IANA zone, or in UTC if the zone is missing or unknown. */
+export function hourIn(timeZone: string | undefined, now: Date = new Date()): number {
+	if (timeZone) {
+		try {
+			const hour = new Intl.DateTimeFormat('en-GB', {
+				hour: 'numeric',
+				hourCycle: 'h23',
+				timeZone
+			}).format(now);
+			return Number(hour);
+		} catch {
+			// An unknown zone throws a RangeError; fall through to UTC.
+		}
+	}
+	return now.getUTCHours();
 }
 
 function choose<T>(items: readonly T[], random: () => number): T {

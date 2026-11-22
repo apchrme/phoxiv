@@ -95,7 +95,7 @@
 			<img
 				src={brand}
 				alt="phoXiv"
-				class="w-[50vw] max-w-md drop-shadow-[0_0px_40px_rgba(0,0,0,0.8)]"
+				class="w-[50vw] max-w-md drop-shadow-[0_0_40px_rgba(0,0,0,0.8)]"
 			/>
 			<span class="hero-phonetic font-mono text-sm tracking-[0.02em] text-muted-foreground">
 				/ foʊkaɪv /
