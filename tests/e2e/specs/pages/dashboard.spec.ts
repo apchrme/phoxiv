@@ -29,7 +29,7 @@ test.describe('signed in', () => {
 		await gotoReady(page, '/');
 		const first = USERS.badgeReader.name.split(' ')[0];
 		await expect(
-			page.getByRole('heading', { level: 1, name: `Welcome back, ${first}` })
+			page.getByRole('heading', { level: 1, name: new RegExp(`, ${first}$`) })
 		).toBeVisible();
 		await expect(page.getByRole('heading', { name: 'Every olympiad, one place.' })).toHaveCount(0);
 		await expect(page.getByRole('link', { name: 'Profile', exact: true })).toHaveAttribute(

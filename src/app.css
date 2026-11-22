@@ -21,7 +21,7 @@
 	--popover: oklch(91.36% 0.011 250.38); /* Crust     #dce0e8 */
 	--popover-foreground: oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
 
-	--primary: oklch(42% 0.10 257); /* Brand blue #A9CDFF, darkened */
+	--primary: oklch(42% 0.1 257); /* Brand blue #A9CDFF, darkened */
 	--primary-foreground: oklch(96.13% 0.009 247.88); /* Base      #eff1f5 */
 
 	--secondary: oklch(84.7% 0.013 252.63); /* Surface 0 #ccd0da */
@@ -38,7 +38,7 @@
 
 	--border: oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
 	--input: oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
-	--ring: oklch(42% 0.10 257); /* Brand blue #A9CDFF, darkened */
+	--ring: oklch(42% 0.1 257); /* Brand blue #A9CDFF, darkened */
 
 	/* Brand orange #FFB568, darkened for text contrast. Not --secondary, which
 	   stays a neutral surface for the secondary button and badge. */
@@ -52,12 +52,12 @@
 
 	--sidebar: oklch(91.36% 0.011 250.38); /* Crust     #dce0e8 */
 	--sidebar-foreground: oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
-	--sidebar-primary: oklch(42% 0.10 257); /* Brand blue #A9CDFF, darkened */
+	--sidebar-primary: oklch(42% 0.1 257); /* Brand blue #A9CDFF, darkened */
 	--sidebar-primary-foreground: oklch(96.13% 0.009 247.88); /* Base #eff1f5 */
 	--sidebar-accent: oklch(84.7% 0.013 252.63); /* Surface 0 #ccd0da */
 	--sidebar-accent-foreground: oklch(37.99% 0.018 264.19); /* Text #4c4f69 */
 	--sidebar-border: oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
-	--sidebar-ring: oklch(42% 0.10 257); /* Brand blue #A9CDFF, darkened */
+	--sidebar-ring: oklch(42% 0.1 257); /* Brand blue #A9CDFF, darkened */
 }
 
 /* ================================================

@@ -93,7 +93,7 @@
 						{/each}
 						<NavigationMenu.Item openOnHover={false}>
 							<NavigationMenu.Trigger class="transition-colors duration-250">
-								<p>more</p>
+								<p class="text-base">more</p>
 							</NavigationMenu.Trigger>
 							<NavigationMenu.Content>
 								<ul class="flex flex-col gap-1">

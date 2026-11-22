@@ -92,7 +92,11 @@
 		</div>
 
 		<div class="hero-brand relative z-10 flex flex-col items-center gap-2">
-			<img src={brand} alt="phoXiv" class="w-[50vw] max-w-md drop-shadow-[0_0px_35px_rgba(0,0,0,1)]/50" />
+			<img
+				src={brand}
+				alt="phoXiv"
+				class="w-[50vw] max-w-md drop-shadow-[0_0px_35px_rgba(0,0,0,1)]/50"
+			/>
 			<span class="hero-phonetic font-mono text-sm tracking-[0.02em] text-muted-foreground">
 				/ foʊkaɪv /
 			</span>
