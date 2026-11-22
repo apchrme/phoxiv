@@ -11,7 +11,7 @@ const GREETINGS: Record<Period | 'any', string[]> = {
 	morning: ['Good morning', 'Rise and shine', 'Morning'],
 	afternoon: ['Good afternoon', 'Afternoon'],
 	evening: ['Good evening', 'Evening'],
-	night: ['Sleep well', 'It\'s pretty late', 'Good night', 'Time to sleep'],
+	night: ['Sleep well', "It's pretty late", 'Good night', 'Time to sleep'],
 	// Mixed into every period.
 	any: ['Welcome back', 'Hello', 'Hi there']
 };
@@ -19,7 +19,7 @@ const GREETINGS: Record<Period | 'any', string[]> = {
 export const DESCRIPTIONS = [
 	'Every day is a new beginning.',
 	'Pick up where you left off.',
-	'How\'s it going?'
+	"How's it going?"
 ];
 
 /** The greeting used before the browser has chosen one (and when scripts are off). */
