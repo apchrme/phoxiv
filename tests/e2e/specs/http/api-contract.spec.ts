@@ -334,10 +334,10 @@ test.describe('deep search input validation', { tag: '@smoke' }, () => {
 	}
 
 	test('too short, missing and too long queries are 400s', async ({ request }) => {
-		await expectRefused(request, '/api/search/files', 'Type at least 5 characters');
-		await expectRefused(request, filesUrl('abcd'), 'Type at least 5 characters');
-		// Whitespace is collapsed before the length check: this is "ab c".
-		await expectRefused(request, filesUrl('  ab     c  '), 'Type at least 5 characters');
+		await expectRefused(request, '/api/search/files', 'Type at least 4 characters');
+		await expectRefused(request, filesUrl('abc'), 'Type at least 4 characters');
+		// Whitespace is collapsed before the length check: this is "a b".
+		await expectRefused(request, filesUrl('  a     b  '), 'Type at least 4 characters');
 		await expectRefused(request, filesUrl('a'.repeat(201)), 'Search query too long');
 
 		const atLimit = await request.get(filesUrl('a'.repeat(200)));

@@ -447,7 +447,7 @@ type FileSearchResponse = {
 
 | Control                   | Value | Effect                                                                     |
 | ------------------------- | ----- | -------------------------------------------------------------------------- |
-| `MIN_DEEP_QUERY_LENGTH`   | 5     | no D1 read below it; enforced on client and server                         |
+| `MIN_DEEP_QUERY_LENGTH`   | 4     | no D1 read below it; enforced on client and server                         |
 | `MAX_DEEP_QUERY_LENGTH`   | 200   | refused before D1 and the cache header; enforced on client and server      |
 | `MAX_DEEP_QUERY_TOKENS`   | 24    | the real control on the bm25 scan; keeps queries inside D1's 30 s limit    |
 | `MAX_PHRASE_TOKENS`       | 32    | looser, since a longer phrase can only match fewer documents               |
@@ -631,7 +631,7 @@ States are chosen by branch order, in this order:
 | --------------------- | --------------------------- | -------------------------------------------------------------------------------------------------- |
 | Too long              | `deepTooLong`               | "That's too long to search inside files.", with the length and the limit                           |
 | Failed                | `deep.hasFailed(deepKey)`   | "Couldn't search inside files." + **Try again**                                                    |
-| Idle / too short      | `deepQuery.length < MIN`    | the explainer, plus "type at least 5 characters" once anything is typed                            |
+| Idle / too short      | `deepQuery.length < MIN`    | the explainer, plus "type at least 4 characters" once anything is typed                            |
 | Loading, nothing kept | `deepLoading` and no rows   | "Searching inside files…", from the keystroke                                                      |
 | Still indexing        | `deep.indexEmpty`           | "No files indexed yet", with "The archive is still catching up."                                   |
 | No matches            | rows empty, index non-empty | "No files contain that phrase.", or "No &lt;olympiad&gt; files contain that phrase" under a filter |

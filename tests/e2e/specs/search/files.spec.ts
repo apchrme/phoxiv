@@ -16,7 +16,7 @@ const START = '/privacy';
 
 /** The texts of the panel's states, as the files panel in GlobalSearch.svelte renders them. */
 const EXPLAINER = 'Search the text inside every uploaded document.';
-const TOO_SHORT = 'Type at least 5 characters.';
+const TOO_SHORT = 'Type at least 4 characters.';
 const SEARCHING = 'Searching inside files…';
 const NO_MATCHES = 'No files contain that phrase';
 
@@ -107,32 +107,32 @@ test.describe('⌘K files mode', () => {
 		expect(context.pages(), 'this tab and the control’s, none from the empty box').toHaveLength(2);
 	});
 
-	test('4 characters ask for a fifth and send nothing; 5 characters search', async ({ page }) => {
+	test('3 characters ask for a fourth and send nothing; 4 characters search', async ({ page }) => {
 		const queries = recordDeepSearches(page);
 		await page.clock.install({ time: CLOCK_START });
 		const { dialog, box } = await openFilesMode(page);
 		await page.clock.pauseAt(CLOCK_PAUSE);
 
 		// "Below this, no D1 read happens at all" (MIN_DEEP_QUERY_LENGTH, #lib/search.ts).
-		await box.fill('quok');
+		await box.fill('quo');
 		await expect(dialog.getByText(EXPLAINER)).toBeVisible();
 		await expect(dialog.getByText(TOO_SHORT)).toBeVisible();
 		// Not even pending: a short query is never scheduled.
 		await expect(dialog.getByRole('status', { name: 'Loading' })).toBeHidden();
 		// Long enough for any debounced request to have been sent. None may be: the
-		// fifth character's request, below, would otherwise not be the first.
+		// fourth character's request, below, would otherwise not be the first.
 		await page.clock.runFor(PAST_THE_DEBOUNCE);
 
 		const searched = page.waitForResponse((response) => isDeepSearch(response.url()));
-		await box.fill('quokk');
+		await box.fill('quok');
 		await expect(dialog.getByText(TOO_SHORT)).toBeHidden();
 		await page.clock.runFor(PAST_THE_DEBOUNCE);
 		expect((await searched).status()).toBe(200);
 
-		// The last word is a prefix, so "quokk" finds the "quokka" solution.
+		// The last word is a prefix, so "quok" finds the "quokka" solution.
 		await expect(dialog.locator('[data-result-index]')).toHaveCount(1);
 		await expect(dialog.getByRole('link')).toHaveAttribute('href', FILE_URLS.alphaSolution);
-		expect(queries).toEqual(['quokk']);
+		expect(queries).toEqual(['quok']);
 	});
 
 	test('the first query reads "Searching inside files…" during the debounce', async ({ page }) => {
