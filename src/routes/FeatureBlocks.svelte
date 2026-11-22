@@ -24,7 +24,7 @@
 	const blocks: Block[] = [
 		{
 			icon: Trophy,
-			color: 'text-blue-500 dark:text-blue-300',
+			color: 'text-primary',
 			title: 'Browse the archive',
 			body: `Browse the most comprehensive archive on the internet. Dozens of olympiads and thousands of problems, each complete with solutions, marking schemes and more.`,
 			href: resolve('olympiads'),
@@ -39,7 +39,7 @@
 		},
 		{
 			icon: Award,
-			color: 'text-violet-500 dark:text-violet-300',
+			color: 'text-highlight',
 			title: 'Earn shiny badges',
 			body: `Mark any problem you have done, and include your score if you want. Earn cool badges along the way.`,
 			href: resolve('login'),
