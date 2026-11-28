@@ -29,70 +29,71 @@ export function isBadgeScope(value: string): value is BadgeScope {
 }
 
 /**
- * Accent colours a badge can take: Catppuccin Latte in light mode, Mocha in
- * dark. Full class strings, not built from parts, so Tailwind finds them.
+ * Accent colours a badge can take, each a `--badge-*` token in `app.css` that
+ * every theme defines. Full class strings, not built from parts, so Tailwind
+ * finds them.
  * `fg` colours the icon and `bg` tints the disc behind it.
  */
 export const BADGE_COLORS = {
 	mauve: {
 		label: 'Mauve',
-		fg: 'text-[#8839ef] dark:text-[#cba6f7]',
-		bg: 'bg-[#8839ef]/15 dark:bg-[#cba6f7]/15',
-		ring: 'ring-[#8839ef]/40 dark:ring-[#cba6f7]/40'
+		fg: 'text-badge-mauve',
+		bg: 'bg-badge-mauve/15',
+		ring: 'ring-badge-mauve/40'
 	},
 	red: {
 		label: 'Red',
-		fg: 'text-[#d20f39] dark:text-[#f38ba8]',
-		bg: 'bg-[#d20f39]/15 dark:bg-[#f38ba8]/15',
-		ring: 'ring-[#d20f39]/40 dark:ring-[#f38ba8]/40'
+		fg: 'text-badge-red',
+		bg: 'bg-badge-red/15',
+		ring: 'ring-badge-red/40'
 	},
 	peach: {
 		label: 'Peach',
-		fg: 'text-[#fe640b] dark:text-[#fab387]',
-		bg: 'bg-[#fe640b]/15 dark:bg-[#fab387]/15',
-		ring: 'ring-[#fe640b]/40 dark:ring-[#fab387]/40'
+		fg: 'text-badge-peach',
+		bg: 'bg-badge-peach/15',
+		ring: 'ring-badge-peach/40'
 	},
 	yellow: {
 		label: 'Yellow',
-		fg: 'text-[#df8e1d] dark:text-[#f9e2af]',
-		bg: 'bg-[#df8e1d]/15 dark:bg-[#f9e2af]/15',
-		ring: 'ring-[#df8e1d]/40 dark:ring-[#f9e2af]/40'
+		fg: 'text-badge-yellow',
+		bg: 'bg-badge-yellow/15',
+		ring: 'ring-badge-yellow/40'
 	},
 	green: {
 		label: 'Green',
-		fg: 'text-[#40a02b] dark:text-[#a6e3a1]',
-		bg: 'bg-[#40a02b]/15 dark:bg-[#a6e3a1]/15',
-		ring: 'ring-[#40a02b]/40 dark:ring-[#a6e3a1]/40'
+		fg: 'text-badge-green',
+		bg: 'bg-badge-green/15',
+		ring: 'ring-badge-green/40'
 	},
 	teal: {
 		label: 'Teal',
-		fg: 'text-[#179299] dark:text-[#94e2d5]',
-		bg: 'bg-[#179299]/15 dark:bg-[#94e2d5]/15',
-		ring: 'ring-[#179299]/40 dark:ring-[#94e2d5]/40'
+		fg: 'text-badge-teal',
+		bg: 'bg-badge-teal/15',
+		ring: 'ring-badge-teal/40'
 	},
 	sky: {
 		label: 'Sky',
-		fg: 'text-[#04a5e5] dark:text-[#89dceb]',
-		bg: 'bg-[#04a5e5]/15 dark:bg-[#89dceb]/15',
-		ring: 'ring-[#04a5e5]/40 dark:ring-[#89dceb]/40'
+		fg: 'text-badge-sky',
+		bg: 'bg-badge-sky/15',
+		ring: 'ring-badge-sky/40'
 	},
 	blue: {
 		label: 'Blue',
-		fg: 'text-[#1e66f5] dark:text-[#89b4fa]',
-		bg: 'bg-[#1e66f5]/15 dark:bg-[#89b4fa]/15',
-		ring: 'ring-[#1e66f5]/40 dark:ring-[#89b4fa]/40'
+		fg: 'text-badge-blue',
+		bg: 'bg-badge-blue/15',
+		ring: 'ring-badge-blue/40'
 	},
 	lavender: {
 		label: 'Lavender',
-		fg: 'text-[#7287fd] dark:text-[#b4befe]',
-		bg: 'bg-[#7287fd]/15 dark:bg-[#b4befe]/15',
-		ring: 'ring-[#7287fd]/40 dark:ring-[#b4befe]/40'
+		fg: 'text-badge-lavender',
+		bg: 'bg-badge-lavender/15',
+		ring: 'ring-badge-lavender/40'
 	},
 	pink: {
 		label: 'Pink',
-		fg: 'text-[#ea76cb] dark:text-[#f5c2e7]',
-		bg: 'bg-[#ea76cb]/15 dark:bg-[#f5c2e7]/15',
-		ring: 'ring-[#ea76cb]/40 dark:ring-[#f5c2e7]/40'
+		fg: 'text-badge-pink',
+		bg: 'bg-badge-pink/15',
+		ring: 'ring-badge-pink/40'
 	}
 } as const;
 

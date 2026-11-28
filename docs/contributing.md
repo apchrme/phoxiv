@@ -360,21 +360,45 @@ Tailwind v4, configured in CSS; there is no `tailwind.config.js`.
   token; it is the only record of which Catppuccin colour it is.
 - **Tokens.** Declared on `:root`, overridden under `.dark`, and exported to
   Tailwind through `@theme inline`. Utilities like `bg-card` work in both themes
-  without a `dark:` variant, so prefer a semantic token over a literal colour.
+  without a `dark:` variant.
+- **No literal colours outside `app.css`.** Every colour on the site except the
+  landing page comes from a token, so that a new theme only has to define the
+  tokens. No palette utilities (`bg-white/30`, `text-green-600`), no arbitrary
+  values (`text-[#8839ef]`), and no `dark:` variant that picks a different
+  colour. If no existing token fits, add one to `:root` and `.dark` and export
+  it. Beyond shadcn's set, the project defines:
+
+  | Token                | What it colours                                          |
+  | -------------------- | -------------------------------------------------------- |
+  | `highlight`          | brand-orange icons                                       |
+  | `success`, `warning` | status text and marks: "Verified", an extraction warning |
+  | `canvas`             | `html`, behind the app shell                             |
+  | `scrim`              | dims the page behind a modal dialog or a sheet           |
+  | `badge-*`            | the ten badge accents in `#lib/badges.ts`                |
+
+  Translucent tokens carry their alpha, since a theme may need a different one;
+  an opacity modifier such as `bg-success/10` is still fine on an opaque token.
+  The exceptions are colours that aren't the site's to theme: the brand blue
+  in the `theme-color` meta, and the white that `thumbs-cli.ts` flattens PDF
+  thumbnails onto.
+
 - **Dark mode.** [`mode-watcher`](https://github.com/svecosystem/mode-watcher)
   toggles `.dark` on `<html>`, and
-  `@custom-variant dark (&:where(.dark, .dark *))` follows the class. `html` and
-  `html.dark` set their own background so the page never flashes the wrong
-  colour.
+  `@custom-variant dark (&:where(.dark, .dark *))` follows the class. `html`
+  paints `--canvas`, which `.dark` overrides, so the page never flashes the
+  wrong colour.
+- **One surface style: solid.** Panels are opaque tokens (`bg-card`,
+  `bg-popover`) edged with `ring-1 ring-foreground/10` or a `border`, as
+  `Card` does. No frosted glass: no translucent white panels and no
+  `backdrop-blur`. A modal's backdrop is a plain `bg-scrim`. The landing page
+  is the one exception.
 - **Surface utilities.** `@utility` rules, because the same look applies to
   different elements. If the markup repeats too, make a component instead.
 
-  | Utility          | What it is                                               |
-  | ---------------- | -------------------------------------------------------- |
-  | `glass`          | the frosted panel of the nav pills                       |
-  | `glass-hairline` | the divider between rows inside a `glass` panel          |
-  | `file-input`     | a bare `<input type="file">` styled to match the buttons |
-  | `no-scrollbar`   | scrolls without a visible scrollbar (the sidebar)        |
+  | Utility        | What it is                                               |
+  | -------------- | -------------------------------------------------------- |
+  | `file-input`   | a bare `<input type="file">` styled to match the buttons |
+  | `no-scrollbar` | scrolls without a visible scrollbar (the sidebar)        |
 
 - **`data-*` variants.** `data-open`, `data-closed`, `data-checked`,
   `data-unchecked`, `data-selected`, `data-disabled`, `data-active`, `data-horizontal` and
@@ -390,8 +414,8 @@ Tailwind v4, configured in CSS; there is no `tailwind.config.js`.
 `src/lib/components/ui/` came from the shadcn-svelte CLI. **Never re-run the CLI
 over it** (CLAUDE.md rule 2). `components.json` points at a live, unpinned
 registry, so a re-add pulls today's upstream and discards every customisation:
-the backdrop-blur overrides, the sheet overlay, `input.svelte`'s `data-slot`
-handling, `tabs-trigger.svelte`'s dark active state, and
+the sheet overlay's `bg-scrim` and the sheet's missing blur, `input.svelte`'s
+`data-slot` handling, `tabs-trigger.svelte`'s dark active state, and
 `tooltip-content.svelte`'s `arrowClasses` and `portalProps` props, which
 [`SignInToTrack.svelte`](<../src/routes/(reg)/olympiads/[olympiad]/SignInToTrack.svelte>)
 depends on.

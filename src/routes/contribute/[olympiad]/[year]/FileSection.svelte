@@ -343,9 +343,7 @@
 			<p
 				class={cn(
 					'text-xs',
-					extractionNote.tone === 'warn'
-						? 'text-amber-600 dark:text-amber-500'
-						: 'text-muted-foreground'
+					extractionNote.tone === 'warn' ? 'text-warning' : 'text-muted-foreground'
 				)}
 			>
 				{extractionNote.text}

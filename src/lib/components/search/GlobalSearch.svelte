@@ -457,8 +457,7 @@
 	<Dialog.Portal>
 		<!-- Backdrop -->
 		<Dialog.Overlay
-			class="fixed inset-0 z-50 bg-white/30 backdrop-blur-md
-			       dark:bg-black/30
+			class="fixed inset-0 z-50 bg-scrim
 			       data-open:animate-in data-open:duration-150 data-open:fade-in-0
 			       data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0"
 		/>
@@ -466,7 +465,7 @@
 		<div class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-4">
 			<Dialog.Content
 				class="pointer-events-auto flex h-[min(600px,72vh)] w-full max-w-xl flex-col overflow-hidden rounded-2xl
-					   bg-popover text-popover-foreground md:backdrop-blur-lg
+					   bg-popover text-popover-foreground
 				       data-open:animate-in data-open:duration-200 data-open:fade-in-0 data-open:zoom-in-[0.97]
 				       data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0 data-closed:zoom-out-[0.97]"
 				onOpenAutoFocus={(e) => {
@@ -489,13 +488,10 @@
 					class="min-h-0 flex-1 gap-0"
 				>
 					<!-- Mode row: the tabs and the close button, keeping the input row narrow. -->
-					<div class="flex items-center gap-2 border-b glass-hairline px-3 py-2">
+					<div class="flex items-center gap-2 border-b px-3 py-2">
 						<SearchModeTabs onactivate={() => inputEl?.focus()} />
 						<Dialog.Close
-							class={cn(
-								buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
-								'ml-auto border border-white/50 bg-white/30 hover:bg-white/50 dark:border-white/10 dark:bg-white/5'
-							)}
+							class={cn(buttonVariants({ variant: 'outline', size: 'icon-sm' }), 'ml-auto')}
 							aria-label="Close search"
 						>
 							<XIcon class="size-4" />
@@ -504,7 +500,7 @@
 
 					<!-- Input row. Keep `min-w-0` on the input: without it the input won't
 					     shrink below ~20 characters and the row overflows (and is clipped). -->
-					<div class="flex items-center gap-2 border-b glass-hairline px-4 py-3">
+					<div class="flex items-center gap-2 border-b px-4 py-3">
 						{#if deepLoading}
 							<!-- Replaces the magnifier: the row has no width to spare. -->
 							<Spinner class="size-4 shrink-0 text-muted-foreground" />
@@ -617,7 +613,7 @@
 										<!-- Also shown for an olympiad filter set in files mode, which is
 										     otherwise invisible here. Mirrors the note in the files panel. -->
 										<div
-											class="flex items-center justify-between gap-2 border-b glass-hairline px-4 py-2 text-xs text-muted-foreground"
+											class="flex items-center justify-between gap-2 border-b px-4 py-2 text-xs text-muted-foreground"
 										>
 											<span>
 												{#if filtering}
@@ -716,7 +712,7 @@
 								{:else}
 									{#if filtering}
 										<!-- Says which problem filters stopped applying. -->
-										<p class="border-b glass-hairline px-4 py-2 text-xs text-muted-foreground">
+										<p class="border-b px-4 py-2 text-xs text-muted-foreground">
 											Topic and progress filters don't apply to files — one file can cover a whole
 											year.
 										</p>

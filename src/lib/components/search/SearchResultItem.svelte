@@ -50,8 +50,8 @@
 		}}
 		onmousemove={onhover}
 		class={cn(
-			'flex flex-col gap-1.5 border-b border-white/40 px-4 py-3 transition-all duration-150 last:border-0 motion-reduce:transition-none dark:border-white/8',
-			focused ? 'bg-white/50 dark:bg-white/8' : 'hover:bg-white/35 dark:hover:bg-white/5'
+			'flex flex-col gap-1.5 border-b px-4 py-3 transition-all duration-150 last:border-0 motion-reduce:transition-none',
+			focused ? 'bg-accent' : 'hover:bg-accent/50'
 		)}
 	>
 		<!-- `query` given: the query really ran over this text. -->

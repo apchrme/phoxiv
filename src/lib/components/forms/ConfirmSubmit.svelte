@@ -84,7 +84,7 @@
 
 	<AlertDialog.Portal>
 		<AlertDialog.Overlay
-			class="fixed inset-0 z-50 bg-white/30 backdrop-blur-md dark:bg-black/30 data-open:animate-in data-open:duration-150 data-open:fade-in-0 data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0"
+			class="fixed inset-0 z-50 bg-scrim data-open:animate-in data-open:duration-150 data-open:fade-in-0 data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0"
 		/>
 		<AlertDialog.Content
 			class="fixed top-1/2 left-1/2 z-50 flex w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col gap-3 rounded-2xl bg-popover p-6 text-popover-foreground shadow-2xl ring-1 ring-foreground/5 outline-none dark:ring-foreground/10 data-open:animate-in data-open:duration-200 data-open:fade-in-0 data-open:zoom-in-[0.97] data-closed:animate-out data-closed:duration-150 data-closed:fade-out-0 data-closed:zoom-out-[0.97]"

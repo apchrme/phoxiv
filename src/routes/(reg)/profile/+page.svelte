@@ -41,7 +41,7 @@
 				<UserAvatar {user} class="size-24 ring-4 ring-primary/20" iconClass="size-10" />
 				<!-- Signed-in indicator -->
 				<span
-					class="absolute right-1 bottom-1 size-4 rounded-full border-2 border-card bg-green-500"
+					class="absolute right-1 bottom-1 size-4 rounded-full border-2 border-card bg-success"
 					title="Signed in"
 				></span>
 			</div>
@@ -77,7 +77,7 @@
 				</div>
 				{#if user?.emailVerified}
 					<span
-						class="shrink-0 rounded-full bg-green-500/10 px-2 py-0.5 text-xs font-medium text-green-600 dark:text-green-400"
+						class="shrink-0 rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success"
 					>
 						Verified
 					</span>

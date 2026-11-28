@@ -25,16 +25,14 @@
 		// of its own at all in dark mode. Light mode was never affected: there the
 		// active pill is Base over a Surface 0 track, two distinct tokens.
 		//
-		// The replacement keeps upstream's *metaphor* — the active pill is one step
-		// lighter than the track — in this project's own dark-glass idiom, the
-		// translucent white fill and hairline that `glass` and `glass-hairline` use.
-		// Over Surface 1 that composites to ≈ #585a6a, which is Surface 2: the
-		// canonical next step up in this palette.
+		// The replacement paints the active pill with the page background in both
+		// modes, as light mode already did. In Mocha that is Base over a Surface 1
+		// track: a step darker rather than lighter, but a distinct, opaque colour.
 		//
 		// Class names are spelled out in prose above rather than in backticks
 		// because Tailwind scans comments too, and a quoted utility here would emit
 		// a dead rule for a class nothing renders.
-		'data-active:bg-background data-active:text-foreground dark:data-active:border-white/10 dark:data-active:bg-white/10 dark:data-active:text-foreground',
+		'data-active:bg-background data-active:text-foreground',
 		'after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-[orientation=horizontal]/tabs:after:inset-x-0 group-data-[orientation=horizontal]/tabs:after:bottom-[-5px] group-data-[orientation=horizontal]/tabs:after:h-0.5 group-data-[orientation=vertical]/tabs:after:inset-y-0 group-data-[orientation=vertical]/tabs:after:-right-1 group-data-[orientation=vertical]/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100',
 		className
 	)}

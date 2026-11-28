@@ -71,9 +71,9 @@
 	<div class="flex min-h-screen w-full flex-col items-center bg-background px-4 pt-6 pb-3">
 		<!-- A flex column so the footer's `mt-auto` pins it to the bottom of short pages. -->
 		<div class="flex w-full flex-1 flex-col lg:w-5/6 xl:w-2/3">
-			<!-- Mobile nav — glass pill -->
+			<!-- Mobile nav pill -->
 			<nav
-				class="sticky top-3 z-40 flex flex-row flex-wrap items-center justify-between gap-2 rounded-full glass p-1.5 md:hidden"
+				class="sticky top-3 z-40 flex flex-row flex-wrap items-center justify-between gap-2 rounded-full bg-card p-1.5 shadow-sm ring-1 ring-foreground/10 md:hidden"
 			>
 				<Sidebar.Trigger />
 				<a href={resolve('/')}>
@@ -88,9 +88,9 @@
 				</button>
 			</nav>
 
-			<!-- Desktop nav — glass pill -->
+			<!-- Desktop nav pill -->
 			<nav
-				class="sticky top-3 z-40 hidden flex-row flex-wrap items-center justify-between gap-2 rounded-full glass p-1.5 md:flex"
+				class="sticky top-3 z-40 hidden flex-row flex-wrap items-center justify-between gap-2 rounded-full bg-card p-1.5 shadow-sm ring-1 ring-foreground/10 md:flex"
 			>
 				<NavigationMenu.Root viewport={false}>
 					<NavigationMenu.List class="gap-1 sm:gap-2">
@@ -133,10 +133,8 @@
 					<button
 						onclick={() => (searchOpen = true)}
 						class="{buttonVariants({
-							variant: 'ghost'
-						})} items-center gap-2 border border-white/50
-						       bg-white/30 text-sm text-muted-foreground hover:bg-white/50 dark:border-white/10
-						       dark:bg-white/5 dark:hover:bg-white/10"
+							variant: 'outline'
+						})} items-center gap-2 text-sm text-muted-foreground"
 						aria-label="Search problems"
 					>
 						<Search class="size-4" />

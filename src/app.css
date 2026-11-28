@@ -30,20 +30,44 @@
 	--muted: oklch(89.7% 0.013 252.63); /* Surface 0 #ccd0da */
 	--muted-foreground: oklch(54.26% 0.019 263.95); /* Subtext 0 #6c6f85 */
 
-	--accent: oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
+	--accent: oklch(89.7% 0.013 252.63); /* Surface 0 #ccd0da */
 	--accent-foreground: oklch(37.99% 0.018 264.19); /* Text      #4c4f69 */
 
 	--destructive: oklch(44.49% 0.196 18.61); /* Red       #d20f39 */
 	--destructive-foreground: oklch(96.13% 0.009 247.88); /* Base   #eff1f5 */
 
 	--border: oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
-	--input: oklch(78.69% 0.014 255.88); /* Surface 1 #bcc0cc */
+	--input: oklch(84.7% 0.013 252.63); /* Surface 1 #bcc0cc */
 	--ring: oklch(42% 0.1 257); /* Brand blue #A9CDFF, darkened */
 
 	/* Brand orange #FFB568, darkened to about 3:1 on Base: enough for icons, not
 	   for body text (that needs ~52% L). Not --secondary, which stays a neutral
 	   surface for the secondary button and badge. */
 	--highlight: oklch(62% 0.15 60);
+
+	/* Status colours, for text and small marks. Tailwind's green-600 and
+	   amber-600: Latte's own green and yellow are too light for text on Base. */
+	--success: oklch(62.7% 0.194 149.214);
+	--warning: oklch(66.6% 0.179 58.318);
+
+	/* Behind the app shell: shows in overscroll and before the first paint. */
+	--canvas: oklch(95% 0.008 258);
+
+	/* Dims the page behind a modal dialog or sheet. Translucent, so the alpha is
+	   part of the token. */
+	--scrim: oklch(0% 0 0 / 20%);
+
+	/* Badge accents (#lib/badges.ts), one per colour an admin can pick. */
+	--badge-mauve: oklch(55.47% 0.25 297.02); /* Mauve    #8839ef */
+	--badge-red: oklch(55.05% 0.216 19.81); /* Red      #d20f39 */
+	--badge-peach: oklch(69.2% 0.204 42.43); /* Peach    #fe640b */
+	--badge-yellow: oklch(71.4% 0.149 67.78); /* Yellow   #df8e1d */
+	--badge-green: oklch(62.5% 0.177 140.44); /* Green    #40a02b */
+	--badge-teal: oklch(60.23% 0.098 201.1); /* Teal     #179299 */
+	--badge-sky: oklch(68.2% 0.145 235.38); /* Sky      #04a5e5 */
+	--badge-blue: oklch(55.86% 0.226 262.09); /* Blue     #1e66f5 */
+	--badge-lavender: oklch(66.38% 0.175 273.13); /* Lavender #7287fd */
+	--badge-pink: oklch(72.56% 0.174 338.43); /* Pink     #ea76cb */
 
 	--chart-1: oklch(68.64% 0.173 40.63); /* Peach     #fe640b */
 	--chart-2: oklch(59.66% 0.173 136.67); /* Green     #40a02b */
@@ -97,6 +121,24 @@
 
 	--highlight: oklch(83% 0.127 66); /* Brand orange #FFB568 */
 
+	--success: oklch(79.2% 0.209 151.711); /* Tailwind green-400 */
+	--warning: oklch(76.9% 0.188 70.08); /* Tailwind amber-500 */
+
+	--canvas: oklch(10.5% 0.018 280);
+
+	--scrim: oklch(0% 0 0 / 50%);
+
+	--badge-mauve: oklch(78.71% 0.119 304.77); /* Mauve    #cba6f7 */
+	--badge-red: oklch(75.56% 0.13 2.76); /* Red      #f38ba8 */
+	--badge-peach: oklch(82.37% 0.101 52.63); /* Peach    #fab387 */
+	--badge-yellow: oklch(91.93% 0.07 86.53); /* Yellow   #f9e2af */
+	--badge-green: oklch(85.77% 0.109 142.72); /* Green    #a6e3a1 */
+	--badge-teal: oklch(85.85% 0.079 182.75); /* Teal     #94e2d5 */
+	--badge-sky: oklch(84.67% 0.083 210.25); /* Sky      #89dceb */
+	--badge-blue: oklch(76.64% 0.111 259.88); /* Blue     #89b4fa */
+	--badge-lavender: oklch(81.66% 0.091 277.31); /* Lavender #b4befe */
+	--badge-pink: oklch(87% 0.075 336.3); /* Pink     #f5c2e7 */
+
 	--chart-1: oklch(79.38% 0.102 42.47); /* Peach     #fab387 */
 	--chart-2: oklch(86.73% 0.098 163.23); /* Green     #a6e3a1 */
 	--chart-3: oklch(76.72% 0.097 233.59); /* Blue      #89b4fa */
@@ -125,6 +167,20 @@
 	--color-sidebar-foreground: var(--sidebar-foreground);
 	--color-sidebar: var(--sidebar);
 	--color-highlight: var(--highlight);
+	--color-success: var(--success);
+	--color-warning: var(--warning);
+	--color-canvas: var(--canvas);
+	--color-scrim: var(--scrim);
+	--color-badge-mauve: var(--badge-mauve);
+	--color-badge-red: var(--badge-red);
+	--color-badge-peach: var(--badge-peach);
+	--color-badge-yellow: var(--badge-yellow);
+	--color-badge-green: var(--badge-green);
+	--color-badge-teal: var(--badge-teal);
+	--color-badge-sky: var(--badge-sky);
+	--color-badge-blue: var(--badge-blue);
+	--color-badge-lavender: var(--badge-lavender);
+	--color-badge-pink: var(--badge-pink);
 	--color-chart-5: var(--chart-5);
 	--color-chart-4: var(--chart-4);
 	--color-chart-3: var(--chart-3);
@@ -148,7 +204,6 @@
 	--color-card: var(--card);
 	--color-foreground: var(--foreground);
 	--color-background: var(--background);
-	--color-navbar-dropdown: var(--navbar-dropdown);
 	--radius-sm: calc(var(--radius) * 0.6);
 	--radius-md: calc(var(--radius) * 0.8);
 	--radius-lg: var(--radius);
@@ -159,12 +214,7 @@
 }
 
 html {
-	background: oklch(95% 0.008 258);
-	min-height: 100%;
-}
-
-html.dark {
-	background: oklch(10.5% 0.018 280);
+	background: var(--canvas);
 	min-height: 100%;
 }
 
@@ -194,17 +244,6 @@ html.dark {
    For a decoration applied to different elements. If the markup repeats too,
    make a component instead.
    ================================================ */
-
-/** Frosted-glass panel: the nav pills. */
-@utility glass {
-	@apply border border-white/65 bg-white/45 shadow-lg ring-1 shadow-primary/5 ring-white/50 backdrop-blur-xl ring-inset;
-	@apply dark:border-white/10 dark:bg-white/5 dark:shadow-black/40 dark:ring-white/5;
-}
-
-/** The hairline divider used between rows inside a `glass` panel. */
-@utility glass-hairline {
-	@apply border-white/50 dark:border-white/10;
-}
 
 /** A bare `<input type="file">` styled like the app's buttons. */
 @utility file-input {

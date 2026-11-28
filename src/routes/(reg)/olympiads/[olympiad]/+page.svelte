@@ -193,10 +193,10 @@
 	<ContributorsButton olympiadId={olympiad.id} />
 </div>
 
-<!-- `md:py-2` too: tailwind-merge only overrides PageHeader's `md:py-8` with a matching modifier. -->
-<PageHeader title={olympiad.name} class="py-3 md:py-3">
+<!-- `md:py-3` too: tailwind-merge only overrides PageHeader's `md:py-8` with a matching modifier. -->
+<PageHeader title={olympiad.name} class="pt-4 md:pt-7">
 	{#if olympiad?.descriptionHtml}
-		<div class="prose max-w-none">
+		<div class="prose max-w-none pt-3">
 			<!-- Sanitised server-side by #lib/server/markdown.ts before it is ever stored. -->
 			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 			{@html olympiad.descriptionHtml}
@@ -204,7 +204,7 @@
 	{/if}
 </PageHeader>
 
-<section class="py-4">
+<section>
 	<div class="mb-5">
 		<SearchBar placeholder="Search by year or problem…" bind:value={query}>
 			{#snippet filters()}

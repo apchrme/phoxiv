@@ -3,7 +3,7 @@ import { gotoReady } from '../../support/ui';
 
 /*
  * The mobile nav: below `md` the desktop nav is hidden, and the menu button in
- * the glass pill opens AppSidebar.svelte as a sheet. Every link in it closes
+ * the nav pill opens AppSidebar.svelte as a sheet. Every link in it closes
  * the sheet as it navigates.
  *
  * Reads no seed rows beyond the pages themselves. Writes nothing.
