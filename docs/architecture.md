@@ -65,9 +65,9 @@ About the shared cache:
   `setSharedCache()` is what opts an endpoint in; `/api/auth/*` is never
   touched. A request with `Cache-Control: no-cache` skips the lookup and stores
   the fresh body.
-- adapter-cloudflare v7 did this inside its worker; v8 does not. Don't remove
-  the handle on the assumption the adapter covers it, and don't add a second
-  Cache API layer. The `cf-cache-status: HIT` check in
+- The adapter's Worker has no cache layer of its own (v7 had one; v8 dropped
+  it). Don't remove the handle on the assumption the adapter covers it, and
+  don't add a second Cache API layer. The `cf-cache-status: HIT` check in
   `specs/http/cache-headers.spec.ts` catches either mistake.
 - Under `bun run preview` it persists in
   `.wrangler/state/v3/cache`; clear that if a preview serves a stale body. The
@@ -204,13 +204,14 @@ up to a day old, which is fine for an archive that changes rarely. Changing an
 
 The olympiad page still has a small load: one read of the olympiad's own row, so
 an unknown id is a real 404 and the title and description are server-rendered.
+Its years, problems and files come from `/api/olympiads/[olympiad]`. Its
+contributors list comes from `/api/olympiads/[olympiad]/contributors`, fetched
+only when the list is first opened, so a visit that never opens it costs nothing.
+
 A badge's page, `/badges/[id]`, does the same with the badge's row, and returns
 only its name, description, icon and colour: never the criteria, which may be
 hidden from the viewer. The criteria, holder count and problem list come from
 `/api/badges/[id]`.
-Its years, problems and files come from `/api/olympiads/[olympiad]`. Its
-contributors list comes from `/api/olympiads/[olympiad]/contributors`, fetched
-only when the list is first opened, so a visit that never opens it costs nothing.
 
 ### Per-user progress
 
@@ -336,21 +337,9 @@ Drizzle's relational queries (`db.query`) are not set up: `drizzle()` gets no
 `uploads.ts`, `progress.ts`, `filters.ts`, `badges.ts` and `search.ts` are
 client-safe so the browser and the server apply the same rule.
 
-## The colocation convention
-
-A component used by one route lives next to it: flat, no `+` prefix, no
-subfolder. Only route-agnostic pieces go in `#lib/components/`.
-
-Non-`+` files are inert to the router. The component must live beside the route
-because it imports `PageData` / `ActionData` from `./$types`, which resolves only
-in route directories. Children import those, not `PageProps`, which belongs to
-the page.
-
-[`(reg)/olympiads/[olympiad]/`](<../src/routes/(reg)/olympiads/[olympiad]>) is
-the reference: `+page.svelte` owns state and fetching, presentational children
-sit beside it, and pure logic goes in a plain `.ts` file. Check the shared
-primitives before writing a new component — see
-[contributing.md](./contributing.md#reach-for-the-shared-primitives-before-writing-markup).
+Shared UI lives in `#lib/components/`, and a component used by one route lives
+beside that route; see
+[contributing.md](./contributing.md#colocate-page-only-components).
 
 ## The action-result envelope
 
@@ -378,11 +367,11 @@ both files together.
 ## What the Worker does not do
 
 - **It never parses a PDF.** Text extraction runs in the contributor's browser,
-  and the backfill in a local `bun` script. pdf.js is about 0.5 MB gzipped, more
-  than the whole 0.43 MB server bundle, and every route would pay for it at cold
-  start. The vendored `static/vendor/pdfjs/` is loaded by a runtime string URL so
+  and the backfill in a local `bun` script. pdf.js is about 1.7 MB (0.5 MB
+  gzipped), a third of the Worker's size again, and every route would pay for
+  it at cold start. The vendored `static/vendor/pdfjs/` is loaded by a runtime string URL so
   the bundler can't pull it in; the
-  [bundle check](./deployment.md#the-bundle-check) guards this.
+  [bundle check](./search.md#the-bundle-check) guards this.
 - **It never matches a problem search.** `/api/search` ships the whole corpus
   once and the ⌘K dialog matches in the browser. Deep search takes one parameter
   (each extra one multiplies cache keys) and never reads a cookie, which makes it

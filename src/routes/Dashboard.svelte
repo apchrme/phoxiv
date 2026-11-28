@@ -258,9 +258,9 @@
 								<OlympiadIcon icon={o.icon} id={o.id} size="sm" />
 								<div class="flex min-w-0 flex-1 flex-col gap-1">
 									<div class="flex items-baseline justify-between gap-2 text-sm">
-										<a class="truncate hover:underline" href={resolve(`olympiads/${o.id}`)}
-											>{o.name}</a
-										>
+										<a class="truncate hover:underline" href={resolve(`olympiads/${o.id}`)}>
+											{o.name}
+										</a>
 										<span class="shrink-0 text-xs text-muted-foreground tabular-nums">
 											{o.done}{o.total === null ? '' : ` / ${o.total}`}
 										</span>

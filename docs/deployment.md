@@ -6,19 +6,30 @@ and deployed with wrangler.
 
 ## What `wrangler.jsonc` declares
 
-| Key                  | Value                                                     |
-| -------------------- | --------------------------------------------------------- |
-| `name`               | `phoxiv`                                                  |
-| `main`               | `.svelte-kit/cloudflare/_worker.js`, the adapter's output |
-| `compatibility_date` | `2026-04-24`, with `nodejs_compat`                        |
-| `route`              | `phoxiv.org`, as a custom domain                          |
-| `observability`      | enabled                                                   |
+| Key                  | Value                              |
+| -------------------- | ---------------------------------- |
+| `name`               | `phoxiv`                           |
+| `compatibility_date` | `2026-04-24`, with `nodejs_compat` |
+| `route`              | `phoxiv.org`, as a custom domain   |
+| `observability`      | enabled                            |
+
+There is no `main` and no `assets.directory`. The adapter fills both in: `vite
+build` writes the Worker to `.svelte-kit/cloudflare/worker/` and the static
+files to `.svelte-kit/cloudflare/client/`, then writes a `wrangler.json` beside
+the Worker and points `.wrangler/deploy/config.json` at it. `wrangler dev` and
+`wrangler deploy` follow that redirect, which is why both need a build first.
+The generated file is `wrangler.jsonc` with those two keys added and every
+relative path rewritten (the D1 migration paths included, so a command that
+reads either file finds the migrations). Edit `wrangler.jsonc`, never the copy.
+
+The adapter refuses to build while `main` points into `.svelte-kit/cloudflare`,
+so don't add it back.
 
 ### Bindings
 
 | Binding  | Kind   | Notes                                                                                                                     |
 | -------- | ------ | ------------------------------------------------------------------------------------------------------------------------- |
-| `ASSETS` | assets | `.svelte-kit/cloudflare`, the static build output                                                                         |
+| `ASSETS` | assets | the static build output, `.svelte-kit/cloudflare/client` (set by the adapter)                                             |
 | `DB`     | D1     | database `phoxiv`. `migrations_dir` is `src/lib/server/db/migrations`, and `migrations_pattern` matches `*/migration.sql` |
 | `FILES`  | R2     | bucket `phoxiv-files`                                                                                                     |
 
@@ -181,67 +192,6 @@ exactly: `olympiads/<id>/<year>/[<problem>/]<slug>.<ext>` and
 `icons/olympiads/<id>.<ext>`. The D1 rows are written separately and nothing
 reconciles the two. An object at the wrong key is invisible, and a row pointing
 at a missing object is a dead link.
-
-## Why the PDF parser is not in the Worker
-
-Text extraction runs in the contributor's browser. The backfill of older files
-runs in a local `bun` script. The Worker never parses a PDF and holds no PDF
-library.
-
-pdf.js is about 0.5 MB gzipped. The whole server bundle is about 0.43 MB. A
-Worker-side parser would more than double it, and every route would pay for that
-in cold-start time, to serve a path that runs a few times a month.
-
-### The bundle check
-
-Run this for any change near `#lib/pdf-text.ts` or the vendored build:
-
-```sh
-bun run build && find .svelte-kit/output/server -name '*.js' -print0 \
-  | xargs -0 cat | gzip -9 -c | wc -c
-```
-
-A little over 430 000 bytes is right. About 900 000 means pdf.js got bundled into
-the server build, and the import must go back to the runtime-URL form below. The
-number drifts by a percent or two with ordinary changes; you are looking for a
-doubling. Everything still works when pdf.js leaks in, which is why this needs a
-number.
-
-Two exact checks, to trust when the number is unclear:
-
-```sh
-grep -rl GlobalWorkerOptions .svelte-kit/output/server/   # must find nothing
-ls .svelte-kit/cloudflare/vendor/pdfjs/                   # must list the build
-```
-
-If the second fails, the parser 404s in production. Uploads keep working, but
-every row lands `pending`.
-
-`#lib/pdf-text.ts` imports pdf.js's types from the `pdfjs-dist` devDependency
-with `import type`, which TypeScript erases. Don't drop the `type` keyword or
-import a runtime value from that module: that puts the parser in the Worker.
-Don't swap in hand-written types either; they let a call to a removed pdf.js
-method pass `svelte-check`.
-
-### The vendored build
-
-`static/vendor/pdfjs/` holds `pdf.min.mjs` and `pdf.worker.min.mjs`, copied from
-a pinned `pdfjs-dist`. The README beside them records the version and the update
-steps. Both files must come from the same version, because pdf.js refuses a
-worker whose version differs. They are static assets served by `ASSETS`, so they
-add nothing to the Worker's size.
-
-`#lib/pdf-text.ts` loads them through a runtime string URL:
-
-```ts
-const PDFJS_URL = '/vendor/pdfjs/pdf.min.mjs';
-// …
-pdfjsPromise ??= import(/* @vite-ignore */ PDFJS_URL).then(/* set workerSrc */);
-```
-
-Don't turn this into a normal import. If Vite can resolve an import, Rollup also
-puts it in the server build, which the adapter bundles into the Worker. A runtime
-string is the only form kept out of both bundles.
 
 ## Backfilling the text index
 

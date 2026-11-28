@@ -40,9 +40,9 @@
 		<span class="font-mono text-primary">{data.year.year}</span>
 	{/snippet}
 	<p class="m-0 text-sm text-muted-foreground">
-		Editing <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs"
-			>{data.olympiad.id}/{data.year.year}</code
-		>
+		Editing <code class="rounded bg-muted px-1 py-0.5 font-mono text-xs">
+			{data.olympiad.id}/{data.year.year}
+		</code>
 	</p>
 </PageHeader>
 

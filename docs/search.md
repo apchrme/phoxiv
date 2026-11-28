@@ -113,24 +113,35 @@ In the dialog:
 ### The parser runs in the contributor's browser
 
 **The Worker never parses a PDF**: no PDF library, no `ai` binding, nothing in
-`wrangler.jsonc`. pdf.js would add about 0.5 MB gzipped to a ~0.43 MB server
-bundle, paid as cold-start time on every route, for a path used a few times a
-month. New uploads are parsed in the contributor's browser on file-pick; existing
-files by a local `bun` script. The Worker only stores, indexes and searches.
+`wrangler.jsonc`. pdf.js is about 1.7 MB (0.5 MB gzipped), a third of the
+Worker's size again, and every route would pay for it in cold-start time, for a
+path used a few times a month. New uploads are parsed in the contributor's browser on
+file-pick; existing files by a local `bun` script
+([the backfill](./deployment.md#backfilling-the-text-index)). The Worker only
+stores, indexes and searches.
 
-[`#lib/pdf-text.ts`](../src/lib/pdf-text.ts) loads a vendored pdf.js build from
-`static/vendor/pdfjs/` (a static asset served by `ASSETS`) through a **runtime
-string URL**, dynamic-imported with `@vite-ignore`.
+[`#lib/pdf-text.ts`](../src/lib/pdf-text.ts) loads a vendored pdf.js build
+through a **runtime string URL**:
 
-> **Don't make this a static import, or a dynamic import Vite can resolve.** It
-> would join the module graph, and Rollup would emit pdf.js into the Worker
-> bundle. See [the bundle check](./deployment.md#the-bundle-check).
+```ts
+const PDFJS_URL = '/vendor/pdfjs/pdf.min.mjs';
+// …
+pdfjsPromise ??= import(/* @vite-ignore */ PDFJS_URL).then(/* set workerSrc */);
+```
+
+> **Don't make this a static import, or a dynamic import Vite can resolve.** If
+> Vite can resolve an import, Rollup also puts it in the server build, which the
+> adapter bundles into the Worker. A runtime string is the only form kept out of
+> both bundles. Nothing visible breaks when pdf.js leaks in, which is why
+> [the bundle check](#the-bundle-check) exists.
 
 Types come from `pdfjs-dist`, a devDependency pinned to the vendored version,
-through `import type`, which is erased at compile time. Hand-written types once
-let a call to `PDFDocumentProxy.destroy()` (removed in pdf.js 6) pass
-`svelte-check` and throw in every browser. The types are still only a promise
-about the file on disk, so the item join also checks `'str' in item`.
+through `import type`, which is erased at compile time. Don't drop the `type`
+keyword or import a runtime value from that module: that puts the parser in the
+Worker. Don't swap in hand-written types either: they once let a call to
+`PDFDocumentProxy.destroy()` (removed in pdf.js 6) pass `svelte-check` and throw
+in every browser. The types are still only a promise about the file on disk, so
+the item join also checks `'str' in item`.
 
 - **Two caches, for the module and the `PDFWorker`.** `getDocument` starts a new
   worker whenever it isn't given one. The cached worker is replaced if it reports
@@ -147,6 +158,40 @@ because the upload must go ahead anyway and the row lands `pending` for the
 backfill. Since that catch also swallows our own bugs, it `console.error`s the
 file name and the real error, and shows the parser's message to the contributor,
 muted and monospaced.
+
+### The vendored build
+
+`static/vendor/pdfjs/` holds `pdf.min.mjs` and `pdf.worker.min.mjs`, copied from
+`pdfjs-dist`, which `package.json` pins exactly so that its types describe the
+same version. The README beside them records the version and the update steps. Both files must come from the same version, because pdf.js refuses a
+worker whose version differs. They are static assets served by `ASSETS`, so they
+add nothing to the Worker's size, and eslint skips them.
+
+### The bundle check
+
+Run this for any change near `#lib/pdf-text.ts` or `static/vendor/pdfjs/`:
+
+```sh
+bun run build
+grep -rl GlobalWorkerOptions .svelte-kit/output/server/   # must find nothing
+ls .svelte-kit/cloudflare/client/vendor/pdfjs/            # must list the build
+```
+
+If the first finds a file, pdf.js got bundled into the Worker, and the import
+must go back to the runtime-URL form above. If the second fails, the parser 404s
+in production: uploads keep working, but every row lands `pending`.
+
+For the size of what ships, ask wrangler. `--dry-run` builds the upload without
+contacting Cloudflare:
+
+```sh
+bunx wrangler deploy --dry-run --outdir .wrangler/dry-run
+```
+
+`Total Upload` reads about 4 800 KiB, 1 100 KiB gzipped. The adapter deploys
+unbundled, one module per file, so the gzipped figure is larger than a single
+bundle would compress to; the uncompressed one is what costs parse time at cold
+start. A jump of about 0.5 MB gzipped is pdf.js.
 
 ### Normalisation, and why the order of its steps is fixed
 
@@ -216,18 +261,12 @@ nothing for `ok`, "no text", "not searchable", "indexing failed" (`error`) or
 
 `file_text` holds one row per document, keyed by the whole CDN url.
 `file_text_fts` is an external-content FTS5 table over its `text`, kept in step by
-three triggers. The DDL, statuses, recovery, and why `db:push` must never touch a
-real database are in [data-model.md](./data-model.md#the-full-text-index). For
-search:
+three triggers. [data-model.md](./data-model.md#file_text) is the reference for
+both: the columns and statuses, the DDL and why each option was chosen, why no
+endpoint may select `file_text.text`, recovery, and why `db:push` must never
+touch a real database.
 
-- **External content**, so `snippet()` works and a tokenizer change is a
-  `DROP`/`CREATE`/`'rebuild'` with no re-extraction.
-- **`prefix='2 3'`**, so `gravit*` is an index seek.
-- **`remove_diacritics 2`** folds accents, for translated papers.
-
-> **No endpoint may select `file_text.text`.** Only `snippet()` reads it, inside
-> the FTS5 query, so the corpus of third-party papers can't be bulk downloaded.
-> Never write a query function that returns the column.
+Four mechanisms keep the index honest:
 
 | Mechanism           | Keeps in step                                                   |
 | ------------------- | --------------------------------------------------------------- |
@@ -690,8 +729,9 @@ New uploads are indexed as they arrive. Existing files are swept up by
 parses nothing in either direction.** The endpoint calls `requireAdmin` itself,
 since a `+server.ts` runs no layout loads, and re-runs `normalizeExtracted` on
 every posted text. There is no batch action in the admin panel; the Worker has
-nothing to loop over, which also avoids the infinite submit loop recorded for
-this panel (CLAUDE.md rule 8).
+nothing to loop over. A self-resubmitting form in this panel once looped
+forever; the comment at the top of `IndexPanel.svelte` records it, and
+`admin/index-panel.spec.ts` guards it.
 
 **The work queue is a query, not a table**, so the backfill is idempotent and
 resumable: writing a file's row removes it from the result.

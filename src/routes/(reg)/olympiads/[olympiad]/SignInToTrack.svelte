@@ -91,9 +91,9 @@
 		<span>
 			Only signed-in users can track completed problems.
 
-			<a href={resolve('login')} class="font-medium text-primary underline underline-offset-2"
-				>Sign in</a
-			>
+			<a href={resolve('login')} class="font-medium text-primary underline underline-offset-2">
+				Sign in
+			</a>
 		</span>
 	</Tooltip.Content>
 </Tooltip.Root>

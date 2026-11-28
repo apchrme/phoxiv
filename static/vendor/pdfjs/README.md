@@ -1,15 +1,14 @@
 # Vendored pdf.js
 
 `pdf.min.mjs` and `pdf.worker.min.mjs`, copied verbatim from
-**pdfjs-dist@6.3.289**'s `build/` directory. Apache-2.0, © Mozilla.
+**pdfjs-dist@6.5.438**'s `build/` directory. Apache-2.0, © Mozilla.
 
 ## Why these files are checked in
 
-Text extraction runs in the **contributor's browser**, never in the Worker — the
-whole phoXiv server bundle is about 0.38 MB gzipped, and pdf.js is roughly
-+0.5 MB gzipped, so parsing PDFs server-side would make the parser larger than
-the application and charge that to cold-start parse time on every route. See
-`docs/deployment.md`.
+Text extraction runs in the **contributor's browser**, never in the Worker —
+pdf.js is about 1.7 MB (0.5 MB gzipped), a third of the Worker's size again, so
+parsing PDFs server-side would charge that to cold-start parse time on every
+route. See `docs/search.md`, "The parser runs in the contributor's browser".
 
 Keeping them here, under `static/`, is what makes that true in practice. They
 are served by the `ASSETS` binding, so they are static assets and not Worker
@@ -21,12 +20,13 @@ be emitted into the server build.
 ## Updating
 
 ```sh
-bun add -d pdfjs-dist@latest
+bun add -d --exact pdfjs-dist@latest
 cp node_modules/pdfjs-dist/build/pdf.min.mjs      static/vendor/pdfjs/
 cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs static/vendor/pdfjs/
 ```
 
-Keep the `pdfjs-dist` devDependency on the **same version as these two files**.
+Keep the `pdfjs-dist` devDependency on the **same version as these two files**,
+pinned exactly in `package.json` so `bun update` can't move it on its own.
 It ships no runtime code into either bundle — `#lib/pdf-text.ts` imports only its
 types, which are erased at compile time — but those types are the only thing
 standing between a removed pdf.js API and a silent failure, and they describe
@@ -37,7 +37,7 @@ other rules the browser, the server and `reindex-cli.ts` all share, not in
 `pdf-text.ts` — if the extraction *output* changes, which re-queues every row
 with no migration. A change that only fixes a crash does not qualify: re-running
 the whole ~2,100-file corpus is not free. Then re-run the bundle check in
-`docs/deployment.md`.
+`docs/search.md`.
 
 The two files must come from the **same** pdfjs-dist version: pdf.js refuses to
 run a worker whose version does not match the API's.

@@ -20,8 +20,10 @@
 			'relative overflow-hidden rounded-full p-0 ring-2 ring-border transition-all hover:ring-primary/50'
 		)}
 		aria-label="Your profile"
-		title={user.name}><UserAvatar {user} class="size-full object-cover" /></a
+		title={user.name}
 	>
+		<UserAvatar {user} class="size-full object-cover" />
+	</a>
 {:else}
 	<!-- Icon-only, so the label is its only name for a screen reader (and a test). -->
 	<a

@@ -102,8 +102,9 @@
 									aria-current={page.url.pathname == navLink.href}
 									data-active={page.url.pathname == navLink.href}
 									class="rounded-full py-2 text-base font-medium text-foreground transition-colors duration-250 hover:text-primary"
-									>{navLink.label}</NavigationMenu.Link
 								>
+									{navLink.label}
+								</NavigationMenu.Link>
 							</NavigationMenu.Item>
 						{/each}
 						<NavigationMenu.Item openOnHover={false}>
@@ -120,8 +121,9 @@
 												aria-current={page.url.pathname == navLink.href}
 												data-active={page.url.pathname == navLink.href}
 												class="rounded-full py-2 text-base font-medium text-foreground transition-colors duration-250 hover:text-primary"
-												>{navLink.label}</NavigationMenu.Link
 											>
+												{navLink.label}
+											</NavigationMenu.Link>
 										</li>
 									{/each}
 								</ul>

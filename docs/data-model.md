@@ -24,8 +24,7 @@ since the rows are the only record of the keys:
 - `saveMetadata` removes the objects of problems it drops or renumbers, after
   its batch commits;
 - `removeIcon` is the only action that leaves an object behind (the next icon
-  upload replaces it).
-
+  upload replaces it);
 - `deleteOlympiad` (superadmin only) removes every object of every year and
   problem, plus the icon in every extension, then the olympiad row, which
   cascades. It also strips the id from every user's `assigned_olympiads`, so a
@@ -615,4 +614,5 @@ migration wrong. The one exception is [the full-text index](#the-full-text-index
 where drizzle-kit wrote the folder and snapshot and only the SQL was hand-written.
 
 `bun run db:push` skips the migration files and offers to drop the search index.
-It is for throwaway local experiments only.
+It is for throwaway local experiments only, and asks before applying anything:
+the script passes `--strict`, which `drizzle.config.ts` cannot set.

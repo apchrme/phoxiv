@@ -10,10 +10,10 @@ Read the relevant one first:
 | ----------------------------------------- | ------------------------------------------------------------------ |
 | [architecture.md](./docs/architecture.md) | routes, caching, `#lib/server/`, or form handling                  |
 | [data-model.md](./docs/data-model.md)     | the schema, the R2 key layout, or `titles.csv`                     |
-| [search.md](./docs/search.md)             | either search mode, PDF extraction, or the FTS5 index              |
+| [search.md](./docs/search.md)             | either search mode, PDF extraction or pdf.js, or the FTS5 index    |
 | [auth.md](./docs/auth.md)                 | auth, roles, or any permission check                               |
 | [contributing.md](./docs/contributing.md) | anything — it covers setup and code conventions                    |
-| [deployment.md](./docs/deployment.md)     | deploys, production migrations, or an API response shape           |
+| [deployment.md](./docs/deployment.md)     | `wrangler.jsonc`, deploys, migrations, or an API response shape    |
 | [testing.md](./docs/testing.md)           | a spec, the seed data, the e2e server, or behaviour a spec asserts |
 
 ## Stack

@@ -602,9 +602,9 @@
 										<!-- A forgotten filter is the usual cause of "No results found". -->
 										{#snippet action()}
 											{#if filtering || olympiadFilter !== null}
-												<Button variant="outline" size="sm" onclick={clearFilters}
-													>Clear filters</Button
-												>
+												<Button variant="outline" size="sm" onclick={clearFilters}>
+													Clear filters
+												</Button>
 											{/if}
 										{/snippet}
 									</EmptyState>
@@ -675,9 +675,9 @@
 										class="m-auto"
 									>
 										{#snippet action()}
-											<Button variant="outline" size="sm" onclick={() => deep.retry()}
-												>Try again</Button
-											>
+											<Button variant="outline" size="sm" onclick={() => deep.retry()}>
+												Try again
+											</Button>
 										{/snippet}
 									</EmptyState>
 								{:else if deepQuery.length < MIN_DEEP_QUERY_LENGTH}

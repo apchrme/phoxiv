@@ -542,7 +542,7 @@ its system libraries and caches the download under a key from `bun.lock`.
 
 - **It holds no secrets.** The suite runs on local workerd state and
   `.env.test`'s dummy values, so the job needs no Cloudflare token and adds
-  nothing to production's usage. Keep it that way (CLAUDE.md rule 10).
+  nothing to production's usage. Keep it that way (CLAUDE.md rule 9).
 - **`CI` changes three settings** in `support/config.ts`: one worker instead of
   two, `forbidOnly` (a committed `test.only` fails the run), and the `github`
   reporter, which annotates failures on the pull request.
@@ -560,7 +560,7 @@ its system libraries and caches the download under a key from `bun.lock`.
 | `schema.ts`                           | `fixtures/seed-data.ts`, until `bun run check` passes                           |
 | a route, an action or a guard         | its row in `specs/auth/access-control.spec.ts`, and in auth.md's guards table   |
 | a route's cache header                | its row in `specs/http/cache-headers.spec.ts`                                   |
-| an `/api/*` shape                     | `specs/http/api-contract.spec.ts`, and purge the cache after deploying (rule 9) |
+| an `/api/*` shape                     | `specs/http/api-contract.spec.ts`, and purge the cache after deploying (rule 8) |
 | a user-visible string                 | the specs that match it (search `tests/e2e` for the old text)                   |
 | a bug fix                             | a regression spec that fails without the fix                                    |
 | a manual check that a spec now covers | delete it from [contributing.md](./contributing.md#the-gates)                   |

@@ -30,9 +30,9 @@
 	<Card.Header class="border-b">
 		<Card.Title>Problems</Card.Title>
 		<Card.Description>
-			Define the problems for this year. Removing a problem <span class="text-sm font-bold"
-				>or changing the problem number</span
-			>
+			Define the problems for this year. Removing a problem <span class="text-sm font-bold">
+				or changing the problem number
+			</span>
 			will delete all its associated file records — and every user's tracked progress on it. Topics are
 			only used by the topic filter on the olympiad page — they aren't shown next to a problem. The maximum
 			score is optional: set it and a reader who tracks the problem sees their mark out of it, leave it

@@ -2,14 +2,15 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "phoxiv",
-	"main": ".svelte-kit/cloudflare/_worker.js",
+	// No `main` or `assets.directory`: adapter-cloudflare writes its own
+	// wrangler.json beside the build and points Wrangler at it through
+	// `.wrangler/deploy/config.json`. See docs/deployment.md.
 	"workers_dev": true,
 	"preview_urls": true,
 	"compatibility_flags": ["nodejs_compat"],
 	"compatibility_date": "2026-04-24",
 	"assets": {
-		"binding": "ASSETS",
-		"directory": ".svelte-kit/cloudflare"
+		"binding": "ASSETS"
 	},
 	"observability": {
 		"enabled": true

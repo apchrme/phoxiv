@@ -81,8 +81,9 @@
 		</div>
 
 		<p class="line-clamp-2 text-xs text-muted-foreground">
-			{#each parts as part, i (i)}{#if part.marked}<mark>{part.text}</mark
-					>{:else}{part.text}{/if}{/each}
+			{#each parts as part, i (i)}{#if part.marked}<mark>
+						{part.text}
+					</mark>{:else}{part.text}{/if}{/each}
 		</p>
 	</a>
 	<!-- eslint-enable svelte/no-navigation-without-resolve -->

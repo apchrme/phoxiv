@@ -154,9 +154,9 @@
 		<p class="text-md mb-10 text-center text-muted-foreground sm:text-lg">
 			So comprehensive, even
 
-			<a class="text-blue-800 underline dark:text-blue-200" href="https://olimpicos.net"
-				>other archives</a
-			> copy their files from us.
+			<a class="text-blue-800 underline dark:text-blue-200" href="https://olimpicos.net">
+				other archives
+			</a> copy their files from us.
 		</p>
 		<StatsBand />
 	</section>

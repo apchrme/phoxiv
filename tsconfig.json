@@ -7,9 +7,7 @@
 		// Worker binding types (Env, R2Bucket, `cloudflare:workers`, ...). Run
 		// `bun run cf-typegen` after editing wrangler.jsonc.
 		"types": ["$app/types", "./src/worker-configuration.d.ts"],
-		// Off: the generated types import the built `_worker.js` (`mainModule`), and
-		// with `checkJs` every chunk of the build output gets type-checked. The
-		// project has no JavaScript source of its own to check.
+		// Off: the project has no JavaScript source of its own to check.
 		"checkJs": false
 	},
 	// `$app/tsconfig` sets neither `include` nor `exclude`. The excludes keep

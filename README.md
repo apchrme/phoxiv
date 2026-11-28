@@ -16,7 +16,12 @@ Live at **[phoxiv.org](https://phoxiv.org)**.
   - The default mode fuzzy-matches problems by olympiad, year, number and title. It runs entirely in the browser, and can filter by topic and by whether you've done a problem.
   - _Deep search_ matches the text inside every uploaded document. Its results are files, not problems, because one PDF often holds a whole year's problems.
 - **Track progress.** Signed-in visitors can mark problems done, optionally with
-  a score, and see per-year totals. Progress is private and never cached.
+  a score, and see per-year totals. Signed in, the home page is a dashboard of
+  their progress across the archive. Progress is private and never cached.
+- **Earn badges.** A badge is earned by completing enough problems that match
+  its rule: any problem, problems by topic or olympiad, or a hand-picked list,
+  optionally within a score range. `/badges` lists them all with how many people
+  hold each; a badge can keep its requirement hidden until earned.
 - **Contribute.** Contributors edit the olympiads assigned to them:
   - add years
   - upload and label files
@@ -25,9 +30,10 @@ Live at **[phoxiv.org](https://phoxiv.org)**.
 
   PDFs are text-extracted in the browser when they are picked. That way the editor can warn about a scanned (unsearchable) PDF before it is saved.
 
-- **Administer.** Admins do four things:
+- **Administer.** Admins:
   - manage roles and olympiad assignments
   - ban and unban accounts
+  - create and edit badges
   - read the activity log
   - maintain the search index
 
@@ -73,11 +79,11 @@ one before changing that area.
 | Doc                                       | Covers                                                                 |
 | ----------------------------------------- | ---------------------------------------------------------------------- |
 | [architecture.md](./docs/architecture.md) | Request lifecycle, caching and the route tree, the module map          |
-| [data-model.md](./docs/data-model.md)     | The D1 tables, JSON columns, R2 key layout, `titles.csv`, migrations   |
-| [search.md](./docs/search.md)             | Both search modes: text extraction, the FTS5 index, the API, ⌘K dialog |
+| [data-model.md](./docs/data-model.md)     | The D1 tables, badges, JSON columns, R2 key layout, `titles.csv`       |
+| [search.md](./docs/search.md)             | Both search modes, the in-browser PDF parser, the FTS5 queries, ⌘K     |
 | [auth.md](./docs/auth.md)                 | BetterAuth on Workers, the three roles, the superadmin, the guards     |
 | [contributing.md](./docs/contributing.md) | Setup, scripts, local D1/R2, code conventions, the pre-commit checks   |
-| [deployment.md](./docs/deployment.md)     | Bindings and secrets, deploying, production migrations, cache purges   |
+| [deployment.md](./docs/deployment.md)     | Config and secrets, deploying, migrations, backfills, D1 usage, purges |
 | [testing.md](./docs/testing.md)           | The Playwright suite: running it, the e2e server, seed data, sign-in   |
 
 [CLAUDE.md](./CLAUDE.md) lists the repo-wide rules. Examples: never hand-edit

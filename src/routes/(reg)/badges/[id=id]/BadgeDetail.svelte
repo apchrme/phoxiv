@@ -155,8 +155,9 @@
 											<span class="w-24 shrink-0 text-muted-foreground tabular-nums">
 												{p.year} · {p.number}
 											</span>
-											<span class="min-w-0 flex-1 truncate">{p.title ?? `Problem ${p.number}`}</span
-											>
+											<span class="min-w-0 flex-1 truncate">
+												{p.title ?? `Problem ${p.number}`}
+											</span>
 											{#if done}
 												<CheckIcon class="size-4 shrink-0 text-primary" aria-hidden="true" />
 												<span class="sr-only">Completed</span>

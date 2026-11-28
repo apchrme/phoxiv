@@ -86,32 +86,32 @@ production, so an uploaded file's link 404s locally. This is expected.
 
 ## Scripts
 
-| Script                      | What it does                                                                                                                  |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `bun run dev`               | development server                                                                                                            |
-| `bun run build`             | production build (also the first step of `preview` and `deploy`)                                                              |
-| `bun run preview`           | build, then serve through `wrangler dev`. The closest thing to production                                                     |
-| `bun run check`             | `svelte-check` over the whole project. Must report 0 errors                                                                   |
-| `bun run check:watch`       | the same, incrementally                                                                                                       |
-| `bun run lint`              | `prettier --check` then `eslint`. Must report 0 errors                                                                        |
-| `bun run format`            | `prettier --write`. Run it before `lint`                                                                                      |
-| `bun run deploy`            | build and push to Cloudflare. See [deployment.md](./deployment.md)                                                            |
-| `bun run test:e2e`          | build, then run every e2e spec against a freshly seeded local server. See [testing.md](./testing.md)                          |
-| `bun run test:e2e:smoke`    | the same, for the specs tagged `@smoke` only. The pre-commit gate                                                             |
-| `bun run test:e2e:ui`       | Playwright's UI mode, for writing and debugging a spec                                                                        |
-| `bun run test:e2e:server`   | build and start the e2e server on its own, for `E2E_REUSE`                                                                    |
-| `bun run test:e2e:report`   | open the HTML report of the last e2e run                                                                                      |
-| `bun run db:generate`       | after editing `schema.ts`: writes a new migration                                                                             |
-| `bun run db:migrate`        | apply migrations to the local D1                                                                                              |
-| `bun run db:migrate-remote` | apply migrations to the production D1                                                                                         |
-| `bun run db:push`           | throwaway local schema sync. It offers to drop the search index, so never point it at anything real                           |
-| `bun run db:studio`         | drizzle-kit's database browser                                                                                                |
-| `bun run db:generate-auth`  | after changing `authOptions`: regenerates BetterAuth's tables                                                                 |
-| `bun run cf-typegen`        | after editing `wrangler.jsonc`: regenerates `src/worker-configuration.d.ts`                                                   |
-| `bun run cf-typegen:check`  | checks that file is up to date, without writing                                                                               |
-| `bun run index:backfill`    | indexes every already-uploaded file. See [deployment.md](./deployment.md#backfilling-the-text-index)                          |
-| `bun run thumbs:render`     | re-renders the landing page thumbnails. See [below](#the-landing-pages-corpus-band)                                           |
-| `prepare`                   | `svelte-kit sync`, run by `bun install`. It generates `./$types`; if an editor cannot resolve them, `.svelte-kit/` is missing |
+| Script                      | What it does                                                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun run dev`               | development server                                                                                                                    |
+| `bun run build`             | production build (also the first step of `preview` and `deploy`)                                                                      |
+| `bun run preview`           | build, then serve through `wrangler dev`. The closest thing to production                                                             |
+| `bun run check`             | `svelte-check` over the whole project. Must report 0 errors                                                                           |
+| `bun run check:watch`       | the same, incrementally                                                                                                               |
+| `bun run lint`              | `prettier --check` then `eslint`. Must report 0 errors                                                                                |
+| `bun run format`            | `prettier --write`. Run it before `lint`                                                                                              |
+| `bun run deploy`            | build and push to Cloudflare. See [deployment.md](./deployment.md)                                                                    |
+| `bun run test:e2e`          | build, then run every e2e spec against a freshly seeded local server. See [testing.md](./testing.md)                                  |
+| `bun run test:e2e:smoke`    | the same, for the specs tagged `@smoke` only. The pre-commit gate                                                                     |
+| `bun run test:e2e:ui`       | Playwright's UI mode, for writing and debugging a spec                                                                                |
+| `bun run test:e2e:server`   | build and start the e2e server on its own, for `E2E_REUSE`                                                                            |
+| `bun run test:e2e:report`   | open the HTML report of the last e2e run                                                                                              |
+| `bun run db:generate`       | after editing `schema.ts`: writes a new migration                                                                                     |
+| `bun run db:migrate`        | apply migrations to the local D1                                                                                                      |
+| `bun run db:migrate-remote` | apply migrations to the production D1                                                                                                 |
+| `bun run db:push`           | throwaway local schema sync, confirming each change (`--strict`). It offers to drop the search index: never point it at anything real |
+| `bun run db:studio`         | drizzle-kit's database browser                                                                                                        |
+| `bun run db:generate-auth`  | after changing `authOptions`: regenerates BetterAuth's tables                                                                         |
+| `bun run cf-typegen`        | after editing `wrangler.jsonc`: regenerates `src/worker-configuration.d.ts`                                                           |
+| `bun run cf-typegen:check`  | checks that file is up to date, without writing                                                                                       |
+| `bun run index:backfill`    | indexes every already-uploaded file. See [deployment.md](./deployment.md#backfilling-the-text-index)                                  |
+| `bun run thumbs:render`     | re-renders the landing page thumbnails. See [below](#the-landing-pages-corpus-band)                                                   |
+| `prepare`                   | `svelte-kit sync`, run by `bun install`. It generates `./$types`; if an editor cannot resolve them, `.svelte-kit/` is missing         |
 
 ## The gates
 
@@ -132,35 +132,11 @@ Both e2e scripts build first, so a broken build fails them.
 to behaviour comes with a spec (see [Tests](#tests)).
 
 For any change near `#lib/pdf-text.ts` or `static/vendor/pdfjs/`, also run
-[the bundle check](./deployment.md#the-bundle-check). pdf.js leaking into the
+[the bundle check](./search.md#the-bundle-check). pdf.js leaking into the
 Worker breaks nothing visible.
 
-The suite already covers:
-
-- `tests/e2e/specs/http/`: every route's cache header, the legacy redirects, the
-  `/api/*` shapes, and deep search's input validation;
-- `tests/e2e/specs/auth/`: the role × route matrix, bans set by hand in SQL, and
-  banning and unbanning from the admin panel;
-- `tests/e2e/specs/admin/`: changing a role (the submit loop), the users table's
-  paging, assigning olympiads, the admin menu, the activity log's **Load more**,
-  and the search-index page and its maintenance actions;
-- `tests/e2e/specs/contribute/`: creating an olympiad and the refused ids, the
-  icon, the unsaved-changes warnings in both editors, adding years, the CSV
-  export and import, the year editor's rows, topics, duplicates and links, uploads with their text extraction, and deleting files
-  and years (their text leaves the index);
-- `tests/e2e/specs/olympiads/`: the index, the olympiad page's 404, what it must
-  never render, its problems without files (collapsed, or cards from the Display
-  menu), tracking progress, and the
-  status filter;
-- `tests/e2e/specs/search/`: the ⌘K dialog in both modes: reset, Enter, escaping,
-  the session caches, filters before ranking, the keyboard (caps lock included),
-  failures, the debounce, the length limit, ranking, what a file result is, and
-  the olympiad filter and its panel;
-- `tests/e2e/specs/pages/`: the landing page, the blog and the theme toggle;
-- `tests/e2e/specs/mobile/` and `motion/`: ⌘K at 375 and 390px and the mobile
-  nav under emulated touch, and the animated paths with motion on.
-
-Then click through whatever you touched that the suite doesn't reach, under
+[testing.md](./testing.md#what-the-specs-cover) lists what the suite covers.
+Click through whatever you touched that it doesn't reach, under
 `bun run dev`, or `bun run preview` for anything that uploads (see
 [Local D1 and R2](#local-d1-and-r2)). What only a person can check:
 
@@ -236,8 +212,12 @@ subfolder. Only route-agnostic pieces go in `#lib/components/`.
 This is required, not just tidy. Colocated components import `PageData` /
 `ActionData` from `./$types`, which only resolves inside route directories. Child
 components import `PageData` / `ActionData`, not `PageProps`, which belongs to the
-page. [`(reg)/olympiads/[olympiad]/`](<../src/routes/(reg)/olympiads/[olympiad]>)
-is the reference.
+page. Files without a `+` prefix are inert to the router, so nothing else is
+needed.
+
+[`(reg)/olympiads/[olympiad]/`](<../src/routes/(reg)/olympiads/[olympiad]>) is
+the reference: `+page.svelte` owns state and fetching, presentational children
+sit beside it, and pure logic goes in a plain `.ts` file.
 
 ### Reach for the shared primitives before writing markup
 
