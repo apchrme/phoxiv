@@ -4,7 +4,7 @@ import { gotoReady } from '../../support/ui';
 /*
  * The mobile nav: below `md` the desktop nav is hidden, and the menu button in
  * the nav pill opens AppSidebar.svelte as a sheet. Every link in it closes
- * the sheet as it navigates.
+ * the sheet as it navigates. The pill also holds the notifications bell.
  *
  * Reads no seed rows beyond the pages themselves. Writes nothing.
  */
@@ -49,5 +49,16 @@ test.describe('the mobile nav, signed in', () => {
 		await sheet.getByRole('link', { name: /Uma User/ }).tap();
 		await expect(page).toHaveURL('/profile');
 		await expect(sheet).toBeHidden();
+	});
+});
+
+test.describe('the mobile notifications bell', () => {
+	test('sits in the nav pill, and its panel fits the screen', async ({ page }) => {
+		await gotoReady(page, '/olympiads');
+		await page.getByRole('button', { name: /^Notifications/ }).tap();
+		const panel = page.getByRole('dialog');
+		await expect(panel.getByText('Notifications', { exact: true })).toBeVisible();
+		await expect(panel).toBeInViewport({ ratio: 1 });
+		await expect(panel.getByRole('link', { name: 'View all announcements' })).toBeVisible();
 	});
 });

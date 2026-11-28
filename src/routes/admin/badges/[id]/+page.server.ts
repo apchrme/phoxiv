@@ -4,7 +4,14 @@ import { olympiads, type DB } from '#lib/server/db/index.js';
 import { requireAdmin } from '#lib/server/guard.js';
 import { logActivity } from '#lib/server/activity-log.js';
 import { listOlympiadOptions } from '#lib/server/db/queries/olympiads.js';
-import { actionFail, field, fieldList, ok, type Validated } from '#lib/server/forms.js';
+import {
+	actionFail,
+	field,
+	fieldList,
+	ok,
+	parseRouteId as parseId,
+	type Validated
+} from '#lib/server/forms.js';
 import {
 	countHolders,
 	deleteBadge,
@@ -36,17 +43,6 @@ import { PROBLEM_TOPICS } from '#lib/types.js';
 
 /** A sanity bound, not a design limit: no badge needs more completions. */
 const REQUIRED_MAX = 10000;
-
-/**
- * The route param as a badge id, `null` for `new`, or `'invalid'`. The load
- * turns `'invalid'` into a 404 page and the actions into `actionFail`, since
- * `error()` in an action would replace the page (CLAUDE.md, rule 6).
- */
-function parseId(raw: string): number | null | 'invalid' {
-	if (raw === 'new') return null;
-	const id = Number(raw);
-	return Number.isInteger(id) && id > 0 ? id : 'invalid';
-}
 
 export const load: PageServerLoad = async ({ params, locals }) => {
 	const { db } = requireAdmin(locals);

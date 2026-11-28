@@ -1,6 +1,7 @@
 import type {
 	account,
 	activityLog,
+	announcements,
 	badgeProblems,
 	badges,
 	fileText,
@@ -46,6 +47,7 @@ type ActivityLog = typeof activityLog.$inferInsert;
 type Badge = typeof badges.$inferInsert;
 type BadgeProblem = typeof badgeProblems.$inferInsert;
 type UserBadge = typeof userBadges.$inferInsert;
+type AnnouncementRow = typeof announcements.$inferInsert;
 
 // ── Users ───────────────────────────────────────────────────────────────────
 
@@ -261,6 +263,27 @@ export const USERS = {
 		id: 'e2e-bd-tracker',
 		name: 'Tim Tracker',
 		email: 'bd-tracker@e2e.test',
+		role: null
+	},
+	// ── Announcements: see ANNOUNCEMENTS ──
+	/**
+	 * owned by pages/notifications.spec.ts: opens the bell signed in, so its seen
+	 * set is written to the account. No seeded reads.
+	 */
+	announcementReader: {
+		id: 'e2e-an-reader',
+		name: 'Nora Notified',
+		email: 'an-reader@e2e.test',
+		role: null
+	},
+	/**
+	 * owned by pages/notifications.spec.ts: sees the announcements signed out,
+	 * then signs in, so the browser's seen set is merged into the account.
+	 */
+	announcementMerger: {
+		id: 'e2e-an-merger',
+		name: 'Milo Merger',
+		email: 'an-merger@e2e.test',
 		role: null
 	},
 	// ── Credits: see CREDITS_ROWS ──
@@ -1702,6 +1725,42 @@ const BADGE_ROWS = {
 	] satisfies UserBadge[]
 };
 
+// ── Announcements: pages/notifications.spec.ts ──────────────────────────────
+
+/**
+ * frozen. The bell lists the newest five, and admin/announcements.spec.ts
+ * posts newer ones (one at a time, each deleted at the end), so specs find
+ * these by title and never assert the unread total. `newest` has Markdown, so
+ * its stored HTML is what `renderMarkdown` would make of `bodyMd`.
+ */
+export const ANNOUNCEMENTS = {
+	older: {
+		id: 6_200_001,
+		title: 'Seeded welcome notice',
+		bodyMd: 'The archive is open.',
+		bodyHtml: '<p>The archive is open.</p>'
+	},
+	newest: {
+		id: 6_200_002,
+		title: 'Seeded Markdown notice',
+		bodyMd: 'Read **the rules** on [the about page](/about).',
+		bodyHtml: '<p>Read <strong>the rules</strong> on <a href="/about">the about page</a>.</p>'
+	}
+} as const;
+
+const ANNOUNCEMENT_ROWS: AnnouncementRow[] = [
+	{
+		...ANNOUNCEMENTS.older,
+		createdBy: USERS.admin.id,
+		createdAt: new Date('2026-01-10T12:00:00Z')
+	},
+	{
+		...ANNOUNCEMENTS.newest,
+		createdBy: USERS.admin.id,
+		createdAt: new Date('2026-02-20T12:00:00Z')
+	}
+];
+
 /** Every table's rows, in foreign-key order. */
 export function seedRows(now: Date) {
 	const users = [
@@ -1778,6 +1837,7 @@ export function seedRows(now: Date) {
 		badges: BADGE_ROWS.badges,
 		badgeProblems: BADGE_ROWS.badgeProblems,
 		userBadges: BADGE_ROWS.userBadges,
+		announcements: ANNOUNCEMENT_ROWS,
 		activityLog: log
 	};
 }

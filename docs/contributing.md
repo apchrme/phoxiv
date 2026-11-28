@@ -328,6 +328,10 @@ Remembered preferences:
   unless the choice should follow the reader across devices.
 - This works without a flash only where the affected markup renders after a
   client-side fetch anyway, as the olympiad page's problems do.
+- The bell's seen set works the same way for signed-out visitors
+  (`#lib/notifications.svelte.ts`), but it is state, not a preference, so it
+  moves to the account at sign-in. Where a value should follow a signed-in user,
+  store it on the account and let localStorage stand in only while signed out.
 
 ### Styling and theming
 
@@ -412,6 +416,13 @@ the sheet overlay's `bg-scrim` and the sheet's missing blur, `input.svelte`'s
 `tooltip-content.svelte`'s `arrowClasses` and `portalProps` props, which
 [`SignInToTrack.svelte`](<../src/routes/(reg)/olympiads/[olympiad]/SignInToTrack.svelte>)
 depends on.
+
+Adding a component the folder doesn't have yet is fine, but the CLI can't read
+this project's path aliases (`$app/tsconfig`, `#lib`) and stops with a config
+error. Take the files from the registry entry the CLI would fetch
+(`https://shadcn-svelte.com/registry/styles/<style>/<name>.json`, `style` from
+`components.json`), with `$UTILS$` replaced by `#lib/utils`. `popover/` was added
+this way.
 
 Edit the vendored file directly and say why in the commit message. The directory
 is excluded from eslint and prettier, so the gates will not catch a regression

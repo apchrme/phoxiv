@@ -283,6 +283,10 @@ miss is paid many times a day, not once.
   `user_badges`, and only an admin saving a badge scans all progress
   ([data-model.md](./data-model.md#badges-badges-badge_problems-user_badges)).
   Don't add a page that re-evaluates badges for every user.
+- **The bell reads on every full page load**, signed in or out: one indexed
+  read of the newest five announcements, plus the user's seen rows among them
+  when signed in. Client-side navigation does not refetch. Keep both queries
+  indexed and bounded.
 - **The e2e suite costs nothing**, locally or in CI. It runs against local
   workerd state in `.wrangler/e2e` and never uses the remote database or bucket
   ([testing.md](./testing.md#the-safety-guards)).

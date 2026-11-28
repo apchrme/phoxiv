@@ -69,6 +69,18 @@ export function fileField(data: FormData, name: string): File | null {
 	return value;
 }
 
+/**
+ * An editor route's `[id]` param: a positive integer id, `null` for `new`, or
+ * `'invalid'`. Loads turn `'invalid'` into a 404 page and actions into
+ * `actionFail`, since `error()` in an action would replace the page
+ * (CLAUDE.md, rule 6). Used by the badge and announcement editors.
+ */
+export function parseRouteId(raw: string): number | null | 'invalid' {
+	if (raw === 'new') return null;
+	const id = Number(raw);
+	return Number.isInteger(id) && id > 0 ? id : 'invalid';
+}
+
 // ── Year parsing ────────────────────────────────────────────────────────────
 
 // Re-exported from `#lib/constants.ts` for server callers.

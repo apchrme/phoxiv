@@ -245,7 +245,10 @@ export const activityLog = sqliteTable(
 				'index_files',
 				'create_badge',
 				'update_badge',
-				'delete_badge'
+				'delete_badge',
+				'create_announcement',
+				'update_announcement',
+				'delete_announcement'
 			]
 		}).notNull(),
 		olympiadId: text('olympiad_id'),
@@ -435,4 +438,55 @@ export const fileText = sqliteTable(
 			.notNull()
 	},
 	(t) => [uniqueIndex('file_text_url_idx').on(t.url), index('file_text_status_idx').on(t.status)]
+);
+
+/**
+ * A site-wide announcement, written by an admin and shown in the navbar bell and
+ * on /announcements. `body_html` is `body_md` rendered by #lib/server/markdown,
+ * the only sanitiser, and is the column rendered with `{@html}`.
+ *
+ * Newest first is `id DESC`, so the primary key orders the list. Editing keeps
+ * the id, so an edit doesn't make an announcement unread again.
+ */
+export const announcements = sqliteTable('announcements', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	title: text('title').notNull(),
+	bodyMd: text('body_md').notNull(),
+	bodyHtml: text('body_html').notNull(),
+	// The author, kept as a link rather than a name snapshot: it's shown only in
+	// the admin list, where "deleted user" is an acceptable fallback.
+	createdBy: text('created_by').references(() => user.id, { onDelete: 'set null' }),
+	createdAt: integer('created_at', { mode: 'timestamp_ms' })
+		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+		.notNull(),
+	updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+		.$onUpdate(() => new Date())
+		.notNull()
+});
+
+/**
+ * Which announcements a signed-in user has seen. A row means seen; there is no
+ * "unseen" row. Signed-out visitors keep the same set in localStorage instead
+ * (#lib/notifications.svelte.ts), merged in here when they sign in.
+ */
+export const announcementReads = sqliteTable(
+	'announcement_reads',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		announcementId: integer('announcement_id')
+			.notNull()
+			.references(() => announcements.id, { onDelete: 'cascade' }),
+		readAt: integer('read_at', { mode: 'timestamp_ms' })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull()
+	},
+	// The second index serves the cascade from `announcements`.
+	(t) => [
+		uniqueIndex('announcement_reads_user_announcement_idx').on(t.userId, t.announcementId),
+		index('announcement_reads_announcement_idx').on(t.announcementId)
+	]
 );

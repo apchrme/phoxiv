@@ -5,6 +5,7 @@
 	import UsersIcon from '@lucide/svelte/icons/users';
 	import ScrollTextIcon from '@lucide/svelte/icons/scroll-text';
 	import AwardIcon from '@lucide/svelte/icons/award';
+	import MegaphoneIcon from '@lucide/svelte/icons/megaphone';
 	import TextSearchIcon from '@lucide/svelte/icons/text-search';
 	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
 	import PageHeader from '#lib/components/PageHeader.svelte';
@@ -46,6 +47,12 @@
 			icon: AwardIcon
 		},
 		{
+			href: resolve('admin/announcements'),
+			title: 'Announcements',
+			description: "Post news to everyone's notifications bell.",
+			icon: MegaphoneIcon
+		},
+		{
 			href: resolve('admin/search-index'),
 			title: 'Search index',
 			description: 'Full-text index counts, failures and maintenance.',
@@ -59,7 +66,7 @@
 
 <PageHeader
 	title="Admin"
-	description="Manage user roles and access, badges, and the search index, and review the activity log."
+	description="Manage user roles and access, badges, announcements and the search index, and review the activity log."
 />
 
 <nav aria-label="Admin panels">

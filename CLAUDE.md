@@ -44,10 +44,12 @@ src/routes/
 ├── +page         landing page signed out, dashboard signed in; `private, no-store`
 ├── (reg)/        private browser cache (4h): olympiads, about, resources, privacy, team, badges (and badges/[id]), login, profile
 │                 except olympiads/[olympiad]/progress/ — per-user, `private, no-store`
-├── admin/        never cached; a menu of users/, log/, badges/ (with the editor, [id]/) and search-index/
+├── admin/        never cached; a menu of users/, log/, badges/ and announcements/ (each with an editor, [id]/) and search-index/
 ├── contribute/   never cached; the olympiad and year editors
 ├── blog/         a +server.ts that 308s old blog links to /about
 ├── progress/     per-user progress for the ⌘K dialog, and badges/ for /badges; `private, no-store`
+├── notifications/ the navbar bell: newest announcements and the user's seen set; `private, no-store`
+├── announcements/ every announcement; `private, no-store`, so it never lags the bell
 └── api/          Cloudflare's shared cache (s-maxage=86400)
                   except auth/[...all]/, which sets no cache headers
 ```

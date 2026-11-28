@@ -13,6 +13,7 @@ const PANELS = [
 	{ link: 'Users', path: '/admin/users', heading: 'Users' },
 	{ link: 'Activity log', path: '/admin/log', heading: 'Activity log' },
 	{ link: 'Badges', path: '/admin/badges', heading: 'Badges' },
+	{ link: 'Announcements', path: '/admin/announcements', heading: 'Announcements' },
 	{ link: 'Search index', path: '/admin/search-index', heading: 'Search index' }
 ] as const;
 

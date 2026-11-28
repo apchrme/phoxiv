@@ -17,7 +17,10 @@ export const ACTION_LABELS: Record<string, string> = {
 	index_files: 'Indexed file text',
 	create_badge: 'Created badge',
 	update_badge: 'Updated badge',
-	delete_badge: 'Deleted badge'
+	delete_badge: 'Deleted badge',
+	create_announcement: 'Created announcement',
+	update_announcement: 'Updated announcement',
+	delete_announcement: 'Deleted announcement'
 };
 
 /** `ACTION_LABELS[action]`, falling back to the raw name for unknown actions. */

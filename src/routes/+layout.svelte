@@ -19,6 +19,8 @@
 	import ogImage from '#lib/assets/branding/og.png';
 	import * as Kbd from '#lib/components/ui/kbd/index.js';
 	import DarkModeButton from '#lib/components/buttons/DarkModeButton.svelte';
+	import NotificationsButton from '#lib/components/buttons/NotificationsButton.svelte';
+	import { Notifications, setNotifications } from '#lib/notifications.svelte.js';
 	import GitHubButton from '#lib/components/buttons/GitHubButton.svelte';
 	import DiscordButton from '#lib/components/buttons/DiscordButton.svelte';
 	import { Separator } from '#lib/components/ui/separator/index.js';
@@ -30,11 +32,16 @@
 
 	let searchOpen = $state(false);
 
+	// Shared by both bells and /announcements. Fetched after hydration, never in
+	// the load: this shell renders on `(reg)` pages, whose HTML is cached for 4h.
+	const notifications = setNotifications(new Notifications());
+
 	// Marks the page interactive. The e2e specs wait for it (`gotoReady()` in
 	// tests/e2e/support/ui.ts): before hydration a click on an enhanced form
 	// submits it natively and a bits-ui trigger does nothing.
 	onMount(() => {
 		document.documentElement.dataset.hydrated = '';
+		void notifications.load();
 	});
 </script>
 
@@ -79,13 +86,16 @@
 				<a href={resolve('/')}>
 					<img src={brand} alt="phoXiv" class="h-6 brightness-85 dark:brightness-100" />
 				</a>
-				<button
-					onclick={() => (searchOpen = true)}
-					class="{buttonVariants({ variant: 'ghost', size: 'icon' })} justify-self-end"
-					aria-label="Search problems"
-				>
-					<Search class="size-4" />
-				</button>
+				<div class="flex items-center">
+					<NotificationsButton variant="ghost" />
+					<button
+						onclick={() => (searchOpen = true)}
+						class={buttonVariants({ variant: 'ghost', size: 'icon' })}
+						aria-label="Search problems"
+					>
+						<Search class="size-4" />
+					</button>
+				</div>
 			</nav>
 
 			<!-- Desktop nav pill -->
@@ -144,6 +154,7 @@
 						<Kbd.Root class="inline-flex">⌘</Kbd.Root>
 						<Kbd.Root class="inline-flex">K</Kbd.Root>
 					</button>
+					<NotificationsButton />
 					<DarkModeButton />
 					<LogIn user={data?.user} />
 				</div>

@@ -62,6 +62,13 @@ const ROWS: Row[] = [
 	{ path: '/progress/badges', as: null, status: 401, cacheControl: PER_USER },
 	{ path: '/progress/badges', as: 'user', status: 200, cacheControl: PER_USER },
 
+	// The bell answers signed-out visitors too, and is never stored either way.
+	{ path: '/notifications', as: null, status: 200, cacheControl: PER_USER },
+	{ path: '/notifications', as: 'user', status: 200, cacheControl: PER_USER },
+	// Outside `(reg)`, so it can't lag the bell that links to it.
+	{ path: '/announcements', as: null, status: 200, cacheControl: PER_USER },
+	{ path: '/announcements', as: 'user', status: 200, cacheControl: PER_USER },
+
 	// Admin and contribute set no header, so nothing caches them.
 	{ path: '/admin', as: 'admin', status: 200, cacheControl: null },
 	{ path: '/admin/users', as: 'admin', status: 200, cacheControl: null },
@@ -71,6 +78,8 @@ const ROWS: Row[] = [
 	{ path: '/admin/activity', as: 'admin', status: 200, cacheControl: null },
 	{ path: '/admin/reindex', as: 'admin', status: 200, cacheControl: null },
 	{ path: '/admin/badges/new', as: 'admin', status: 200, cacheControl: null },
+	{ path: '/admin/announcements', as: 'admin', status: 200, cacheControl: null },
+	{ path: '/admin/announcements/new', as: 'admin', status: 200, cacheControl: null },
 	{ path: '/contribute', as: 'contributor', status: 200, cacheControl: null },
 	{ path: '/contribute/e2e-assigned', as: 'contributor', status: 200, cacheControl: null },
 	{ path: '/contribute/e2e-assigned/2018', as: 'contributor', status: 200, cacheControl: null },

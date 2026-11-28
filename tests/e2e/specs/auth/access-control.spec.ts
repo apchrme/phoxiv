@@ -1,5 +1,5 @@
 import type { APIRequestContext } from '@playwright/test';
-import { BADGES, USERS, type UserKey } from '../../fixtures/seed-data';
+import { ANNOUNCEMENTS, BADGES, USERS, type UserKey } from '../../fixtures/seed-data';
 import { postAction } from '../../support/actions';
 import { expect, test } from '../../support/test';
 
@@ -56,9 +56,16 @@ test.describe('access control', { tag: '@smoke' }, () => {
 	});
 
 	test.describe('admin: requireAdmin on the layout, each page load and every action', () => {
-		/** The menu and its four panels. */
-		const PAGES = ['/admin', '/admin/users', '/admin/log', '/admin/badges', '/admin/search-index'];
-		/** Each panel's actions. The log and the badges list have none. */
+		/** The menu and its five panels. */
+		const PAGES = [
+			'/admin',
+			'/admin/users',
+			'/admin/log',
+			'/admin/badges',
+			'/admin/announcements',
+			'/admin/search-index'
+		];
+		/** Each panel's actions. The log and the badge and announcement lists have none. */
 		const ACTIONS = [
 			...['setRole', 'setAssignedOlympiads', 'banUser', 'unbanUser'].map(
 				(a) => `/admin/users?/${a}`
@@ -126,6 +133,59 @@ test.describe('access control', { tag: '@smoke' }, () => {
 			await expectStatus(admin, '/admin/badges/999999999', 404, 'Badge not found');
 			await expectStatus(admin, '/admin/badges/nope', 404, 'Badge not found');
 		});
+	});
+
+	test.describe('admin announcements: requireAdmin on the editor and each of its actions', () => {
+		// A frozen announcement, so a guard that let a forged `delete` through
+		// would show up as a missing announcement in pages/notifications too.
+		const EXISTING = `/admin/announcements/${ANNOUNCEMENTS.older.id}`;
+
+		for (const who of NOT_ADMIN) {
+			test(`${who ?? 'anonymous'} is refused the announcement editor and its actions`, async ({
+				apiAs
+			}) => {
+				const api = await apiAs(who);
+				await expectStatus(api, '/admin/announcements/new', 403, UNAUTHORISED);
+				await expectStatus(api, EXISTING, 403, UNAUTHORISED);
+				const fields = { title: 'Forged', body: 'Forged.' };
+				await postAction(api, '/admin/announcements/new?/save', fields, {
+					error: 403,
+					message: UNAUTHORISED
+				});
+				for (const action of ['save', 'delete']) {
+					await postAction(api, `${EXISTING}?/${action}`, fields, {
+						error: 403,
+						message: UNAUTHORISED
+					});
+				}
+			});
+		}
+
+		test('an admin gets the editor, and an unknown announcement is a 404', async ({ apiAs }) => {
+			const admin = await apiAs('admin');
+			await expectStatus(admin, '/admin/announcements/new', 200);
+			await expectStatus(admin, EXISTING, 200);
+			await expectStatus(admin, '/admin/announcements/999999999', 404, 'Announcement not found');
+			await expectStatus(admin, '/admin/announcements/nope', 404, 'Announcement not found');
+		});
+	});
+
+	test('the bell lists announcements to anyone, but marking them seen needs a session', async ({
+		apiAs
+	}) => {
+		const anonymous = await apiAs(null);
+		const listed = await anonymous.get('/notifications');
+		expect(listed.status()).toBe(200);
+		expect((await listed.json()).read).toBeNull();
+		const refused = await anonymous.post('/notifications', {
+			data: { ids: [ANNOUNCEMENTS.newest.id] }
+		});
+		expect(refused.status()).toBe(401);
+		expect(await refused.text()).toContain('Not signed in');
+		expect(refused.headers()['cache-control']).toBe('private, no-store');
+		// A banned user's session counts as signed out.
+		const banned = await (await apiAs('banned')).get('/notifications');
+		expect((await banned.json()).read).toBeNull();
 	});
 
 	test('the per-user badge standing needs a session, and only reads its own', async ({ apiAs }) => {

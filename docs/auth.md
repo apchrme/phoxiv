@@ -208,11 +208,11 @@ and get a session under it.
 
 ## The three roles
 
-| Role          | Stored `role`      | May do                                                         |
-| ------------- | ------------------ | -------------------------------------------------------------- |
-| `user`        | `null` or `'user'` | read everything public                                         |
-| `contributor` | `'contributor'`    | edit only the olympiads in `assignedOlympiads`                 |
-| `admin`       | `'admin'`          | edit every olympiad, create olympiads, manage users and badges |
+| Role          | Stored `role`      | May do                                                                        |
+| ------------- | ------------------ | ----------------------------------------------------------------------------- |
+| `user`        | `null` or `'user'` | read everything public                                                        |
+| `contributor` | `'contributor'`    | edit only the olympiads in `assignedOlympiads`                                |
+| `admin`       | `'admin'`          | edit every olympiad, create olympiads, manage users, badges and announcements |
 
 - `contributor` exists only in our app. The plugin is pinned to
   `adminRoles: ['admin']`, so BetterAuth's privileged operations (ban,
@@ -225,10 +225,11 @@ and get a session under it.
 
 ## The admin panel
 
-`/admin` is a menu of four pages: `users/`, `log/`, `badges/` and
-`search-index/`. Seven form actions, each calling `requireAdmin`: the four
-account actions on `/admin/users`, which write Drizzle updates directly, and the
-three index actions on `/admin/search-index`.
+`/admin` is a menu of five pages: `users/`, `log/`, `badges/`,
+`announcements/` and `search-index/`. Seven form actions, each calling
+`requireAdmin`: the four account actions on `/admin/users`, which write Drizzle
+updates directly, and the three index actions on `/admin/search-index`. The
+badge and announcement editors have their own, below.
 
 | Action                 | Effect                                                           | Refuses when                                |
 | ---------------------- | ---------------------------------------------------------------- | ------------------------------------------- |
@@ -257,6 +258,9 @@ Badges are edited on their own page, `/admin/badges/[id]` (`new` creates one),
 under the same layout guard. Its two actions, `save` and `delete`, each call
 `requireAdmin` themselves and log to `activity_log`. Saving re-evaluates the
 badge for every user ([data-model.md](./data-model.md#badges-badges-badge_problems-user_badges)).
+
+Announcements work the same way at `/admin/announcements/[id]`: `save` and
+`delete` each call `requireAdmin` and log to `activity_log`.
 
 ## The superadmin
 
@@ -298,6 +302,7 @@ plain DB row works too.
 | `admin/+layout.server.ts`, each page load, all seven actions          | `requireAdmin`                                          |
 | `admin/reindex` (`GET`, `POST`), `admin/activity`                     | `requireAdmin`, called by the endpoint itself           |
 | `admin/badges/[id]` — the load, `save` and `delete`                   | `requireAdmin` (the layout's, and each action's own)    |
+| `admin/announcements/[id]` — the load, `save` and `delete`            | `requireAdmin` (the layout's, and each action's own)    |
 | `contribute/+layout.server.ts`                                        | `requireContributor`                                    |
 | `contribute` — `selectYear`                                           | `canEditOlympiad` on the submitted olympiad id          |
 | `contribute` — `createOlympiad`                                       | `requireAdmin`                                          |
@@ -308,6 +313,9 @@ plain DB row works too.
 | `/`                                                                   | none: the dashboard if signed in, else the landing page |
 | `(reg)/olympiads/[olympiad]` — `?/trackProblem`                       | plain `locals.user` check                               |
 | `(reg)/olympiads/[olympiad]/progress`, `progress/`, `progress/badges` | 401 when signed out                                     |
+| `notifications/` — `GET`                                              | none: `read` is the user's seen set, or `null`          |
+| `notifications/` — `POST`                                             | 401 when signed out                                     |
+| `announcements/`                                                      | public; returns the user's seen set when signed in      |
 | `/api/*` and everything else                                          | public                                                  |
 
 [`tests/e2e/specs/auth/access-control.spec.ts`](../tests/e2e/specs/auth/access-control.spec.ts)
@@ -332,7 +340,10 @@ Rules:
   badges, and only theirs. It validates a score against the
   `max_score` in the database, never a value from the browser.
 - **The progress endpoints set `private, no-store` before the 401**, so a
-  signed-out response isn't cached either.
+  signed-out response isn't cached either. So does `POST /notifications`.
+- **Seen announcements are the user's own.** `/notifications` and
+  `/announcements` read and write only `locals.user`'s rows, take no user id,
+  and sit outside `/api/` so the shared cache never holds one user's seen set.
 - **Credit is public; the account is not.** `/team` and each olympiad's
   contributors list show admins' and contributors' display names, avatars and
   upload counts, from shared-cached `/api/*` endpoints. Those return only those

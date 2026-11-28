@@ -11,6 +11,8 @@ olympiads ──< years ──< year_files
                   └──< problems ──< problem_files
                              ├──< problem_progress >── user
                              └──< badge_problems >── badges ──< user_badges >── user
+
+announcements ──< announcement_reads >── user
 ```
 
 Every arrow is `ON DELETE CASCADE`: deleting a row removes everything below it,
@@ -54,10 +56,11 @@ starting with a hyphen. The id is a URL segment and an R2 key prefix, so `/`,
 `?`, `#` or `.` would break both. The same rule is what deep search's olympiad
 filter accepts.
 
-`description_html` is the only HTML the app renders with `{@html}`, and only
-[`#lib/server/markdown.ts`](../src/lib/server/markdown.ts) produces it. Don't add
-a second renderer: two sanitiser allow-lists drift apart, and the gap is an XSS
-hole.
+`description_html` and `announcements.body_html` are the only stored HTML the
+app renders with `{@html}`, and only
+[`#lib/server/markdown.ts`](../src/lib/server/markdown.ts) produces them. Don't
+add a second renderer: two sanitiser allow-lists drift apart, and the gap is an
+XSS hole.
 
 `isIconUrl()` in [`#lib/uploads.ts`](../src/lib/uploads.ts) tells the two kinds
 of `icon` apart by its `http://` or `https://` prefix.
@@ -317,6 +320,49 @@ to `revealed` for a holder, reading every such list in one query
 (`getManualProblemsFor`). The criteria sentence (`describeBadge`) doesn't
 list the problems.
 
+### Announcements: `announcements`, `announcement_reads`
+
+News an admin posts at `/admin/announcements/[id]`, shown in the nav's bell and
+on `/announcements` (see
+[architecture.md](./architecture.md#announcements-and-the-bell)).
+
+`announcements`:
+
+| Column       | Type       | Notes                                                             |
+| ------------ | ---------- | ----------------------------------------------------------------- |
+| `id`         | INTEGER PK | autoincrement; newest first is `id DESC`, so no other index       |
+| `title`      | TEXT       | not null, at most 200 characters                                  |
+| `body_md`    | TEXT       | not null, at most 10000 characters; what the editor shows         |
+| `body_html`  | TEXT       | not null; `body_md` rendered by `#lib/server/markdown.ts` on save |
+| `created_by` | TEXT       | → `user.id`, `ON DELETE SET NULL`; shown only in the admin list   |
+| `created_at` | INTEGER    | not null, `timestamp_ms`                                          |
+| `updated_at` | INTEGER    | not null, `timestamp_ms`                                          |
+
+`body_html` is rendered with `{@html}`, so, like
+[`olympiads.description_html`](#olympiads), it comes only from the one sanitiser.
+
+`announcement_reads`: one row per announcement a signed-in user has seen.
+
+| Column            | Type       | Notes                         |
+| ----------------- | ---------- | ----------------------------- |
+| `id`              | INTEGER PK | autoincrement                 |
+| `user_id`         | TEXT       | → `user.id`, cascade          |
+| `announcement_id` | INTEGER    | → `announcements.id`, cascade |
+| `read_at`         | INTEGER    | not null, `timestamp_ms`      |
+
+Unique on `(user_id, announcement_id)`, with a separate index on
+`announcement_id` so the cascade from `announcements` does not scan.
+
+- **A row existing means seen**, as with `problem_progress`. Nothing is ever
+  marked unseen; deleting the announcement deletes its rows.
+- **Signed-out visitors have no rows.** Their seen set lives in their browser's
+  localStorage and is written here when they sign in.
+  `markAnnouncementsRead` drops ids that name no announcement first, because D1
+  enforces the foreign key and a browser can remember an announcement deleted
+  since.
+- Neither table is served from `/api/*`. The bell reads both from the uncached
+  `/notifications`.
+
 ### `file_text`
 
 The extracted plain text of one uploaded document, and the state of its
@@ -441,14 +487,14 @@ See [auth.md](./auth.md).
 
 The admin panel's audit trail, written by `logActivity()`.
 
-| Column        | Notes                                                               |
-| ------------- | ------------------------------------------------------------------- |
-| `user_id`     | → `user.id`, `ON DELETE SET NULL`. The log outlives the account     |
-| `user_name`   | not null. A snapshot of the name, so the log survives renames       |
-| `action`      | one of sixteen enum values; `LogAction` is derived from this column |
-| `olympiad_id` | plain TEXT, not a foreign key, so an olympiad's history survives it |
-| `year`        | nullable                                                            |
-| `detail`      | not null, default `''`; a human-readable sentence                   |
+| Column        | Notes                                                                |
+| ------------- | -------------------------------------------------------------------- |
+| `user_id`     | → `user.id`, `ON DELETE SET NULL`. The log outlives the account      |
+| `user_name`   | not null. A snapshot of the name, so the log survives renames        |
+| `action`      | one of nineteen enum values; `LogAction` is derived from this column |
+| `olympiad_id` | plain TEXT, not a foreign key, so an olympiad's history survives it  |
+| `year`        | nullable                                                             |
+| `detail`      | not null, default `''`; a human-readable sentence                    |
 
 `listActivity` pages by keyset, `WHERE id < ? ORDER BY id DESC LIMIT n + 1`,
 which reads exactly one page. Don't use `OFFSET`, which reads every skipped row.

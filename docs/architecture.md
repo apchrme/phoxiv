@@ -40,11 +40,11 @@ request
 The route tree is shaped by three cache policies, in
 [`#lib/server/cache.ts`](../src/lib/server/cache.ts):
 
-| Policy              | Header                                       | Used by                         |
-| ------------------- | -------------------------------------------- | ------------------------------- |
-| `setPrivateCache()` | `max-age=14400, must-revalidate, private`    | pages under `(reg)`             |
-| `setSharedCache()`  | `max-age=0, s-maxage=86400, must-revalidate` | `/api/*` endpoints              |
-| `setNoStore()`      | `private, no-store`                          | `/`, and the per-user endpoints |
+| Policy              | Header                                       | Used by                                           |
+| ------------------- | -------------------------------------------- | ------------------------------------------------- |
+| `setPrivateCache()` | `max-age=14400, must-revalidate, private`    | pages under `(reg)`                               |
+| `setSharedCache()`  | `max-age=0, s-maxage=86400, must-revalidate` | `/api/*` endpoints                                |
+| `setNoStore()`      | `private, no-store`                          | `/`, `/announcements`, and the per-user endpoints |
 
 - **Private.** `(reg)` is a route group that exists only so
   [`(reg)/+layout.server.ts`](<../src/routes/(reg)/+layout.server.ts>) can call
@@ -101,6 +101,11 @@ About the shared cache:
   not under `/api/` because every handler there is shared-cached.
 - `/progress` and `/progress/badges` are per-user and call `setNoStore()`
   themselves. See [per-user progress](#per-user-progress).
+- `/notifications` (the bell's endpoint) and `/announcements` (the page that
+  lists every announcement) send `no-store` too. The bell is fetched fresh on
+  every page load, so a page it links to that sat in the four-hour browser cache
+  would be missing what the bell already shows. See
+  [announcements and the bell](#announcements-and-the-bell).
 
 `/olympiads/[olympiad]/progress` is inside `(reg)` but is a `+server.ts`, so it
 gets no layout header and sets `private, no-store` itself. `/api/auth/[...all]`
@@ -110,7 +115,7 @@ sets no cache headers, and must not: it carries `Set-Cookie` and session state.
 
 ```
 src/routes/
-├── +layout.svelte              shell: sidebar, nav, footer, GlobalSearch, toaster
+├── +layout.svelte              shell: sidebar, nav (with the notifications bell), footer, GlobalSearch, toaster
 ├── +layout.server.ts           exposes locals.user to every page
 ├── +layout.ts                  legacy 308 redirects; passes data through
 ├── +error.svelte, AppSidebar.svelte
@@ -118,6 +123,9 @@ src/routes/
 ├── Landing, CorpusBand, CorpusTile, StatsBand, FeatureBlocks (.svelte), corpus.ts   landing page
 ├── Dashboard.svelte            the user's progress and badges; totals from /api/stats/problems
 ├── blog/[...rest]/             a +server.ts that 308s old blog links to /about
+├── announcements/              every announcement, newest first; no-store; marks them seen
+├── notifications/              the bell: newest announcements and the user's seen set (GET),
+│                               marking seen (POST); private, no-store
 │
 ├── (reg)/                      private browser cache
 │   ├── olympiads/              index, and [olympiad]/ with YearPanel, ProblemCard,
@@ -135,11 +143,12 @@ src/routes/
 │   └── profile/                redirects to /login if not
 │
 ├── admin/                      requireAdmin in +layout.server.ts; never cached
-│   ├── +page.svelte            the menu: links to the four panels below; loads nothing
+│   ├── +page.svelte            the menu: links to the five panels below; loads nothing
 │   ├── users/                  roles, assignments, bans; UsersTable, UserRowActions, columns.ts
 │   ├── log/                    the activity log's first page; ActivityLogTable
 │   ├── badges/                 BadgesTable, and [id]/: the editor ("new" creates); BadgeForm, ProblemPicker,
 │   │                           HoldersList (who holds it: admin only)
+│   ├── announcements/          AnnouncementsTable, and [id]/: the editor ("new" posts); AnnouncementForm
 │   ├── search-index/           index counts and maintenance; IndexPanel
 │   └── reindex/, activity/     endpoints; each calls requireAdmin itself
 │
@@ -266,6 +275,41 @@ wrappers over `IconFilterMenu.svelte`, which owns the dropdown. The olympiad pag
 [search.md](./search.md#the-filters-and-why-they-vanish). Signed-out visitors see
 `SignInToTrack.svelte`, a dimmed circle with a hint; it is not a guard.
 
+### Announcements and the bell
+
+Admins post announcements from `/admin/announcements`. The bell in the nav
+(`NotificationsButton.svelte`, one in each nav pill) lists the newest five
+(`BELL_LIMIT`) with a count of unseen ones, and links to `/announcements`, which
+lists them all. Opening the bell, or visiting the page, marks everything shown
+as seen; what was unseen stays marked "New" until the bell or page is next
+opened.
+
+- **The shell can't load it.** The nav renders on `(reg)` pages, whose HTML is
+  browser-cached for four hours, so the root layout creates one
+  `Notifications` (`#lib/notifications.svelte.ts`) after hydration and shares it
+  with both bells and `/announcements` through context. It fetches
+  `/notifications` once per full page load; client-side navigation keeps the
+  layout, so it does not refetch.
+- **Signed-out visitors are answered.** Unlike the progress endpoints,
+  `GET /notifications` serves a signed-out visitor too, with `read: null`. The
+  browser then keeps the seen set in localStorage (`phoxiv:announcements-read`),
+  as `display.ts` keeps the olympiad page's layout. Signed in, the seen set is
+  `announcement_reads`, and `POST /notifications` adds to it. It takes JSON:
+  SvelteKit's CSRF check covers only form content types, but a cross-origin
+  JSON POST needs a CORS preflight, which the endpoint never answers.
+- **Signed in or not comes from the endpoint**, never `data.user`, which a cached
+  page can carry across a sign-in. When the answer says signed in and the
+  browser still holds a seen set, it is POSTed (the endpoint drops ids of
+  deleted announcements) and then removed, so a browser starts afresh after
+  signing out.
+- **`/announcements` lists everything**, so it can't rely on the bell's seen set,
+  which covers only the newest five. Being `no-store`, its load returns the
+  user's whole seen set itself, as the dashboard returns its rows.
+
+Bodies are Markdown, rendered once on save by `#lib/server/markdown.ts`, like an
+olympiad description. An edit keeps the id, so it doesn't make an announcement
+unseen again.
+
 ## The module map
 
 Everything in `src/lib/` outside `components/`.
@@ -304,15 +348,16 @@ because its never-fail-a-write policy lives with it. The action enum itself is i
 Drizzle's relational queries (`db.query`) are not set up: `drizzle()` gets no
 `relations`, and every read uses the core query builder.
 
-| Query module      | Reads / writes                                                               |
-| ----------------- | ---------------------------------------------------------------------------- |
-| `olympiads.ts`    | the olympiad list, names by id, one olympiad's row; `toOlympiadEntry`        |
-| `years.ts`        | one year's row, an olympiad's year numbers, and creating a year              |
-| `content.ts`      | joined reads for the public API shapes and the year editor; `getSearchIndex` |
-| `progress.ts`     | a user's tracked problems, per olympiad and archive-wide                     |
-| `badges.ts`       | badges, evaluating and syncing one user's awards, and the atomic `saveBadge` |
-| `files.ts`        | the full-text index: query sanitising, reads, writes, upkeep                 |
-| `contributors.ts` | upload counts per user, for an olympiad's contributors list and `/team`      |
+| Query module       | Reads / writes                                                               |
+| ------------------ | ---------------------------------------------------------------------------- |
+| `olympiads.ts`     | the olympiad list, names by id, one olympiad's row; `toOlympiadEntry`        |
+| `years.ts`         | one year's row, an olympiad's year numbers, and creating a year              |
+| `content.ts`       | joined reads for the public API shapes and the year editor; `getSearchIndex` |
+| `progress.ts`      | a user's tracked problems, per olympiad and archive-wide                     |
+| `badges.ts`        | badges, evaluating and syncing one user's awards, and the atomic `saveBadge` |
+| `announcements.ts` | the announcement lists, a user's seen set, and marking announcements seen    |
+| `files.ts`         | the full-text index: query sanitising, reads, writes, upkeep                 |
+| `contributors.ts`  | upload counts per user, for an olympiad's contributors list and `/team`      |
 
 ### Client-safe `#lib/`
 
@@ -331,6 +376,8 @@ Drizzle's relational queries (`db.query`) are not set up: `drizzle()` gets no
 | `pdf-text.ts`               | browser-side PDF text extraction                                                                                |
 | `forms.svelte.ts`           | `formToasts`, `Pending`, and `confirmBeforeLeaving` for the editors' unsaved-changes prompt                     |
 | `resource.svelte.ts`        | `Resource`: fetches a JSON endpoint, tracking value, loading and failure                                        |
+| `announcements.ts`          | announcement limits and the `/notifications` payload type                                                       |
+| `notifications.svelte.ts`   | `Notifications`: the bell's fetch and the seen set, on the account or in localStorage, and the sign-in merge    |
 | `auth-client.ts`            | the BetterAuth browser client, for sign-in and sign-out                                                         |
 | `auth-providers.ts`         | the sign-in providers, their labels and order, and sign-in error messages                                       |
 | `utils.ts`                  | `cn`, and the prop-type helpers the vendored `ui/` components import                                            |
