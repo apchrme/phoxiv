@@ -349,6 +349,57 @@ test.describe('the theme control', () => {
 		await page.getByRole('menuitem', { name }).click();
 	}
 
+	async function choosePalette(page: Page, name: 'Default' | 'Christmas'): Promise<void> {
+		await page.getByRole('button', { name: 'Toggle theme' }).click();
+		await page.getByRole('menuitemradio', { name }).click();
+	}
+
+	test('the Christmas palette recolours both modes and survives a reload', async ({ page }) => {
+		const html = page.locator('html');
+		await gotoReady(page, '/privacy');
+		const light = await background(page);
+		await chooseTheme(page, 'Dark');
+		const dark = await background(page);
+
+		await choosePalette(page, 'Christmas');
+		await expect(html).toHaveAttribute('data-theme', 'christmas');
+		// Still dark, but not the default dark.
+		await expect(html).toHaveClass(DARK);
+		await expect(html).not.toHaveCSS('background-color', dark);
+		const christmasDark = await background(page);
+
+		await chooseTheme(page, 'Light');
+		await expect(html).toHaveAttribute('data-theme', 'christmas');
+		await expect(html).not.toHaveCSS('background-color', light);
+		await expect(html).not.toHaveCSS('background-color', christmasDark);
+		const christmasLight = await background(page);
+
+		await page.reload();
+		await expect(html).toHaveAttribute('data-hydrated', '');
+		await expect(html).toHaveAttribute('data-theme', 'christmas');
+		await expect(html).toHaveCSS('background-color', christmasLight);
+		await page.getByRole('button', { name: 'Toggle theme' }).click();
+		await expect(page.getByRole('menuitemradio', { name: 'Christmas' })).toBeChecked();
+		await page.keyboard.press('Escape');
+
+		await choosePalette(page, 'Default');
+		await expect(html).toHaveCSS('background-color', light);
+		await page.reload();
+		await expect(html).toHaveAttribute('data-hydrated', '');
+		await expect(html).toHaveCSS('background-color', light);
+	});
+
+	// The snow itself is checked in specs/motion/, the one project that doesn't
+	// reduce motion.
+	test('reduced motion keeps the Christmas snow away', async ({ page }) => {
+		const snow = page.locator('[data-slot="snowfall"]');
+		await gotoReady(page, '/');
+		await choosePalette(page, 'Christmas');
+		await expect(page.locator('html')).toHaveAttribute('data-theme', 'christmas');
+		await expect(snow).toHaveCount(1);
+		await expect(snow).toBeHidden();
+	});
+
 	test('dark mode marks <html>, survives a reload, and switches back', async ({ page }) => {
 		const html = page.locator('html');
 		await gotoReady(page, '/privacy');

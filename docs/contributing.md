@@ -338,6 +338,18 @@ Tailwind v4, configured in CSS; there is no `tailwind.config.js`.
 - **Palette.** Catppuccin: Latte for light, Mocha for dark, written as `oklch()`
   with the source hex in a trailing comment. Keep that comment when editing a
   token; it is the only record of which Catppuccin colour it is.
+- **Alternate palettes.** The theme menu also picks a palette, which
+  mode-watcher stores and writes to `<html data-theme>` before first paint,
+  independently of light and dark. Each palette is two blocks in `app.css`,
+  `[data-theme='…']:not(.dark)` and `[data-theme='…'].dark`, overriding the
+  surface, text and accent tokens. Status, destructive, badge and chart tokens
+  are inherited so they mean the same thing in every palette. Christmas is the
+  only one so far; to add another, write both blocks and add it to `THEMES` in
+  `DarkModeButton.svelte`. Its colours have no Catppuccin source, so their
+  comments name them instead. It also brings snow to `/`:
+  `src/routes/Snowfall.svelte` is always rendered and shown by CSS alone under
+  `html[data-theme='christmas']`, so it needs no script to appear and never
+  flashes in for other palettes. `prefers-reduced-motion` hides it.
 - **Tokens.** Declared on `:root`, overridden under `.dark`, and exported to
   Tailwind through `@theme inline`. Utilities like `bg-card` work in both themes
   without a `dark:` variant.
@@ -354,6 +366,7 @@ Tailwind v4, configured in CSS; there is no `tailwind.config.js`.
   | `success`, `warning` | status text and marks: "Verified", an extraction warning |
   | `canvas`             | `html`, behind the app shell                             |
   | `scrim`              | dims the page behind a modal dialog or a sheet           |
+  | `snow`               | the Christmas palette's snowflakes on `/`                |
   | `badge-*`            | the ten badge accents in `#lib/badges.ts`                |
 
   Translucent tokens carry their alpha, since a theme may need a different one;

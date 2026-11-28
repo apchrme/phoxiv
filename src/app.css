@@ -57,6 +57,10 @@
 	   part of the token. */
 	--scrim: oklch(0% 0 0 / 20%);
 
+	/* The flakes of src/routes/Snowfall.svelte. Icy rather than white, so they
+	   show against a near-white background. */
+	--snow: oklch(80% 0.04 235);
+
 	/* Badge accents (#lib/badges.ts), one per colour an admin can pick. */
 	--badge-mauve: oklch(55.47% 0.25 297.02); /* Mauve    #8839ef */
 	--badge-red: oklch(55.05% 0.216 19.81); /* Red      #d20f39 */
@@ -128,6 +132,8 @@
 
 	--scrim: oklch(0% 0 0 / 50%);
 
+	--snow: oklch(97% 0.01 90);
+
 	--badge-mauve: oklch(78.71% 0.119 304.77); /* Mauve    #cba6f7 */
 	--badge-red: oklch(75.56% 0.13 2.76); /* Red      #f38ba8 */
 	--badge-peach: oklch(82.37% 0.101 52.63); /* Peach    #fab387 */
@@ -155,6 +161,95 @@
 	--sidebar-ring: oklch(84% 0.08 257); /* Brand blue #A9CDFF */
 }
 
+/* ================================================
+   Christmas — an alternate palette, chosen from the theme menu
+
+   mode-watcher writes the choice to `<html data-theme>`; it is independent of
+   light and dark, so each mode gets its own block. Not Catppuccin: the colours
+   are the site's own, so the comments name them rather than a source hex.
+   Only the surfaces, text and accents change. Status, destructive, badge and
+   chart colours keep their meaning and are inherited from `:root` / `.dark`.
+   ================================================ */
+[data-theme='christmas']:not(.dark) {
+	--background: oklch(97.5% 0.008 85); /* Snow */
+	--foreground: oklch(30% 0.04 160); /* Pine */
+
+	--card: oklch(95.3% 0.013 85); /* Parchment */
+	--card-foreground: oklch(30% 0.04 160); /* Pine */
+
+	--popover: oklch(92.8% 0.016 85); /* Wrapping paper */
+	--popover-foreground: oklch(30% 0.04 160); /* Pine */
+
+	--primary: oklch(45% 0.11 155); /* Evergreen */
+	--primary-foreground: oklch(97.5% 0.008 85); /* Snow */
+
+	--secondary: oklch(88% 0.025 150); /* Frosted needle */
+	--secondary-foreground: oklch(30% 0.04 160); /* Pine */
+
+	--muted: oklch(91% 0.018 120); /* Sage */
+	--muted-foreground: oklch(48% 0.03 160); /* Bark */
+
+	--accent: oklch(90.5% 0.03 150); /* Frosted needle */
+	--accent-foreground: oklch(30% 0.04 160); /* Pine */
+
+	--border: oklch(82% 0.025 140); /* Holly leaf, pale */
+	--input: oklch(86% 0.022 140); /* Holly leaf, pale */
+	--ring: oklch(45% 0.11 155); /* Evergreen */
+
+	--highlight: oklch(52% 0.19 25); /* Cranberry */
+
+	--canvas: oklch(94.5% 0.014 85);
+
+	--sidebar: oklch(92.8% 0.016 85); /* Wrapping paper */
+	--sidebar-foreground: oklch(30% 0.04 160); /* Pine */
+	--sidebar-primary: oklch(45% 0.11 155); /* Evergreen */
+	--sidebar-primary-foreground: oklch(97.5% 0.008 85); /* Snow */
+	--sidebar-accent: oklch(88% 0.025 150); /* Frosted needle */
+	--sidebar-accent-foreground: oklch(30% 0.04 160); /* Pine */
+	--sidebar-border: oklch(82% 0.025 140); /* Holly leaf, pale */
+	--sidebar-ring: oklch(45% 0.11 155); /* Evergreen */
+}
+
+[data-theme='christmas'].dark {
+	--background: oklch(20% 0.025 165); /* Winter night */
+	--foreground: oklch(93% 0.012 90); /* Snow */
+
+	--card: oklch(25.5% 0.03 162); /* Fir */
+	--card-foreground: oklch(93% 0.012 90); /* Snow */
+
+	--popover: oklch(25.5% 0.03 162); /* Fir */
+	--popover-foreground: oklch(93% 0.012 90); /* Snow */
+
+	--primary: oklch(80% 0.12 150); /* Holly */
+	--primary-foreground: oklch(20% 0.025 165); /* Winter night */
+
+	--secondary: oklch(25.5% 0.03 162); /* Fir */
+	--secondary-foreground: oklch(93% 0.012 90); /* Snow */
+
+	--muted: oklch(31% 0.03 160); /* Spruce */
+	--muted-foreground: oklch(75% 0.025 110); /* Frost */
+
+	--accent: oklch(31% 0.03 160); /* Spruce */
+	--accent-foreground: oklch(93% 0.012 90); /* Snow */
+
+	--border: oklch(32% 0.03 160); /* Spruce */
+	--input: oklch(32% 0.03 160); /* Spruce */
+	--ring: oklch(80% 0.12 150); /* Holly */
+
+	--highlight: oklch(72% 0.16 22); /* Cranberry, lit */
+
+	--canvas: oklch(11% 0.02 165);
+
+	--sidebar: oklch(14% 0.02 165); /* Midnight forest */
+	--sidebar-foreground: oklch(93% 0.012 90); /* Snow */
+	--sidebar-primary: oklch(80% 0.12 150); /* Holly */
+	--sidebar-primary-foreground: oklch(20% 0.025 165); /* Winter night */
+	--sidebar-accent: oklch(25.5% 0.03 162); /* Fir */
+	--sidebar-accent-foreground: oklch(93% 0.012 90); /* Snow */
+	--sidebar-border: oklch(32% 0.03 160); /* Spruce */
+	--sidebar-ring: oklch(80% 0.12 150); /* Holly */
+}
+
 @theme inline {
 	--font-sans: 'DM Sans Variable', sans-serif;
 	--font-mono: 'JetBrains Mono Variable', monospace;
@@ -171,6 +266,7 @@
 	--color-warning: var(--warning);
 	--color-canvas: var(--canvas);
 	--color-scrim: var(--scrim);
+	--color-snow: var(--snow);
 	--color-badge-mauve: var(--badge-mauve);
 	--color-badge-red: var(--badge-red);
 	--color-badge-peach: var(--badge-peach);

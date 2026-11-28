@@ -1,11 +1,12 @@
-import type { Locator } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { CORPUS } from '../../../../src/routes/corpus';
 import { expect, test } from '../../support/test';
 import { gotoReady } from '../../support/ui';
 
 /*
  * The animated paths, which every other project skips by reducing motion: the
- * landing page's GSAP reveals and corpus band, and the ⌘K dialog's animations.
+ * landing page's GSAP reveals and corpus band, the ⌘K dialog's animations, and
+ * the Christmas palette's snow on `/`, signed out and in.
  *
  * Reads the frozen delta olympiad's 2020 problem (Delta Lens) for the ⌘K test.
  * The corpus tiles link olympiads the seed doesn't have. Writes nothing.
@@ -93,5 +94,45 @@ test.describe('with animations on', () => {
 		await box.press('Enter');
 		await expect(page).toHaveURL('/olympiads/delta#2020');
 		await expect(dialog).toBeHidden();
+	});
+});
+
+test.describe('the Christmas snow', () => {
+	/** src/routes/Snowfall.svelte, on `/` alone. */
+	const SNOW = '[data-slot="snowfall"]';
+
+	async function choosePalette(page: Page, name: 'Default' | 'Christmas'): Promise<void> {
+		await page.getByRole('button', { name: 'Toggle theme' }).click();
+		await page.getByRole('menuitemradio', { name }).click();
+	}
+
+	test('falls on the landing page only on the Christmas palette', async ({ page }) => {
+		const snow = page.locator(SNOW);
+		await gotoReady(page, '/');
+		await expect(snow).toBeHidden();
+
+		await choosePalette(page, 'Christmas');
+		await expect(snow).toBeVisible();
+		// Decorative: out of the accessibility tree, and clicks go through it.
+		await expect(snow).toHaveAttribute('aria-hidden', 'true');
+		await expect(snow).toHaveCSS('pointer-events', 'none');
+		await page.getByRole('link', { name: 'Browse olympiads' }).click();
+		await expect(page).toHaveURL('/olympiads');
+		await expect(snow).toHaveCount(0);
+
+		await gotoReady(page, '/');
+		await choosePalette(page, 'Default');
+		await expect(snow).toBeHidden();
+	});
+
+	test.describe('signed in', () => {
+		test.use({ role: 'badgeReader' });
+
+		test('falls on the dashboard too', async ({ page }) => {
+			await gotoReady(page, '/');
+			await expect(page.locator(SNOW)).toBeHidden();
+			await choosePalette(page, 'Christmas');
+			await expect(page.locator(SNOW)).toBeVisible();
+		});
 	});
 });
