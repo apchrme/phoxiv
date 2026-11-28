@@ -3,7 +3,7 @@ title: Resources
 description: A collection of physics olympiad resources I find the most useful
 ---
 
-- [Kevin Zhou's handouts](https://knzhou.github.io/#physics-olympiad-handouts) - **the best resource for learning Olympiad physics**. Many important resources can be found in the syllabus for the handouts. You may also want to look at his [advice](https://knzhou.github.io/#advice). 
+- [Kevin Zhou's handouts](https://knzhou.github.io/#physics-olympiad-handouts) - *the best resource for learning Olympiad physics*. Many important resources can be found in the syllabus for the handouts. You may also want to look at his [advice](https://knzhou.github.io/#advice). 
 
 - [Stefan Ivanov's resources](https://stefanivanov.site/teaching/) - plenty of useful things here, including a more comprehensive archive, errata list and handouts.
 

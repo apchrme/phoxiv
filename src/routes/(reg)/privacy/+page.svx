@@ -22,7 +22,7 @@ If you sign in with GitHub, we receive
 1. The information GitHub makes available by default (your GitHub username, display name and profile picture)
 2. Your email address
 
-We request **read-only access to your email address** and nothing else. We do not receive access to your repositories, followers/following, or any other GitHub data.
+We request *read-only access to your email address* and nothing else. We do not receive access to your repositories, followers/following, or any other GitHub data.
 
 If you sign in with Google, we receive your name, email address and profile picture (Google's basic `openid`, `email` and `profile` scopes), and whether Google has verified your email address. We do not receive access to your Gmail, Drive, contacts, calendar or any other Google data.
 

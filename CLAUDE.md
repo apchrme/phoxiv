@@ -42,10 +42,11 @@ Routes are grouped by how they are cached:
 ```
 src/routes/
 ├── +page         landing page signed out, dashboard signed in; `private, no-store`
-├── (reg)/        private browser cache (4h): olympiads, blog, resources, privacy, team, badges (and badges/[id]), login, profile
+├── (reg)/        private browser cache (4h): olympiads, about, resources, privacy, team, badges (and badges/[id]), login, profile
 │                 except olympiads/[olympiad]/progress/ — per-user, `private, no-store`
 ├── admin/        never cached; a menu of users/, log/, badges/ (with the editor, [id]/) and search-index/
 ├── contribute/   never cached; the olympiad and year editors
+├── blog/         a +server.ts that 308s old blog links to /about
 ├── progress/     per-user progress for the ⌘K dialog, and badges/ for /badges; `private, no-store`
 └── api/          Cloudflare's shared cache (s-maxage=86400)
                   except auth/[...all]/, which sets no cache headers

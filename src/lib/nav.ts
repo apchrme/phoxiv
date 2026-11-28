@@ -3,7 +3,7 @@ import HouseIcon from '@lucide/svelte/icons/house';
 import TrophyIcon from '@lucide/svelte/icons/trophy';
 import LibraryIcon from '@lucide/svelte/icons/library';
 import AwardIcon from '@lucide/svelte/icons/award';
-import FileTextIcon from '@lucide/svelte/icons/file-text';
+import InfoIcon from '@lucide/svelte/icons/info';
 import { HandHelping, Shield, LockKeyhole, Users } from '@lucide/svelte';
 import type { Component } from 'svelte';
 
@@ -26,7 +26,7 @@ export const PRIMARY_NAV: NavLink[] = [
 
 /** Links tucked behind the desktop nav's "more" dropdown. */
 export const SECONDARY_NAV: NavLink[] = [
-	{ href: resolve('blog'), label: 'blog', icon: FileTextIcon },
+	{ href: resolve('about'), label: 'about', icon: InfoIcon },
 	{ href: resolve('contribute'), label: 'contribute', icon: HandHelping },
 	{ href: resolve('team'), label: 'team', icon: Users },
 	{ href: resolve('privacy'), label: 'privacy policy', icon: LockKeyhole }

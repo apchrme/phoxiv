@@ -117,6 +117,7 @@ src/routes/
 ├── +page.svelte / .server.ts   no-store; Landing.svelte signed out, Dashboard.svelte signed in
 ├── Landing, CorpusBand, CorpusTile, StatsBand, FeatureBlocks (.svelte), corpus.ts   landing page
 ├── Dashboard.svelte            the user's progress and badges; totals from /api/stats/problems
+├── blog/[...rest]/             a +server.ts that 308s old blog links to /about
 │
 ├── (reg)/                      private browser cache
 │   ├── olympiads/              index, and [olympiad]/ with YearPanel, ProblemCard,
@@ -124,8 +125,8 @@ src/routes/
 │   │                           ContributorsButton, DisplayMenu, filter.ts,
 │   │                           display.ts (localStorage), and progress/
 │   │                           (endpoint, private, no-store)
-│   ├── blog/                   index and [slug]/, from #lib/posts/*.svx
-│   ├── resources/, privacy/    .svx pages
+│   ├── about/, resources/,     .svx pages
+│   │   privacy/
 │   ├── team/                   admins and contributors; fetches /api/team
 │   ├── badges/                 every badge; fetches /api/badges and /progress/badges
 │   │   └── [id=id]/            one badge and a manual badge's problems; a small load (404,
@@ -177,20 +178,24 @@ takes `new`.
 server layout's `data`: SvelteKit derives `LayoutData` from a universal
 `+layout.ts`'s return type, so returning nothing drops `user` from every page.
 
-### The two mdsvex layouts
+### The mdsvex pages
 
-`resources/+page.svx`, `privacy/+page.svx` and the posts in `#lib/posts/` are
-markdown. mdsvex wraps each in a layout and passes front matter as props.
-The `sveltekit()` options in [`vite.config.ts`](../vite.config.ts) map layouts
-by name: mdsvex picks the
-key matching a folder in the file's path, else `_`.
+`about/+page.svx`, `resources/+page.svx` and `privacy/+page.svx` are markdown,
+compiled by mdsvex 1.x. Since 1.0 mdsvex is a Vite plugin, not a Svelte
+preprocessor: in [`vite.config.ts`](../vite.config.ts) it sits before
+`sveltekit()`, and `.svx` must also stay in `sveltekit()`'s `extensions` or
+SvelteKit won't find `+page.svx` routes.
 
-- [`prose.svelte`](../src/lib/prose.svelte) (`_`) is the whole page: a
-  `PageHeader` and `SvelteSeo` from front matter, plus the prose wrapper.
-- [`post.svelte`](../src/lib/post.svelte) (`posts`) is only the prose wrapper.
-  [`blog/[slug]/+page.svelte`](<../src/routes/(reg)/blog/[slug]/+page.svelte>)
-  draws the header and `SvelteSeo`. On `_`, a post would print its title twice
-  and emit two `<title>` tags.
+Every page is wrapped in the one template,
+[`prose.svelte`](../src/lib/prose.svelte), which gets the front matter as props
+and renders a `PageHeader` and `SvelteSeo` from `title`, `description` and the
+optional `seoTitle` / `seoDescription`, around the prose wrapper.
+
+The pages are written in mdsvex 1.x's markdown, which is not CommonMark:
+`*strong*` and `_emphasis_` (so `**x**` is wrong), `--` is an en dash and `---`
+an em dash under `smart_punctuation`, and raw HTML such as `<enhanced:img>`
+passes through to Svelte. 0.x put `rel="nofollow"` on external links; 1.x
+writes links as they are.
 
 ## Why some pages fetch their own data
 
@@ -311,28 +316,27 @@ Drizzle's relational queries (`db.query`) are not set up: `drizzle()` gets no
 
 ### Client-safe `#lib/`
 
-| Module                        | Responsibility                                                                                                  |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `types.ts`                    | shared types and enums, the public API shapes, `isOlympiadId`                                                   |
-| `uploads.ts`                  | the upload allow-list, `slugifyLabel`, `collidingLabel`, `isHttpUrl`                                            |
-| `constants.ts`                | constants both sides need, including `CDN_BASE_URL`                                                             |
-| `nav.ts`                      | navigation links and `secondaryNavFor(user)`                                                                    |
-| `posts.ts`                    | loads blog posts from `#lib/posts/*.svx`                                                                        |
-| `activity.ts`                 | activity-log labels, and the assignable roles with their labels                                                 |
-| `progress.ts`                 | score rules for the editor, CSV import, `trackProblem` and problem cards                                        |
-| `filters.ts`                  | topic, olympiad and progress predicates for the olympiad page, ⌘K dialog and badge rules                        |
-| `badges.ts`                   | what qualifies for a badge (`qualifies`), its order, colours and summary sentence, and what users may see of it |
-| `badge-icons.ts`              | the badge icon keys' Lucide components                                                                          |
-| `search.ts`                   | deep-search normalisation for the dialog, the endpoint and text extraction                                      |
-| `pdf-text.ts`                 | browser-side PDF text extraction                                                                                |
-| `forms.svelte.ts`             | `formToasts`, `Pending`, and `confirmBeforeLeaving` for the editors' unsaved-changes prompt                     |
-| `resource.svelte.ts`          | `Resource`: fetches a JSON endpoint, tracking value, loading and failure                                        |
-| `auth-client.ts`              | the BetterAuth browser client, for sign-in and sign-out                                                         |
-| `auth-providers.ts`           | the sign-in providers, their labels and order, and sign-in error messages                                       |
-| `utils.ts`                    | `cn`, and the prop-type helpers the vendored `ui/` components import                                            |
-| `utils/`                      | `date`, `flag`, `fuzzy`, `json`, `plural`, `topics`                                                             |
-| `hooks/is-mobile.svelte.ts`   | `IsMobile`, a viewport media query                                                                              |
-| `prose.svelte`, `post.svelte` | the two mdsvex layouts                                                                                          |
+| Module                      | Responsibility                                                                                                  |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `types.ts`                  | shared types and enums, the public API shapes, `isOlympiadId`                                                   |
+| `uploads.ts`                | the upload allow-list, `slugifyLabel`, `collidingLabel`, `isHttpUrl`                                            |
+| `constants.ts`              | constants both sides need, including `CDN_BASE_URL`                                                             |
+| `nav.ts`                    | navigation links and `secondaryNavFor(user)`                                                                    |
+| `activity.ts`               | activity-log labels, and the assignable roles with their labels                                                 |
+| `progress.ts`               | score rules for the editor, CSV import, `trackProblem` and problem cards                                        |
+| `filters.ts`                | topic, olympiad and progress predicates for the olympiad page, ⌘K dialog and badge rules                        |
+| `badges.ts`                 | what qualifies for a badge (`qualifies`), its order, colours and summary sentence, and what users may see of it |
+| `badge-icons.ts`            | the badge icon keys' Lucide components                                                                          |
+| `search.ts`                 | deep-search normalisation for the dialog, the endpoint and text extraction                                      |
+| `pdf-text.ts`               | browser-side PDF text extraction                                                                                |
+| `forms.svelte.ts`           | `formToasts`, `Pending`, and `confirmBeforeLeaving` for the editors' unsaved-changes prompt                     |
+| `resource.svelte.ts`        | `Resource`: fetches a JSON endpoint, tracking value, loading and failure                                        |
+| `auth-client.ts`            | the BetterAuth browser client, for sign-in and sign-out                                                         |
+| `auth-providers.ts`         | the sign-in providers, their labels and order, and sign-in error messages                                       |
+| `utils.ts`                  | `cn`, and the prop-type helpers the vendored `ui/` components import                                            |
+| `utils/`                    | `date`, `flag`, `fuzzy`, `json`, `plural`, `topics`                                                             |
+| `hooks/is-mobile.svelte.ts` | `IsMobile`, a viewport media query                                                                              |
+| `prose.svelte`              | the mdsvex template every `.svx` page is wrapped in                                                             |
 
 `uploads.ts`, `progress.ts`, `filters.ts`, `badges.ts` and `search.ts` are
 client-safe so the browser and the server apply the same rule.

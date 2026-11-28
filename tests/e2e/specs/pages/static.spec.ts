@@ -1,16 +1,13 @@
-import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import type { Locator, Page } from '@playwright/test';
 import { CDN_BASE_URL } from '../../../../src/lib/constants';
 import type { OlympiadEntry } from '../../../../src/lib/types';
 import { CORPUS, type CorpusEntry } from '../../../../src/routes/corpus';
-import { REPO_ROOT } from '../../support/env';
 import { expect, test } from '../../support/test';
 import { gotoReady } from '../../support/ui';
 
 /*
  * The pages with no data of their own: the landing page (src/routes/+page.svelte
- * and its bands), the blog, /resources and /privacy, and the theme control every
+ * and its bands), /about, /resources and /privacy, and the theme control every
  * page carries in its nav.
  *
  * Read-only: no seed rows of its own, and nothing written. The landing page's
@@ -296,68 +293,30 @@ test.describe('the landing page', () => {
 	});
 });
 
-test.describe('the blog', () => {
-	type Post = { slug: string; title: string; date: string };
-
-	/**
-	 * The posts in src/lib/posts/, read from their frontmatter the way
-	 * `loadPostList` (#lib/posts.ts) keeps them: drafts (no `date`) dropped, newest
-	 * first.
-	 */
-	function readPosts(): Post[] {
-		const dir = join(REPO_ROOT, 'src', 'lib', 'posts');
-		return readdirSync(dir)
-			.filter((name) => name.endsWith('.svx'))
-			.map((name) => {
-				const text = readFileSync(join(dir, name), 'utf8');
-				const front = /^\s*---\r?\n([\s\S]*?)\r?\n---/.exec(text)?.[1] ?? '';
-				const field = (key: string) =>
-					new RegExp(`^${key}:\\s*(.*)$`, 'm')
-						.exec(front)?.[1]
-						.trim()
-						.replace(/^(['"])(.*)\1$/, '$2') ?? '';
-				return { slug: name.replace(/\.svx$/, ''), title: field('title'), date: field('date') };
-			})
-			.filter((post) => post.date)
-			.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-	}
-
-	const posts = readPosts();
-
-	test('lists every post, newest first', async ({ page }) => {
-		expect(posts.length).toBeGreaterThan(0);
-		await gotoReady(page, '/blog');
-		await expect(page.getByRole('heading', { level: 1, name: 'Blog' })).toBeVisible();
-
-		const items = page.getByRole('main').getByRole('listitem');
-		await expect(items).toHaveCount(posts.length);
-		for (const [i, post] of posts.entries()) {
-			await expect(items.nth(i).getByRole('heading', { level: 2 })).toHaveText(post.title);
-			await expect(items.nth(i).getByRole('link')).toHaveAttribute('href', `/blog/${post.slug}`);
-		}
+test.describe('/about', () => {
+	test("renders its front matter as the page's header and title", async ({ page }) => {
+		const response = await page.goto('/about');
+		expect(response?.status()).toBe(200);
+		await expect(page.locator('html')).toHaveAttribute('data-hydrated', '');
+		// From the page's front matter, through src/lib/prose.svelte.
+		await expect(page.getByRole('heading', { level: 1 })).toHaveText('About');
+		await expect(page).toHaveTitle('About — phoXiv');
 	});
 
-	for (const post of posts) {
-		test(`"${post.title}" opens with its title as the heading`, async ({ page }) => {
-			const response = await page.goto(`/blog/${post.slug}`);
-			expect(response?.status()).toBe(200);
-			await expect(page.locator('html')).toHaveAttribute('data-hydrated', '');
-			await expect(page.getByRole('heading', { level: 1 })).toHaveText(post.title);
-			await expect(page.getByRole('main').getByRole('link', { name: 'Blog' })).toHaveAttribute(
-				'href',
-				'/blog'
-			);
+	test('its <enhanced:img> renders as a <picture> with an AVIF source', async ({ page }) => {
+		await gotoReady(page, '/about');
+		const picture = page.getByRole('main').locator('picture');
+		await expect(picture.locator('img')).toHaveAttribute('alt', 'IPhO Lorem Ipsum');
+		await expect(picture.locator('source[type="image/avif"]')).toHaveCount(1);
+	});
+
+	for (const path of ['/blog', '/blog/welcome']) {
+		test(`the old ${path} redirects to it`, async ({ request }) => {
+			const response = await request.get(path, { maxRedirects: 0 });
+			expect(response.status()).toBe(308);
+			expect(response.headers()['location']).toBe('/about');
 		});
 	}
-
-	test('an unknown post is a 404 page', async ({ page }) => {
-		const response = await page.goto('/blog/no-such-post');
-		expect(response?.status()).toBe(404);
-		// From the post's load in src/routes/(reg)/blog/[slug]/+page.ts.
-		await expect(
-			page.getByRole('heading', { level: 1, name: 'Error 404: Post "no-such-post" not found' })
-		).toBeVisible();
-	});
 });
 
 for (const { path, title } of [

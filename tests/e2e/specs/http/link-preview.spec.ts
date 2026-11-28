@@ -13,7 +13,7 @@ function metaContent(html: string, key: string): string | undefined {
 }
 
 test.describe('link previews', { tag: '@smoke' }, () => {
-	for (const path of ['/', '/olympiads', '/olympiads/alpha', '/blog']) {
+	for (const path of ['/', '/olympiads', '/olympiads/alpha', '/about']) {
 		test(`${path} carries a large preview image`, async ({ request }) => {
 			const html = await (await request.get(path)).text();
 

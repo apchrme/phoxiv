@@ -37,7 +37,7 @@ Live at **[phoxiv.org](https://phoxiv.org)**.
   - read the activity log
   - maintain the search index
 
-There is also a blog and a resources page, both written in mdsvex (`.svx`).
+The about, resources and privacy pages are written in mdsvex (`.svx`).
 
 ## Quickstart
 
